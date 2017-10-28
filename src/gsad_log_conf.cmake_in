@@ -1,0 +1,28 @@
+# GSA logging configuration
+#
+# WARNING: Setting the level of any of the library groups or the "*"
+#          group to include debug may reveal passwords in the logs.
+
+[gsad main]
+prepend=%t %p
+prepend_time_format=%Y-%m-%d %Hh%M.%S %Z
+file=${GVM_LOG_DIR}/gsad.log
+level=127
+
+[gsad  omp]
+prepend=%t %p
+prepend_time_format=%Y-%m-%d %Hh%M.%S %Z
+file=${GVM_LOG_DIR}/gsad.log
+level=127
+
+[gsad xslt]
+prepend=%t %p
+prepend_time_format=%Y-%m-%d %Hh%M.%S %Z
+file=${GVM_LOG_DIR}/gsad.log
+level=127
+
+[*]
+prepend=%t %p
+prepend_time_format=%Y-%m-%d %Hh%M.%S %Z
+file=${GVM_LOG_DIR}/gsad.log
+level=0

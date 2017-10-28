@@ -1,0 +1,250 @@
+GSA INTERNATIONALIZATION HOWTO
+##############################
+
+Requirements
+============
+In addition to the usual GSA requirements, the following are needed as well:
+- msgmerge and xgettext (part of the GNU gettext tools)
+- Python (scripts were tested with version 2.7.3)
+- polib (Python gettext manipulation library)
+
+If you are using a .po file editor, make sure it supports "msgctxt" and
+ plural forms correctly. (Some older editors may not.)
+
+
+General notes
+=============
+- GSA uses UTF-8 text encoding, so you should use this for your translations
+ as well.
+- Most GSA pages now use gettext for translations while the custom XML-based
+ format is no longer used. (See section "Migrating old XML translations" on
+ how to migrate translations using this format.)
+- Help pages are translated separately. See "Translating help pages" for more.
+- The locale codes used by GSA should be either
+ * an ISO 639 two-letter language code, like "de" for German
+ * an ISO 639 two-letter code followed "_" and an ISO 3166 country code, like
+   "pt_BR" for Brazilian Portuguese
+
+
+Updating existing translations
+==============================
+To update existing translations using the gettext format follow these steps.
+ For old XML-based translations, see "Migrating old XML translations".
+
+Summary
+-------
+1) Create new template files with
+  make gettext-pot
+
+2) Merge the template with the .po files in the source directory
+
+3) Edit the merged .po file
+
+4) Copy the .po file back to the source directory, renaming as necessary
+
+
+1 - Creating new template (.pot) files
+--------------------------------------
+To create a new template file simply run
+
+  make gettext-pot
+
+which will generate the files "gsad_xsl.pot" and "gsad_js.pot" in the "src/po"
+ subdirectory of your build directory.
+You can then use this as a template for your new translation or merge it with
+ existing translation files.
+
+To only create a template file for the XSL or JavaScript you can also use the
+  make target "gettext-xsl-pot" or "gettext-js-pot".
+
+
+2 - Merge the template and existing translations
+------------------------------------------------
+a) Using a custom tool
+
+To merge the template and existing translations with a tool other than the
+ basic pomerge you need to import / specify the following files:
+- The .pot files generated in step 1
+- The .po files from the "src/po" subdirectory of your GSA source directory.
+
+b) Using make and pomerge
+
+If your tool does not have its own functions for merging translation files,
+ you can use the following make target to merge the new .pot file with the
+ current .po files from the source directory:
+
+  make gettext-merge
+
+This will generate "gsad_xsl-XX-merged.po" and "gsad_js-XX-merged.po"
+ files in the "src/po" subdirectory of your build directory,
+ with "XX" being a locale code as defined above in the section "General notes".
+
+There are also separate make targets for JS and XSL .po files,
+ gettext-js-merge and gettext-xsl-merge.
+
+
+3 - Update the translations
+---------------------------
+Next you can update the actual translations in the .po file.
+
+If you want to edit the translations locally you can also copy them as
+ described in step 4 before editing them.
+
+
+4 - Copying the new .po files
+-----------------------------
+The next step is to copy the files for your language back to "src/po" in the
+ source directory, naming the files "gsad_xsl-XX.po" and "gsad_js-XX.po",
+ with "XX" again being the locale code.
+
+As this means overwriting the old source .po file, you should verify the new
+ file is correct and/or backup the old file first.
+
+
+Creating new translations for another locale
+============================================
+1 - Creating the template (.pot) file
+-------------------------------------
+The first step to a new translation is generating new template (.pot) files.
+To do so, follow the first step under "Updating existing translations".
+
+The destination files of the make target "gettext-pot" are "gsad_xsl.pot" and
+"gsad_js.pot" in the "src/po" subdirectory of your GSA build directory.
+
+
+2 - Preparing the .po files
+---------------------------
+Next you have to use the generated files as templates for your new translation.
+
+Once you are finished or want to install the in-progress translation for
+ testing, copy it to "src/po/gsad_xsl-XX.po" in your source directory with "XX"
+ being the locale code as defined above in the section "General notes".
+
+
+3 - Setting up the installation
+-------------------------------
+In the file "CMakeLists.txt" in the "src/po" of your GSA source directory add an
+additional line
+
+  MAKE_TRANSLATION (XX)
+
+near the other MAKE_TRANSLATION (...) lines, with "XX" again being the 
+ locale code.
+
+Also add your language to the dependencies of the targets
+ "gettext-mo", "gettext-json", "gettext-js-merge" and "gettext-xsl-merge"
+ again replacing XX with the locale code:
+
+    add_custom_target (gettext-mo
+                       [...]
+                       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/XX/gsad_xsl.mo
+                       [...])
+
+    add_custom_target (gettext-json
+                       [...]
+                       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/gsad-XX.json
+                       [...])
+
+    add_custom_target (gettext-js-merge
+                       [...]
+                       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/gsad_js-XX-merged.po
+                       [...])
+
+    add_custom_target (gettext-xsl-merge
+                       [...]
+                       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/gsad_xsl-XX-merged.po
+                       [...])
+
+
+Migrating old XML translations
+==============================
+Translations using the old XML-based format can be partially migrated by
+ converting the old XML file to PO.
+
+1 - Convert the XML to PO
+-------------------------
+First run the XML to PO conversion script:
+
+  python "${SRC_DIR}/tools/xml2po" "${XML_FILE}" "${PO_FILE}"
+
+with ${SRC_DIR} being the GSA source directory, ${XML_FILE} the XML translation
+ file and ${PO_FILE} the destination po file.
+The destination file should be "gsad_xsl-XX.po" in the "src/po" subdirectory of
+ your GSA source directory, replacing "XX" with the locale code as defined
+ above in the section "General notes".
+
+
+2 - Set up the build file
+-------------------------
+Next you should set up the build file for your newly migrated language as
+ described in point 3 of the section "Creating new translations".
+
+
+3 - Create and merge the .pot file
+----------------------------------
+Next create a new .pot file and merge it with the .po file you just generated
+ as described in the section "Updating existing translations".
+
+Many of the translations will be marked as unfinished / fuzzy as many context
+ names were changed as part of switching to the gettext format. You should be
+ able to quickly change them with a suitable .po file editor.
+Beware that there are also some cases where the actual message text has changed
+ as well, mostly to make messages less fragmented.
+
+After updating the messages, proceed as you would with a regular update of the
+ translation.
+Since the migration leaves many unused contexts and text fragments it may be
+ a good idea to remove the unused messages to reduce the file size once the
+ update is complete.
+
+
+Message Contexts
+================
+Some messages in GSA use the msgctxt to avoid ambiguity, for example if a
+ word like "login" could be used both as a noun or as a verb.
+Unlike previous versions of GSA contexts are only used for this kind of
+ disambiguation.
+
+Typical contexts and rules
+--------------------------
+* If a word or phrase can be used both as a verb and a noun, like "Login",
+  the verb should be given the context "Action Verb".
+
+* If a string contains an adjective but not the corresponding noun, the implied
+ noun should be used as a context, e.g. "Active" should have the resource type
+ like "Note" as the context.
+
+* Property names which may be ambiguous should have the resource type
+ or some kind of category as the context.
+
+* Other ambiguous value should have the property name as context. If the
+ property name would also be ambiguous, a context as described in the previous
+ rule should be prepended followed by a "|", e.g. "Alert|Email"
+
+* Some special contexts that may override some of the above:
+  - "Pagination" is used for strings on pagination controls like a "Next" page
+   button
+
+
+Translating help pages
+======================
+Translations for the help pages are contained in a file called "help_<lc>.xsl",
+where <lc> is the two-letter language code the translation is for.
+
+For the stylesheet to work properly, it must include the default "help.xsl"
+at the beginning.
+
+Next should be the named templates, which must use different names than the
+included default stylesheets. This is to avoid conflicts which would not only
+affect the template, but cause all of the XSL transformation to fail.
+
+For consistency you should use the name of their default stylesheet equivalent
+suffixed with an underscore and the language code.
+For example "availability" becomes "availability_de" if the language code is
+"de".
+
+After this the "Page not found" template should be placed, followed by the
+individual page templates.
+
+The new help file should also be UTF-8 encoded and has to be installed in the
+directory ${GSA_DATA_DIR}/classic.
