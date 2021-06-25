@@ -2,7 +2,7 @@
 
 Before creating a new release please do a careful consideration about the
 version number for the new release. We are following
-[Semantic Versioning](https://semver.org/) with GSA 8.
+[Calendar Versioning](https://calver.org/) with GSAD 21.04.
 
 * Fetch upstream changes and create release branch
 
