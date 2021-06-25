@@ -21,7 +21,6 @@ Prerequisites:
 * libxml
 * libmicrohttpd >= 0.9.0
 * pkg-config
-* g++ [when not using clang]
 
 Prerequisites for using translations:
 * gettext
@@ -42,8 +41,7 @@ Install prerequisites on Debian GNU/Linux:
     apt-get install libmicrohttpd-dev libxml2-dev
 
 
-Compiling Greenbone Security Assistant
---------------------------------------
+## Compiling Greenbone Security Assistant HTTP Server
 
 If you have installed required libraries to a non-standard location, remember to
 set the `PKG_CONFIG_PATH` environment variable to the location of you pkg-config
