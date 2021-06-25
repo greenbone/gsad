@@ -1,11 +1,10 @@
 ![Greenbone Logo](https://www.greenbone.net/wp-content/uploads/gb_logo_resilience_horizontal.png)
 
-# Greenbone Security Assistant
+# Greenbone Security Assistant HTTP Server
 
-[![GitHub releases](https://img.shields.io/github/release/greenbone/gsa.svg)](https://github.com/greenbone/gsa/releases)
-[![code test coverage](https://codecov.io/gh/greenbone/gsa/branch/gsa-20.08/graph/badge.svg)](https://codecov.io/gh/greenbone/gsa)
-[![Build and test C](https://github.com/greenbone/gsa/actions/workflows/ci-c.yml/badge.svg?branch=gsa-21.04)](https://github.com/greenbone/gsa/actions/workflows/ci-c.yml?query=branch%3Agsa-20.08++)
- [![Build and test JS](https://github.com/greenbone/gsa/actions/workflows/ci-js.yml/badge.svg?branch=gsa-21.04)](https://github.com/greenbone/gsa/actions/workflows/ci-js.yml?query=branch%3Agsa-20.08++)
+[![GitHub releases](https://img.shields.io/github/release/greenbone/gsad.svg)](https://github.com/greenbone/gsad/releases)
+[![code test coverage](https://codecov.io/gh/greenbone/gsad/branch/master/graph/badge.svg)](https://codecov.io/gh/greenbone/gsad)
+[![Build and test C](https://github.com/greenbone/gsad/actions/workflows/ci-c.yml/badge.svg?branch=gsad-20.08)](https://github.com/greenbone/gsad/actions/workflows/ci-c.yml?query=branch%3Agsad-20.08++)
 
 The Greenbone Security Assistant is the web interface developed for the
 [Greenbone Security Manager
@@ -14,17 +13,11 @@ appliances](https://www.greenbone.net/en/product-comparison/).
 It connects to the Greenbone Vulnerability Manager **GVM** to provide a
 full-featured user interface for vulnerability management.
 
-Greenbone Security Assistant consists of
-
-* [GSA](https://github.com/greenbone/gsa/tree/master/gsa) - The webpage written in [React](https://reactjs.org/)
-
-and
-
-* [GSAD](https://github.com/greenbone/gsa/tree/master/gsad) - The HTTP server talking to the [GVM daemon](https://github.com/greenbone/gvmd)
+This repository contains **GSAD** - The HTTP server talking to the [GVM daemon](https://github.com/greenbone/gvmd)
 
 ## Releases
 
-All [release files](https://github.com/greenbone/gsa/releases) are signed with
+All [release files](https://github.com/greenbone/gsad/releases) are signed with
 the [Greenbone Community Feed integrity key](https://community.greenbone.net/t/gcf-managing-the-digital-signatures/101).
 This gpg key can be downloaded at https://www.greenbone.net/GBCommunitySigningKey.asc
 and the fingerprint is `8AE4 BE42 9B60 A59B 311C  2E73 9823 FAA6 0ED1 E580`.
