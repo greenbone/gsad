@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'c', 'javascript' ]
+        language: [ 'c' ]
     env:
       WORKSPACE: ${{ github.workspace }}/gsad
 
