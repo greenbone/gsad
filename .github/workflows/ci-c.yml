@@ -40,7 +40,7 @@ jobs:
   gen_xml_doc:
     name: Build XML documentation
     runs-on: ubuntu-latest
-    container: greenbone/build-env-gsa-master-debian-buster-gcc-gsad
+    container: greenbone/code-metrics-doxygen-debian-stretch
     steps:
       - name: Check out openvas-scanner
         uses: actions/checkout@v2
