@@ -155,9 +155,15 @@ configure_file (src/gsad_log_conf.cmake_in src/gsad_log.conf)
 install (FILES ${CMAKE_CURRENT_BINARY_DIR}/src/gsad_log.conf
          DESTINATION ${GSAD_CONFIG_DIR})
 
-add_subdirectory (src)
-add_subdirectory (config)
+## Program
+
+if (NOT SKIP_SRC)
+  add_subdirectory (src)
+  add_subdirectory (config)
+endif (NOT SKIP_SRC)
+
+## Documentation
 
 add_subdirectory (doc)
 
-# vim: set ts=2 sw=2 tw=80:
+## End
