@@ -17,6 +17,7 @@ jobs:
         run: |
           clang-format -i -style=file ${{ github.WORKSPACE }}/src/*.{c,h} \
           && git diff --exit-code
+
   build_gsad:
     name: Build gsad
     runs-on: 'ubuntu-latest'
@@ -27,3 +28,56 @@ jobs:
         run: |
           mkdir build && rm -rf .git && cd build/ \
             && cmake -DCMAKE_BUILD_TYPE=Release .. && make install
+
+  gen_xml_doc:
+    name: Build XML documentation
+    runs-on: ubuntu-latest
+    container: greenbone/build-env-gsa-master-debian-buster-gcc-gsad
+    steps:
+      - name: Check out openvas-scanner
+        uses: actions/checkout@v2
+      - name: Generate documentation (XML)
+        run: |
+             mkdir build && cd build/ && cmake -DSKIP_SRC=1 .. \
+             && make doc-xml 2> ~/doxygen-stderr.txt
+      - name: Upload doxygen error output as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: doxygen-stderr.txt
+          path: ~/doxygen-stderr.txt
+      - name: Upload XML documentation as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: xml-doc
+          path: build/doc/generated/xml/
+
+  doc-coverage:
+    name: Upload doc coverage to Codecov
+    needs: gen_xml_doc
+    runs-on: ubuntu-latest
+    container: greenbone/build-env-gsa-master-debian-buster-gcc-gsad
+    steps:
+      - name: Check out openvas-scanner
+        uses: actions/checkout@v2
+      - name: Install coverxygen and codecov
+        run: |
+            apt-get update && apt-get --assume-yes install python3-venv curl
+            python3 -m venv .venv
+            . .venv/bin/activate
+            pip install setuptools --upgrade
+            pip install 'coverxygen>=1.3.1' codecov
+      - name: Download XML documentation artifact
+        id: xml-doc-download
+        uses: actions/download-artifact@v2
+        with:
+          name: xml-doc
+          path: /tmp/xml-doc
+      - name: Establish documentation coverage
+        run: |
+            . .venv/bin/activate
+            python -m coverxygen --src-dir ${{ github.workspace }}      \
+            --xml-dir ${{steps.xml-doc-download.outputs.download-path}} \
+            --output lcov.info
+      - uses: codecov/codecov-action@v1
+        with:
+          files: lcov.info
