@@ -2,22 +2,21 @@ name: Build and test C
 
 on:
   push:
-    branches: [ master, gsa-21.10, gsa-21.04, gsa-20.08 ]
+    branches: [ master, gsad-21.04, gsad-20.08 ]
   pull_request:
-    branches: [ master, gsa-21.10, gsa-21.04, gsa-20.08 ]
+    branches: [ master, gsad-21.04, gsad-20.08 ]
 
 
 jobs:
   c_format_check:
     env:
-      WORKSPACE: ${{ github.workspace }}/gsad
     name: Check C Source Code Formatting
     runs-on: 'ubuntu-latest'
     steps:
       - uses: actions/checkout@v2.3.4
       - name: Check Source Format
         run: |
-          clang-format -i -style=file ${{ env.WORKSPACE }}/src/*.{c,h} \
+          clang-format -i -style=file src/*.{c,h} \
           && git diff --exit-code
   build_gsad:
     name: Build gsad
@@ -25,8 +24,8 @@ jobs:
     strategy:
       matrix:
         container:
-          - greenbone/gsa-20.08-gcc-testing
-          - greenbone/gsa-20.08-clang-testing
+          - greenbone/gsad-20.08-gcc-testing
+          - greenbone/gsad-20.08-clang-testing
     container: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v2.3.4
@@ -34,26 +33,3 @@ jobs:
         run: |
           mkdir build && rm -rf .git && cd build/ \
             && cmake -DCMAKE_BUILD_TYPE=Release .. && make install
-        working-directory: ${{ env.WORKSPACE }}
-  build_full:
-    name: Build gsa and gsad from root dir
-    runs-on: 'ubuntu-latest'
-    strategy:
-      matrix:
-        build_type:
-          - Debug
-          - Release
-        container:
-          - greenbone/gsa-20.08-gcc-testing
-          - greenbone/gsa-20.08-clang-testing
-    container: ${{ matrix.container }}
-    env:
-      WORKSPACE: ${{ github.workspace }}/gsad
-      BUILD_TYPE: ${{ matrix.build_type }}
-    steps:
-      - uses: actions/checkout@v2.3.4
-      - name: Configure and compile gsad
-        run: |
-          mkdir build && rm -rf .git && cd build/ \
-            && cmake -DCMAKE_BUILD_TYPE=$BUILD_TYPE .. && make install
-        working-directory: ${{ env.WORKSPACE }}

@@ -1,6 +1,5 @@
 build/
 /tags
-node_modules/
 .env.local
 /gsa/public/config.js
 .vscode/

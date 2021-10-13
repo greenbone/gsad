@@ -87,56 +87,6 @@ explicitly before running `cmake`. The certificate and key locations in
 the top-level CMakeLists.txt may need modifying.
 
 
-Compiling Greenbone Security Assistant GUI
-------------------------------------------
-
-Prerequisites for using the GUI:
-* node.js >= 8.0
-* Either yarn >= 1.0 or npm. yarn is faster and more reliable, but younger.
-
-
-Developing Greenbone Security Assistant GUI
--------------------------------------------
-
-Installing gsad requires to re-build the JavaScript bundle. This process is
-very time-consuming and therefore may be avoided during development. It is
-possible to run GSA in a special web development server. The development
-server can be started with:
-
-```sh
-cd /path/to/gsa-sources/ng && yarn run start
-```
-
-Afterwards the development web server is set up and a new browser window is
-opened at the URL `http://127.0.0.1:8080`, containing the GSA web application.
-When a JavaScript file of GSA in the src folder is changed, the browser window
-will reload automatically.
-
-Besides the development server gsad needs to be running with CORS enabled.
-
-```sh
-gsad --http-cors="http://127.0.0.1:8080"
-```
-
-To be able to communicate with gsad, the web application needs to know the server
-URL. This can be accomplished by editing the
-`/path/to/gsa-sources/ng/public/config.js` file.
-The following lines can be used for a local gsad running with HTTPS on port
-9392:
-
-```javascript
-  config = {
-    protocol: 'https',
-    server: '127.0.0.1:9392',
-  };
-```
-
-For HTTP only the protocol property must be `'http'` accordingly.
-
-After changing the `config.js` file, the browser window should be reloaded
-manually.
-
-
 Logging Configuration
 ---------------------
 
