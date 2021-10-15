@@ -2,9 +2,9 @@ name: Build and test C
 
 on:
   push:
-    branches: [ master, gsad-21.04, gsad-20.08 ]
+    branches: [ main, stable, oldstable ]
   pull_request:
-    branches: [ master, gsad-21.04, gsad-20.08 ]
+    branches: [ main, stable, oldstable ]
 
 
 jobs:
@@ -19,9 +19,6 @@ jobs:
           clang-format -i -style=file src/*.{c,h} \
           && git diff --exit-code
   build_gsad:
-    env:
-      WORKSPACE: ${{ github.workspace }}/gsad
-      VERSION: "21.04"
     name: Build gsad
     runs-on: 'ubuntu-latest'
     strategy:
