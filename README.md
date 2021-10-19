@@ -2,10 +2,8 @@
 
 # Greenbone Security Assistant HTTP server
 
-[![GitHub releases](https://img.shields.io/github/release/greenbone/gsa.svg)](https://github.com/greenbone/gsa/releases)
-[![code test coverage](https://codecov.io/gh/greenbone/gsa/branch/master/graph/badge.svg)](https://codecov.io/gh/greenbone/gsa)
-[![Build and test C](https://github.com/greenbone/gsa/actions/workflows/ci-c.yml/badge.svg?branch=master)](https://github.com/greenbone/gsa/actions/workflows/ci-c.yml?query=branch%3Amaster++)
-[![Build and test JS](https://github.com/greenbone/gsa/actions/workflows/ci-js.yml/badge.svg?branch=master)](https://github.com/greenbone/gsa/actions/workflows/ci-js.yml?query=branch%3Amaster++)
+[![GitHub releases](https://img.shields.io/github/release/greenbone/gsad.svg)](https://github.com/greenbone/gsad/releases)
+[![Build and test C](https://github.com/greenbone/gsad/actions/workflows/ci-c.yml/badge.svg?branch=main)](https://github.com/greenbone/gsad/actions/workflows/ci-c.yml?query=branch%3Amain++)
 
 The Greenbone Security Assistant HTTP Server is the server developed for the communication with the [Greenbone Security Manager appliances](https://www.greenbone.net/en/product-comparison/).
 
