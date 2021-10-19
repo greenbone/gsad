@@ -9,16 +9,8 @@
 
 The Greenbone Security Assistant HTTP Server is the server developed for the communication with the [Greenbone Security Manager appliances](https://www.greenbone.net/en/product-comparison/).
 
-It connects to the Greenbone Vulnerability Manager **GVM** to provide a
-full-featured user interface for vulnerability management.
-
-Greenbone Security Assistant consists of
-
-* [GSA](https://github.com/greenbone/gsa/tree/master/gsa) - The webpage written in [React](https://reactjs.org/)
-
-and
-
-* [GSAD](https://github.com/greenbone/gsad/tree/masin) - The HTTP server talking to the [GVM daemon](https://github.com/greenbone/gvmd)
+It connects to the Greenbone Vulnerability Manager daemon **gvmd** to provide a
+full-featured HTTP interface for vulnerability management.
 
 ## Releases
 
