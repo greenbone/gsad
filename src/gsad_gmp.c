@@ -6689,6 +6689,76 @@ get_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
 }
 
 /**
+ * @brief Save OSP file preferences.
+ *
+ * @param[in]   connection     Connection.
+ * @param[in]   credentials    Username and password for authentication.
+ * @param[in]   params         Request parameters.
+ * @param[in]   next           The next command on success.
+ * @param[in]   fail_next      The next command on failure.
+ * @param[out]  success        Whether the last command was successful.
+ * @param[out]  response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+static char *
+save_osp_prefs (gvm_connection_t *connection, credentials_t *credentials,
+                params_t *params, const char *next, const char *fail_next,
+                int *success, cmd_response_data_t *response_data)
+{
+  GHashTableIter iter;
+  gpointer param_name, val;
+  char *ret;
+  const char *config_id;
+
+  config_id = params_value (params, "config_id");
+  g_hash_table_iter_init (&iter, params);
+  ret = NULL;
+  while (g_hash_table_iter_next (&iter, &param_name, &val))
+    {
+      gchar *value;
+      param_t *param = val;
+
+      g_free (ret);
+      ret = NULL;
+
+      if (!g_str_has_prefix (param_name, "osp_pref_"))
+        continue;
+      value = param->value_size
+                ? g_base64_encode ((guchar *) param->value, param->value_size)
+                : g_strdup ("");
+
+      /* Send the name without the osp_pref_ prefix. */
+      param_name = ((char *) param_name) + 9;
+      if (gvm_connection_sendf (connection,
+                                "<modify_config config_id=\"%s\">"
+                                "<preference><name>%s</name>"
+                                "<value>%s</value></preference>"
+                                "</modify_config>",
+                                config_id, (char *) param_name, value)
+          == -1)
+        {
+          g_free (value);
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          return gsad_message (
+            credentials, "Internal error", __func__, __LINE__,
+            "An internal error occurred while saving a config. It is"
+            " unclear whether the entire config has been saved. "
+            "Diagnostics: Failure to send command to manager daemon.",
+            response_data);
+        }
+      g_free (value);
+
+      ret = check_modify_config (connection, credentials, params, next,
+                                 fail_next, success, response_data);
+      if (*success == 0)
+        return ret;
+    }
+  return ret;
+}
+
+/**
  * @brief Save details of an NVT for a config and return the next page.
  *
  * @param[in]  connection     Connection to manager.
@@ -6703,7 +6773,7 @@ save_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   int gmp_ret;
-  char *ret;
+  char *ret, *osp_ret;
   params_t *preferences, *selects, *trends;
   const char *config_id, *name, *comment, *scanner_id;
   int success;
@@ -6806,6 +6876,31 @@ save_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
               return ret;
             }
         }
+    }
+
+  /* OSP config file preference. */
+  osp_ret = save_osp_prefs (connection, credentials, params, "get_config",
+                            "edit_config", &success, response_data);
+  if (osp_ret)
+    {
+      g_free (ret);
+      ret = osp_ret;
+    }
+
+  if (success == 0)
+    {
+      if (osp_ret == NULL)
+        {
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          return gsad_message (
+            credentials, "Internal error", __func__, __LINE__,
+            "An internal error occurred while saving a config. "
+            "It is unclear whether the entire config has been saved. "
+            "Diagnostics: save_osp_prefs returned NULL unexpectedly.",
+            response_data);
+        }
+      return ret;
     }
 
   /* Update the config. */
