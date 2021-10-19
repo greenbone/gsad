@@ -500,6 +500,7 @@ init_validator ()
   gvm_validator_add (validator, "comment",
                      "^[-_;':()@[:alnum:]äüöÄÜÖß, \\./]*$");
   gvm_validator_add (validator, "config_id", "^[a-z0-9\\-]+$");
+  gvm_validator_add (validator, "osp_config_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "condition", "^[[:alnum:] ]*$");
   gvm_validator_add (validator, "credential_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "create_credentials_type", "^(gen|pass|key)$");
@@ -710,6 +711,7 @@ init_validator ()
   gvm_validator_add (validator, "token", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "scanner_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "cve_scanner_id", "^[a-z0-9\\-]+$");
+  gvm_validator_add (validator, "osp_scanner_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "schedule_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "severity",
                      "^(-1(\\.0)?|[0-9](\\.[0-9])?|10(\\.0)?)$");
