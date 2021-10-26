@@ -24,8 +24,8 @@ jobs:
     strategy:
       matrix:
         container:
-          - greenbone/gsad-20.08-gcc-testing
-          - greenbone/gsad-20.08-clang-testing
+          - greenbone/gsad-oldstable-gcc-testing
+          - greenbone/gsad-oldstable-clang-testing
     container: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v2
