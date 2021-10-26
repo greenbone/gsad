@@ -23,8 +23,8 @@ jobs:
     strategy:
       matrix:
         container:
-          - greenbone/gsad-master-gcc-testing
-          - greenbone/gsad-master-clang-testing
+          - greenbone/gsad-main-gcc-testing
+          - greenbone/gsad-main-clang-testing
     container: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v2
