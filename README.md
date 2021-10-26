@@ -1,24 +1,27 @@
-![Greenbone Logo](https://www.greenbone.net/wp-content/uploads/gb_logo_resilience_horizontal.png)
+![Greenbone Logo](https://www.greenbone.net/wp-content/uploads/gb_new-logo_horizontal_rgb_small.png)
 
-# Greenbone Security Assistant HTTP server
+# Greenbone Security Assistant HTTP server <!-- omit in toc -->
 
-[![GitHub releases](https://img.shields.io/github/release/greenbone/gsa.svg)](https://github.com/greenbone/gsa/releases)
-[![code test coverage](https://codecov.io/gh/greenbone/gsa/branch/gsa-20.08/graph/badge.svg)](https://codecov.io/gh/greenbone/gsa)
-[![Build and test C](https://github.com/greenbone/gsa/actions/workflows/ci-c.yml/badge.svg?branch=gsa-20.08)](https://github.com/greenbone/gsa/actions/workflows/ci-c.yml?query=branch%3Agsa-20.08++)
- [![Build and test JS](https://github.com/greenbone/gsa/actions/workflows/ci-js.yml/badge.svg?branch=gsa-20.08)](https://github.com/greenbone/gsa/actions/workflows/ci-js.yml?query=branch%3Agsa-20.08++)
+[![GitHub releases](https://img.shields.io/github/release/greenbone/gsad.svg)](https://github.com/greenbone/gsad/releases)
+[![code test coverage](https://codecov.io/gh/greenbone/gsad/branch/oldstable/graph/badge.svg)](https://codecov.io/gh/greenbone/gsad)
+[![Build and test C](https://github.com/greenbone/gsad/actions/workflows/ci-c.yml/badge.svg?branch=oldstable)](https://github.com/greenbone/gsad/actions/workflows/ci-c.yml?query=branch%3Aoldstable++)
 
-The Greenbone Security Assistant HTTP Server is the server developed for the communication with the [Greenbone Security Manager appliances](https://www.greenbone.net/en/product-comparison/).
+The Greenbone Security Assistant HTTP Server is the server developed for the
+communication with the [Greenbone Security Manager appliances](https://www.greenbone.net/en/product-comparison/).
 
-It connects to the Greenbone Vulnerability Manager **GVM** to provide a
+It connects to the Greenbone Vulnerability Manager Daemon **gvmd** to provide a
 full-featured user interface for vulnerability management.
 
-Greenbone Security Assistant consists of
-
-* [GSA](https://github.com/greenbone/gsa/tree/master/gsa) - The webpage written in [React](https://reactjs.org/)
-
-and
-
-* [GSAD](https://github.com/greenbone/gsad/tree/masin) - The HTTP server talking to the [GVM daemon](https://github.com/greenbone/gvmd)
+- [Releases](#releases)
+- [Installation](#installation)
+  - [Prerequisites](#prerequisites)
+  - [Compiling](#compiling)
+- [Logging Configuration](#logging-configuration)
+- [Usage](#usage)
+- [Support](#support)
+- [Maintainer](#maintainer)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Releases
 
@@ -29,18 +32,149 @@ and the fingerprint is `8AE4 BE42 9B60 A59B 311C  2E73 9823 FAA6 0ED1 E580`.
 
 ## Installation
 
-This module can be configured, built and installed with following commands:
-
-    cmake .
-    make install
-
-For detailed installation requirements and instructions, please see the file
-[INSTALL.md](INSTALL.md).
-
 If you are not familiar or comfortable building from source code, we recommend
 that you use the Greenbone Security Manager TRIAL (GSM TRIAL), a prepared virtual
 machine with a readily available setup. Information regarding the virtual machine
 is available at <https://www.greenbone.net/en/testnow>.
+
+This module can be configured, built and installed with following commands:
+
+```bash
+cd path/to/gsad
+mkdir build && cd build
+cmake ..
+make install
+```
+
+Please note: The reference system used by most of the developers is Debian
+GNU/Linux 'Buster' 10. The build might fail on any other system. Also, it is
+necessary to install dependent development packages.
+
+### Prerequisites
+
+See at the end of this section how to easily install these prerequisites on
+some supported platforms.
+
+Prerequisites:
+* libgvm_base, libgvm_util, libgvm_gmp >= 20.8.2
+* gnutls >= 3.2.15
+* libgcrypt
+* cmake >= 3.0
+* glib-2.0 >= 2.42
+* libxml
+* libmicrohttpd >= 0.9.0
+* pkg-config
+* gcc
+
+Prerequisites for using translations:
+* gettext
+  (when building from source)
+* an installed English UTF-8 locale (e.g. `en_US.UTF8`, `en_GB.UTF8`)
+  (See "Setting up translations")
+
+Prerequisites for building documentation:
+* Doxygen
+* xmltoman (optional, for building man page)
+
+Prerequisites to work on the translations from C based sources and
+also to build the JavaScript translations:
+* python-polib
+
+Install prerequisites on Debian GNU/Linux:
+
+```bash
+apt-get install libmicrohttpd-dev libxml2-dev
+```
+
+### Compiling
+
+If you have installed required libraries to a non-standard location, remember to
+set the `PKG_CONFIG_PATH` environment variable to the location of you pkg-config
+files before configuring:
+
+```bash
+export PKG_CONFIG_PATH=/your/location/lib/pkgconfig:$PKG_CONFIG_PATH
+```
+Create a build directory and change into it with:
+
+```bash
+mkdir build && cd build
+```
+
+Then configure the build with:
+
+```bash
+cmake -DCMAKE_INSTALL_PREFIX=/path/to/your/installation ..
+```
+
+Or (if you want to use the default installation path /usr/local):
+
+```bash
+cmake ..
+```
+
+This only needs to be done once.
+
+Thereafter, the following commands are useful:
+
+    make                # build the scanner
+    make doc            # build the documentation
+    make doc-full       # build more developer-oriented documentation
+    make install        # install the build
+    make rebuild_cache  # rebuild the cmake cache
+
+Please note that you may have to execute `make install` as root, especially if
+you have specified a prefix for which your user does not have full permissions.
+
+To clean up the build environment, simply remove the contents of the `build`
+directory you created above.
+
+In case you have installed the Greenbone Security Assistant Daemon into a path
+different from the other GVM modules, you might need to set some paths
+explicitly before running `cmake`. See the top-level CMakeLists.txt.
+
+## Logging Configuration
+
+By default, gsad writes logs to the file
+
+    <install-prefix>/var/log/gvm/gsad.log
+
+Logging is configured entirely by the file
+
+    <install-prefix>/etc/gvm/gsad_log.conf
+
+The configuration is divided into domains like this one
+
+    [gsad main]
+    prepend=%t %p
+    prepend_time_format=%Y-%m-%d %Hh%M.%S %Z
+    file=/var/log/gvm/gsad.log
+    level=128
+
+The `level` field controls the amount of logging that is written.
+The value of `level` can be:
+
+      4  Errors.
+      8  Critical situation.
+     16  Warnings.
+     32  Messages.
+     64  Information.
+    128  Debug.  (Lots of output.)
+
+Enabling any level includes all the levels above it. So enabling Information
+will include Warnings, Critical situations and Errors.
+
+To get absolutely all logging, set the level to 128 for all domains in the
+configuration file.
+
+Logging to `syslog` can be enabled in each domain like:
+
+    [gsad main]
+    prepend=%t %p
+    prepend_time_format=%Y-%m-%d %Hh%M.%S %Z
+    file=syslog
+    syslog_facility=daemon
+    level=128
 
 ## Usage
 
