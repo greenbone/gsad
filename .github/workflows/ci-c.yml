@@ -2,9 +2,9 @@ name: Build and test C
 
 on:
   push:
-    branches: [ master, gsad-21.04, gsad-20.08 ]
+    branches: [ master, stable, oldstable ]
   pull_request:
-    branches: [ master, gsad-21.04, gsad-20.08 ]
+    branches: [ master, stable, oldstable ]
 
 
 jobs:
