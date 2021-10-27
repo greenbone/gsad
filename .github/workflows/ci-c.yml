@@ -9,7 +9,6 @@ on:
 
 jobs:
   c_format_check:
-    env:
     name: Check C Source Code Formatting
     runs-on: 'ubuntu-latest'
     steps:
