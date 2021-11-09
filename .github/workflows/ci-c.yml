@@ -8,31 +8,30 @@ on:
 
 
 jobs:
-  c_format_check:
-    env:
+  c-format-check:
     name: Check C Source Code Formatting
     runs-on: 'ubuntu-latest'
     steps:
       - uses: actions/checkout@v2.3.4
       - name: Check Source Format
         run: |
-          clang-format -i -style=file src/*.{c,h} \
-          && git diff --exit-code
-  build_gsad:
-    env:
-      WORKSPACE: ${{ github.workspace }}/gsad
-      VERSION: "21.04"
+          clang-format -i -style=file src/*.{c,h}
+          git diff --exit-code
+  build-gsad:
     name: Build gsad
     runs-on: 'ubuntu-latest'
     strategy:
       matrix:
         container:
-          - greenbone/gsad-21.04-gcc-testing
-          - greenbone/gsad-21.04-clang-testing
+          - greenbone/gsad-gcc-build:stable
+          - greenbone/gsad-clang-build:stable
     container: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v2.3.4
       - name: Configure and compile gsad
         run: |
-          mkdir build && rm -rf .git && cd build/ \
-            && cmake -DCMAKE_BUILD_TYPE=Release .. && make install
+          mkdir build
+          rm -rf .git
+          cd build/
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          make install
