@@ -16,12 +16,12 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
+    pkg-config \
     libglib2.0-dev \
     libgnutls28-dev \
-    pkg-config \
-    libmicrohttpd-dev \
     libxml2-dev \
-    libxslt1-dev && \
+    libssh-gcrypt-dev \
+    libmicrohttpd-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # Install gcc/g++ compiler

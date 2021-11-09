@@ -23,8 +23,8 @@ jobs:
     strategy:
       matrix:
         container:
-          - greenbone/gsad-gcc-build:main
-          - greenbone/gsad-clang-build:main
+          - greenbone/gsad-gcc-build:unstable
+          - greenbone/gsad-clang-build:unstable
     container: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v2
