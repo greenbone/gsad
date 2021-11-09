@@ -65,12 +65,6 @@ Prerequisites:
 * pkg-config
 * gcc
 
-Prerequisites for using translations:
-* gettext
-  (when building from source)
-* an installed English UTF-8 locale (e.g. `en_US.UTF8`, `en_GB.UTF8`)
-  (See "Setting up translations")
-
 Prerequisites for building documentation:
 * Doxygen
 * xmltoman (optional, for building man page)
