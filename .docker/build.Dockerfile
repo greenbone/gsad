@@ -21,7 +21,7 @@ RUN apt-get update && \
     pkg-config \
     libmicrohttpd-dev \
     libxml2-dev \
-    libxslt1-dev \
+    libxslt1-dev && \
     rm -rf /var/lib/apt/lists/*
 
 # Install gcc/g++ compiler
