@@ -37,8 +37,15 @@ RUN apt-get update && \
 
 COPY --from=builder /install/ /
 
-# create web directory where GSA should be placed
-RUN mkdir -p /usr/local/share/gvm/gsad/web
+RUN addgroup --gid 1001 --system gsad && \
+    adduser --no-create-home --shell /bin/false --disabled-password --uid 1001 --system --group gsad
+
+# create web directory where GSA should be placed and runtime files directories
+RUN mkdir -p /usr/local/share/gvm/gsad/web && \
+    mkdir -p /run/gvm/gsad && \
+    chown -R gsad:gsad /run/gvm
+
+USER gsad
 
 ENTRYPOINT [ "gsad" ]
-CMD ["-f", "--http-only"]
+CMD ["-f", "--http-only", "--unix-socket=/run/gvm/gsad/gsad.sock", "--munix-socket=/run/gvmd/gvmd.sock", "--vendor-version='Community Container'"]
