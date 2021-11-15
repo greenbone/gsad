@@ -2483,7 +2483,7 @@ gsad_cleanup ()
 
   gsad_base_cleanup ();
 
-  pidfile_remove ("gsad");
+  pidfile_remove (GSAD_PID_PATH);
 }
 
 /**
@@ -3155,7 +3155,7 @@ main (int argc, char **argv)
 
   /* Write pidfile. */
 
-  if (pidfile_create ("gsad"))
+  if (pidfile_create (GSAD_PID_PATH))
     {
       g_critical ("%s: Could not write PID file.\n", __func__);
       exit (EXIT_FAILURE);
