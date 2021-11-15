@@ -85,13 +85,17 @@ endif (NOT DATADIR)
 set (GSAD_DATA_DIR "${DATADIR}/gvm/gsad")
 set (GSAD_CONFIG_DIR "${SYSCONFDIR}/gvm/")
 
-if (NOT GVM_RUN_DIR)
-  set (GVM_RUN_DIR  "/run/gvm")
-endif (NOT GVM_RUN_DIR)
+if (NOT GSAD_RUN_DIR)
+  set (GSAD_RUN_DIR  "/run/gsad")
+endif (NOT GSAD_RUN_DIR)
 
 if (NOT GSAD_PID_PATH)
-  set (GSAD_PID_PATH     "/run/gsad/gsad.pid")
+  set (GSAD_PID_PATH     "${GSAD_RUN_DIR}/gsad.pid")
 endif (NOT GSAD_PID_PATH)
+
+if (NOT GVMD_RUN_DIR)
+  set (GVMD_RUN_DIR  "/run/gvmd")
+endif (NOT GVMD_RUN_DIR)
 
 if (NOT GSAD_PID_DIR)
   set (GSAD_PID_DIR "${GVM_RUN_DIR}")
