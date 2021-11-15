@@ -99,6 +99,10 @@ if (NOT GVM_RUN_DIR)
   set (GVM_RUN_DIR  "/run/gvm")
 endif (NOT GVM_RUN_DIR)
 
+if (NOT GSAD_PID_PATH)
+  set (GSAD_PID_PATH     "/run/gsad/gsad.pid")
+endif (NOT GSAD_PID_PATH)
+
 if (NOT GSAD_PID_DIR)
   set (GSAD_PID_DIR "${GVM_RUN_DIR}")
 endif (NOT GSAD_PID_DIR)
