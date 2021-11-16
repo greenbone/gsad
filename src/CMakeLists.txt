@@ -125,9 +125,17 @@ if (GVM_CA_CERTIFICATE)
   add_definitions (-DGVM_CA_CERTIFICATE="${GVM_CA_CERTIFICATE}")
 endif (GVM_CA_CERTIFICATE)
 
-if (GVM_RUN_DIR)
-  add_definitions (-DGVM_RUN_DIR="${GVM_RUN_DIR}")
-endif (GVM_RUN_DIR)
+if (GVMD_RUN_DIR)
+  add_definitions (-DGVMD_RUN_DIR="${GVMD_RUN_DIR}")
+endif (GVMD_RUN_DIR)
+
+if (GSAD_RUN_DIR)
+  add_definitions (-DGSAD_RUN_DIR="${GSAD_RUN_DIR}")
+endif (GSAD_RUN_DIR)
+
+if (GSAD_PID_PATH)
+  add_definitions (-DGSAD_PID_PATH="${GSAD_PID_PATH}")
+endif (GSAD_PID_PATH)
 
 if (GSAD_DATA_DIR)
   add_definitions (-DGSAD_DATA_DIR="${GSAD_DATA_DIR}")
