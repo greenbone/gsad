@@ -36,6 +36,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /install/ /
+COPY .docker/gsad_log.conf /etc/gvm/
 
 RUN addgroup --gid 1001 --system gsad && \
     adduser --no-create-home --shell /bin/false --disabled-password --uid 1001 --system --group gsad
