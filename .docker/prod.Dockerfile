@@ -43,11 +43,7 @@ RUN addgroup --gid 1001 --system gsad && \
 
 # create web directory where GSA should be placed and runtime files directories
 RUN mkdir -p /usr/local/share/gvm/gsad/web && \
-<<<<<<< HEAD
-    mkdir -p /run/gvm && \
-=======
     mkdir -p /run/gsad && \
->>>>>>> 3fd287f (Use the correct path for PID)
     mkdir -p /var/log/gvm && \
     chown -R gsad:gsad /run/gsad && \
     chown -R gsad:gsad /var/log/gvm
