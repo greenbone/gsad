@@ -51,4 +51,4 @@ RUN mkdir -p /usr/local/share/gvm/gsad/web && \
 USER gsad
 
 ENTRYPOINT [ "gsad" ]
-CMD ["-f", "--http-only", "--unix-socket=/run/gvm/gsad/gsad.sock", "--munix-socket=/run/gvmd/gvmd.sock", "--vendor-version='Community Container'"]
+CMD ["-f", "--http-only", "--vendor-version='Community Container'"]
