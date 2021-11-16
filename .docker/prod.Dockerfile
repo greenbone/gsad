@@ -36,6 +36,7 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /install/ /
+COPY .docker/gsad_log.conf /etc/gvm/
 
 RUN addgroup --gid 1001 --system gsad && \
     adduser --no-create-home --shell /bin/false --disabled-password --uid 1001 --system --group gsad
@@ -43,9 +44,11 @@ RUN addgroup --gid 1001 --system gsad && \
 # create web directory where GSA should be placed and runtime files directories
 RUN mkdir -p /usr/local/share/gvm/gsad/web && \
     mkdir -p /run/gvm/gsad && \
-    chown -R gsad:gsad /run/gvm
+    mkdir -p /var/log/gvm && \
+    chown -R gsad:gsad /run/gvm && \
+    chown -R gsad:gsad /var/log/gvm
 
 USER gsad
 
 ENTRYPOINT [ "gsad" ]
-CMD ["-f", "--http-only", "--unix-socket=/run/gvm/gsad/gsad.sock", "--munix-socket=/run/gvmd/gvmd.sock", "--vendor-version='Community Container'"]
+CMD ["-f", "--http-only", "--vendor-version='Community Container'"]
