@@ -16438,6 +16438,86 @@ get_license_gmp (gvm_connection_t *connection, credentials_t *credentials,
   return get_license (connection, credentials, params, NULL, response_data);
 }
 
+/**
+ * @brief Modify a theia license
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials     Username and password for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+save_license_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                  params_t *params, cmd_response_data_t *response_data)
+{
+  gchar *response;
+  entity_t entity;
+  const char *file;
+  int file_size;
+  char *file_base64;
+  char *ret;
+
+  file = params_value (params, "file");
+  file_size = params_value_size (params, "file");
+  
+  CHECK_VARIABLE_INVALID (file, "Save License");
+
+  file_base64 = g_base64_encode ((const guchar*) file, file_size); 
+
+  response = NULL;
+  entity = NULL;
+  switch (gmpf (connection, credentials, &response, &entity, response_data,
+                "<modify_license>"
+                "<file>%s</file>"
+                "</modify_license>",
+                file_base64))
+    {
+    case 0:
+    case -1:
+      break;
+    case 1:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      g_free (file_base64);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving a license. "
+        "The license remains the same. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      g_free (file_base64);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving a license. "
+        "It is unclear whether the license has been saved or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      g_free (file_base64);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving a license. "
+        "It is unclear whether the license has been saved or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
+    }
+
+  ret = response_from_entity (connection, credentials, params, entity,
+                              "Save License", response_data);
+
+  g_free (file_base64);
+  free_entity (entity);
+  g_free (response);
+  return ret;
+}
+
 char *
 renew_session_gmp (gvm_connection_t *connection, credentials_t *credentials,
                    params_t *params, cmd_response_data_t *response_data)
