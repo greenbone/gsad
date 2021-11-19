@@ -16461,10 +16461,10 @@ save_license_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   file = params_value (params, "file");
   file_size = params_value_size (params, "file");
-  
+
   CHECK_VARIABLE_INVALID (file, "Save License");
 
-  file_base64 = g_base64_encode ((const guchar*) file, file_size); 
+  file_base64 = g_base64_encode ((const guchar *) file, file_size);
 
   response = NULL;
   entity = NULL;
