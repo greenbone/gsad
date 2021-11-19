@@ -434,6 +434,7 @@ init_validator ()
                      "|(save_credential)"
                      "|(save_filter)"
                      "|(save_group)"
+                     "|(save_license)"
                      "|(save_my_settings)"
                      "|(save_note)"
                      "|(save_override)"
@@ -1544,6 +1545,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
     res = save_my_settings_gmp (&connection, credentials, con_info->params,
                                 con_info->language, response_data);
   }
+  ELSE (save_license)
   ELSE (save_note)
   ELSE (save_override)
   ELSE (save_permission)
