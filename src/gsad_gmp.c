@@ -536,6 +536,9 @@ set_http_status_from_entity (entity_t entity,
     cmd_response_data_set_status_code (response_data, MHD_HTTP_FORBIDDEN);
   else if (str_equal (entity_attribute (entity, "status"), "404"))
     cmd_response_data_set_status_code (response_data, MHD_HTTP_NOT_FOUND);
+  else if (str_equal (entity_attribute (entity, "status"), "503"))
+    cmd_response_data_set_status_code (response_data,
+                                       MHD_HTTP_SERVICE_UNAVAILABLE);
   else
     cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
 }
