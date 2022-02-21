@@ -1,0 +1,24 @@
+name: Release Patch from PR
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [ 'stable' ]
+
+jobs:
+  release-patch:
+    name: Release patch from PR
+    # If the label 'make patch release' is set. If PR is closed because of an merge
+    if: contains( github.event.pull_request.labels.*.name, 'make patch release') && github.event.pull_request.merged == true
+    runs-on: 'ubuntu-latest'
+    steps:
+    - name: Release with release action
+      uses: greenbone/actions/release@v1
+      with:
+        ref: ${{ github.event.inputs.branch }}
+        github-user: ${{ secrets.GREENBONE_BOT }}
+        github-user-mail: ${{ secrets.GREENBONE_BOT_MAIL }}
+        github-user-token: ${{ secrets.GREENBONE_BOT_TOKEN }}
+        gpg-key: ${{ secrets.GPG_KEY }}
+        gpg-fingerprint: ${{ secrets.GPG_FINGERPRINT }}
+        gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
