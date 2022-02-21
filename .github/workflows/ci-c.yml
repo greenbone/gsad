@@ -17,15 +17,11 @@ jobs:
         run: |
           clang-format -i -style=file src/*.{c,h}
           git diff --exit-code
+
   build-gsad:
     name: Build gsad
     runs-on: 'ubuntu-latest'
-    strategy:
-      matrix:
-        container:
-          - greenbone/gsad-gcc-build:stable
-          - greenbone/gsad-clang-build:stable
-    container: ${{ matrix.container }}
+    container: greenbone/gsad-build:stable
     steps:
       - uses: actions/checkout@v2.3.4
       - name: Configure and compile gsad
