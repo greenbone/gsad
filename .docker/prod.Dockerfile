@@ -3,23 +3,6 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 FROM greenbone/gsad-build:$VERSION as build
 
-# Install Debian core dependencies required for building gvm with PostgreSQL
-# support and not yet installed as dependencies of gvm-libs-core
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    cmake \
-    pkg-config \
-    libglib2.0-dev \
-    libgnutls28-dev \
-    libxml2-dev \
-    libssh-gcrypt-dev \
-    libmicrohttpd-dev && \
-    rm -rf /var/lib/apt/lists/*
-
-COPY . /source
-WORKDIR /source
-
 # Install
 COPY . /source
 RUN cmake -DCMAKE_BUILD_TYPE=Release -B/build /source
