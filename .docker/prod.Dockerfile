@@ -18,7 +18,7 @@ RUN apt-get update && \
     libmicrohttpd12 && \
     rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /install/ /
+COPY --from=build /install/ /
 COPY .docker/gsad_log.conf /etc/gvm/
 COPY .docker/start-gsad.sh /usr/local/bin/start-gsad
 
