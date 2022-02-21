@@ -1,7 +1,7 @@
 ARG VERSION=stable
 ARG DEBIAN_FRONTEND=noninteractive
 
-FROM greenbone/gvmd-build:$VERSION as build
+FROM greenbone/gsad-build:$VERSION as build
 
 # Install Debian core dependencies required for building gvm with PostgreSQL
 # support and not yet installed as dependencies of gvm-libs-core
