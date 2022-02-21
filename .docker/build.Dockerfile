@@ -1,6 +1,5 @@
 # Define ARG we use through the build
 ARG VERSION=stable
-ARG COMPILER=gcc
 
 # We want gvm-libs to be ready so we use the build docker image of gvm-libs
 FROM greenbone/gvm-libs:$VERSION
@@ -23,22 +22,3 @@ RUN apt-get update && \
     libssh-gcrypt-dev \
     libmicrohttpd-dev && \
     rm -rf /var/lib/apt/lists/*
-
-# Install gcc/g++ compiler
-RUN if ( test "$COMPILER" = "gcc"); then \
-    echo "Compiler is $COMPILER" && \
-    apt-get update && \
-    apt-get install --no-install-recommends --assume-yes gcc g++; \
-    fi
-
-# Install clang compiler
-RUN if ( test "$COMPILER" = "clang"); then \
-    echo "Compiler is $COMPILER" && \
-    apt-get update && \
-    apt-get install --no-install-recommends --assume-yes \
-    clang \
-    clang-format \
-    clang-tools; \
-    fi
-
-RUN ldconfig
