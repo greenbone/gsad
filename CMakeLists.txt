@@ -98,7 +98,7 @@ if (NOT GVMD_RUN_DIR)
 endif (NOT GVMD_RUN_DIR)
 
 if (NOT GSAD_PID_DIR)
-  set (GSAD_PID_DIR "${GVM_RUN_DIR}")
+  set (GSAD_PID_DIR "${GSAD_RUN_DIR}")
 endif (NOT GSAD_PID_DIR)
 
 
