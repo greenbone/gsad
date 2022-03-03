@@ -141,9 +141,6 @@ if (GSAD_DATA_DIR)
   add_definitions (-DGSAD_DATA_DIR="${GSAD_DATA_DIR}")
 endif (GSAD_DATA_DIR)
 
-if (GSAD_PID_DIR)
-  add_definitions (-DGSAD_PID_DIR="${GSAD_PID_DIR}")
-endif (GSAD_PID_DIR)
 
 if (GSAD_CONFIG_DIR)
   add_definitions (-DGSAD_CONFIG_DIR="${GSAD_CONFIG_DIR}")
