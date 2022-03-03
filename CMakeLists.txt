@@ -97,9 +97,6 @@ if (NOT GVMD_RUN_DIR)
   set (GVMD_RUN_DIR  "/run/gvmd")
 endif (NOT GVMD_RUN_DIR)
 
-if (NOT GSAD_PID_DIR)
-  set (GSAD_PID_DIR "${GSAD_RUN_DIR}")
-endif (NOT GSAD_PID_DIR)
 
 
 if (NOT GVM_STATE_DIR)
