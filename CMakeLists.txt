@@ -134,8 +134,6 @@ configure_file (src/gsad_log_conf.cmake_in src/gsad_log.conf)
 
 ## Install
 
-install (DIRECTORY DESTINATION ${GSAD_RUN_DIR})
-
 install (FILES ${CMAKE_CURRENT_BINARY_DIR}/src/gsad_log.conf
          DESTINATION ${GSAD_CONFIG_DIR})
 
