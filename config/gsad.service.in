@@ -8,6 +8,7 @@ Wants=gvmd.service
 Type=forking
 User=gvm
 PIDFile=${GSAD_PID_PATH}
+RuntimeDirectory=gsad
 ExecStart=${SBINDIR}/gsad --listen 127.0.0.1 --port 9392 --http-only
 Restart=always
 TimeoutStopSec=10
