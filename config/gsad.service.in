@@ -7,15 +7,9 @@ Wants=gvmd.service
 [Service]
 Type=forking
 User=gvm
-<<<<<<< HEAD
 PIDFile=${GSAD_PID_PATH}
 RuntimeDirectory=gsad
-=======
-Group=gvm
-RuntimeDirectory=gsad
 RuntimeDirectoryMode=2775
-PIDFile=${GSAD_PID_DIR}/gsad.pid
->>>>>>> 33bb01d (Change: Set runtime directory and mode for systemd service file)
 ExecStart=${SBINDIR}/gsad --listen 127.0.0.1 --port 9392 --http-only
 Restart=always
 TimeoutStopSec=10
