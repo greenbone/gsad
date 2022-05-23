@@ -2,10 +2,5 @@
 *                 @greenbone/gvmd-maintainers
 
 # dev ops
-<<<<<<< HEAD
-.github/          @greenbone/devops
-.docker/          @greenbone/devops
-=======
 .github/          @greenbone/devops @greenbone/gvmd-maintainers
 .docker/          @greenbone/devops @greenbone/gvmd-maintainers
->>>>>>> 8985c85 (Update CODEOWNERS for github and docker setups)
