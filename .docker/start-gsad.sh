@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ -z "$GSAD_ARGS" ] && GSAD_ARGS="-f --http-only"
+[ -z "$GSAD_ARGS" ] && GSAD_ARGS="--http-only"
 
 echo "starting gsad"
 gsad $GSAD_ARGS ||
