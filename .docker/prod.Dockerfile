@@ -18,7 +18,12 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 COPY . /source
+<<<<<<< HEAD
 WORKDIR /source
+=======
+RUN cmake -DCMAKE_BUILD_TYPE=Release -B/build /source
+RUN DESTDIR=/install cmake --build /build -- install
+>>>>>>> aee21ab (Use entrypoint file for switching to gsad user)
 
 RUN mkdir /build && \
     mkdir /install && \
@@ -32,24 +37,33 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+    gosu \
     libmicrohttpd12 && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /install/ /
 COPY .docker/gsad_log.conf /etc/gvm/
 COPY .docker/start-gsad.sh /usr/local/bin/start-gsad
+COPY .docker/entrypoint.sh /usr/local/bin/entrypoint
 
 RUN addgroup --gid 1001 --system gsad && \
     adduser --no-create-home --shell /bin/false --disabled-password --uid 1001 --system --group gsad
 
 # create web directory where GSA should be placed and runtime files directories
+<<<<<<< HEAD
 RUN mkdir -p /usr/local/share/gvm/gsad/web && \
     mkdir -p /run/gsad && \
     mkdir -p /var/log/gvm && \
     chown -R gsad:gsad /run/gsad && \
     chown -R gsad:gsad /var/log/gvm && \
     chmod 755 /usr/local/bin/start-gsad
+=======
+RUN mkdir -p /usr/local/share/gvm/gsad/web /run/gsad /var/log/gvm \
+    && chown -R gsad:gsad /run/gsad /var/log/gvm \
+    && chmod 755 /usr/local/bin/entrypoint \
+    && chmod 755 /usr/local/bin/start-gsad
+>>>>>>> aee21ab (Use entrypoint file for switching to gsad user)
 
-USER gsad
+ENTRYPOINT [ "/usr/local/bin/entrypoint" ]
 
 CMD ["/usr/local/bin/start-gsad"]
