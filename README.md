@@ -6,7 +6,7 @@
 [![Build and test C](https://github.com/greenbone/gsad/actions/workflows/ci-c.yml/badge.svg?branch=main)](https://github.com/greenbone/gsad/actions/workflows/ci-c.yml?query=branch%3Amain++)
 
 The Greenbone Security Assistant HTTP Server is the server developed for the
-communication with the [Greenbone Security Manager appliances](https://www.greenbone.net/en/product-comparison/).
+communication with the [Greenbone Enterprise appliances](https://www.greenbone.net/en/product-comparison/).
 
 It connects to the Greenbone Vulnerability Manager Daemon **gvmd** to provide a
 full-featured HTTP interface for vulnerability management.
@@ -185,7 +185,7 @@ To see all available command line options of gsad, enter this command:
 ## Support
 
 For any question on the usage of `gsad` please use the [Greenbone Community
-Portal](https://community.greenbone.net/c/gse). If you found a problem with the
+Portal](https://community.greenbone.net/). If you found a problem with the
 software, please [create an issue](https://github.com/greenbone/gsad/issues) on
 GitHub. If you are a Greenbone customer you may alternatively or additionally
 forward your issue to the Greenbone Support Portal.
@@ -204,6 +204,6 @@ github](https://github.com/greenbone/gsad/issues) first.
 
 ## License
 
-Copyright (C) 2009-2021 [Greenbone Networks GmbH](https://www.greenbone.net/)
+Copyright (C) 2009-2022 [Greenbone Networks GmbH](https://www.greenbone.net/)
 
 Licensed under the [GNU Affero General Public License v3.0 or later](LICENSE).
