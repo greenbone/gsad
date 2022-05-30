@@ -12,7 +12,7 @@ jobs:
     name: Check C Source Code Formatting
     runs-on: 'ubuntu-latest'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Check Source Format
         run: |
           clang-format -i -style=file src/*.{c,h}
@@ -27,7 +27,7 @@ jobs:
           - greenbone/gsad-clang-build:unstable
     container: ${{ matrix.container }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Configure and compile gsad
         run: |
           mkdir build
