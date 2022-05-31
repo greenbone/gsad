@@ -5,6 +5,7 @@ on:
     branches: [ main, stable, oldstable ]
     tags: ["v*"]
   workflow_dispatch:
+  repository_dispatch:
 
 jobs:
   upload-production:
