@@ -11,7 +11,6 @@ jobs:
   images:
     name: Build and upload container images
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -39,11 +38,6 @@ jobs:
   upload-build:
     name: "Upload images for building gsad"
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        compiler:
-          - gcc
-          - clang
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -72,5 +66,3 @@ jobs:
           tags: ${{ steps.container.outputs.image-tags }}
           platforms: linux/amd64,linux/arm64
           file: .docker/build.Dockerfile
-          build-args: |
-            COMPILER=${{matrix.compiler}}

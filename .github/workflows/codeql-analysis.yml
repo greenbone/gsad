@@ -19,7 +19,7 @@ jobs:
       actions: read
       contents: read
       security-events: write
-    container: greenbone/gsad-gcc-build:unstable
+    container: greenbone/gsad-build:unstable
 
     steps:
     - name: Checkout repository
