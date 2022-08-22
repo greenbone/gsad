@@ -14,9 +14,24 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Gather container image tags
-        uses: greenbone/actions/container-image-tags@v1
-        id: container
+      - name: Setup container meta information
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: greenbone/gsad
+          labels: |
+            org.opencontainers.image.vendor=Greenbone
+            org.opencontainers.image.base.name=debian/stable-slim
+          flavor: latest=false # no latest container tag for git tags
+          tags: |
+            # create container tag for git tags
+            type=ref,event=tag
+            # use latest for stable branch
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'stable') }}
+            type=raw,value=stable,enable=${{ github.ref == format('refs/heads/{0}', 'stable') }}
+            type=raw,value=oldstable,enable=${{ github.ref == format('refs/heads/{0}', 'oldstable') }}
+            # use unstable for main branch
+            type=raw,value=unstable,enable={{is_default_branch}}
       - name: Login to Docker Registry
         uses: docker/login-action@v2
         with:
@@ -31,9 +46,10 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.container.outputs.image-tags }}
-          platforms: linux/amd64,linux/arm64
           file: .docker/prod.Dockerfile
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
   upload-build:
     name: "Upload images for building gsad"
@@ -41,11 +57,24 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Find reference branch
-        uses: greenbone/actions/container-image-tags@v1
-        id: container
+      - name: Setup container meta information
+        id: meta
+        uses: docker/metadata-action@v4
         with:
-          image-name: ${{ github.repository }}-build
+          images: greenbone/gsad-build
+          labels: |
+            org.opencontainers.image.vendor=Greenbone
+            org.opencontainers.image.base.name=debian/stable-slim
+          flavor: latest=false # no latest container tag for git tags
+          tags: |
+            # create container tag for git tags
+            type=ref,event=tag
+            # use latest for stable branch
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'stable') }}
+            type=raw,value=stable,enable=${{ github.ref == format('refs/heads/{0}', 'stable') }}
+            type=raw,value=oldstable,enable=${{ github.ref == format('refs/heads/{0}', 'oldstable') }}
+            # use unstable for main branch
+            type=raw,value=unstable,enable={{is_default_branch}}
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
       - name: Login to DockerHub
@@ -63,6 +92,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ steps.container.outputs.image-tags }}
-          platforms: linux/amd64,linux/arm64
           file: .docker/build.Dockerfile
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
