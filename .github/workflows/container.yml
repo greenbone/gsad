@@ -10,8 +10,13 @@ on:
   repository_dispatch:
 
 jobs:
+<<<<<<< HEAD
   upload-production:
     name: Build and upload container images
+=======
+  images:
+    name: Production Images
+>>>>>>> 7ef483c (Change: Split creating build and production container images)
     runs-on: ubuntu-latest
     needs: upload-build
     steps:
@@ -59,6 +64,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+<<<<<<< HEAD
 
   upload-build:
     name: "Upload images for building gsad"
@@ -111,3 +117,5 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+=======
+>>>>>>> 7ef483c (Change: Split creating build and production container images)
