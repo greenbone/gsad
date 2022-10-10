@@ -608,7 +608,8 @@ init_validator ()
   gvm_validator_add (validator, "name", "^[#\\-_[:alnum:], \\./]*$");
   gvm_validator_add (validator, "info_name", "(?s)^.*$");
   gvm_validator_add (validator, "info_type", "(?s)^.*$");
-  gvm_validator_add (validator, "info_id", "^([[:alnum:]\\-_.:\\/~()']|&amp;)+$");
+  gvm_validator_add (validator, "info_id",
+                     "^([[:alnum:]\\-_.:\\/~()']|&amp;)+$");
   gvm_validator_add (validator, "details", "^[0-1]$");
   /* Number is special cased in params_mhd_validate to remove the space. */
   gvm_validator_add (validator, "number", "^ *[0-9]+ *$");
