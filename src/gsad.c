@@ -497,7 +497,7 @@ init_validator ()
   gvm_validator_add (validator, "setting_value", "^.*$");
   gvm_validator_add (validator, "setting_name", "^.*$");
   gvm_validator_add (validator, "comment",
-                     "^[-_;':()@[:alnum:]äüöÄÜÖß, \\./]*$");
+                     "^[-–_;':()@[:alnum:]äüöÄÜÖß, \\./]*$");
   gvm_validator_add (validator, "config_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "osp_config_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "condition", "^[[:alnum:] ]*$");
@@ -605,7 +605,7 @@ init_validator ()
   gvm_validator_add (validator, "note_required", "(?s)^(.)+$");
   gvm_validator_add (validator, "note_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "override_id", "^[a-z0-9\\-]+$");
-  gvm_validator_add (validator, "name", "^[#\\-_[:alnum:], \\./]*$");
+  gvm_validator_add (validator, "name", "^[#\\-–_[:alnum:], \\./()]*$");
   gvm_validator_add (validator, "info_name", "(?s)^.*$");
   gvm_validator_add (validator, "info_type", "(?s)^.*$");
   gvm_validator_add (validator, "info_id",
