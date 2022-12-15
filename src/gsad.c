@@ -1744,42 +1744,45 @@ gsad_init ()
       return MHD_NO;
     }
 
-    /* Init GCRYPT. */
-    /* Register thread callback structure for libgcrypt < 1.6.0. */
+  /* Init GCRYPT. */
+  if (!gcry_control (GCRYCTL_ANY_INITIALIZATION_P))
+    {
+      /* Register thread callback structure for libgcrypt < 1.6.0. */
 #if GCRYPT_VERSION_NUMBER < 0x010600
-  gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
+      gcry_control (GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
 #endif
 
-  /* Version check should be the very first call because it makes sure that
-   * important subsystems are initialized.
-   * We pass NULL to gcry_check_version to disable the internal version mismatch
-   * test. */
-  if (!gcry_check_version (NULL))
-    {
-      g_critical ("%s: libgcrypt version check failed\n", __func__);
-      return MHD_NO;
+      /* Version check should be the very first call because it makes sure that
+       * important subsystems are initialized.
+       * We pass NULL to gcry_check_version to disable the internal version
+       * mismatch test. */
+      if (!gcry_check_version (NULL))
+        {
+          g_critical ("%s: libgcrypt version check failed\n", __func__);
+          return MHD_NO;
+        }
+
+      /* We don't want to see any warnings, e.g. because we have not yet parsed
+       * program options which might be used to suppress such warnings. */
+      gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
+
+      /* ... If required, other initialization goes here.  Note that the process
+       * might still be running with increased privileges and that the secure
+       * memory has not been initialized. */
+
+      /* Allocate a pool of 16k secure memory.  This make the secure memory
+       * available and also drops privileges where needed. */
+      gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
+
+      /* It is now okay to let Libgcrypt complain when there was/is a problem
+       * with the secure memory. */
+      gcry_control (GCRYCTL_RESUME_SECMEM_WARN);
+
+      /* ... If required, other initialization goes here. */
+
+      /* Tell Libgcrypt that initialization has completed. */
+      gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
     }
-
-  /* We don't want to see any warnings, e.g. because we have not yet parsed
-   * program options which might be used to suppress such warnings. */
-  gcry_control (GCRYCTL_SUSPEND_SECMEM_WARN);
-
-  /* ... If required, other initialization goes here.  Note that the process
-   * might still be running with increased privileges and that the secure
-   * memory has not been initialized. */
-
-  /* Allocate a pool of 16k secure memory.  This make the secure memory
-   * available and also drops privileges where needed. */
-  gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0);
-
-  /* It is now okay to let Libgcrypt complain when there was/is a problem with
-   * the secure memory. */
-  gcry_control (GCRYCTL_RESUME_SECMEM_WARN);
-
-  /* ... If required, other initialization goes here. */
-
-  /* Tell Libgcrypt that initialization has completed. */
-  gcry_control (GCRYCTL_INITIALIZATION_FINISHED, 0);
 
   /* Init GNUTLS. */
   int ret = gnutls_global_init ();
