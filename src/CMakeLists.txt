@@ -91,6 +91,7 @@ add_executable (gsad
                 gsad_session.c
                 gsad_settings.c
                 gsad_user.c
+                gsad_validator.c
                 utils.c
                 validator.c)
 
