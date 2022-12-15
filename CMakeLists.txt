@@ -37,6 +37,8 @@ message (STATUS "Building gsad version ${GSAD_VERSION}")
 # see https://clang.llvm.org/docs/JSONCompilationDatabase.html
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
+enable_testing()
+
 ## make format
 message (STATUS "Looking for clang-format...")
 find_program (CLANG_FORMAT clang-format)
