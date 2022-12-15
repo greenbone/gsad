@@ -78,8 +78,8 @@
 #include "gsad_session.h" /* for session_init */
 #include "gsad_settings.h"
 #include "gsad_user.h"
+#include "gsad_validator.h"
 #include "utils.h" /* for str_equal */
-#include "validator.h"
 
 #include <gvm/base/logging.h>
 #include <gvm/base/networking.h> /* for ipv6_is_enabled */
@@ -239,6 +239,7 @@ int chroot_state = 0;
 int client_watch_interval = DEFAULT_CLIENT_WATCH_INTERVAL;
 
 /**
+<<<<<<< HEAD
  * @brief Parameter validator.
  */
 validator_t validator;
@@ -914,6 +915,8 @@ init_validator ()
 }
 
 /**
+=======
+>>>>>>> 2d668e2 (Change: Extract initializing the validators int own C file)
  * @brief Set a content type from a format string.
  *
  * For example set the content type to GSAD_CONTENT_TYPE_APP_DEB when given
@@ -1148,8 +1151,10 @@ params_mhd_validate_values (const char *parent_name, void *params)
 
   name_name = g_strdup_printf ("%sname", parent_name);
   value_name = g_strdup_printf ("%svalue", parent_name);
+  validator_t validator = get_validator ();
 
   params_iterator_init (&iter, params);
+
   while (params_iterator_next (&iter, &name, &param))
     {
       gchar *item_name;
@@ -1234,6 +1239,8 @@ params_mhd_validate (void *params)
 {
   GHashTableIter iter;
   gpointer name, value;
+
+  validator_t validator = get_validator ();
 
   g_hash_table_iter_init (&iter, params);
   while (g_hash_table_iter_next (&iter, &name, &value))
@@ -1848,6 +1855,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   cmd_response_data_t *response_data;
   pthread_t watch_thread;
   connection_watcher_data_t *watcher_data;
+  validator_t validator = get_validator ();
 
   response_data = cmd_response_data_new ();
 
