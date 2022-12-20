@@ -37,7 +37,7 @@ jobs:
   unittests:
     name: Unit Tests
     runs-on: ubuntu-latest
-    container: greenbone/gsad-build:unstable
+    container: greenbone/gsad-build:stable
     steps:
       - uses: actions/checkout@v3
       - name: Configure and compile gsad
