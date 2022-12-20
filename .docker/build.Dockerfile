@@ -21,7 +21,8 @@ RUN apt-get update && \
     libgnutls28-dev \
     libxml2-dev \
     libssh-gcrypt-dev \
-    libmicrohttpd-dev && \
+    libmicrohttpd-dev \
+    libcgreen1-dev && \
     rm -rf /var/lib/apt/lists/*
 
 RUN ldconfig

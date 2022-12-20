@@ -2,15 +2,14 @@ name: Build and test C
 
 on:
   push:
-    branches: [ main, stable, oldstable ]
+    branches: [main, stable, oldstable]
   pull_request:
-    branches: [ main, stable, oldstable ]
-
+    branches: [main, stable, oldstable]
 
 jobs:
   c-format-check:
     name: Check C Source Code Formatting
-    runs-on: 'ubuntu-latest'
+    runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v3
       - name: Check Source Format
@@ -19,7 +18,7 @@ jobs:
           git diff --exit-code
   build-gsad:
     name: Build gsad
-    runs-on: 'ubuntu-latest'
+    runs-on: "ubuntu-latest"
     strategy:
       matrix:
         container:
@@ -34,3 +33,16 @@ jobs:
           cd build/
           cmake -DCMAKE_BUILD_TYPE=Release ..
           make install
+
+  unittests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    container: greenbone/gsad-build:unstable
+    steps:
+      - uses: actions/checkout@v3
+      - name: Configure and compile gsad
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=1 .
+          cmake --build build
+      - name: Configure and run tests
+        run: CTEST_OUTPUT_ON_FAILURE=1 cmake --build build -- tests test

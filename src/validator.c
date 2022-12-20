@@ -190,7 +190,8 @@ gvm_validator_alias_for (validator_t validator, const char *alias)
  * @param  value      Value to validate.
  *
  * @return 0 if valid \arg value is valid, 1 if failed to find \arg name in
- *         validator, 2 if value failed to match the regexp.
+ *         validator, 2 if value failed to match the regexp, 3 if the value is
+ *         not valid UTF8, 4 if the regex is NULL, 5 if value is NULL
  */
 int
 gvm_validate (validator_t validator, const char *name, const char *value)
@@ -200,7 +201,7 @@ gvm_validate (validator_t validator, const char *name, const char *value)
   if (name != NULL && g_utf8_validate (name, -1, NULL) == FALSE)
     {
       g_debug ("%s: name is not valid UTF-8", __func__);
-      return 1;
+      return 3;
     }
 
   g_debug ("%s: name %s value %s", __func__, name, value);
@@ -222,7 +223,7 @@ gvm_validate (validator_t validator, const char *name, const char *value)
       if (value != NULL && g_utf8_validate (value, -1, NULL) == FALSE)
         {
           g_debug ("%s: value is not valid UTF-8", __func__);
-          return 2;
+          return 3;
         }
 
       if (rule->regex == NULL)
@@ -233,13 +234,13 @@ gvm_validate (validator_t validator, const char *name, const char *value)
               return 0;
             }
           g_debug ("%s: failed to match, regex NULL", __func__);
-          return 2;
+          return 4;
         }
 
       if (value == NULL)
         {
           g_debug ("%s: failed to match, value NULL", __func__);
-          return 2;
+          return 5;
         }
 
       g_debug ("matching <%s> against <%s>: ", (char *) rule->regex, value);

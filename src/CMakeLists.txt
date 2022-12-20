@@ -91,6 +91,7 @@ add_executable (gsad
                 gsad_session.c
                 gsad_settings.c
                 gsad_user.c
+                gsad_validator.c
                 utils.c
                 validator.c)
 
@@ -181,5 +182,23 @@ add_custom_target (ctags COMMENT "Building tags..."
                    COMMAND ctags ${C_FILES})
 add_custom_target (tags COMMENT "Building tags files...")
 add_dependencies (tags etags ctags)
+
+## Testing
+
+if (BUILD_TESTING)
+  find_package(cgreen REQUIRED)
+
+  add_executable(gsad-validator-test EXCLUDE_FROM_ALL gsad_validator_test.c validator.c)
+
+  target_link_libraries (gsad-validator-test ${CGREEN_LIBRARIES} ${GLIB_LDFLAGS})
+
+
+  add_test (gsad-validator-test gsad-validator-test)
+
+  add_custom_target (tests
+                     DEPENDS
+                     gsad-validator-test
+                     )
+endif(BUILD_TESTING)
 
 ## End
