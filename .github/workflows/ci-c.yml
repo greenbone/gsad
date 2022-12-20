@@ -2,23 +2,16 @@ name: Build and test C
 
 on:
   push:
-<<<<<<< HEAD
-    branches: [ master, stable, oldstable ]
-  pull_request:
-    branches: [ master, stable, oldstable ]
-
-=======
     branches: [main, stable, oldstable]
   pull_request:
     branches: [main, stable, oldstable]
->>>>>>> 58d92c1 (Change: Build and run unit tests on CI)
 
 jobs:
   c-format-check:
     name: Check C Source Code Formatting
     runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v3
       - name: Check Source Format
         run: |
           clang-format -i -style=file src/*.{c,h}
@@ -26,19 +19,10 @@ jobs:
 
   build-gsad:
     name: Build gsad
-<<<<<<< HEAD
-    runs-on: 'ubuntu-latest'
-    container: greenbone/gsad-build:oldstable
-=======
     runs-on: "ubuntu-latest"
-    strategy:
-      matrix:
-        container:
-          - greenbone/gsad-build:unstable
-    container: ${{ matrix.container }}
->>>>>>> 58d92c1 (Change: Build and run unit tests on CI)
+    container: greenbone/gsad-build:oldstable
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v3
       - name: Configure and compile gsad
         run: |
           mkdir build
@@ -50,7 +34,7 @@ jobs:
   unittests:
     name: Unit Tests
     runs-on: ubuntu-latest
-    container: greenbone/gsad-build:unstable
+    container: greenbone/gsad-build:oldstable
     steps:
       - uses: actions/checkout@v3
       - name: Configure and compile gsad
