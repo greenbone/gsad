@@ -16813,6 +16813,92 @@ authenticate_gmp (const gchar *username, const gchar *password, gchar **role,
 }
 
 /**
+ * @brief Check authentication credentials.
+ *
+ * @param[in]  username      Username.
+ * @param[in]  password      Password.
+ * @param[out] role          Role.
+ * @param[out] timezone      Timezone.
+ * @param[out] capabilities  Capabilities of manager.
+ * @param[out] language      User Interface Language, or NULL.
+ * @param[out] pw_warning    Password warning message, NULL if password is OK.
+ *
+ * @return 0 success, 1 manager down, 2 failed, 3 timeout, -1 error.
+ */
+int
+logout_gmp (const gchar *username, const gchar *password)
+{
+  gvm_connection_t connection;
+  int ret;
+  gmp_authenticate_info_opts_t auth_opts;
+
+  entity_t entity;
+  const char *status;
+
+  gchar *response;
+
+  if (gvm_connection_open (&connection, manager_address, manager_port))
+    {
+      g_debug ("%s failed to acquire socket!\n", __func__);
+      return 1;
+    }
+
+  auth_opts = gmp_authenticate_info_opts_defaults;
+  auth_opts.username = username;
+  auth_opts.password = password;
+  auth_opts.role = NULL;
+  auth_opts.timezone = NULL;
+  auth_opts.pw_warning = NULL;
+
+  ret = gmp_authenticate_info_ext_c (&connection, auth_opts);
+  if (ret)
+    {
+      gvm_connection_close (&connection);
+
+      switch (ret)
+        {
+        case 1: /* manager closed connection */
+        case 2: /* auth failed */
+        case 3: /* timeout */
+          return ret;
+        default:
+          return -1;
+        }
+    }
+
+  ret = gvm_connection_sendf_xml (&connection, "<logout/>");
+  if (ret)
+    {
+      gvm_connection_close (&connection);
+      return -1;
+    }
+
+  entity = NULL;
+  if (read_entity_and_text_c (&connection, &entity, &response))
+    {
+      gvm_connection_close (&connection);
+      return 1;
+    }
+
+  gvm_connection_close (&connection);
+
+  status = entity_attribute (entity, "status");
+  if ((status == NULL) || (strlen (status) == 0))
+    {
+      free_entity (entity);
+      return -1;
+    }
+  else if (status[0] == '2')
+    {
+      free_entity (entity);
+      return 2;
+    }
+
+  free_entity (entity);
+  return 0;
+}
+
+/**
  * @brief Login and create a session
  *
  * @param[in]   con             HTTP Connection
