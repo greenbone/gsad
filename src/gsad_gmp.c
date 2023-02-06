@@ -16866,7 +16866,7 @@ logout_gmp (const gchar *username, const gchar *password)
         }
     }
 
-  ret = gvm_connection_sendf_xml(&connection, "<logout/>");
+  ret = gvm_connection_sendf_xml (&connection, "<logout/>");
   if (ret)
     {
       gvm_connection_close (&connection);

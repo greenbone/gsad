@@ -293,7 +293,7 @@ user_logout (user_t *user)
   if (fuser)
     {
       if (fuser->username && fuser->password)
-        logout_gmp(fuser->username, fuser->password);
+        logout_gmp (fuser->username, fuser->password);
       session_remove_user (fuser->token);
       user_free (fuser);
       return 0;
@@ -330,7 +330,7 @@ user_add (const gchar *username, const gchar *password, const gchar *timezone,
   if (user && user_session_expired (user))
     {
       if (user->username && user->password)
-        logout_gmp(user->username, user->password);
+        logout_gmp (user->username, user->password);
       session_remove_user (user->token);
       user_free (user);
     }
@@ -376,7 +376,7 @@ user_find (const gchar *cookie, const gchar *token, const char *address,
       if (user_session_expired (user))
         {
           if (user->username && user->password)
-            logout_gmp(user->username, user->password);
+            logout_gmp (user->username, user->password);
           session_remove_user (user->token);
           user_free (user);
           return USER_EXPIRED_TOKEN;
