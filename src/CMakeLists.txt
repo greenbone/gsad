@@ -1,4 +1,4 @@
-# Copyright (C) 2009-2021 Greenbone Networks GmbH#
+# Copyright (C) 2009-2021 Greenbone AG#
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
 # This program is free software: you can redistribute it and/or modify
