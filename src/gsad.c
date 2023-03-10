@@ -171,7 +171,7 @@
 /**
  * @brief Default "max-age" for HTTP header "Strict-Transport-Security"
  */
-  #define DEFAULT_GSAD_HSTS_MAX_AGE 31536000
+#define DEFAULT_GSAD_HSTS_MAX_AGE 31536000
 
 /**
  * @brief Default value for the maximum number of connection per IP address.
