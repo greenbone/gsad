@@ -94,7 +94,11 @@
  * @brief HTTP status code for expected failure of gmp requests e.g. if some
  *        parameter was missing or invalid.
  */
+#if MHD_VERSION < 0x00097400
 #define GSAD_STATUS_INVALID_REQUEST MHD_HTTP_UNPROCESSABLE_ENTITY
+#else
+#define GSAD_STATUS_INVALID_REQUEST MHD_HTTP_UNPROCESSABLE_CONTENT
+#endif
 
 /**
  * @brief Initial filtered results per page on the report summary.
