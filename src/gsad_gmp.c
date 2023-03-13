@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2021 Greenbone Networks GmbH
+/* Copyright (C) 2009-2021 Greenbone AG
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
@@ -4464,6 +4464,7 @@ append_alert_method_data (GString *xml, params_t *data, const char *method,
             || (strcmp (method, "SMB") == 0
                 && (strcmp (name, "smb_credential") == 0
                     || strcmp (name, "smb_file_path") == 0
+                    || strcmp (name, "smb_max_protocol") == 0
                     || strcmp (name, "smb_report_format") == 0
                     || strcmp (name, "smb_share_path") == 0))
             || (strcmp (method, "SNMP") == 0
