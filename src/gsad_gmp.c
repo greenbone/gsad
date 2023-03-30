@@ -14752,10 +14752,16 @@ save_auth_gmp (gvm_connection_t *connection, credentials_t *credentials,
   CHECK_VARIABLE_INVALID (method, "Save Authentication");
   if (!strcmp (method, "method:ldap_connect"))
     {
-      const char *ldaphost, *authdn, *certificate;
+      const char *ldaphost, *authdn, *certificate, *ldaps_only;
       ldaphost = params_value (params, "ldaphost");
       authdn = params_value (params, "authdn");
       certificate = params_value (params, "certificate");
+
+      if (params_value (params, "ldaps_only")
+          && (strcmp (params_value (params, "ldaps_only"), "1") == 0))
+        ldaps_only = "true";
+      else
+        ldaps_only = "false";
 
       CHECK_VARIABLE_INVALID (ldaphost, "Save Authentication");
       CHECK_VARIABLE_INVALID (authdn, "Save Authentication");
@@ -14769,9 +14775,11 @@ save_auth_gmp (gvm_connection_t *connection, credentials_t *credentials,
                   "<group name=\"%s\">" AUTH_CONF_SETTING ("enable", "%s")
                     AUTH_CONF_SETTING ("ldaphost", "%s")
                       AUTH_CONF_SETTING ("authdn", "%s")
-                        AUTH_CONF_SETTING ("cacert", "%s") "</group>"
-                                                           "</modify_auth>",
-                  method, truefalse, ldaphost, authdn, certificate);
+                        AUTH_CONF_SETTING ("ldaps-only", "%s")
+                          AUTH_CONF_SETTING ("cacert", "%s") "</group>"
+                                                             "</modify_auth>",
+                  method, truefalse, ldaphost, authdn, ldaps_only,
+                  certificate);
         }
       else
         /** @warning authdn shall contain a single %s, handle with care. */
@@ -14779,9 +14787,10 @@ save_auth_gmp (gvm_connection_t *connection, credentials_t *credentials,
                     "<modify_auth>"
                     "<group name=\"%s\">" AUTH_CONF_SETTING ("enable", "%s")
                       AUTH_CONF_SETTING ("ldaphost", "%s")
-                        AUTH_CONF_SETTING ("authdn", "%s") "</group>"
-                                                           "</modify_auth>",
-                    method, truefalse, ldaphost, authdn);
+                        AUTH_CONF_SETTING ("authdn", "%s")
+                          AUTH_CONF_SETTING ("ldaps-only", "%s") "</group>"
+                                                                   "</modify_auth>",
+                    method, truefalse, ldaphost, authdn, ldaps_only);
     }
   else if (!strcmp (method, "method:radius_connect"))
     {

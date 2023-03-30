@@ -594,6 +594,7 @@ init_validator ()
   gvm_validator_alias (validator, "method", "condition");
   gvm_validator_alias (validator, "modify_password", "number");
   gvm_validator_alias (validator, "ldaphost", "hostport");
+  gvm_validator_alias (validator, "ldaps_only", "boolean");
   gvm_validator_alias (validator, "lean", "boolean");
   gvm_validator_alias (validator, "level_high", "boolean");
   gvm_validator_alias (validator, "level_medium", "boolean");
