@@ -14774,19 +14774,19 @@ save_auth_gmp (gvm_connection_t *connection, credentials_t *credentials,
                         AUTH_CONF_SETTING ("ldaps-only", "%s")
                           AUTH_CONF_SETTING ("cacert", "%s") "</group>"
                                                              "</modify_auth>",
-                  method, truefalse, ldaphost, authdn, ldaps_only,
-                  certificate);
+                  method, truefalse, ldaphost, authdn, ldaps_only, certificate);
         }
       else
         /** @warning authdn shall contain a single %s, handle with care. */
-        ret = gmpf (connection, credentials, &response, &entity, response_data,
-                    "<modify_auth>"
-                    "<group name=\"%s\">" AUTH_CONF_SETTING ("enable", "%s")
-                      AUTH_CONF_SETTING ("ldaphost", "%s")
-                        AUTH_CONF_SETTING ("authdn", "%s")
-                          AUTH_CONF_SETTING ("ldaps-only", "%s") "</group>"
-                                                                   "</modify_auth>",
-                    method, truefalse, ldaphost, authdn, ldaps_only);
+        ret =
+          gmpf (connection, credentials, &response, &entity, response_data,
+                "<modify_auth>"
+                "<group name=\"%s\">" AUTH_CONF_SETTING ("enable", "%s")
+                  AUTH_CONF_SETTING ("ldaphost", "%s")
+                    AUTH_CONF_SETTING ("authdn", "%s")
+                      AUTH_CONF_SETTING ("ldaps-only", "%s") "</group>"
+                                                             "</modify_auth>",
+                method, truefalse, ldaphost, authdn, ldaps_only);
     }
   else if (!strcmp (method, "method:radius_connect"))
     {
