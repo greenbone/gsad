@@ -1,4 +1,5 @@
-ARG VERSION=oldstable
+ARG VERSION=unstable
+ARG GVM_LIBS_VERSION=oldstable
 ARG DEBIAN_FRONTEND=noninteractive
 
 FROM greenbone/gsad-build:${VERSION} as builder
@@ -26,7 +27,7 @@ RUN mkdir /build \
     && cmake -DCMAKE_BUILD_TYPE=Release /source \
     && make DESTDIR=/install install
 
-FROM greenbone/gvm-libs:${VERSION}
+FROM greenbone/gvm-libs:${GVM_LIBS_VERSION}
 
 ARG DEBIAN_FRONTEND=noninteractive
 
