@@ -1,4 +1,4 @@
-ARG VERSION=unstable
+ARG VERSION=stable
 ARG GVM_LIBS_VERSION=oldstable
 ARG DEBIAN_FRONTEND=noninteractive
 
