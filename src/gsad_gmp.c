@@ -4460,6 +4460,7 @@ append_alert_method_data (GString *xml, params_t *data, const char *method,
                     || strcmp (name, "scp_host") == 0
                     || strcmp (name, "scp_known_hosts") == 0
                     || strcmp (name, "scp_path") == 0
+                    || strcmp (name, "scp_port") == 0
                     || strcmp (name, "scp_report_format") == 0))
             || (strcmp (method, "SMB") == 0
                 && (strcmp (name, "smb_credential") == 0
