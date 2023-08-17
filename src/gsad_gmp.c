@@ -4511,7 +4511,8 @@ append_alert_method_data (GString *xml, params_t *data, const char *method,
             || strcmp (name, "delta_type") == 0
             || strcmp (name, "delta_report_id") == 0
             || strcmp (name, "composer_include_notes") == 0
-            || strcmp (name, "composer_include_overrides") == 0)
+            || strcmp (name, "composer_include_overrides") == 0
+            || strcmp (name, "composer_ignore_pagination") == 0)
           xml_string_append (xml, "<data><name>%s</name>%s</data>", name,
                              param->value ? param->value : "");
         else if (strcmp (method, "Email") == 0 && notice == 0
