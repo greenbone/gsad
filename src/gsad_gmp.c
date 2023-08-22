@@ -6932,6 +6932,22 @@ save_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
 }
 
 /**
+ * @brief Connect to Greenbone Vulnerability Manager daemon.
+ *
+ * @param[in]   credentials  Username and password for authentication.
+ * @param[out]  connection   Connection to Manager on success.
+ *
+ * @return 0 success, 1 if manager closed connection, 2 if auth failed,
+ *         3 on timeout, 4 failed to connect, -1 on error
+ */
+int
+manager_reconnect (credentials_t *credentials, gvm_connection_t *connection)
+{
+  gvm_connection_close (connection); // FIX need to free content?
+  return manager_connect (credentials, connection, NULL);
+}
+
+/**
  * @brief Get details of a family for a config, envelope the result.
  *
  * @param[in]  connection     Connection to manager.
@@ -6966,7 +6982,7 @@ get_config_family (gvm_connection_t *connection, credentials_t *credentials,
   if (gvm_connection_sendf (
         connection,
         "<get_nvts"
-        " config_id=\"%s\" details=\"1\""
+        " close=\"1\" config_id=\"%s\" details=\"1\""
         " family=\"%s\" timeout=\"1\" preference_count=\"1\""
         " skip_cert_refs=\"1\""
         " sort_field=\"%s\" sort_order=\"%s\"/>",
@@ -6985,7 +7001,7 @@ get_config_family (gvm_connection_t *connection, credentials_t *credentials,
         response_data);
     }
 
-  if (read_string_c (connection, &xml))
+  if (read_text_string_c (connection, &xml))
     {
       g_string_free (xml, TRUE);
       cmd_response_data_set_status_code (response_data,
@@ -7000,12 +7016,65 @@ get_config_family (gvm_connection_t *connection, credentials_t *credentials,
 
   if (edit)
     {
+      char *res = NULL;
+
+      switch (manager_reconnect (credentials, connection))
+        {
+        case 0:
+          break;
+        case 1: /* manager closed connection */
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          res = gsad_message (credentials, "Internal error", __func__, __LINE__,
+                              "An internal error occurred. "
+                              "Diagnostics: Could not connect to manager daemon. "
+                              "Manager closed the connection.",
+                              response_data);
+          break;
+#if 0
+          // FIX caller needs special check for this return
+        case 2: /* auth failed */
+          cmd_response_data_free (response_data);
+          return handler_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
+                                                LOGIN_FAILED);
+#endif
+        case 3: /* timeout */
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          res = gsad_message (credentials, "Internal error", __func__, __LINE__,
+                              "An internal error occurred. "
+                              "Diagnostics: Could not connect to manager daemon. "
+                              "Connection timeout.",
+                              response_data);
+          break;
+        case 4: /* can't connect to manager */
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_SERVICE_UNAVAILABLE);
+          res = gsad_message (credentials, "Internal error", __func__, __LINE__,
+                              "An internal error occurred. "
+                              "Diagnostics: Could not connect to manager daemon. "
+                              "Could not open a connection.",
+                              response_data);
+          break;
+        default: /* unknown error */
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          res = gsad_message (credentials, "Internal error", __func__, __LINE__,
+                              "An internal error occurred. "
+                              "Diagnostics: Could not connect to manager daemon. "
+                              "Unknown error.",
+                              response_data);
+        }
+      if (res)
+        return res;
+
       /* Get the details for all NVT's in the family. */
 
       g_string_append (xml, "<all>");
 
       if (gvm_connection_sendf (connection,
                                 "<get_nvts"
+                                " close=\"1\""
                                 " details=\"1\""
                                 " timeout=\"1\""
                                 " family=\"%s\""
@@ -7030,7 +7099,7 @@ get_config_family (gvm_connection_t *connection, credentials_t *credentials,
             response_data);
         }
 
-      if (read_string_c (connection, &xml))
+      if (read_text_string_c (connection, &xml))
         {
           g_string_free (xml, TRUE);
           cmd_response_data_set_status_code (response_data,
