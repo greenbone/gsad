@@ -107,6 +107,7 @@ target_link_libraries (gsad ${LIBMICROHTTPD_LDFLAGS}
                             ${LIBGVM_GMP_LDFLAGS}
                             ${CMAKE_THREAD_LIBS_INIT}
                             ${LINKER_HARDENING_FLAGS}
+                            z
                        )
 set_target_properties (gsad PROPERTIES LINKER_LANGUAGE C)
 
