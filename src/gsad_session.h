@@ -37,11 +37,11 @@ session_remove_user (const gchar *id);
 user_t *
 session_get_user_by_id (const gchar *id);
 
-user_t *
-session_get_user_by_username (const gchar *username);
+GList *
+session_get_users_by_username (const gchar *username);
 
 void
-session_remove_other_sessions (const gchar *id, user_t *user);
+session_remove_other_sessions (const gchar *id, const gchar *user);
 
 void
 session_init ();

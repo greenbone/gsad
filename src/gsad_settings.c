@@ -96,6 +96,11 @@ int unix_socket = 0;
 int use_secure_cookie = 1;
 
 /**
+ * @brief The maximum number of logged in sessions per user.
+ */
+int user_session_limit = 0;
+
+/**
  * @brief Set the vendor version.
  *
  * @param[in]  version  Vendor version.
@@ -275,4 +280,19 @@ gboolean
 is_unix_socket ()
 {
   return unix_socket > 0;
+}
+
+void
+set_user_session_limit (int new_limit)
+{
+  if (new_limit >= 0)
+    user_session_limit = new_limit;
+  else
+    user_session_limit = 0;
+}
+
+int
+get_user_session_limit ()
+{
+  return user_session_limit;
 }

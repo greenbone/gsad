@@ -2180,6 +2180,7 @@ main (int argc, char **argv)
   static gboolean ignore_x_real_ip = FALSE;
   static int per_ip_connection_limit = DEFAULT_GSAD_PER_IP_CONNECTION_LIMIT;
   static int verbose = 0;
+  static int gsad_user_session_limit = 0;
   GError *error = NULL;
   GOptionContext *option_context;
   static GOptionEntry option_entries[] = {
@@ -2266,6 +2267,9 @@ main (int argc, char **argv)
     {"http-cors", 0, 0, G_OPTION_ARG_STRING, &http_cors,
      "Set Cross-Origin Resource Sharing (CORS) allow origin http header ",
      "<cors>"},
+    {"user-session-limit", '\0', 0, G_OPTION_ARG_INT, &gsad_user_session_limit,
+     "Set maximum number of active sessions per user. 0 for unlimited.",
+     "<max-sessions>"},
     {NULL}};
 
   option_context =
@@ -2483,6 +2487,8 @@ main (int argc, char **argv)
           break;
         }
     }
+
+  set_user_session_limit (gsad_user_session_limit);
 
   /* Register the cleanup function. */
 
