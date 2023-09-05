@@ -297,6 +297,9 @@ char *
 edit_config_family_gmp (gvm_connection_t *, credentials_t *, params_t *,
                         cmd_response_data_t *);
 char *
+edit_config_family_all_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                            cmd_response_data_t *);
+char *
 get_config_family_gmp (gvm_connection_t *, credentials_t *, params_t *,
                        cmd_response_data_t *);
 char *

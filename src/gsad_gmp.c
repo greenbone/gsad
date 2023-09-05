@@ -170,7 +170,7 @@ get_trash (gvm_connection_t *, credentials_t *, params_t *, const char *,
            cmd_response_data_t *);
 
 static char *
-get_config_family (gvm_connection_t *, credentials_t *, params_t *, int,
+get_config_family (gvm_connection_t *, credentials_t *, params_t *,
                    cmd_response_data_t *);
 
 static char *
@@ -6935,17 +6935,15 @@ save_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @brief Get details of a family for a config, envelope the result.
  *
  * @param[in]  connection     Connection to manager.
- * @param[in]  credentials  Username and password for authentication.
- * @param[in]  params       Request parameters.
- * @param[in]  edit         0 for config view page, else config edit page.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
  * @param[out] response_data  Extra data return for the HTTP response.
  *
  * @return Enveloped XML object.
  */
 static char *
 get_config_family (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, int edit,
-                   cmd_response_data_t *response_data)
+                   params_t *params, cmd_response_data_t *response_data)
 {
   GString *xml;
   const char *config_id, *family, *sort_field, *sort_order;
@@ -6998,55 +6996,6 @@ get_config_family (gvm_connection_t *connection, credentials_t *credentials,
         response_data);
     }
 
-  if (edit)
-    {
-      /* Get the details for all NVT's in the family. */
-
-      g_string_append (xml, "<all>");
-
-      if (gvm_connection_sendf (connection,
-                                "<get_nvts"
-                                " details=\"1\""
-                                " timeout=\"1\""
-                                " family=\"%s\""
-                                " preferences_config_id=\"%s\""
-                                " preference_count=\"1\""
-                                " skip_cert_refs=\"1\""
-                                " skip_tags=\"1\""
-                                " sort_field=\"%s\""
-                                " sort_order=\"%s\"/>",
-                                family, config_id,
-                                sort_field ? sort_field : "nvts.name",
-                                sort_order ? sort_order : "ascending")
-          == -1)
-        {
-          g_string_free (xml, TRUE);
-          cmd_response_data_set_status_code (response_data,
-                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_message (
-            credentials, "Internal error", __func__, __LINE__,
-            "An internal error occurred while getting list of configs. "
-            "The current list of configs is not available. "
-            "Diagnostics: Failure to send command to manager daemon.",
-            response_data);
-        }
-
-      if (read_string_c (connection, &xml))
-        {
-          g_string_free (xml, TRUE);
-          cmd_response_data_set_status_code (response_data,
-                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_message (
-            credentials, "Internal error", __func__, __LINE__,
-            "An internal error occurred while getting list of configs. "
-            "The current list of configs is not available. "
-            "Diagnostics: Failure to receive response from manager daemon.",
-            response_data);
-        }
-
-      g_string_append (xml, "</all>");
-    }
-
   g_string_append (xml, "</get_config_family_response>");
   return envelope_gmp (connection, credentials, params,
                        g_string_free (xml, FALSE), response_data);
@@ -7066,7 +7015,7 @@ char *
 get_config_family_gmp (gvm_connection_t *connection, credentials_t *credentials,
                        params_t *params, cmd_response_data_t *response_data)
 {
-  return get_config_family (connection, credentials, params, 0, response_data);
+  return get_config_family (connection, credentials, params, response_data);
 }
 
 /**
@@ -7084,7 +7033,83 @@ edit_config_family_gmp (gvm_connection_t *connection,
                         credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
-  return get_config_family (connection, credentials, params, 1, response_data);
+  return get_config_family (connection, credentials, params, response_data);
+}
+
+/**
+ * @brief Get all details of a family for editing a config, envelope result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+edit_config_family_all_gmp (gvm_connection_t *connection,
+                            credentials_t *credentials, params_t *params,
+                            cmd_response_data_t *response_data)
+{
+  GString *xml;
+  const char *config_id, *family, *sort_field, *sort_order;
+
+  config_id = params_value (params, "config_id");
+  family = params_value (params, "family");
+
+  CHECK_VARIABLE_INVALID (config_id, "Get Scan Config Family")
+  CHECK_VARIABLE_INVALID (family, "Get Scan Config Family")
+
+  xml = g_string_new ("<get_config_family_response>");
+
+  /* Get the details for all NVT's in the family. */
+
+  sort_field = params_value (params, "sort_field");
+  sort_order = params_value (params, "sort_order");
+
+  if (gvm_connection_sendf (connection,
+                            "<get_nvts"
+                            " details=\"1\""
+                            " timeout=\"1\""
+                            " family=\"%s\""
+                            " preferences_config_id=\"%s\""
+                            " preference_count=\"1\""
+                            " skip_cert_refs=\"1\""
+                            " skip_tags=\"1\""
+                            " sort_field=\"%s\""
+                            " sort_order=\"%s\"/>",
+                            family, config_id,
+                            sort_field ? sort_field : "nvts.name",
+                            sort_order ? sort_order : "ascending")
+      == -1)
+    {
+      g_string_free (xml, TRUE);
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+                           credentials, "Internal error", __func__, __LINE__,
+                           "An internal error occurred while getting list of configs. "
+                           "The current list of configs is not available. "
+                           "Diagnostics: Failure to send command to manager daemon.",
+                           response_data);
+    }
+
+  if (read_string_c (connection, &xml))
+    {
+      g_string_free (xml, TRUE);
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+                           credentials, "Internal error", __func__, __LINE__,
+                           "An internal error occurred while getting list of configs. "
+                           "The current list of configs is not available. "
+                           "Diagnostics: Failure to receive response from manager daemon.",
+                           response_data);
+    }
+
+  g_string_append (xml, "</get_config_family_response>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
 }
 
 /**

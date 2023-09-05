@@ -1296,6 +1296,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (auth_settings)
   ELSE (edit_alert)
   ELSE (edit_config_family)
+  ELSE (edit_config_family_all)
   ELSE (export_alert)
   ELSE (export_alerts)
   ELSE (export_asset)

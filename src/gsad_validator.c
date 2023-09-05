@@ -90,6 +90,7 @@ init_validator ()
                      "|(download_key_pub)"
                      "|(edit_alert)"
                      "|(edit_config_family)"
+                     "|(edit_config_family_all)"
                      "|(auth_settings)"
                      "|(empty_trashcan)"
                      "|(export_alert)"
