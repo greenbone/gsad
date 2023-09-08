@@ -11144,7 +11144,8 @@ save_my_settings_gmp (gvm_connection_t *connection, credentials_t *credentials,
       if (gmp_success (entity) == 1)
         {
           user_set_password (user, passwd);
-          session_remove_other_sessions (user_get_token (user), user);
+          session_remove_other_sessions (user_get_token (user),
+                                         user_get_username (user));
           user_changed = 1;
         }
       else
@@ -14525,16 +14526,13 @@ save_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
     case 0:
       if (gmp_success (entity) == 1)
         {
-          user_t *user = session_get_user_by_username (old_login);
-
-          if (user
-              && (!str_equal (modify_password, "0")
-                  || !str_equal (old_login, login)))
+          if (!str_equal (modify_password, "0")
+              || !str_equal (old_login, login))
             {
               /* logout all other user sessions if new password was set,
                  authentication type has changed or username has changed */
               session_remove_other_sessions (user_get_token (current_user),
-                                             user);
+                                             old_login);
             }
 
           if (str_equal (old_login, user_get_username (current_user)))
@@ -16979,6 +16977,24 @@ login (http_connection_t *con, params_t *params,
           user_t *user;
           user = user_add (login, password, timezone, role, capabilities,
                            language, pw_warning, client_address);
+
+          if (user == NULL)
+            {
+              status = MHD_HTTP_FORBIDDEN;
+              auth_reason = TOO_MANY_USER_SESSIONS;
+
+              g_warning ("Authentication failure for '%s' from %s."
+                         " Too many sessions for user.",
+                         login ?: "", client_address);
+
+              g_free (timezone);
+              g_free (capabilities);
+              g_free (language);
+              g_free (role);
+              g_free (pw_warning);
+
+              return handler_send_reauthentication (con, status, auth_reason);
+            }
 
           g_message ("Authentication success for '%s' from %s", login ?: "",
                      client_address);

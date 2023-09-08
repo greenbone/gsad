@@ -116,4 +116,10 @@ get_guest_password ();
 gboolean
 is_ignore_http_x_real_ip ();
 
+void
+set_user_session_limit (int);
+
+int
+get_user_session_limit ();
+
 #endif /* _GSAD_SETTINGS_H */

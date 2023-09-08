@@ -462,6 +462,9 @@ handler_send_reauthentication (http_connection_t *connection,
     case LOGOUT:
       msg = "Successfully logged out.";
       break;
+    case TOO_MANY_USER_SESSIONS:
+      msg = "Login failed. Too many concurrent logins for user.";
+      break;
     case UNKOWN_ERROR:
       msg = "Unknown error.";
       break;

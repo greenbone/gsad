@@ -23,6 +23,7 @@
 
 #include "gsad_session.h"
 
+#include "gsad_gmp_auth.h"
 #include "gsad_user.h"
 #include "utils.h" /* for str_equal */
 
@@ -107,15 +108,15 @@ session_get_user_by_id (const gchar *id)
 }
 
 /**
- * Find the first user with the username
+ * Find all users with the given username
  *
- * @return Return a copy of the user or NULL if not found
+ * @return Return a list with copies of the users or NULL if not found
  */
-user_t *
-session_get_user_by_username (const gchar *username)
+GList *
+session_get_users_by_username (const gchar *username)
 {
   int index;
-  user_t *user = NULL;
+  GList *list = NULL;
 
   g_mutex_lock (mutex);
 
@@ -126,14 +127,15 @@ session_get_user_by_username (const gchar *username)
 
       if (str_equal (name, username))
         {
+          user_t *user = NULL;
           user = user_copy (item);
-          break;
+          list = g_list_prepend (list, user);
         }
     }
 
   g_mutex_unlock (mutex);
 
-  return user;
+  return list;
 }
 
 /**
@@ -172,12 +174,12 @@ session_remove_user (const gchar *id)
 /**
  * @brief Removes all session of the user, except the one with the passed id.
  *
- * @param[in] id    ID of the session to keep
- * @param[in] user  The user to logout.
+ * @param[in] keep_id   ID of the session to keep
+ * @param[in] username  The user to logout.
  *
  */
 void
-session_remove_other_sessions (const gchar *id, user_t *user)
+session_remove_other_sessions (const gchar *keep_id, const gchar *username)
 {
   int index;
 
@@ -189,12 +191,17 @@ session_remove_other_sessions (const gchar *id, user_t *user)
 
       const gchar *itemtoken = user_get_token (item);
       const gchar *itemname = user_get_username (item);
-      const gchar *username = user_get_username (user);
 
-      if (str_equal (itemname, username) && !str_equal (id, itemtoken))
+      if (str_equal (itemname, username) && !str_equal (keep_id, itemtoken))
         {
+          const char *itempassword = user_get_password (item);
+
           g_debug ("%s: logging out user '%s', token '%s'", __func__, itemname,
                    itemtoken);
+
+          if (itemname && itempassword)
+            logout_gmp (itemname, itempassword);
+
           g_ptr_array_remove (users, (gpointer) item);
 
           user_free (item);

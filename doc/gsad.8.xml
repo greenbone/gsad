@@ -95,6 +95,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
     </option>
 
     <option>
+      <p><opt>--user-session-limit=<arg>MAX_SESSIONS</arg></opt></p>
+      <optdesc>
+        <p>Set maximum number of active sessions per user. 0 for unlimited.</p>
+      </optdesc>
+    </option>
+
+    <option>
       <p><opt>-v, --verbose</opt></p>
       <optdesc>
         <p>Print progress messages.</p>
