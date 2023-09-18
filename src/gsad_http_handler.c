@@ -787,8 +787,8 @@ make_url_handlers ()
                     http_handler_new (handle_setup_credentials));
   http_handler_add (system_report_handler,
                     http_handler_new (handle_system_report));
-  system_report_url_handler = url_handler_new ("^/system_report/.+$",
-                                               system_report_handler);
+  system_report_url_handler =
+    url_handler_new ("^/system_report/.+$", system_report_handler);
 
   // Create /logout handler.
 
