@@ -756,9 +756,10 @@ handle_static_config (http_connection_t *connection, const char *method,
 http_handler_t *
 init_http_handlers ()
 {
-  http_handler_t *method_router;
-  http_handler_t *gmp_post_handler;
-  http_handler_t *url_handlers;
+  http_handler_t *method_router, *gmp_post_handler, *url_handlers;
+  http_handler_t *gmp_handler, *gmp_url_handler;
+  http_handler_t *system_report_handler, *system_report_url_handler;
+  http_handler_t *logout_handler, *logout_url_handler;
 
   http_validator = gvm_validator_new ();
   gvm_validator_add (http_validator, "slave_id", SLAVE_ID_REGEXP);
@@ -780,23 +781,22 @@ init_http_handlers ()
                         handle_static_file);
   url_handler_add_func (url_handlers, "^/manual/.+$", handle_static_file);
 
-  http_handler_t *gmp_handler = http_handler_new (handle_setup_user);
+  gmp_handler = http_handler_new (handle_setup_user);
   http_handler_add (gmp_handler, http_handler_new (handle_setup_credentials));
   http_handler_add (gmp_handler, http_handler_new (handle_gmp_get));
-  http_handler_t *gmp_url_handler = url_handler_new ("^/gmp$", gmp_handler);
+  gmp_url_handler = url_handler_new ("^/gmp$", gmp_handler);
 
-  http_handler_t *system_report_handler = http_handler_new (handle_setup_user);
+  system_report_handler = http_handler_new (handle_setup_user);
   http_handler_add (system_report_handler,
                     http_handler_new (handle_setup_credentials));
   http_handler_add (system_report_handler,
                     http_handler_new (handle_system_report));
-  http_handler_t *system_report_url_handler =
-    url_handler_new ("^/system_report/.+$", system_report_handler);
+  system_report_url_handler = url_handler_new ("^/system_report/.+$",
+                                               system_report_handler);
 
-  http_handler_t *logout_handler = http_handler_new (handle_get_user);
+  logout_handler = http_handler_new (handle_get_user);
   http_handler_add (logout_handler, http_handler_new (handle_logout));
-  http_handler_t *logout_url_handler =
-    url_handler_new ("^/logout/?$", logout_handler);
+  logout_url_handler = url_handler_new ("^/logout/?$", logout_handler);
 
   http_handler_add (url_handlers, gmp_url_handler);
   http_handler_add (url_handlers, system_report_url_handler);
