@@ -753,24 +753,13 @@ handle_static_config (http_connection_t *connection, const char *method,
                                   NULL);
 }
 
-http_handler_t *
-init_http_handlers ()
+static http_handler_t *
+make_url_handlers ()
 {
-  http_handler_t *method_router, *gmp_post_handler, *url_handlers;
+  http_handler_t *url_handlers;
   http_handler_t *gmp_handler, *gmp_url_handler;
   http_handler_t *system_report_handler, *system_report_url_handler;
   http_handler_t *logout_handler, *logout_url_handler;
-
-  http_validator = gvm_validator_new ();
-  gvm_validator_add (http_validator, "slave_id", SLAVE_ID_REGEXP);
-  gvm_validator_add (http_validator, "token", TOKEN_REGEXP);
-
-  handlers = http_handler_new (handle_validate);
-
-  method_router = method_router_new ();
-  gmp_post_handler = http_handler_new (handle_gmp_post);
-
-  http_handler_add (handlers, method_router);
 
   url_handlers = url_handler_new ("^/(img|js|css|locales)/.+$",
                                   http_handler_new (handle_static_file));
@@ -803,6 +792,27 @@ init_http_handlers ()
   http_handler_add (url_handlers, logout_url_handler);
 
   http_handler_add (url_handlers, http_handler_new (handle_index));
+
+  return url_handlers;
+}
+
+http_handler_t *
+init_http_handlers ()
+{
+  http_handler_t *method_router, *gmp_post_handler, *url_handlers;
+
+  http_validator = gvm_validator_new ();
+  gvm_validator_add (http_validator, "slave_id", SLAVE_ID_REGEXP);
+  gvm_validator_add (http_validator, "token", TOKEN_REGEXP);
+
+  handlers = http_handler_new (handle_validate);
+
+  method_router = method_router_new ();
+  gmp_post_handler = http_handler_new (handle_gmp_post);
+
+  http_handler_add (handlers, method_router);
+
+  url_handlers = make_url_handlers ();
 
   method_router_set_get_handler (method_router, url_handlers);
   method_router_set_post_handler (method_router, gmp_post_handler);
