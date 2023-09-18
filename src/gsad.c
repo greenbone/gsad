@@ -1157,7 +1157,7 @@ watch_client_connection (void *data)
  * @brief Check whether may compress response.
  *
  * @param[in]  con  HTTP Connection
- * 
+ *
  * @return 1 if may, else 0.
  */
 static int
@@ -1166,8 +1166,7 @@ may_compress_response (http_connection_t *con)
   const char *ae;
   const char *de;
 
-  ae = MHD_lookup_connection_value (con,
-                                    MHD_HEADER_KIND,
+  ae = MHD_lookup_connection_value (con, MHD_HEADER_KIND,
                                     MHD_HTTP_HEADER_ACCEPT_ENCODING);
   if (ae == NULL)
     return 0;
@@ -1178,11 +1177,8 @@ may_compress_response (http_connection_t *con)
   if (de == NULL)
     return 0;
 
-  if (((de == ae)
-       || (de[-1] == ',')
-       || (de[-1] == ' '))
-      && ((de[strlen ("deflate")] == '\0')
-          || (de[strlen ("deflate")] == ',')
+  if (((de == ae) || (de[-1] == ',') || (de[-1] == ' '))
+      && ((de[strlen ("deflate")] == '\0') || (de[strlen ("deflate")] == ',')
           || (de[strlen ("deflate")] == ';')))
     return 1;
 
@@ -1196,12 +1192,12 @@ may_compress_response (http_connection_t *con)
  * @param[in]  res       Response.
  * @param[out] comp_len  Compressed length.
  * @param[out] comp      Compressed response.
- * 
+ *
  * @return 1 on success, else 0.
  */
 static int
-compress_response (const size_t res_len, const char *res,
-                   size_t *comp_len, char **comp)
+compress_response (const size_t res_len, const char *res, size_t *comp_len,
+                   char **comp)
 {
   Bytef *cbuf;
   uLongf cbuf_size;
@@ -1210,15 +1206,11 @@ compress_response (const size_t res_len, const char *res,
   cbuf_size = compressBound (res_len);
   cbuf = g_malloc (cbuf_size);
 
-  ret = compress (cbuf,
-                  &cbuf_size,
-                  (const Bytef *) res,
-                  res_len);
+  ret = compress (cbuf, &cbuf_size, (const Bytef *) res, res_len);
 
-  if ((ret == Z_OK)
-      && (cbuf_size < res_len))
+  if ((ret == Z_OK) && (cbuf_size < res_len))
     {
-      *comp = (char*) cbuf;
+      *comp = (char *) cbuf;
       *comp_len = cbuf_size;
       return 1;
     }
@@ -1559,7 +1551,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   if (may_compress_response (con))
     {
       gsize comp_len;
-    
+
       if (compress_response (res_len, res, &comp_len, &comp))
         {
           free (res);
@@ -1574,8 +1566,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
                                               MHD_RESPMEM_MUST_FREE);
 
   if (comp)
-    MHD_add_response_header (response,
-                             MHD_HTTP_HEADER_CONTENT_ENCODING,
+    MHD_add_response_header (response, MHD_HTTP_HEADER_CONTENT_ENCODING,
                              "deflate");
 
   if (watcher_data)
