@@ -763,6 +763,9 @@ make_url_handlers ()
 
   url_handlers = url_handler_new ("^/(img|js|css|locales)/.+$",
                                   http_handler_new (handle_static_file));
+
+  // Add simpler handlers.
+
   url_handler_add_func (url_handlers, "^/robots\\.txt$", handle_static_file);
 
   url_handler_add_func (url_handlers, "^/config\\.*js$", handle_static_config);
@@ -770,10 +773,14 @@ make_url_handlers ()
                         handle_static_file);
   url_handler_add_func (url_handlers, "^/manual/.+$", handle_static_file);
 
+  // Create /gmp handler.
+
   gmp_handler = http_handler_new (handle_setup_user);
   http_handler_add (gmp_handler, http_handler_new (handle_setup_credentials));
   http_handler_add (gmp_handler, http_handler_new (handle_gmp_get));
   gmp_url_handler = url_handler_new ("^/gmp$", gmp_handler);
+
+  // Create /system_report handler.
 
   system_report_handler = http_handler_new (handle_setup_user);
   http_handler_add (system_report_handler,
@@ -783,9 +790,13 @@ make_url_handlers ()
   system_report_url_handler = url_handler_new ("^/system_report/.+$",
                                                system_report_handler);
 
+  // Create /logout handler.
+
   logout_handler = http_handler_new (handle_get_user);
   http_handler_add (logout_handler, http_handler_new (handle_logout));
   logout_url_handler = url_handler_new ("^/logout/?$", logout_handler);
+
+  // Add the handlers.
 
   http_handler_add (url_handlers, gmp_url_handler);
   http_handler_add (url_handlers, system_report_url_handler);
