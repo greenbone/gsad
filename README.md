@@ -64,6 +64,7 @@ Prerequisites:
 * libmicrohttpd >= 0.9.0
 * pkg-config
 * gcc
+* zlib >= 1.2
 
 Prerequisites for building documentation:
 * Doxygen
@@ -72,7 +73,7 @@ Prerequisites for building documentation:
 Install prerequisites on Debian GNU/Linux:
 
 ```bash
-apt-get install libmicrohttpd-dev libxml2-dev
+apt-get install libmicrohttpd-dev libxml2-dev zlib1g-dev
 ```
 
 ### Compiling
