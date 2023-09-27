@@ -71,11 +71,7 @@ gmp_arguments_string (gmp_arguments_t *arguments)
       g_free (escaped_value);
     }
 
-  gchar *retval = argumentslist->str;
-
-  g_string_free (argumentslist, FALSE);
-
-  return retval;
+  return g_string_free (argumentslist, FALSE);
 }
 
 gboolean
