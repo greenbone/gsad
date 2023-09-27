@@ -5599,7 +5599,6 @@ char *
 restore_gmp (gvm_connection_t *connection, credentials_t *credentials,
              params_t *params, cmd_response_data_t *response_data)
 {
-  GString *xml;
   gchar *ret;
   entity_t entity;
   const char *target_id;
@@ -5607,8 +5606,6 @@ restore_gmp (gvm_connection_t *connection, credentials_t *credentials,
   target_id = params_value (params, "target_id");
 
   CHECK_VARIABLE_INVALID (target_id, "Restore")
-
-  xml = g_string_new ("");
 
   /* Restore the resource. */
 
@@ -5618,7 +5615,6 @@ restore_gmp (gvm_connection_t *connection, credentials_t *credentials,
                             target_id)
       == -1)
     {
-      g_string_free (xml, TRUE);
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
@@ -5629,9 +5625,8 @@ restore_gmp (gvm_connection_t *connection, credentials_t *credentials,
         response_data);
     }
 
-  if (read_entity_and_string_c (connection, &entity, &xml))
+  if (read_entity_and_string_c (connection, &entity, NULL))
     {
-      g_string_free (xml, TRUE);
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
@@ -5647,7 +5642,6 @@ restore_gmp (gvm_connection_t *connection, credentials_t *credentials,
   ret = response_from_entity (connection, credentials, params, entity,
                               "Restore", response_data);
   free_entity (entity);
-  g_string_free (xml, FALSE);
   return ret;
 }
 
@@ -5665,17 +5659,13 @@ char *
 empty_trashcan_gmp (gvm_connection_t *connection, credentials_t *credentials,
                     params_t *params, cmd_response_data_t *response_data)
 {
-  GString *xml;
   gchar *ret;
   entity_t entity;
-
-  xml = g_string_new ("");
 
   /* Empty the trash. */
 
   if (gvm_connection_sendf (connection, "<empty_trashcan/>") == -1)
     {
-      g_string_free (xml, TRUE);
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
@@ -5685,9 +5675,8 @@ empty_trashcan_gmp (gvm_connection_t *connection, credentials_t *credentials,
         response_data);
     }
 
-  if (read_entity_and_string_c (connection, &entity, &xml))
+  if (read_entity_and_string_c (connection, &entity, NULL))
     {
-      g_string_free (xml, TRUE);
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
@@ -5702,7 +5691,6 @@ empty_trashcan_gmp (gvm_connection_t *connection, credentials_t *credentials,
   ret = response_from_entity (connection, credentials, params, entity,
                               "Empty Trashcan", response_data);
   free_entity (entity);
-  g_string_free (xml, FALSE);
   return ret;
 }
 
