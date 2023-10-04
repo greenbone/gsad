@@ -6956,7 +6956,7 @@ get_config_family (gvm_connection_t *connection, credentials_t *credentials,
         "<get_nvts"
         " config_id=\"%s\" details=\"1\""
         " family=\"%s\" timeout=\"1\" preference_count=\"1\""
-        " skip_cert_refs=\"1\" skip_tags=\"1\""
+        " skip_cert_refs=\"1\" skip_tags=\"1\" lean=\"1\""
         " sort_field=\"%s\" sort_order=\"%s\"/>",
         config_id, family, sort_field ? sort_field : "nvts.name",
         sort_order ? sort_order : "ascending")
@@ -7001,6 +7001,7 @@ get_config_family (gvm_connection_t *connection, credentials_t *credentials,
                                 " preference_count=\"1\""
                                 " skip_cert_refs=\"1\""
                                 " skip_tags=\"1\""
+                                " lean=\"1\""
                                 " sort_field=\"%s\""
                                 " sort_order=\"%s\"/>",
                                 family, config_id,
