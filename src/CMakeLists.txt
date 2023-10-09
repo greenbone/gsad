@@ -30,6 +30,7 @@ pkg_check_modules (LIBGVM_BASE REQUIRED libgvm_base>=22.6)
 pkg_check_modules (LIBGVM_UTIL REQUIRED libgvm_util>=22.6)
 pkg_check_modules (LIBGVM_GMP REQUIRED libgvm_gmp>=22.6)
 pkg_check_modules (GNUTLS REQUIRED gnutls>=3.2.15)
+pkg_check_modules (ZLIB REQUIRED zlib>=1.2)
 
 message (STATUS "Looking for libgcrypt...")
 find_library (LIBGCRYPT gcrypt)
@@ -48,13 +49,13 @@ endif (NOT LIBGCRYPT)
 if (NOT LIBMICROHTTPD_FOUND OR NOT LIBXML_FOUND OR NOT GLIB_FOUND OR
     (GTHREAD_REQUIRED AND NOT GTHREAD_FOUND) OR NOT
     LIBGVM_GMP_FOUND OR NOT GNUTLS_FOUND OR NOT
-    LIBGCRYPT)
+    LIBGCRYPT OR NOT ZLIB_FOUND)
   message (FATAL_ERROR "One or more required libraries was not found "
     "(see message above), please install the missing "
     "libraries and run cmake again.")
 endif (NOT LIBMICROHTTPD_FOUND OR NOT LIBXML_FOUND OR NOT GLIB_FOUND OR
   (GTHREAD_REQUIRED AND NOT GTHREAD_FOUND) OR NOT
-  LIBGVM_GMP_FOUND OR NOT GNUTLS_FOUND OR NOT LIBGCRYPT)
+  LIBGVM_GMP_FOUND OR NOT GNUTLS_FOUND OR NOT LIBGCRYPT OR NOT ZLIB_FOUND)
 
 ## Program
 
@@ -71,7 +72,8 @@ include_directories (${LIBMICROHTTPD_INCLUDE_DIRS} ${LIBXML_INCLUDE_DIRS}
                      ${LIBGVM_BASE_INCLUDE_DIRS}
                      ${LIBGVM_UTIL_INCLUDE_DIRS}
                      ${LIBGVM_GMP_INCLUDE_DIRS}
-                     ${GNUTLS_INCLUDE_DIRS})
+                     ${GNUTLS_INCLUDE_DIRS}
+                     ${ZLIB_INCLUDE_DIRS})
 
 find_package (Threads)
 
@@ -101,6 +103,7 @@ target_link_libraries (gsad ${LIBMICROHTTPD_LDFLAGS}
                             ${LIBXML_LDFLAGS}
                             ${LIBGCRYPT_LDFLAGS}
                             ${GNUTLS_LDFLAGS}
+                            ${ZLIB_LDFLAGS}
                             ${LIBGVM_BASE_LDFLAGS}
                             ${LIBGVM_UTIL_LDFLAGS}
                             ${LIBGVM_GMP_LDFLAGS}
