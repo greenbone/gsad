@@ -36,7 +36,7 @@ void
 gmp_init (const gchar *, const gchar *, int);
 
 int
-manager_connect (credentials_t *, gvm_connection_t *, cmd_response_data_t *);
+manager_connect (credentials_t *, gvm_connection_t *);
 
 char *
 clone_gmp (gvm_connection_t *, credentials_t *, params_t *,
