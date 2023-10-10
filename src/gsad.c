@@ -746,7 +746,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
     }
 
   /* Connect to manager */
-  switch (manager_connect (credentials, &connection, response_data))
+  switch (manager_connect (credentials, &connection))
     {
     case 0:
       break;
@@ -1284,7 +1284,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
     }
 
   /* Connect to manager */
-  switch (manager_connect (credentials, &connection, response_data))
+  switch (manager_connect (credentials, &connection))
     {
     case 0:
       break;

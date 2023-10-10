@@ -17023,14 +17023,12 @@ login (http_connection_t *con, params_t *params,
  *
  * @param[in]   credentials  Username and password for authentication.
  * @param[out]  connection   Connection to Manager on success.
- * @param[out]  response_data  Extra data return for the HTTP response.
  *
  * @return 0 success, 1 if manager closed connection, 2 if auth failed,
  *         3 on timeout, 4 failed to connect, -1 on error
  */
 int
-manager_connect (credentials_t *credentials, gvm_connection_t *connection,
-                 cmd_response_data_t *response_data)
+manager_connect (credentials_t *credentials, gvm_connection_t *connection)
 {
   gmp_authenticate_info_opts_t auth_opts;
 
