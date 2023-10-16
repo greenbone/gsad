@@ -594,7 +594,7 @@ handle_system_report (http_connection_t *connection, const char *method,
   response_data = cmd_response_data_new ();
 
   /* Connect to manager */
-  switch (manager_connect (credentials, &con, response_data))
+  switch (manager_connect (credentials, &con))
     {
     case 0: /* success */
       res = get_system_report_gmp_from_url (
