@@ -66,6 +66,7 @@
 #include <sys/types.h>
 #include <sys/un.h>
 #include <unistd.h>
+#include <zlib.h>
 /* This must follow the system includes. */
 #include "gsad_base.h"
 #include "gsad_credentials.h"
@@ -745,7 +746,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
     }
 
   /* Connect to manager */
-  switch (manager_connect (credentials, &connection, response_data))
+  switch (manager_connect (credentials, &connection))
     {
     case 0:
       break;
@@ -1153,6 +1154,72 @@ watch_client_connection (void *data)
     name##_gmp (&connection, credentials, params, response_data);
 
 /**
+ * @brief Check whether may compress response.
+ *
+ * @param[in]  con  HTTP Connection
+ *
+ * @return 1 if may, else 0.
+ */
+static int
+may_compress_response (http_connection_t *con)
+{
+  const char *ae;
+  const char *de;
+
+  ae = MHD_lookup_connection_value (con, MHD_HEADER_KIND,
+                                    MHD_HTTP_HEADER_ACCEPT_ENCODING);
+  if (ae == NULL)
+    return 0;
+  if (strcmp (ae, "*") == 0)
+    return 1;
+
+  de = strstr (ae, "deflate");
+  if (de == NULL)
+    return 0;
+
+  if (((de == ae) || (de[-1] == ',') || (de[-1] == ' '))
+      && ((de[strlen ("deflate")] == '\0') || (de[strlen ("deflate")] == ',')
+          || (de[strlen ("deflate")] == ';')))
+    return 1;
+
+  return 0;
+}
+
+/**
+ * @brief Compress response.
+ *
+ * @param[in]  res_len   Response length.
+ * @param[in]  res       Response.
+ * @param[out] comp_len  Compressed length.
+ * @param[out] comp      Compressed response.
+ *
+ * @return 1 on success, else 0.
+ */
+static int
+compress_response (const size_t res_len, const char *res, size_t *comp_len,
+                   char **comp)
+{
+  Bytef *cbuf;
+  uLongf cbuf_size;
+  int ret;
+
+  cbuf_size = compressBound (res_len);
+  cbuf = g_malloc (cbuf_size);
+
+  ret = compress (cbuf, &cbuf_size, (const Bytef *) res, res_len);
+
+  if ((ret == Z_OK) && (cbuf_size < res_len))
+    {
+      *comp = (char *) cbuf;
+      *comp_len = cbuf_size;
+      return 1;
+    }
+
+  free (cbuf);
+  return 0;
+}
+
+/**
  * @brief Handle a complete GET request.
  *
  * After some input checking, depending on the cmd parameter of the connection,
@@ -1172,7 +1239,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   const int CMD_MAX_SIZE = 27; /* delete_trash_lsc_credential */
   params_t *params = con_info->params;
   gvm_connection_t connection;
-  char *res = NULL;
+  char *res = NULL, *comp;
   gsize res_len = 0;
   http_response_t *response;
   cmd_response_data_t *response_data;
@@ -1217,7 +1284,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
     }
 
   /* Connect to manager */
-  switch (manager_connect (credentials, &connection, response_data))
+  switch (manager_connect (credentials, &connection))
     {
     case 0:
       break;
@@ -1482,8 +1549,26 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   if (res_len == 0)
     res_len = strlen (res);
 
+  if (may_compress_response (con))
+    {
+      gsize comp_len;
+
+      if (compress_response (res_len, res, &comp_len, &comp))
+        {
+          free (res);
+          res_len = comp_len;
+          res = comp;
+        }
+    }
+  else
+    comp = NULL;
+
   response = MHD_create_response_from_buffer (res_len, (void *) res,
                                               MHD_RESPMEM_MUST_FREE);
+
+  if (comp)
+    MHD_add_response_header (response, MHD_HTTP_HEADER_CONTENT_ENCODING,
+                             "deflate");
 
   if (watcher_data)
     {
@@ -2181,6 +2266,7 @@ main (int argc, char **argv)
   static gboolean ignore_x_real_ip = FALSE;
   static int per_ip_connection_limit = DEFAULT_GSAD_PER_IP_CONNECTION_LIMIT;
   static int verbose = 0;
+  static int gsad_user_session_limit = 0;
   GError *error = NULL;
   GOptionContext *option_context;
   static GOptionEntry option_entries[] = {
@@ -2267,6 +2353,9 @@ main (int argc, char **argv)
     {"http-cors", 0, 0, G_OPTION_ARG_STRING, &http_cors,
      "Set Cross-Origin Resource Sharing (CORS) allow origin http header ",
      "<cors>"},
+    {"user-session-limit", '\0', 0, G_OPTION_ARG_INT, &gsad_user_session_limit,
+     "Set maximum number of active sessions per user. 0 for unlimited.",
+     "<max-sessions>"},
     {NULL}};
 
   option_context =
@@ -2484,6 +2573,8 @@ main (int argc, char **argv)
           break;
         }
     }
+
+  set_user_session_limit (gsad_user_session_limit);
 
   /* Register the cleanup function. */
 

@@ -5599,7 +5599,6 @@ char *
 restore_gmp (gvm_connection_t *connection, credentials_t *credentials,
              params_t *params, cmd_response_data_t *response_data)
 {
-  GString *xml;
   gchar *ret;
   entity_t entity;
   const char *target_id;
@@ -5607,8 +5606,6 @@ restore_gmp (gvm_connection_t *connection, credentials_t *credentials,
   target_id = params_value (params, "target_id");
 
   CHECK_VARIABLE_INVALID (target_id, "Restore")
-
-  xml = g_string_new ("");
 
   /* Restore the resource. */
 
@@ -5618,7 +5615,6 @@ restore_gmp (gvm_connection_t *connection, credentials_t *credentials,
                             target_id)
       == -1)
     {
-      g_string_free (xml, TRUE);
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
@@ -5629,9 +5625,8 @@ restore_gmp (gvm_connection_t *connection, credentials_t *credentials,
         response_data);
     }
 
-  if (read_entity_and_string_c (connection, &entity, &xml))
+  if (read_entity_and_string_c (connection, &entity, NULL))
     {
-      g_string_free (xml, TRUE);
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
@@ -5647,7 +5642,6 @@ restore_gmp (gvm_connection_t *connection, credentials_t *credentials,
   ret = response_from_entity (connection, credentials, params, entity,
                               "Restore", response_data);
   free_entity (entity);
-  g_string_free (xml, FALSE);
   return ret;
 }
 
@@ -5665,17 +5659,13 @@ char *
 empty_trashcan_gmp (gvm_connection_t *connection, credentials_t *credentials,
                     params_t *params, cmd_response_data_t *response_data)
 {
-  GString *xml;
   gchar *ret;
   entity_t entity;
-
-  xml = g_string_new ("");
 
   /* Empty the trash. */
 
   if (gvm_connection_sendf (connection, "<empty_trashcan/>") == -1)
     {
-      g_string_free (xml, TRUE);
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
@@ -5685,9 +5675,8 @@ empty_trashcan_gmp (gvm_connection_t *connection, credentials_t *credentials,
         response_data);
     }
 
-  if (read_entity_and_string_c (connection, &entity, &xml))
+  if (read_entity_and_string_c (connection, &entity, NULL))
     {
-      g_string_free (xml, TRUE);
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
@@ -5702,7 +5691,6 @@ empty_trashcan_gmp (gvm_connection_t *connection, credentials_t *credentials,
   ret = response_from_entity (connection, credentials, params, entity,
                               "Empty Trashcan", response_data);
   free_entity (entity);
-  g_string_free (xml, FALSE);
   return ret;
 }
 
@@ -6966,7 +6954,7 @@ get_config_family (gvm_connection_t *connection, credentials_t *credentials,
         "<get_nvts"
         " config_id=\"%s\" details=\"1\""
         " family=\"%s\" timeout=\"1\" preference_count=\"1\""
-        " skip_cert_refs=\"1\" skip_tags=\"1\""
+        " skip_cert_refs=\"1\" skip_tags=\"1\" lean=\"1\""
         " sort_field=\"%s\" sort_order=\"%s\"/>",
         config_id, family, sort_field ? sort_field : "nvts.name",
         sort_order ? sort_order : "ascending")
@@ -7076,6 +7064,7 @@ edit_config_family_all_gmp (gvm_connection_t *connection,
                             " preference_count=\"1\""
                             " skip_cert_refs=\"1\""
                             " skip_tags=\"1\""
+                            " lean=\"1\""
                             " sort_field=\"%s\""
                             " sort_order=\"%s\"/>",
                             family, config_id,
@@ -11170,7 +11159,8 @@ save_my_settings_gmp (gvm_connection_t *connection, credentials_t *credentials,
       if (gmp_success (entity) == 1)
         {
           user_set_password (user, passwd);
-          session_remove_other_sessions (user_get_token (user), user);
+          session_remove_other_sessions (user_get_token (user),
+                                         user_get_username (user));
           user_changed = 1;
         }
       else
@@ -14551,16 +14541,13 @@ save_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
     case 0:
       if (gmp_success (entity) == 1)
         {
-          user_t *user = session_get_user_by_username (old_login);
-
-          if (user
-              && (!str_equal (modify_password, "0")
-                  || !str_equal (old_login, login)))
+          if (!str_equal (modify_password, "0")
+              || !str_equal (old_login, login))
             {
               /* logout all other user sessions if new password was set,
                  authentication type has changed or username has changed */
               session_remove_other_sessions (user_get_token (current_user),
-                                             user);
+                                             old_login);
             }
 
           if (str_equal (old_login, user_get_username (current_user)))
@@ -17006,6 +16993,24 @@ login (http_connection_t *con, params_t *params,
           user = user_add (login, password, timezone, role, capabilities,
                            language, pw_warning, client_address);
 
+          if (user == NULL)
+            {
+              status = MHD_HTTP_FORBIDDEN;
+              auth_reason = TOO_MANY_USER_SESSIONS;
+
+              g_warning ("Authentication failure for '%s' from %s."
+                         " Too many sessions for user.",
+                         login ?: "", client_address);
+
+              g_free (timezone);
+              g_free (capabilities);
+              g_free (language);
+              g_free (role);
+              g_free (pw_warning);
+
+              return handler_send_reauthentication (con, status, auth_reason);
+            }
+
           g_message ("Authentication success for '%s' from %s", login ?: "",
                      client_address);
 
@@ -17044,14 +17049,12 @@ login (http_connection_t *con, params_t *params,
  *
  * @param[in]   credentials  Username and password for authentication.
  * @param[out]  connection   Connection to Manager on success.
- * @param[out]  response_data  Extra data return for the HTTP response.
  *
  * @return 0 success, 1 if manager closed connection, 2 if auth failed,
  *         3 on timeout, 4 failed to connect, -1 on error
  */
 int
-manager_connect (credentials_t *credentials, gvm_connection_t *connection,
-                 cmd_response_data_t *response_data)
+manager_connect (credentials_t *credentials, gvm_connection_t *connection)
 {
   gmp_authenticate_info_opts_t auth_opts;
 

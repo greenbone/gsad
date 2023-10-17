@@ -325,15 +325,31 @@ user_add (const gchar *username, const gchar *password, const gchar *timezone,
           const gchar *role, const gchar *capabilities, const gchar *language,
           const gchar *pw_warning, const char *address)
 {
-  user_t *user = session_get_user_by_username (username);
+  GList *current_user_item, *user_list;
+  user_t *user;
+  int session_count = 0;
 
-  if (user && user_session_expired (user))
+  user_list = current_user_item = session_get_users_by_username (username);
+  while (current_user_item)
     {
-      if (user->username && user->password)
-        logout_gmp (user->username, user->password);
-      session_remove_user (user->token);
+      user = current_user_item->data;
+      if (user_session_expired (user))
+        {
+          if (user->username && user->password)
+            logout_gmp (user->username, user->password);
+          session_remove_user (user->token);
+        }
+      else
+        session_count++;
       user_free (user);
+      current_user_item = current_user_item->next;
     }
+  g_list_free (user_list);
+
+  int session_limit = get_user_session_limit ();
+  if (session_limit && (session_count >= session_limit))
+
+    return NULL;
 
   user = user_new_with_data (username, password, timezone, role, capabilities,
                              language, pw_warning, address);
