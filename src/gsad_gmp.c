@@ -7076,11 +7076,11 @@ edit_config_family_all_gmp (gvm_connection_t *connection,
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
-                           credentials, "Internal error", __func__, __LINE__,
-                           "An internal error occurred while getting list of configs. "
-                           "The current list of configs is not available. "
-                           "Diagnostics: Failure to send command to manager daemon.",
-                           response_data);
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while getting list of configs. "
+        "The current list of configs is not available. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
     }
 
   if (read_string_c (connection, &xml))
@@ -7089,11 +7089,11 @@ edit_config_family_all_gmp (gvm_connection_t *connection,
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
-                           credentials, "Internal error", __func__, __LINE__,
-                           "An internal error occurred while getting list of configs. "
-                           "The current list of configs is not available. "
-                           "Diagnostics: Failure to receive response from manager daemon.",
-                           response_data);
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while getting list of configs. "
+        "The current list of configs is not available. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
     }
 
   g_string_append (xml, "</get_config_family_response>");
