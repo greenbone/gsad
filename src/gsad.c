@@ -1239,7 +1239,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   const int CMD_MAX_SIZE = 27; /* delete_trash_lsc_credential */
   params_t *params = con_info->params;
   gvm_connection_t connection;
-  char *res = NULL, *comp;
+  char *res = NULL, *comp = NULL;
   gsize res_len = 0;
   http_response_t *response;
   cmd_response_data_t *response_data;
@@ -1560,8 +1560,6 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
           res = comp;
         }
     }
-  else
-    comp = NULL;
 
   response = MHD_create_response_from_buffer (res_len, (void *) res,
                                               MHD_RESPMEM_MUST_FREE);
