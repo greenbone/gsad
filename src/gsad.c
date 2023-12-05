@@ -42,6 +42,9 @@
 
 #include <arpa/inet.h>
 #include <assert.h>
+#ifdef HAVE_BROTLI
+#include <brotli/encode.h>
+#endif
 #include <errno.h>
 #include <gcrypt.h>
 #include <glib.h>
@@ -1158,32 +1161,59 @@ watch_client_connection (void *data)
  * @return 1 if may, else 0.
  */
 static int
-may_compress_response (http_connection_t *con)
+may_compress (http_connection_t *con, const char *encoding)
 {
-  const char *ae;
-  const char *de;
+  const char *all, *one;
 
-  ae = MHD_lookup_connection_value (con, MHD_HEADER_KIND,
-                                    MHD_HTTP_HEADER_ACCEPT_ENCODING);
-  if (ae == NULL)
+  all = MHD_lookup_connection_value (con, MHD_HEADER_KIND,
+                                     MHD_HTTP_HEADER_ACCEPT_ENCODING);
+  if (all == NULL)
     return 0;
-  if (strcmp (ae, "*") == 0)
+  if (strcmp (all, "*") == 0)
     return 1;
 
-  de = strstr (ae, "deflate");
-  if (de == NULL)
+  one = strstr (all, encoding);
+  if (one == NULL)
     return 0;
 
-  if (((de == ae) || (de[-1] == ',') || (de[-1] == ' '))
-      && ((de[strlen ("deflate")] == '\0') || (de[strlen ("deflate")] == ',')
-          || (de[strlen ("deflate")] == ';')))
+  if (((one == all) || (one[-1] == ',') || (one[-1] == ' '))
+      && ((one[strlen (encoding)] == '\0') || (one[strlen (encoding)] == ',')
+          || (one[strlen (encoding)] == ';')))
     return 1;
 
   return 0;
 }
 
 /**
- * @brief Compress response.
+ * @brief Check whether may compress response.
+ *
+ * @param[in]  con  HTTP Connection
+ *
+ * @return 1 if may, else 0.
+ */
+static int
+may_deflate (http_connection_t *con)
+{
+  return may_compress (con, "deflate");
+}
+
+#ifdef HAVE_BROTLI
+/**
+ * @brief Check whether may compress response.
+ *
+ * @param[in]  con  HTTP Connection
+ *
+ * @return 1 if may, else 0.
+ */
+static int
+may_brotli (http_connection_t *con)
+{
+  return may_compress (con, "br");
+}
+#endif
+
+/**
+ * @brief Compress response with zlib.
  *
  * @param[in]  res_len   Response length.
  * @param[in]  res       Response.
@@ -1193,8 +1223,8 @@ may_compress_response (http_connection_t *con)
  * @return 1 on success, else 0.
  */
 static int
-compress_response (const size_t res_len, const char *res, size_t *comp_len,
-                   char **comp)
+compress_response_deflate (const size_t res_len, const char *res, size_t *comp_len,
+                           char **comp)
 {
   Bytef *cbuf;
   uLongf cbuf_size;
@@ -1215,6 +1245,50 @@ compress_response (const size_t res_len, const char *res, size_t *comp_len,
   free (cbuf);
   return 0;
 }
+
+#ifdef HAVE_BROTLI
+/**
+ * @brief Compress response with Brotli.
+ *
+ * @param[in]  res_len   Response length.
+ * @param[in]  res       Response.
+ * @param[out] comp_len  Compressed length.
+ * @param[out] comp      Compressed response.
+ *
+ * @return 1 on success, else 0.
+ */
+static int
+compress_response_brotli (const size_t res_len, const char *res, size_t *comp_len,
+                          char **comp)
+{
+  size_t cbuf_size;
+  uint8_t *cbuf;
+  int ret;
+
+  cbuf_size = BrotliEncoderMaxCompressedSize (res_len);
+  cbuf = g_malloc (cbuf_size);
+
+  ret = BrotliEncoderCompress (BROTLI_DEFAULT_QUALITY,
+                               BROTLI_DEFAULT_WINDOW,
+                               BROTLI_DEFAULT_MODE,
+                               res_len,
+                               (uint8_t*) res,
+                               &cbuf_size,
+                               cbuf);
+
+  if ((ret == BROTLI_TRUE) && (cbuf_size < res_len))
+    {
+      *comp = (char *) cbuf;
+      *comp_len = cbuf_size;
+      g_warning ("%s: 1", __func__);
+      return 1;
+    }
+
+  g_free (cbuf);
+  g_warning ("%s: 0", __func__);
+  return 0;
+}
+#endif
 
 /**
  * @brief Handle a complete GET request.
@@ -1242,8 +1316,10 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   cmd_response_data_t *response_data;
   pthread_t watch_thread;
   connection_watcher_data_t *watcher_data;
-  validator_t validator = get_validator ();
+  validator_t validator;
+  gchar *encoding;
 
+  validator = get_validator ();
   response_data = cmd_response_data_new ();
 
   cmd = params_value (params, "cmd");
@@ -1547,24 +1623,43 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   if (res_len == 0)
     res_len = strlen (res);
 
-  if (may_compress_response (con))
+  encoding = NULL;
+
+#ifdef HAVE_BROTLI
+  if (may_brotli (con))
     {
       gsize comp_len;
 
-      if (compress_response (res_len, res, &comp_len, &comp))
+      if (compress_response_brotli (res_len, res, &comp_len, &comp))
         {
           free (res);
           res_len = comp_len;
           res = comp;
+          encoding = "br";
+        }
+    }
+#endif
+
+  if ((encoding == NULL)
+      && may_deflate (con))
+    {
+      gsize comp_len;
+
+      if (compress_response_deflate (res_len, res, &comp_len, &comp))
+        {
+          free (res);
+          res_len = comp_len;
+          res = comp;
+          encoding = "deflate";
         }
     }
 
   response = MHD_create_response_from_buffer (res_len, (void *) res,
                                               MHD_RESPMEM_MUST_FREE);
 
-  if (comp)
+  if (encoding)
     MHD_add_response_header (response, MHD_HTTP_HEADER_CONTENT_ENCODING,
-                             "deflate");
+                             encoding);
 
   if (watcher_data)
     {
