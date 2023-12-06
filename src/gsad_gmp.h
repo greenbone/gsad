@@ -407,6 +407,9 @@ char *
 get_permissions_gmp (gvm_connection_t *, credentials_t *, params_t *,
                      cmd_response_data_t *);
 char *
+get_resource_names_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                        cmd_response_data_t *);                     
+char *
 save_permission_gmp (gvm_connection_t *, credentials_t *, params_t *,
                      cmd_response_data_t *);
 char *
