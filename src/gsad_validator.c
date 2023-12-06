@@ -152,6 +152,7 @@ init_validator ()
                      "|(get_groups)"
                      "|(get_info)"
                      "|(get_license)"
+                     "|(get_resource_names)"
                      "|(get_note)"
                      "|(get_notes)"
                      "|(get_nvt_families)"
@@ -388,6 +389,7 @@ init_validator ()
   gvm_validator_add (validator, "name", "^[[:graph:] ]*$");
   gvm_validator_add (validator, "info_name", "(?s)^.*$");
   gvm_validator_add (validator, "info_type", "(?s)^.*$");
+  gvm_validator_add (validator, "resource_type", "(?s)^.*$");
   gvm_validator_add (validator, "info_id",
                      "^([[:alnum:]\\-_.:\\/~()']|&amp;)+$");
   gvm_validator_add (validator, "details", "^[0-1]$");

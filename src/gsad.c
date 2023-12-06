@@ -1491,6 +1491,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_groups)
   ELSE (get_info)
   ELSE (get_license)
+  ELSE (get_resource_names)
   ELSE (get_note)
   ELSE (get_notes)
   ELSE (get_nvt_families)
