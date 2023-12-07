@@ -16483,17 +16483,16 @@ get_license_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_resource_names_gmp (gvm_connection_t *connection, 
-                        credentials_t *credentials,
-                        params_t *params, 
+get_resource_names_gmp (gvm_connection_t *connection,
+                        credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
   const gchar *type;
   gmp_arguments_t *arguments;
- 
+
   type = params_value (params, "resource_type");
 
-  CHECK_VARIABLE_INVALID(type, "Get Resource Names");
+  CHECK_VARIABLE_INVALID (type, "Get Resource Names");
 
   arguments = gmp_arguments_new ();
 
