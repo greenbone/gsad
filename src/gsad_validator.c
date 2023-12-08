@@ -152,7 +152,6 @@ init_validator ()
                      "|(get_groups)"
                      "|(get_info)"
                      "|(get_license)"
-                     "|(get_resource_names)"
                      "|(get_note)"
                      "|(get_notes)"
                      "|(get_nvt_families)"
@@ -166,6 +165,7 @@ init_validator ()
                      "|(get_reports)"
                      "|(get_report_format)"
                      "|(get_report_formats)"
+                     "|(get_resource_names)"
                      "|(get_result)"
                      "|(get_results)"
                      "|(get_role)"
@@ -389,7 +389,6 @@ init_validator ()
   gvm_validator_add (validator, "name", "^[[:graph:] ]*$");
   gvm_validator_add (validator, "info_name", "(?s)^.*$");
   gvm_validator_add (validator, "info_type", "(?s)^.*$");
-  gvm_validator_add (validator, "resource_type", "(?s)^.*$");
   gvm_validator_add (validator, "info_id",
                      "^([[:alnum:]\\-_.:\\/~()']|&amp;)+$");
   gvm_validator_add (validator, "details", "^[0-1]$");
@@ -431,6 +430,7 @@ init_validator ()
                      "^(summary|results|hosts|ports"
                      "|closed_cves|os|apps|errors"
                      "|topology|ssl_certs|cves)$");
+  gvm_validator_add (validator, "resource_type", "(?s)^.*$");
   gvm_validator_add (validator, "result_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "role", "^[[:alnum:] ]+$");
   gvm_validator_add (validator, "permission", "^([_a-z]+|Super)$");
