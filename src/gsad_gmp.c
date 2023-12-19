@@ -10715,6 +10715,36 @@ save_report_format_gmp (gvm_connection_t *connection,
 }
 
 /**
+ * @brief Get resource names, envelope the result.
+ *
+ * @param[in]  connection   Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_resource_names_gmp (gvm_connection_t *connection,
+                        credentials_t *credentials, params_t *params,
+                        cmd_response_data_t *response_data)
+{
+  const gchar *type;
+  gmp_arguments_t *arguments;
+
+  type = params_value (params, "resource_type");
+
+  CHECK_VARIABLE_INVALID (type, "Get Resource Names");
+
+  arguments = gmp_arguments_new ();
+
+  gmp_arguments_add (arguments, "type", type);
+
+  return get_many (connection, "resource_names", credentials, params, arguments,
+                   response_data);
+}
+
+/**
  * @brief Run a wizard and envelope the result.
  *
  * @param[in]  connection     Connection to manager.
