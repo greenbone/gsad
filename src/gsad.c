@@ -30,9 +30,6 @@
  * \section Introduction
  * \verbinclude README.md
  *
- * \section Installation
- * \verbinclude INSTALL
- *
  * \section copying License
  * \verbinclude LICENSE
  */
