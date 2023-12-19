@@ -65,6 +65,7 @@ Prerequisites:
 * pkg-config
 * gcc
 * zlib >= 1.2
+* libbrotli (optional, for Brotli compression)
 
 Prerequisites for building documentation:
 * Doxygen
