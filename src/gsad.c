@@ -1223,8 +1223,8 @@ may_brotli (http_connection_t *con)
  * @return 1 on success, else 0.
  */
 static int
-compress_response_deflate (const size_t res_len, const char *res, size_t *comp_len,
-                           char **comp)
+compress_response_deflate (const size_t res_len, const char *res,
+                           size_t *comp_len, char **comp)
 {
   Bytef *cbuf;
   uLongf cbuf_size;
@@ -1258,8 +1258,8 @@ compress_response_deflate (const size_t res_len, const char *res, size_t *comp_l
  * @return 1 on success, else 0.
  */
 static int
-compress_response_brotli (const size_t res_len, const char *res, size_t *comp_len,
-                          char **comp)
+compress_response_brotli (const size_t res_len, const char *res,
+                          size_t *comp_len, char **comp)
 {
   size_t cbuf_size;
   uint8_t *cbuf;
@@ -1268,13 +1268,9 @@ compress_response_brotli (const size_t res_len, const char *res, size_t *comp_le
   cbuf_size = BrotliEncoderMaxCompressedSize (res_len);
   cbuf = g_malloc (cbuf_size);
 
-  ret = BrotliEncoderCompress (BROTLI_DEFAULT_QUALITY,
-                               BROTLI_DEFAULT_WINDOW,
-                               BROTLI_DEFAULT_MODE,
-                               res_len,
-                               (uint8_t*) res,
-                               &cbuf_size,
-                               cbuf);
+  ret = BrotliEncoderCompress (BROTLI_DEFAULT_QUALITY, BROTLI_DEFAULT_WINDOW,
+                               BROTLI_DEFAULT_MODE, res_len, (uint8_t *) res,
+                               &cbuf_size, cbuf);
 
   if ((ret == BROTLI_TRUE) && (cbuf_size < res_len))
     {
@@ -1640,8 +1636,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
     }
 #endif
 
-  if ((encoding == NULL)
-      && may_deflate (con))
+  if ((encoding == NULL) && may_deflate (con))
     {
       gsize comp_len;
 
