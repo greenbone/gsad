@@ -4299,13 +4299,14 @@ get_alerts (gvm_connection_t *connection, credentials_t *, params_t *,
 #define EVENT_TYPE_TICKET_RECEIVED "Ticket received"
 #define EVENT_TYPE_ASSIGNED_TICKET_CHANGED "Assigned ticket changed"
 #define EVENT_TYPE_OWNED_TICKET_CHANGED "Owned ticket changed"
+
 /**
  * @brief Send event data for an alert.
  *
  * @param[in]   xml     XML.
  * @param[out]  data    Data.
  * @param[out]  event   Event.
-  */
+ */
 static void
 append_alert_event_data (GString *xml, params_t *data, const char *event)
 {
