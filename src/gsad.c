@@ -1527,6 +1527,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_tls_certificate)
   ELSE (get_tls_certificates)
   ELSE (get_trash)
+  ELSE (get_trash_targets)
   ELSE (get_user)
   ELSE (get_users)
   ELSE (get_vulns)

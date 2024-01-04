@@ -621,6 +621,9 @@ char *
 get_trash_gmp (gvm_connection_t *, credentials_t *, params_t *params,
                cmd_response_data_t *);
 char *
+get_trash_targets_gmp (gvm_connection_t *, credentials_t *, params_t *params,
+                       cmd_response_data_t *);
+char *
 restore_gmp (gvm_connection_t *, credentials_t *, params_t *,
              cmd_response_data_t *);
 char *

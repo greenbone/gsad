@@ -188,6 +188,7 @@ init_validator ()
                      "|(get_tls_certificate)"
                      "|(get_tls_certificates)"
                      "|(get_trash)"
+                     "|(get_trash_targets)"
                      "|(get_user)"
                      "|(get_users)"
                      "|(get_vulns)"
