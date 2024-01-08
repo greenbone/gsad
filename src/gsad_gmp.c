@@ -10956,8 +10956,9 @@ get_trash_configs_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_trash_credentials_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                           params_t *params, cmd_response_data_t *response_data)
+get_trash_credentials_gmp (gvm_connection_t *connection,
+                           credentials_t *credentials, params_t *params,
+                           cmd_response_data_t *response_data)
 {
   GString *xml;
 
@@ -11064,8 +11065,9 @@ get_trash_notes_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_trash_overrides_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                         params_t *params, cmd_response_data_t *response_data)
+get_trash_overrides_gmp (gvm_connection_t *connection,
+                         credentials_t *credentials, params_t *params,
+                         cmd_response_data_t *response_data)
 {
   GString *xml;
 
@@ -11091,8 +11093,9 @@ get_trash_overrides_gmp (gvm_connection_t *connection, credentials_t *credential
  * @return Enveloped XML object.
  */
 char *
-get_trash_permissions_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                           params_t *params, cmd_response_data_t *response_data)
+get_trash_permissions_gmp (gvm_connection_t *connection,
+                           credentials_t *credentials, params_t *params,
+                           cmd_response_data_t *response_data)
 {
   GString *xml;
 
@@ -11118,8 +11121,9 @@ get_trash_permissions_gmp (gvm_connection_t *connection, credentials_t *credenti
  * @return Enveloped XML object.
  */
 char *
-get_trash_port_lists_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                          params_t *params, cmd_response_data_t *response_data)
+get_trash_port_lists_gmp (gvm_connection_t *connection,
+                          credentials_t *credentials, params_t *params,
+                          cmd_response_data_t *response_data)
 {
   GString *xml;
 
@@ -11145,14 +11149,16 @@ get_trash_port_lists_gmp (gvm_connection_t *connection, credentials_t *credentia
  * @return Enveloped XML object.
  */
 char *
-get_trash_report_formats_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                              params_t *params, cmd_response_data_t *response_data)
+get_trash_report_formats_gmp (gvm_connection_t *connection,
+                              credentials_t *credentials, params_t *params,
+                              cmd_response_data_t *response_data)
 {
   GString *xml;
 
   xml = g_string_new ("<get_trash>");
 
-  GET_TRASH_RESOURCE ("GET_REPORT_FORMATS", "get_report_formats", "report_formats");
+  GET_TRASH_RESOURCE ("GET_REPORT_FORMATS", "get_report_formats",
+                      "report_formats");
 
   /* Cleanup, and return transformed XML. */
 
@@ -11199,8 +11205,9 @@ get_trash_roles_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_trash_scanners_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                        params_t *params, cmd_response_data_t *response_data)
+get_trash_scanners_gmp (gvm_connection_t *connection,
+                        credentials_t *credentials, params_t *params,
+                        cmd_response_data_t *response_data)
 {
   GString *xml;
 
@@ -11226,8 +11233,9 @@ get_trash_scanners_gmp (gvm_connection_t *connection, credentials_t *credentials
  * @return Enveloped XML object.
  */
 char *
-get_trash_schedules_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                         params_t *params, cmd_response_data_t *response_data)
+get_trash_schedules_gmp (gvm_connection_t *connection,
+                         credentials_t *credentials, params_t *params,
+                         cmd_response_data_t *response_data)
 {
   GString *xml;
 
@@ -11268,7 +11276,6 @@ get_trash_tags_gmp (gvm_connection_t *connection, credentials_t *credentials,
   return envelope_gmp (connection, credentials, params,
                        g_string_free (xml, FALSE), response_data);
 }
-
 
 /**
  * @brief Setup trash page XML, envelope the result.
