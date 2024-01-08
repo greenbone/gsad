@@ -166,10 +166,6 @@ get_asset (gvm_connection_t *, credentials_t *, params_t *, const char *,
            cmd_response_data_t *);
 
 static char *
-get_trash (gvm_connection_t *, credentials_t *, params_t *, const char *,
-           cmd_response_data_t *);
-
-static char *
 get_config_family (gvm_connection_t *, credentials_t *, params_t *,
                    cmd_response_data_t *);
 
@@ -10894,86 +10890,6 @@ run_wizard_gmp (gvm_connection_t *connection, credentials_t *credentials,
             response_data);                                                   \
         }                                                                     \
     }
-
-/**
- * @brief Setup trash page XML, envelope the result.
- *
- * @param[in]  connection     Connection to manager.
- * @param[in]  credentials  Username and password for authentication.
- * @param[in]  params       Request parameters.
- * @param[in]  extra_xml    Extra XML to insert inside page element.
- * @param[out] response_data  Extra data return for the HTTP response.
- *
- * @return Enveloped XML object.
- */
-char *
-get_trash (gvm_connection_t *connection, credentials_t *credentials,
-           params_t *params, const char *extra_xml,
-           cmd_response_data_t *response_data)
-{
-  GString *xml;
-
-  xml = g_string_new ("<get_trash>");
-
-  if (extra_xml)
-    g_string_append (xml, extra_xml);
-
-  GET_TRASH_RESOURCE ("GET_CONFIGS", "get_configs", "configs");
-
-  GET_TRASH_RESOURCE ("GET_CREDENTIALS", "get_credentials", "credentials");
-
-  GET_TRASH_RESOURCE ("GET_ALERTS", "get_alerts", "alerts");
-
-  GET_TRASH_RESOURCE ("GET_GROUPS", "get_groups", "groups");
-
-  GET_TRASH_RESOURCE ("GET_FILTERS", "get_filters", "filters");
-
-  GET_TRASH_RESOURCE ("GET_NOTES", "get_notes", "notes");
-
-  GET_TRASH_RESOURCE ("GET_OVERRIDES", "get_overrides", "overrides");
-
-  GET_TRASH_RESOURCE ("GET_PERMISSIONS", "get_permissions", "permissions");
-
-  GET_TRASH_RESOURCE ("GET_PORT_LISTS", "get_port_lists", "port lists");
-
-  GET_TRASH_RESOURCE ("GET_REPORT_FORMATS", "get_report_formats",
-                      "report formats");
-
-  GET_TRASH_RESOURCE ("GET_ROLES", "get_roles", "roles");
-
-  GET_TRASH_RESOURCE ("GET_SCANNERS", "get_scanners", "scanners");
-
-  GET_TRASH_RESOURCE ("GET_SCHEDULES", "get_schedules", "schedules");
-
-  GET_TRASH_RESOURCE ("GET_TAGS", "get_tags", "tags");
-
-  GET_TRASH_RESOURCE ("GET_TASKS", "get_tasks", "tasks");
-
-  GET_TRASH_RESOURCE ("GET_TICKETS", "get_tickets", "tickets");
-
-  /* Cleanup, and return transformed XML. */
-
-  g_string_append (xml, "</get_trash>");
-  return envelope_gmp (connection, credentials, params,
-                       g_string_free (xml, FALSE), response_data);
-}
-
-/**
- * @brief Get all trash, envelope the result.
- *
- * @param[in]  connection     Connection to manager.
- * @param[in]  credentials  Username and password for authentication.
- * @param[in]  params       Request parameters.
- * @param[out] response_data  Extra data return for the HTTP response.
- *
- * @return Enveloped XML object.
- */
-char *
-get_trash_gmp (gvm_connection_t *connection, credentials_t *credentials,
-               params_t *params, cmd_response_data_t *response_data)
-{
-  return get_trash (connection, credentials, params, NULL, response_data);
-}
 
 /**
  * @brief Setup trash page XML, envelope the result.

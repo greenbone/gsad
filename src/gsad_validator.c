@@ -188,7 +188,6 @@ init_validator ()
                      "|(get_tickets)"
                      "|(get_tls_certificate)"
                      "|(get_tls_certificates)"
-                     "|(get_trash)"
                      "|(get_trash_alerts)"
                      "|(get_trash_configs)"
                      "|(get_trash_credentials)"
