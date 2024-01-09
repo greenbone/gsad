@@ -762,6 +762,13 @@ message_invalid (gvm_connection_t *connection, credentials_t *credentials,
  * @brief Set redirect or return a basic action_result page based on entity.
  *
  * @param[in]  connection     Connection to manager
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[in]  entity         Entity.
+ * @param[in]  action         Name of the action.
+ * @param[in]  response_data  Response data.
+ *
+ * @return Enveloped XML object.
  */
 static gchar *
 response_from_entity (gvm_connection_t *connection, credentials_t *credentials,
@@ -794,7 +801,6 @@ response_from_entity (gvm_connection_t *connection, credentials_t *credentials,
  * @param[in]  type           Type of resource.
  * @param[in]  credentials    Username and password for authentication.
  * @param[in]  params         Request parameters.
- * @param[in]  extra_xml      Extra XML to insert inside page element.
  * @param[in]  arguments      Extra arguments for GMP GET command.
  * @param[out] response_data  Extra data return for the HTTP response.
  *
@@ -938,7 +944,6 @@ get_one (gvm_connection_t *connection, const char *type,
  * @param[in]  type           Entity type.
  * @param[in]  credentials    Username and password for authentication.
  * @param[in]  params         Request parameters.
- * @param[in]  extra_xml      Extra XML to insert inside page element.
  * @param[in]  arguments      Extra arguments for GMP GET command.
  * @param[out] response_data  Extra data return for the HTTP response.
  *
@@ -1393,6 +1398,7 @@ export_resource (gvm_connection_t *connection, const char *type,
  * @brief Export a list of resources.
  *
  * @param[in]   connection           Connection to manager.
+ * @param[in]   type                 Type of resource.
  * @param[in]   credentials          Username and password for authentication.
  * @param[in]   params               Request parameters.
  * @param[out]  response_data        Extra data return for the HTTP response.
@@ -1696,7 +1702,6 @@ move_resource_to_trash (gvm_connection_t *connection, const char *type,
  * @brief Delete a resource from the trashcan
  *
  * @param[in]  connection     Connection to manager.
- * @param[in]  type           Type of resource.
  * @param[in]  credentials    Username and password for authentication.
  * @param[in]  params         Request parameters.
  * @param[out] response_data  Extra data return for the HTTP response.
@@ -1865,19 +1870,6 @@ resource_action (gvm_connection_t *connection, credentials_t *credentials,
           return message;                                                     \
         }                                                                     \
     }
-
-/**
- * @brief Returns page to create a new container task.
- *
- * @param[in]  connection     Connection to manager.
- * @param[in]  credentials  Credentials of user issuing the action.
- * @param[in]  params       Request parameters.
- * @param[in]  message      If not NULL, display message.
- * @param[in]  extra_xml    Extra XML to insert inside page element.
- * @param[out] response_data  Extra data return for the HTTP response.
- *
- * @return Enveloped XML object.
- */
 
 /**
  * @brief Create a report, get all tasks, envelope the result.
@@ -3321,10 +3313,10 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
 /**
  * @brief Get one credential, envelope the result.
  *
- * @param[in]  connection     Connection to manager.
+ * @param[in]   connection         Connection to manager.
  * @param[in]   credentials        Username and password for authentication.
  * @param[in]   params             Request parameters.
- * @param[in]   commands           Extra commands to run before the others.
+ * @param[in]   extra_xml          Extra XML to insert inside page element.
  * @param[out]  response_data      Extra data return for the HTTP response.
  *
  * @return Enveloped XML object.
@@ -4303,14 +4295,13 @@ get_alerts (gvm_connection_t *connection, credentials_t *, params_t *,
 #define EVENT_TYPE_TICKET_RECEIVED "Ticket received"
 #define EVENT_TYPE_ASSIGNED_TICKET_CHANGED "Assigned ticket changed"
 #define EVENT_TYPE_OWNED_TICKET_CHANGED "Owned ticket changed"
+
 /**
  * @brief Send event data for an alert.
  *
  * @param[in]   xml     XML.
  * @param[out]  data    Data.
  * @param[out]  event   Event.
- *
- * @return 0 on success, -1 on error.
  */
 static void
 append_alert_event_data (GString *xml, params_t *data, const char *event)
@@ -5584,9 +5575,8 @@ delete_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @brief Restore a resource, get all trash, envelope the result.
  *
  * @param[in]  connection     Connection to manager.
- * @param[in]  connection     Connection to manager.
- * @param[in]  credentials  Username and password for authentication.
- * @param[in]  params       Request parameters.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
  * @param[out] response_data  Extra data return for the HTTP response.
  *
  * @return Enveloped XML object.
@@ -7811,9 +7801,7 @@ delete_report_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @param[in]  connection     Connection to manager.
  * @param[in]  credentials  Username and password for authentication.
  * @param[in]  params       Request parameters.
- * @param[in]  commands     Extra commands to run before the others.
  * @param[in]  extra_xml    Extra XML to insert inside page element.
- * @param[out] error        Set to 1 if error, else 0.
  * @param[out] response_data  Extra data return for the HTTP response.
  *
  * @return Report.
@@ -11370,6 +11358,8 @@ get_trash_tickets_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @param[out]  xml                 GString to write responses to.
  * @param[out]  modify_failed_flag  Pointer to an int to set to 1 on failure
  *                                  to modify one of the settings.
+ * @param[out]  response_data       Extra data return for the HTTP response.
+ *
  * @return 0 on success, -1 on error.
  */
 static int
@@ -11437,10 +11427,6 @@ send_settings_filters (gvm_connection_t *connection, params_t *data,
  * @param[in]  credentials  Credentials of user issuing the action.
  * @param[in]  params       Request parameters.
  * @param[in]  accept_language  Accept-Language, from browser.
- * @param[out] timezone     Timezone.  Caller must free.
- * @param[out] password     Password.  Caller must free.
- * @param[out] severity     Severity.  Caller must free.
- * @param[out] language     Language.  Caller must free.
  * @param[out] response_data  Extra data return for the HTTP response.
  *
  * @return Enveloped XML object.
@@ -13330,9 +13316,9 @@ create_port_range_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @brief Get one port_list, envelope the result.
  *
  * @param[in]  connection     Connection to manager.
- * @param[in]  credentials  Username and password for authentication.
- * @param[in]  params       Request parameters.
- * @param[in]  commands     Extra commands to run before the others.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[in]  extra_xml      Extra XML to insert inside page element.
  * @param[out] response_data  Extra data return for the HTTP response.
  *
  * @return Enveloped XML object.
@@ -16077,7 +16063,6 @@ get_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @param[in]  connection     Connection to manager.
  * @param[in]  credentials    Credentials for the manager connection.
  * @param[in]  params         Request parameters.
- * @param[in]  extra_xml      Extra XML to insert inside page element.
  * @param[out] response_data  Extra data return for the HTTP response.
  *
  * @return XML enveloped assets response or error message.
@@ -17257,17 +17242,12 @@ authenticate_gmp (const gchar *username, const gchar *password, gchar **role,
 }
 
 /**
- * @brief Check authentication credentials.
+ * @brief Log out.
  *
  * @param[in]  username      Username.
  * @param[in]  password      Password.
- * @param[out] role          Role.
- * @param[out] timezone      Timezone.
- * @param[out] capabilities  Capabilities of manager.
- * @param[out] language      User Interface Language, or NULL.
- * @param[out] pw_warning    Password warning message, NULL if password is OK.
  *
- * @return 0 success, 1 manager down, 2 failed, 3 timeout, -1 error.
+ * @return 0 success, else error.
  */
 int
 logout_gmp (const gchar *username, const gchar *password)

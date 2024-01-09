@@ -860,7 +860,6 @@ add_cors_headers (http_response_t *response)
  * @brief Add header to forbid caching to a HTTP response.
  *
  * @param[in]  response       The HTTP response to add the headers to.
- * @param[in]  allow_caching  1 to allow caching, 0 to forbid.
  */
 void
 add_forbid_caching_headers (http_response_t *response)
