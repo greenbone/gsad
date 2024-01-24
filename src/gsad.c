@@ -1276,12 +1276,10 @@ compress_response_brotli (const size_t res_len, const char *res,
     {
       *comp = (char *) cbuf;
       *comp_len = cbuf_size;
-      g_warning ("%s: 1", __func__);
       return 1;
     }
 
   g_free (cbuf);
-  g_warning ("%s: 0", __func__);
   return 0;
 }
 #endif
