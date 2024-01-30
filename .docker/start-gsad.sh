@@ -1,9 +1,6 @@
 #!/bin/sh
 
-[ -z "$GSAD_ARGS" ] && GSAD_ARGS="--http-only"
+[ -z "$GSAD_ARGS" ] && GSAD_ARGS="-f --http-only"
 
 echo "starting gsad"
-gsad $GSAD_ARGS ||
-	(cat /var/log/gvm/gsad.log && exit 1)
-
-tail -f /var/log/gvm/gsad.log
+gsad $GSAD_ARGS 2>&1 | tee /var/log/gvm/gsad.log
