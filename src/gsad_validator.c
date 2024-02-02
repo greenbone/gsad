@@ -440,9 +440,9 @@ init_validator ()
   gvm_validator_add (
     validator, "resource_type",
     "^(alert|asset|audit_report|cert_bund_adv|config|cpe|credential|cve|"
-    "dfn_cert_adv|filter|group|host|info|nvt|note|os|ovaldef|override|permission|"
-    "port_list|report|report_format|result|role|scanner|schedule|tag|target|task|"
-    "ticket|tls_certificate|user|vuln|)$");
+    "dfn_cert_adv|filter|group|host|info|nvt|note|os|ovaldef|override|"
+    "permission|port_list|report|report_format|result|role|scanner|"
+    "schedule|tag|target|task|ticket|tls_certificate|user|vuln|)$");
   gvm_validator_add (validator, "resource_id", "^[[:alnum:]\\-_.:\\/~]*$");
   gvm_validator_add (validator, "resources_action", "^(|add|set|remove)$");
   gvm_validator_add (
