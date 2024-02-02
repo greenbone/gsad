@@ -469,7 +469,7 @@ init_validator ()
   gvm_validator_add (validator, "port_range_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (
     validator, "resource_type",
-    "^(alert|asset|cert_bund_adv|config|cpe|credential|cve|dfn_cert_adv|"
+    "^(alert|asset|audit_report|cert_bund_adv|config|cpe|credential|cve|dfn_cert_adv|"
     "filter|group|host|info|nvt|note|os|ovaldef|override|permission|port_list|"
     "report|report_config|report_format|result|role|scanner|schedule|tag|"
     "target|task|ticket|"
