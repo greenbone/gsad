@@ -10336,13 +10336,8 @@ get_report_config (gvm_connection_t *connection, credentials_t *credentials,
                    params_t *params, const char *extra_xml,
                    cmd_response_data_t *response_data)
 {
-  gmp_arguments_t *arguments;
-  arguments = gmp_arguments_new ();
-
-  gmp_arguments_add (arguments, "alerts", "1");
-
   return get_one (connection, "report_config", credentials, params, extra_xml,
-                  arguments, response_data);
+                  NULL, response_data);
 }
 
 /**
