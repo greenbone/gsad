@@ -50,6 +50,7 @@ init_validator ()
                      "|(create_port_list)"
                      "|(create_port_range)"
                      "|(create_report)"
+                     "|(create_report_config)"
                      "|(create_role)"
                      "|(create_scanner)"
                      "|(create_schedule)"
@@ -74,6 +75,7 @@ init_validator ()
                      "|(delete_port_list)"
                      "|(delete_port_range)"
                      "|(delete_report)"
+                     "|(delete_report_config)"
                      "|(delete_report_format)"
                      "|(delete_role)"
                      "|(delete_scanner)"
@@ -115,6 +117,8 @@ init_validator ()
                      "|(export_port_list)"
                      "|(export_port_lists)"
                      "|(export_preference_file)"
+                     "|(export_report_config)"
+                     "|(export_report_configs)"
                      "|(export_report_format)"
                      "|(export_report_formats)"
                      "|(export_result)"
@@ -163,6 +167,8 @@ init_validator ()
                      "|(get_port_lists)"
                      "|(get_report)"
                      "|(get_reports)"
+                     "|(get_report_config)"
+                     "|(get_report_configs)"
                      "|(get_report_format)"
                      "|(get_report_formats)"
                      "|(get_resource_names)"
@@ -222,6 +228,7 @@ init_validator ()
                      "|(save_override)"
                      "|(save_permission)"
                      "|(save_port_list)"
+                     "|(save_report_config)"
                      "|(save_report_format)"
                      "|(save_role)"
                      "|(save_scanner)"
@@ -250,7 +257,8 @@ init_validator ()
   gvm_validator_add (
     validator, "aggregate_type",
     "^(alert|config|credential|filter|group|host|nvt|note|os|override|"
-    "permission|port_list|report|report_format|result|role|scanner|schedule|"
+    "permission|port_list|report|report_config|report_format|result|role|"
+    "scanner|schedule|"
     "tag|target|task|user|cve|cpe|ovaldef|cert_bund_adv|dfn_cert_adv|"
     "vuln|tls_certificate)$");
   gvm_validator_add (
@@ -425,6 +433,7 @@ init_validator ()
   gvm_validator_add (validator, "related:value", "^.*$");
   gvm_validator_add (validator, "report_fname",
                      "^([[:alnum:]_-]|%[%CcDFMmNTtUu])+$");
+  gvm_validator_add (validator, "report_config_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "report_format_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "report_section",
                      "^(summary|results|hosts|ports"
@@ -433,6 +442,10 @@ init_validator ()
   gvm_validator_add (validator, "resource_type", "(?s)^.*$");
   gvm_validator_add (validator, "result_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "role", "^[[:alnum:] ]+$");
+  gvm_validator_add (validator, "param:name", "^(.*){0,400}$");
+  gvm_validator_add (validator, "param:value", "(?s)^.*$");
+  gvm_validator_add (validator, "param_using_default:name", "^(.*){0,400}$");
+  gvm_validator_add (validator, "param_using_default:value", "(?s)^.*$");
   gvm_validator_add (validator, "permission", "^([_a-z]+|Super)$");
   gvm_validator_add (validator, "permission_type", "^(read|write)$");
   gvm_validator_add (validator, "port_list_id", "^[a-z0-9\\-]+$");
@@ -441,7 +454,8 @@ init_validator ()
     validator, "resource_type",
     "^(alert|asset|cert_bund_adv|config|cpe|credential|cve|dfn_cert_adv|"
     "filter|group|host|info|nvt|note|os|ovaldef|override|permission|port_list|"
-    "report|report_format|result|role|scanner|schedule|tag|target|task|ticket|"
+    "report|report_config|report_format|result|role|scanner|schedule|tag|"
+    "target|task|ticket|"
     "tls_certificate|user|vuln|)$");
   gvm_validator_add (validator, "resource_id", "^[[:alnum:]\\-_.:\\/~]*$");
   gvm_validator_add (validator, "resources_action", "^(|add|set|remove)$");
@@ -449,7 +463,8 @@ init_validator ()
     validator, "optional_resource_type",
     "^(alert|asset|cert_bund_adv|config|cpe|credential|cve|dfn_cert_adv|"
     "filter|group|host|info|nvt|note|os|ovaldef|override|permission|port_list|"
-    "report|report_format|result|role|scanner|schedule|tag|target|task|ticket|"
+    "report|report_config|report_format|result|role|scanner|schedule|tag|"
+    "target|task|ticket|"
     "tls_certificate|user|vuln|)?$");
   gvm_validator_add (validator, "select:value", "^.*$");
   gvm_validator_add (validator, "ssl_cert", "^.*$");
