@@ -210,6 +210,10 @@ get_target (gvm_connection_t *, credentials_t *, params_t *, const char *,
             cmd_response_data_t *);
 
 static char *
+get_report_config (gvm_connection_t *, credentials_t *, params_t *,
+                   const char *, cmd_response_data_t *);
+
+static char *
 get_report_format (gvm_connection_t *, credentials_t *, params_t *,
                    const char *, cmd_response_data_t *);
 
@@ -7742,6 +7746,46 @@ export_preference_file_gmp (gvm_connection_t *connection,
 }
 
 /**
+ * @brief Export a report config.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]   credentials          Username and password for authentication.
+ * @param[in]   params               Request parameters.
+ * @param[out]  response_data        Extra data return for the HTTP response.
+ *
+ * @return Report config XML on success.  Enveloped XML
+ *         on error.
+ */
+char *
+export_report_config_gmp (gvm_connection_t *connection,
+                          credentials_t *credentials, params_t *params,
+                          cmd_response_data_t *response_data)
+{
+  return export_resource (connection, "report_config", credentials, params,
+                          response_data);
+}
+
+/**
+ * @brief Export a list of Report Configs.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]   credentials          Username and password for authentication.
+ * @param[in]   params               Request parameters.
+ * @param[out]  response_data        Extra data return for the HTTP response.
+ *
+ * @return Report Formats XML on success.  Enveloped XML
+ *         on error.
+ */
+char *
+export_report_configs_gmp (gvm_connection_t *connection,
+                           credentials_t *credentials, params_t *params,
+                           cmd_response_data_t *response_data)
+{
+  return export_many (connection, "report_config", credentials, params,
+                      response_data);
+}
+
+/**
  * @brief Export a report format.
  *
  * @param[in]  connection     Connection to manager.
@@ -10277,6 +10321,380 @@ get_system_report_gmp_from_url (gvm_connection_t *connection,
 }
 
 /**
+ * @brief Get one report config, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[in]  extra_xml      Extra XML to insert inside page element.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+static char *
+get_report_config (gvm_connection_t *connection, credentials_t *credentials,
+                   params_t *params, const char *extra_xml,
+                   cmd_response_data_t *response_data)
+{
+  gmp_arguments_t *arguments;
+  arguments = gmp_arguments_new ();
+
+  gmp_arguments_add (arguments, "alerts", "1");
+
+  return get_one (connection, "report_config", credentials, params, extra_xml,
+                  arguments, response_data);
+}
+
+/**
+ * @brief Get one report config, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_report_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                       params_t *params, cmd_response_data_t *response_data)
+{
+  return get_report_config (connection, credentials, params, NULL,
+                            response_data);
+}
+
+/**
+ * @brief Get all Report Configs, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_report_configs_gmp (gvm_connection_t *connection,
+                        credentials_t *credentials, params_t *params,
+                        cmd_response_data_t *response_data)
+{
+  return get_many (connection, "report_configs", credentials, params, NULL,
+                   response_data);
+}
+
+/**
+ * @brief Collect the report config params.
+ *
+ * @param[in]  params                All request params.
+ * @param[out] config_params         Collected config params with values set.
+ * @param[out] default_config_params Config params using default values.
+ */
+static void
+collect_report_config_params (params_t *params, GHashTable **config_params,
+                              GHashTable **default_config_params)
+{
+  params_t *default_params;
+  params_t *preference_params;
+
+  *config_params =
+    g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_free);
+
+  *default_config_params =
+    g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+
+  /* Collect params using default value */
+  default_params = params_values (params, "param_using_default:");
+  if (default_params)
+    {
+      param_t *param;
+      gchar *param_name;
+      params_iterator_t iter;
+
+      params_iterator_init (&iter, default_params);
+      while (params_iterator_next (&iter, &param_name, &param))
+        {
+          if (param->value == NULL)
+            continue;
+
+          g_hash_table_insert (*default_config_params, g_strdup (param_name),
+                               GINT_TO_POINTER (1));
+        }
+    }
+
+  /* Collect params with value */
+  preference_params = params_values (params, "param:");
+  if (preference_params)
+    {
+      param_t *param;
+      gchar *param_name;
+      params_iterator_t iter;
+
+      params_iterator_init (&iter, preference_params);
+      while (params_iterator_next (&iter, &param_name, &param))
+        {
+          if (param->value == NULL)
+            continue;
+
+          if (g_hash_table_contains (*default_config_params, param_name))
+            continue;
+
+          g_hash_table_insert (*config_params, g_strdup (param_name),
+                               g_strdup (param->value));
+        }
+    }
+}
+
+/**
+ * @brief Append XML for report config params to a string.
+ *
+ * @param[in]  string                String buffer to append XML to.
+ * @param[in]  config_params         Collected config params with values set.
+ * @param[in]  default_config_params Config params using default values.
+ */
+static void
+buffer_report_config_params (GString *string, GHashTable *config_params,
+                             GHashTable *default_config_params)
+{
+  GHashTableIter iter;
+  const char *param_name, *param_value;
+
+  g_hash_table_iter_init (&iter, config_params);
+  g_message ("%s: params size: %d", __func__,
+             g_hash_table_size (config_params));
+  while (g_hash_table_iter_next (&iter, (void **) &param_name,
+                                 (void **) &param_value))
+    {
+      g_message ("%s: param...", __func__);
+      g_message ("%s: param name %s", __func__, param_name);
+      g_message ("%s: param value %s", __func__, param_value);
+
+      xml_string_append (string,
+                         "<param>"
+                         "<name>%s</name>"
+                         "<value>%s</value>"
+                         "</param>",
+                         param_name, param_value);
+    }
+
+  g_hash_table_iter_init (&iter, default_config_params);
+  while (g_hash_table_iter_next (&iter, (void **) &param_name,
+                                 (void **) &param_value))
+    {
+      xml_string_append (string,
+                         "<param>"
+                         "<name>%s</name>"
+                         "<value use_default=\"1\"/>"
+                         "</param>",
+                         param_name);
+    }
+}
+
+/**
+ * @brief Save report_config, get next page, envelope the result.
+ *
+ * @param[in]  connection        Connection to manager.
+ * @param[in]  credentials       Username and password for authentication.
+ * @param[in]  request_params    Request parameters.
+ * @param[out] response_data     Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+create_report_config_gmp (gvm_connection_t *connection,
+                          credentials_t *credentials, params_t *params,
+                          cmd_response_data_t *response_data)
+{
+  int ret;
+  gchar *html, *response;
+  const char *name, *comment, *report_format_id;
+  entity_t entity;
+  GHashTable *config_params, *default_config_params;
+  GString *command;
+
+  name = params_value (params, "name");
+  comment = params_value (params, "comment");
+  report_format_id = params_value (params, "report_format_id");
+
+  CHECK_VARIABLE_INVALID (name, "Save Report Config");
+  CHECK_VARIABLE_INVALID (comment, "Save Report Config");
+  CHECK_VARIABLE_INVALID (report_format_id, "Save Report Config");
+
+  collect_report_config_params (params, &config_params, &default_config_params);
+
+  command = g_string_new ("");
+  xml_string_append (command,
+                     "<create_report_config>"
+                     "<name>%s</name>"
+                     "<comment>%s</comment>"
+                     "<report_format id=\"%s\"/>",
+                     name, comment, report_format_id);
+
+  buffer_report_config_params (command, config_params, default_config_params);
+
+  g_string_append (command, "</create_report_config>");
+
+  response = NULL;
+  entity = NULL;
+  ret = gmpf (connection, credentials, &response, &entity, response_data,
+              command->str);
+
+  g_string_free (command, TRUE);
+
+  switch (ret)
+    {
+    case 0:
+      break;
+    case -1:
+      return response;
+    case 1:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while creating a Report Config. "
+        "The Report Config was not created. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while creating a Report Config. "
+        "It is unclear whether the Report Config has been created or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while creating a Report Config. "
+        "It is unclear whether the Report Config has been created or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
+    }
+
+  html = response_from_entity (connection, credentials, params, entity,
+                               "Create Report Config", response_data);
+  free_entity (entity);
+  g_free (response);
+  return html;
+}
+
+/**
+ * @brief Delete report config, get report config, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+delete_report_config_gmp (gvm_connection_t *connection,
+                          credentials_t *credentials, params_t *params,
+                          cmd_response_data_t *response_data)
+{
+  return move_resource_to_trash (connection, "report_config", credentials,
+                                 params, response_data);
+}
+
+/**
+ * @brief Save report_config, get next page, envelope the result.
+ *
+ * @param[in]  connection        Connection to manager.
+ * @param[in]  credentials       Username and password for authentication.
+ * @param[in]  params            Request parameters.
+ * @param[out] response_data     Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+save_report_config_gmp (gvm_connection_t *connection,
+                        credentials_t *credentials, params_t *params,
+                        cmd_response_data_t *response_data)
+{
+  int ret;
+  gchar *html, *response;
+  const char *report_config_id, *name, *comment;
+  entity_t entity;
+  GHashTable *config_params, *default_config_params;
+  GString *command;
+
+  report_config_id = params_value (params, "report_config_id");
+  name = params_value (params, "name");
+  comment = params_value (params, "comment");
+
+  CHECK_VARIABLE_INVALID (report_config_id, "Save Report Config");
+  CHECK_VARIABLE_INVALID (name, "Save Report Config");
+  CHECK_VARIABLE_INVALID (comment, "Save Report Config");
+
+  collect_report_config_params (params, &config_params, &default_config_params);
+
+  command = g_string_new ("");
+  xml_string_append (command,
+                     "<modify_report_config"
+                     " report_config_id=\"%s\">"
+                     "<name>%s</name>"
+                     "<comment>%s</comment>",
+                     report_config_id, name, comment);
+
+  buffer_report_config_params (command, config_params, default_config_params);
+
+  g_string_append (command, "</modify_report_config>");
+
+  response = NULL;
+  entity = NULL;
+  ret = gmpf (connection, credentials, &response, &entity, response_data,
+              command->str);
+
+  g_string_free (command, TRUE);
+
+  switch (ret)
+    {
+    case 0:
+      break;
+    case -1:
+      return response;
+    case 1:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving a Report Config. "
+        "The Report Config was not saved. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving a Report Config. "
+        "It is unclear whether the Report Config has been saved or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving a Report Config. "
+        "It is unclear whether the Report Config has been saved or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
+    }
+
+  html = response_from_entity (connection, credentials, params, entity,
+                               "Save Report Config", response_data);
+  free_entity (entity);
+  g_free (response);
+  return html;
+}
+
+/**
  * @brief Get one report format, envelope the result.
  *
  * @param[in]  connection     Connection to manager.
@@ -10297,6 +10715,7 @@ get_report_format (gvm_connection_t *connection, credentials_t *credentials,
 
   gmp_arguments_add (arguments, "alerts", "1");
   gmp_arguments_add (arguments, "params", "1");
+  gmp_arguments_add (arguments, "report_configs", "1");
 
   return get_one (connection, "report_format", credentials, params, extra_xml,
                   arguments, response_data);
@@ -10923,6 +11342,9 @@ get_trash (gvm_connection_t *connection, credentials_t *credentials,
   GET_TRASH_RESOURCE ("GET_PERMISSIONS", "get_permissions", "permissions");
 
   GET_TRASH_RESOURCE ("GET_PORT_LISTS", "get_port_lists", "port lists");
+
+  GET_TRASH_RESOURCE ("GET_REPORT_CONFIGS", "get_report_configs",
+                      "report configs");
 
   GET_TRASH_RESOURCE ("GET_REPORT_FORMATS", "get_report_formats",
                       "report formats");
