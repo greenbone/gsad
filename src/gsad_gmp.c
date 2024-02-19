@@ -7773,7 +7773,7 @@ export_report_config_gmp (gvm_connection_t *connection,
  * @param[in]   params               Request parameters.
  * @param[out]  response_data        Extra data return for the HTTP response.
  *
- * @return Report Formats XML on success.  Enveloped XML
+ * @return Report Configs XML on success.  Enveloped XML
  *         on error.
  */
 char *
@@ -10574,6 +10574,8 @@ create_report_config_gmp (gvm_connection_t *connection,
                                "Create Report Config", response_data);
   free_entity (entity);
   g_free (response);
+  g_hash_table_destroy (config_params);
+  g_hash_table_destroy (default_config_params);
   return html;
 }
 
@@ -10686,6 +10688,8 @@ save_report_config_gmp (gvm_connection_t *connection,
                                "Save Report Config", response_data);
   free_entity (entity);
   g_free (response);
+  g_hash_table_destroy (config_params);
+  g_hash_table_destroy (default_config_params);
   return html;
 }
 
