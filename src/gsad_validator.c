@@ -203,6 +203,7 @@ init_validator ()
                      "|(get_trash_overrides)"
                      "|(get_trash_permissions)"
                      "|(get_trash_port_lists)"
+                     "|(get_trash_report_configs)"
                      "|(get_trash_report_formats)"
                      "|(get_trash_roles)"
                      "|(get_trash_scanners)"

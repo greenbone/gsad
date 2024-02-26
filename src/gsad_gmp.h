@@ -674,6 +674,9 @@ char *
 get_trash_port_lists_gmp (gvm_connection_t *, credentials_t *, params_t *params,
                           cmd_response_data_t *);
 char *
+get_trash_report_configs_gmp (gvm_connection_t *, credentials_t *,
+                              params_t *params, cmd_response_data_t *);
+char *
 get_trash_report_formats_gmp (gvm_connection_t *, credentials_t *,
                               params_t *params, cmd_response_data_t *);
 char *

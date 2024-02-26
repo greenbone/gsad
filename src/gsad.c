@@ -1614,6 +1614,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_trash_overrides)
   ELSE (get_trash_permissions)
   ELSE (get_trash_port_lists)
+  ELSE (get_trash_report_configs)
   ELSE (get_trash_report_formats)
   ELSE (get_trash_roles)
   ELSE (get_trash_scanners)
