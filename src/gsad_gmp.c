@@ -166,10 +166,6 @@ get_asset (gvm_connection_t *, credentials_t *, params_t *, const char *,
            cmd_response_data_t *);
 
 static char *
-get_trash (gvm_connection_t *, credentials_t *, params_t *, const char *,
-           cmd_response_data_t *);
-
-static char *
 get_config_family (gvm_connection_t *, credentials_t *, params_t *,
                    cmd_response_data_t *);
 
@@ -11307,60 +11303,19 @@ run_wizard_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @param[in]  connection     Connection to manager.
  * @param[in]  credentials  Username and password for authentication.
  * @param[in]  params       Request parameters.
- * @param[in]  extra_xml    Extra XML to insert inside page element.
  * @param[out] response_data  Extra data return for the HTTP response.
  *
  * @return Enveloped XML object.
  */
 char *
-get_trash (gvm_connection_t *connection, credentials_t *credentials,
-           params_t *params, const char *extra_xml,
-           cmd_response_data_t *response_data)
+get_trash_alerts_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                      params_t *params, cmd_response_data_t *response_data)
 {
   GString *xml;
 
   xml = g_string_new ("<get_trash>");
 
-  if (extra_xml)
-    g_string_append (xml, extra_xml);
-
-  GET_TRASH_RESOURCE ("GET_CONFIGS", "get_configs", "configs");
-
-  GET_TRASH_RESOURCE ("GET_CREDENTIALS", "get_credentials", "credentials");
-
   GET_TRASH_RESOURCE ("GET_ALERTS", "get_alerts", "alerts");
-
-  GET_TRASH_RESOURCE ("GET_GROUPS", "get_groups", "groups");
-
-  GET_TRASH_RESOURCE ("GET_FILTERS", "get_filters", "filters");
-
-  GET_TRASH_RESOURCE ("GET_NOTES", "get_notes", "notes");
-
-  GET_TRASH_RESOURCE ("GET_OVERRIDES", "get_overrides", "overrides");
-
-  GET_TRASH_RESOURCE ("GET_PERMISSIONS", "get_permissions", "permissions");
-
-  GET_TRASH_RESOURCE ("GET_PORT_LISTS", "get_port_lists", "port lists");
-
-  GET_TRASH_RESOURCE ("GET_REPORT_CONFIGS", "get_report_configs",
-                      "report configs");
-
-  GET_TRASH_RESOURCE ("GET_REPORT_FORMATS", "get_report_formats",
-                      "report formats");
-
-  GET_TRASH_RESOURCE ("GET_ROLES", "get_roles", "roles");
-
-  GET_TRASH_RESOURCE ("GET_SCANNERS", "get_scanners", "scanners");
-
-  GET_TRASH_RESOURCE ("GET_SCHEDULES", "get_schedules", "schedules");
-
-  GET_TRASH_RESOURCE ("GET_TAGS", "get_tags", "tags");
-
-  GET_TRASH_RESOURCE ("GET_TARGETS", "get_targets", "targets");
-
-  GET_TRASH_RESOURCE ("GET_TASKS", "get_tasks", "tasks");
-
-  GET_TRASH_RESOURCE ("GET_TICKETS", "get_tickets", "tickets");
 
   /* Cleanup, and return transformed XML. */
 
@@ -11368,10 +11323,9 @@ get_trash (gvm_connection_t *connection, credentials_t *credentials,
   return envelope_gmp (connection, credentials, params,
                        g_string_free (xml, FALSE), response_data);
 }
-#undef GET_TRASH_RESOURCE
 
 /**
- * @brief Get all trash, envelope the result.
+ * @brief Setup trash page XML, envelope the result.
  *
  * @param[in]  connection     Connection to manager.
  * @param[in]  credentials  Username and password for authentication.
@@ -11381,11 +11335,466 @@ get_trash (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_trash_gmp (gvm_connection_t *connection, credentials_t *credentials,
-               params_t *params, cmd_response_data_t *response_data)
+get_trash_configs_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                       params_t *params, cmd_response_data_t *response_data)
 {
-  return get_trash (connection, credentials, params, NULL, response_data);
+  GString *xml;
+
+  xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_CONFIGS", "get_configs", "configs");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
 }
+
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_credentials_gmp (gvm_connection_t *connection,
+                           credentials_t *credentials, params_t *params,
+                           cmd_response_data_t *response_data)
+{
+  GString *xml;
+
+  xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_CREDENTIALS", "get_credentials", "credentials");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_filters_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                       params_t *params, cmd_response_data_t *response_data)
+{
+  GString *xml;
+
+  xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_FILTERS", "get_filters", "filters");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_groups_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                      params_t *params, cmd_response_data_t *response_data)
+{
+  GString *xml;
+
+  xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_GROUPS", "get_groups", "groups");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_notes_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                     params_t *params, cmd_response_data_t *response_data)
+{
+  GString *xml;
+
+  xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_NOTES", "get_notes", "notes");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_overrides_gmp (gvm_connection_t *connection,
+                         credentials_t *credentials, params_t *params,
+                         cmd_response_data_t *response_data)
+{
+  GString *xml;
+
+  xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_OVERRIDES", "get_overrides", "overrides");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_permissions_gmp (gvm_connection_t *connection,
+                           credentials_t *credentials, params_t *params,
+                           cmd_response_data_t *response_data)
+{
+  GString *xml;
+
+  xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_PERMISSIONS", "get_permissions", "permissions");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_port_lists_gmp (gvm_connection_t *connection,
+                          credentials_t *credentials, params_t *params,
+                          cmd_response_data_t *response_data)
+{
+  GString *xml;
+
+  xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_PORT_LISTS", "get_port_lists", "port_lists");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_report_configs_gmp (gvm_connection_t *connection,
+                              credentials_t *credentials, params_t *params,
+                              cmd_response_data_t *response_data)
+{
+  GString *xml;
+
+  xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_REPORT_CONFIGS", "get_report_configs",
+                      "report configs");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_report_formats_gmp (gvm_connection_t *connection,
+                              credentials_t *credentials, params_t *params,
+                              cmd_response_data_t *response_data)
+{
+  GString *xml;
+
+  xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_REPORT_FORMATS", "get_report_formats",
+                      "report_formats");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_roles_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                     params_t *params, cmd_response_data_t *response_data)
+{
+  GString *xml;
+
+  xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_ROLES", "get_roles", "roles");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_scanners_gmp (gvm_connection_t *connection,
+                        credentials_t *credentials, params_t *params,
+                        cmd_response_data_t *response_data)
+{
+  GString *xml;
+
+  xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_SCANNERS", "get_scanners", "scanners");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_schedules_gmp (gvm_connection_t *connection,
+                         credentials_t *credentials, params_t *params,
+                         cmd_response_data_t *response_data)
+{
+  GString *xml;
+
+  xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_SCHEDULES", "get_schedules", "schedules");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_tags_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                    params_t *params, cmd_response_data_t *response_data)
+{
+  GString *xml;
+
+  xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_TAGS", "get_tags", "tags");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[in]  extra_xml    Extra XML to insert inside page element.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_targets_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                       params_t *params, cmd_response_data_t *response_data)
+{
+  GString *xml;
+
+  xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_TARGETS", "get_targets", "targets");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_tasks_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                     params_t *params, cmd_response_data_t *response_data)
+{
+  GString *xml;
+
+  xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_TASKS", "get_tasks", "tasks");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_tickets_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                       params_t *params, cmd_response_data_t *response_data)
+{
+  GString *xml;
+
+  xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_TICKETS", "get_tickets", "tickets");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+#undef GET_TRASH_RESOURCE
 
 /**
  * @brief Send settings resource filters.
