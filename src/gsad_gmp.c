@@ -7859,6 +7859,7 @@ get_report (gvm_connection_t *connection, credentials_t *credentials,
   entity_t entity;
   entity_t report_entity;
   const char *report_id, *delta_report_id;
+  const char *config_id;
   const char *format_id;
   const char *filter;
   const char *filter_id;
@@ -7877,6 +7878,7 @@ get_report (gvm_connection_t *connection, credentials_t *credentials,
 
   delta_report_id = params_value (params, "delta_report_id");
   format_id = params_value (params, "report_format_id");
+  config_id = params_value (params, "report_config_id");
 
   filter = params_value (params, "filter");
   filter_id = params_value (params, "filter_id");
@@ -7896,10 +7898,12 @@ get_report (gvm_connection_t *connection, credentials_t *credentials,
     " filt_id=\"%s\""
     " report_id=\"%s\""
     " delta_report_id=\"%s\""
+    " config_id=\"%s\""
     " format_id=\"%s\"/>",
     details, ignore_pagination, lean, filter,
     filter_id ? filter_id : FILT_ID_NONE, report_id,
-    delta_report_id ? delta_report_id : "0", format_id ? format_id : "");
+    delta_report_id ? delta_report_id : "0", config_id ? config_id : "",
+    format_id ? format_id : "");
 
   if (ret == -1)
     {
