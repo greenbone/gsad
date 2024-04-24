@@ -769,7 +769,7 @@ make_url_handlers ()
   url_handler_add_func (url_handlers, "^/robots\\.txt$", handle_static_file);
 
   url_handler_add_func (url_handlers, "^/config\\.*js$", handle_static_config);
-  url_handler_add_func (url_handlers, "^/static/(img|js|css|media)/.+$",
+  url_handler_add_func (url_handlers, "^/assets/.+$",
                         handle_static_file);
   url_handler_add_func (url_handlers, "^/manual/.+$", handle_static_file);
 
