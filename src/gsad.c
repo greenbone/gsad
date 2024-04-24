@@ -167,6 +167,7 @@
   "form-action 'self'; "                     \
   "style-src-elem 'self' 'unsafe-inline'; "  \
   "style-src 'self' 'unsafe-inline'; "       \
+  "font-src 'self';"                         \
   "img-src 'self' blob:;"
 
 /**
