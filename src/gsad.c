@@ -163,6 +163,7 @@
   "base-uri 'none'; "                        \
   "connect-src 'self'; "                     \
   "script-src 'self'; "                      \
+  "script-src-elem 'self' 'unsafe-inline';"  \
   "frame-ancestors 'none'; "                 \
   "form-action 'self'; "                     \
   "style-src-elem 'self' 'unsafe-inline'; "  \
