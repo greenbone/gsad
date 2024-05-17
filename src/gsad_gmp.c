@@ -4553,10 +4553,10 @@ append_alert_method_data (GString *xml, params_t *data, const char *method,
             || strcmp (name, "composer_include_notes") == 0
             || strcmp (name, "composer_include_overrides") == 0
             || strcmp (name, "composer_ignore_pagination") == 0)
-	{
-          xml_string_append (xml, "<data><name>%s</name>%s</data>", name,
-                             param->value ? param->value : "");
-	}
+          {
+            xml_string_append (xml, "<data><name>%s</name>%s</data>", name,
+                               param->value ? param->value : "");
+          }
         else if (strcmp (method, "Email") == 0 && notice == 0
                  && strcmp (name, "message") == 0)
           xml_string_append (xml, "<data><name>message</name>%s</data>",
@@ -4612,7 +4612,8 @@ create_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
   int ret;
   gchar *html, *response;
   const char *name, *comment, *active, *condition, *event, *method, *filter_id;
-  params_t *method_data, *event_data, *condition_data, *report_formats, *report_configs;
+  params_t *method_data, *event_data, *condition_data, *report_formats,
+    *report_configs;
   entity_t entity;
   GString *xml;
 
@@ -4674,7 +4675,8 @@ create_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
                      "<method>%s",
                      method);
 
-  append_alert_method_data (xml, method_data, method, report_formats, report_configs);
+  append_alert_method_data (xml, method_data, method, report_formats,
+                            report_configs);
 
   xml_string_append (xml,
                      "</method>"
@@ -5108,7 +5110,8 @@ save_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *name, *comment, *alert_id;
   const char *event, *condition, *method;
   const char *filter_id, *active;
-  params_t *event_data, *condition_data, *method_data, *report_formats, *report_configs;
+  params_t *event_data, *condition_data, *method_data, *report_formats,
+    *report_configs;
   entity_t entity;
 
   name = params_value (params, "name");
@@ -5176,7 +5179,8 @@ save_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
                      "<method>%s",
                      method);
 
-  append_alert_method_data (xml, method_data, method, report_formats, report_configs);
+  append_alert_method_data (xml, method_data, method, report_formats,
+                            report_configs);
 
   xml_string_append (xml,
                      "</method>"
