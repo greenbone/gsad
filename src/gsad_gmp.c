@@ -4136,6 +4136,47 @@ new_alert (gvm_connection_t *connection, credentials_t *credentials,
   g_free (response);
   free_entity (entity);
 
+  /* Get Report Configs. */
+
+  ret = gmp (connection, credentials, &response, &entity, response_data,
+             "<get_report_configs filter=\"rows=-1\"/>");
+  switch (ret)
+    {
+    case 0:
+    case -1:
+      break;
+    case 1:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while getting Report "
+        "Configs for new alert. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while getting Report "
+        "Configs for new alert. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (credentials, "Internal error", __func__, __LINE__,
+                           "An internal error occurred while getting Report "
+                           "Configs for new alert. It is unclear whether"
+                           " the alert has been saved or not. "
+                           "Diagnostics: Internal Error.",
+                           response_data);
+    }
+  g_string_append (xml, response);
+  g_free (response);
+  free_entity (entity);
+
   /* Get Report Filters. */
 
   ret = gmp (connection, credentials, &response, &entity, response_data,
@@ -4445,6 +4486,7 @@ append_alert_method_data (GString *xml, params_t *data, const char *method,
             || (strcmp (method, "Send") == 0
                 && (strcmp (name, "send_host") == 0
                     || strcmp (name, "send_port") == 0
+                    || strcmp (name, "send_report_config") == 0
                     || strcmp (name, "send_report_format") == 0))
             || (strcmp (method, "SCP") == 0
                 && (strcmp (name, "scp_credential") == 0
@@ -4452,11 +4494,13 @@ append_alert_method_data (GString *xml, params_t *data, const char *method,
                     || strcmp (name, "scp_known_hosts") == 0
                     || strcmp (name, "scp_path") == 0
                     || strcmp (name, "scp_port") == 0
+                    || strcmp (name, "scp_report_config") == 0
                     || strcmp (name, "scp_report_format") == 0))
             || (strcmp (method, "SMB") == 0
                 && (strcmp (name, "smb_credential") == 0
                     || strcmp (name, "smb_file_path") == 0
                     || strcmp (name, "smb_max_protocol") == 0
+                    || strcmp (name, "smb_report_config") == 0
                     || strcmp (name, "smb_report_format") == 0
                     || strcmp (name, "smb_share_path") == 0))
             || (strcmp (method, "SNMP") == 0
@@ -4471,6 +4515,7 @@ append_alert_method_data (GString *xml, params_t *data, const char *method,
             || (strcmp (method, "verinice Connector") == 0
                 && (strcmp (name, "verinice_server_credential") == 0
                     || strcmp (name, "verinice_server_url") == 0
+                    || strcmp (name, "verinice_server_report_config") == 0
                     || strcmp (name, "verinice_server_report_format") == 0))
             || (strcmp (method, "Alemba vFire") == 0
                 && (strcmp (name, "vfire_base_url") == 0
@@ -4490,7 +4535,11 @@ append_alert_method_data (GString *xml, params_t *data, const char *method,
                     || strcmp (name, "notice") == 0
                     || (strcmp (name, "notice_report_format") == 0
                         && notice == 0)
+                    || (strcmp (name, "notice_report_config") == 0
+                        && notice == 0)
                     || (strcmp (name, "notice_attach_format") == 0
+                        && notice == 2)
+                    || (strcmp (name, "notice_attach_config") == 0
                         && notice == 2)
                     || (str_equal (name, "recipient_credential")
                         && !str_equal (param->value, "0"))))
@@ -4504,8 +4553,10 @@ append_alert_method_data (GString *xml, params_t *data, const char *method,
             || strcmp (name, "composer_include_notes") == 0
             || strcmp (name, "composer_include_overrides") == 0
             || strcmp (name, "composer_ignore_pagination") == 0)
-          xml_string_append (xml, "<data><name>%s</name>%s</data>", name,
-                             param->value ? param->value : "");
+          {
+            xml_string_append (xml, "<data><name>%s</name>%s</data>", name,
+                               param->value ? param->value : "");
+          }
         else if (strcmp (method, "Email") == 0 && notice == 0
                  && strcmp (name, "message") == 0)
           xml_string_append (xml, "<data><name>message</name>%s</data>",
@@ -4865,6 +4916,39 @@ edit_alert (gvm_connection_t *connection, credentials_t *credentials,
             credentials, "Internal error", __func__, __LINE__,
             "An internal error occurred while getting report formats. "
             "The current list of report formats is not available. "
+            "Diagnostics: Failure to receive response from manager daemon.",
+            response_data);
+        }
+    }
+
+  if (command_enabled (credentials, "GET_REPORT_CONFIGS"))
+    {
+      /* Get the report configs. */
+
+      if (gvm_connection_sendf (connection, "<get_report_configs"
+                                            " filter=\"rows=-1\"/>")
+          == -1)
+        {
+          g_string_free (xml, TRUE);
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          return gsad_message (
+            credentials, "Internal error", __func__, __LINE__,
+            "An internal error occurred while getting report configs. "
+            "The current list of report configs is not available. "
+            "Diagnostics: Failure to send command to manager daemon.",
+            response_data);
+        }
+
+      if (read_string_c (connection, &xml))
+        {
+          g_string_free (xml, TRUE);
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          return gsad_message (
+            credentials, "Internal error", __func__, __LINE__,
+            "An internal error occurred while getting report configs. "
+            "The current list of report configs is not available. "
             "Diagnostics: Failure to receive response from manager daemon.",
             response_data);
         }
