@@ -5426,7 +5426,8 @@ create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
   CHECK_VARIABLE_INVALID (allow_simultaneous_ips, "Create Target");
 
   if (comment != NULL)
-    comment_element = g_strdup_printf ("<comment>%s</comment>", comment);
+    comment_element =
+      g_markup_printf_escaped ("<comment>%s</comment>", comment);
   else
     comment_element = g_strdup ("");
 
@@ -6397,7 +6398,8 @@ save_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
     entity_t entity;
 
     if (comment)
-      comment_element = g_strdup_printf ("<comment>%s</comment>", comment);
+      comment_element =
+        g_markup_printf_escaped ("<comment>%s</comment>", comment);
     else
       comment_element = g_strdup ("");
 
