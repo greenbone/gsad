@@ -471,7 +471,8 @@ init_validator ()
     validator, "resource_type",
     "^(alert|asset|audit_report|audit|cert_bund_adv|config|cpe|credential|cve|"
     "dfn_cert_adv|filter|group|host|info|nvt|note|os|ovaldef|override|"
-    "permission|policy|port_list|report|report_config|report_format|result|role|scanner|"
+    "permission|policy|port_list|report|report_config|report_format|result|"
+    "role|scanner|"
     "schedule|tag|target|task|ticket|tls_certificate|user|vuln|)$");
   gvm_validator_add (validator, "resource_id", "^[[:alnum:]\\-_.:\\/~]*$");
   gvm_validator_add (validator, "resources_action", "^(|add|set|remove)$");
