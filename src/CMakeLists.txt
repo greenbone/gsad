@@ -63,7 +63,7 @@ endif (NOT LIBMICROHTTPD_FOUND OR NOT LIBXML_FOUND OR NOT GLIB_FOUND OR
 set (HARDENING_FLAGS            "-D_FORTIFY_SOURCE=2 -fstack-protector")
 set (LINKER_HARDENING_FLAGS     "-Wl,-z,relro -Wl,-z,now")
 
-set (CMAKE_C_FLAGS              "${CMAKE_C_FLAGS} -Wall -Wformat -Wformat-security")
+set (CMAKE_C_FLAGS              "${CMAKE_C_FLAGS} -Wall -Wformat -Wformat-security ${COVERAGE_FLAGS}")
 if (BROTLI_FOUND)
   set (CMAKE_C_FLAGS            "${CMAKE_C_FLAGS} -DHAVE_BROTLI=1")
 endif (BROTLI_FOUND)
@@ -209,5 +209,19 @@ if (BUILD_TESTING)
                      gsad-validator-test
                      )
 endif(BUILD_TESTING)
+
+if (ENABLE_COVERAGE)
+  add_custom_target (coverage-html
+                     COMMAND gcovr --html-details ${COVERAGE_DIR}/coverage.html
+                     -r ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
+  add_custom_target (coverage-xml
+                     COMMAND gcovr --xml ${COVERAGE_DIR}/coverage.xml
+                     -r ${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR})
+  add_custom_target (coverage DEPENDS coverage-xml coverage-html)
+endif (ENABLE_COVERAGE)
+
+add_custom_target (clean-coverage
+                   COMMAND find . -name *.gcda -delete -or -name *.gcno -delete
+                   COMMAND rm -f ${COVERAGE_DIR}/*)
 
 ## End
