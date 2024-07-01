@@ -31,6 +31,16 @@ set (GSAD_VERSION "${PROJECT_VERSION_STRING}")
 
 message (STATUS "Building gsad version ${GSAD_VERSION}")
 
+## Code coverage
+
+OPTION (ENABLE_COVERAGE "Enable support for coverage analysis" OFF)
+if (ENABLE_COVERAGE)
+  set (COVERAGE_FLAGS "--coverage -ftest-coverage -fprofile-arcs")
+  set (COVERAGE_DIR "${CMAKE_BINARY_DIR}/coverage")
+  file (MAKE_DIRECTORY ${COVERAGE_DIR})
+  message ("-- Code Coverage enabled")
+endif (ENABLE_COVERAGE)
+
 ## Files generated on installation
 
 # generate compile_commands.json file
