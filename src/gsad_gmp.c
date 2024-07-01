@@ -17531,6 +17531,7 @@ get_capabilities_gmp (gvm_connection_t *connection, credentials_t *credentials,
   entity_t entity = NULL;
   GString *xml;
 
+  /* Get commands available to current user */
   if (gvm_connection_sendf (connection,
                             "<help format=\"XML\" type=\"brief\"/>"))
     {
@@ -17574,9 +17575,51 @@ get_capabilities_gmp (gvm_connection_t *connection, credentials_t *credentials,
       return message;
     }
 
-  /* Cleanup, and return transformed XML. */
+  /* Cleanup. */
   free_entity (entity);
 
+  /* Get features list */
+  if (gvm_connection_sendf (connection, "<get_features/>"))
+    {
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      g_string_free (xml, TRUE);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while getting the features list. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    }
+
+  /* Read the response. */
+  if (read_entity_and_string_c (connection, &entity, &xml))
+    {
+      g_string_free (xml, TRUE);
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while getting the feature list. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    }
+
+  if (gmp_success (entity) != 1)
+    {
+      gchar *message;
+
+      set_http_status_from_entity (entity, response_data);
+
+      message =
+        gsad_message (credentials, "Error", __func__, __LINE__,
+                      entity_attribute (entity, "status_text"), response_data);
+
+      g_string_free (xml, TRUE);
+      free_entity (entity);
+      return message;
+    }
+
+  /* Return transformed XML. */
   g_string_append (xml, "</get_capabilities>");
   return envelope_gmp (connection, credentials, params,
                        g_string_free (xml, FALSE), response_data);
