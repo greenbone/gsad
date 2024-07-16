@@ -4138,44 +4138,48 @@ new_alert (gvm_connection_t *connection, credentials_t *credentials,
 
   /* Get Report Configs. */
 
-  ret = gmp (connection, credentials, &response, &entity, response_data,
-             "<get_report_configs filter=\"rows=-1\"/>");
-  switch (ret)
+  if (command_enabled (credentials, "GET_REPORT_CONFIGS"))
     {
-    case 0:
-    case -1:
-      break;
-    case 1:
-      cmd_response_data_set_status_code (response_data,
-                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
-      return gsad_message (
-        credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while getting Report "
-        "Configs for new alert. "
-        "Diagnostics: Failure to send command to manager daemon.",
-        response_data);
-    case 2:
-      cmd_response_data_set_status_code (response_data,
-                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
-      return gsad_message (
-        credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while getting Report "
-        "Configs for new alert. "
-        "Diagnostics: Failure to receive response from manager daemon.",
-        response_data);
-    default:
-      cmd_response_data_set_status_code (response_data,
-                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
-      return gsad_message (credentials, "Internal error", __func__, __LINE__,
-                           "An internal error occurred while getting Report "
-                           "Configs for new alert. It is unclear whether"
-                           " the alert has been saved or not. "
-                           "Diagnostics: Internal Error.",
-                           response_data);
+      ret = gmp (connection, credentials, &response, &entity, response_data,
+                 "<get_report_configs filter=\"rows=-1\"/>");
+      switch (ret)
+        {
+        case 0:
+        case -1:
+          break;
+        case 1:
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          return gsad_message (
+            credentials, "Internal error", __func__, __LINE__,
+            "An internal error occurred while getting Report "
+            "Configs for new alert. "
+            "Diagnostics: Failure to send command to manager daemon.",
+            response_data);
+        case 2:
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          return gsad_message (
+            credentials, "Internal error", __func__, __LINE__,
+            "An internal error occurred while getting Report "
+            "Configs for new alert. "
+            "Diagnostics: Failure to receive response from manager daemon.",
+            response_data);
+        default:
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          return gsad_message (
+            credentials, "Internal error", __func__, __LINE__,
+            "An internal error occurred while getting Report "
+            "Configs for new alert. It is unclear whether"
+            " the alert has been saved or not. "
+            "Diagnostics: Internal Error.",
+            response_data);
+        }
+      g_string_append (xml, response);
+      g_free (response);
+      free_entity (entity);
     }
-  g_string_append (xml, response);
-  g_free (response);
-  free_entity (entity);
 
   /* Get Report Filters. */
 
