@@ -545,8 +545,8 @@ init_validator ()
                      "^(second|minute|hour|day|week|month|year|decade)$");
   gvm_validator_add (validator, "chart_title", "(?s)^.*$");
   gvm_validator_add (validator, "icalendar", "(?s)^BEGIN:VCALENDAR.+$");
-  gvm_validator_add (validator, "time_format", "^(12|24)$");
-  gvm_validator_add (validator, "date_format", "^(wmdy|wdmy)$");
+  gvm_validator_add (validator, "time_format", "^(12|24|system_default)$");
+  gvm_validator_add (validator, "date_format", "^(wmdy|wdmy|system_default)$");
 
   /* Binary data params that should not use no UTF-8 validation */
   gvm_validator_add_binary (validator, "certificate_bin");
