@@ -11984,6 +11984,7 @@ save_my_settings_gmp (gvm_connection_t *connection, credentials_t *credentials,
 {
   const char *lang, *text, *old_passwd, *passwd, *max;
   const char *details_fname, *list_fname, *report_fname;
+  const char *time_format, *date_format;
   gchar *lang_64, *text_64, *max_64, *fname_64;
   GString *xml;
   entity_t entity;
@@ -12004,6 +12005,8 @@ save_my_settings_gmp (gvm_connection_t *connection, credentials_t *credentials,
   details_fname = params_value (params, "details_fname");
   list_fname = params_value (params, "list_fname");
   report_fname = params_value (params, "report_fname");
+  time_format = params_value (params, "time_format");
+  date_format = params_value (params, "date_format");
 
   CHECK_VARIABLE_INVALID (text, "Save Settings")
   CHECK_VARIABLE_INVALID (text, "Save Settings")
@@ -12013,6 +12016,8 @@ save_my_settings_gmp (gvm_connection_t *connection, credentials_t *credentials,
   CHECK_VARIABLE_INVALID (details_fname, "Save Settings")
   CHECK_VARIABLE_INVALID (list_fname, "Save Settings")
   CHECK_VARIABLE_INVALID (report_fname, "Save Settings")
+  CHECK_VARIABLE_INVALID (time_format, "Save Settings")
+  CHECK_VARIABLE_INVALID (date_format, "Save Settings")
 
   xml = g_string_new ("");
 
@@ -12621,6 +12626,110 @@ save_my_settings_gmp (gvm_connection_t *connection, credentials_t *credentials,
         {
           g_string_free (xml, TRUE);
           gvm_connection_close (connection);
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          return gsad_message (
+            credentials, "Internal error", __func__, __LINE__,
+            "An internal error occurred while saving settings. "
+            "It is unclear whether all the settings were saved. "
+            "Diagnostics: Failure to receive response from manager daemon.",
+            response_data);
+        }
+      xml_string_append (xml, "</save_setting>");
+      if (gmp_success (entity) != 1)
+        {
+          set_http_status_from_entity (entity, response_data);
+          modify_failed = 1;
+        }
+    }
+
+  /* Send User Interface Time Format. */
+  changed_value = params_value (changed, "time_format");
+  if (changed_value == NULL
+      || (strcmp (changed_value, "") && strcmp (changed_value, "0")))
+    {
+      gchar *time_format_64 =
+        g_base64_encode ((guchar *) time_format, strlen (time_format));
+
+      if (gvm_connection_sendf (connection,
+                                "<modify_setting"
+                                " setting_id"
+                                "=\"11deb7ff-550b-4950-aacf-06faeb7c61b9\">"
+                                "<value>%s</value>"
+                                "</modify_setting>",
+                                time_format_64 ? time_format_64 : "")
+          == -1)
+        {
+          g_free (time_format_64);
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          return gsad_message (
+            credentials, "Internal error", __func__, __LINE__,
+            "An internal error occurred while saving settings. "
+            "It is unclear whether all the settings were saved. "
+            "Diagnostics: Failure to send command to manager daemon.",
+            response_data);
+        }
+      g_free (time_format_64);
+
+      entity = NULL;
+      xml_string_append (xml, "<save_setting id=\"%s\">",
+                         "11deb7ff-550b-4950-aacf-06faeb7c61b9");
+      if (read_entity_and_string_c (connection, &entity, &xml))
+        {
+          g_string_free (xml, TRUE);
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          return gsad_message (
+            credentials, "Internal error", __func__, __LINE__,
+            "An internal error occurred while saving settings. "
+            "It is unclear whether all the settings were saved. "
+            "Diagnostics: Failure to receive response from manager daemon.",
+            response_data);
+        }
+      xml_string_append (xml, "</save_setting>");
+      if (gmp_success (entity) != 1)
+        {
+          set_http_status_from_entity (entity, response_data);
+          modify_failed = 1;
+        }
+    }
+
+  /* Send User Interface Date Format. */
+  changed_value = params_value (changed, "date_format");
+  if (changed_value == NULL
+      || (strcmp (changed_value, "") && strcmp (changed_value, "0")))
+    {
+      gchar *date_format_64 =
+        g_base64_encode ((guchar *) date_format, strlen (date_format));
+
+      if (gvm_connection_sendf (connection,
+                                "<modify_setting"
+                                " setting_id"
+                                "=\"d9857b7c-1159-4193-9bc0-18fae5473a69\">"
+                                "<value>%s</value>"
+                                "</modify_setting>",
+                                date_format_64 ? date_format_64 : "")
+          == -1)
+        {
+          g_free (date_format_64);
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          return gsad_message (
+            credentials, "Internal error", __func__, __LINE__,
+            "An internal error occurred while saving settings. "
+            "It is unclear whether all the settings were saved. "
+            "Diagnostics: Failure to send command to manager daemon.",
+            response_data);
+        }
+      g_free (date_format_64);
+
+      entity = NULL;
+      xml_string_append (xml, "<save_setting id=\"%s\">",
+                         "d9857b7c-1159-4193-9bc0-18fae5473a69");
+      if (read_entity_and_string_c (connection, &entity, &xml))
+        {
+          g_string_free (xml, TRUE);
           cmd_response_data_set_status_code (response_data,
                                              MHD_HTTP_INTERNAL_SERVER_ERROR);
           return gsad_message (
