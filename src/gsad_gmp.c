@@ -11986,7 +11986,6 @@ save_my_settings_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *details_fname, *list_fname, *report_fname;
   const char *time_format, *date_format;
   gchar *lang_64, *text_64, *max_64, *fname_64;
-  gchar *time_format_64, *date_format_64;
   GString *xml;
   entity_t entity;
   params_t *changed, *defaults, *filters;
@@ -12649,7 +12648,7 @@ save_my_settings_gmp (gvm_connection_t *connection, credentials_t *credentials,
   if (changed_value == NULL
       || (strcmp (changed_value, "") && strcmp (changed_value, "0")))
     {
-      time_format_64 =
+      gchar *time_format_64 =
         g_base64_encode ((guchar *) time_format, strlen (time_format));
 
       if (gvm_connection_sendf (connection,
@@ -12701,7 +12700,7 @@ save_my_settings_gmp (gvm_connection_t *connection, credentials_t *credentials,
   if (changed_value == NULL
       || (strcmp (changed_value, "") && strcmp (changed_value, "0")))
     {
-      date_format_64 =
+      gchar *date_format_64 =
         g_base64_encode ((guchar *) date_format, strlen (date_format));
 
       if (gvm_connection_sendf (connection,
