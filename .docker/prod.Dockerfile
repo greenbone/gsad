@@ -27,7 +27,7 @@ RUN mkdir /build \
     && cmake -DCMAKE_BUILD_TYPE=Release /source \
     && make DESTDIR=/install install
 
-FROM greenbone/gvm-libs:${GVM_LIBS_VERSION}
+FROM registry.community.greenbone.net/community/gvm-libs:${GVM_LIBS_VERSION}
 
 ARG DEBIAN_FRONTEND=noninteractive
 
