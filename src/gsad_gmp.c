@@ -3034,6 +3034,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *private_key, *public_key, *certificate, *community;
   const char *privacy_password, *auth_algorithm, *privacy_algorithm;
   const char *autogenerate, *allow_insecure;
+  const char *kdc, *realm;
   entity_t entity;
 
   name = params_value (params, "name");
@@ -3051,6 +3052,8 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   privacy_algorithm = params_value (params, "privacy_algorithm");
   allow_insecure = params_value (params, "allow_insecure");
   autogenerate = params_value (params, "autogenerate");
+  kdc = params_value (params, "kdc");
+  realm = params_value (params, "realm");
 
   CHECK_VARIABLE_INVALID (name, "Create Credential");
   CHECK_VARIABLE_INVALID (comment, "Create Credential");
@@ -3111,6 +3114,31 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
                   name, comment ? comment : "", type,
                   credential_login ? credential_login : "",
                   password ? password : "", allow_insecure);
+        }
+      else if (str_equal (type, "krb5"))
+        {
+          CHECK_VARIABLE_INVALID (credential_login, "Create Credential");
+          CHECK_VARIABLE_INVALID (password, "Create Credential");
+          CHECK_VARIABLE_INVALID (kdc, "Create Credential");
+          CHECK_VARIABLE_INVALID (realm, "Create Credential");
+
+          ret =
+            gmpf (connection, credentials, &response, &entity, response_data,
+                  "<create_credential>"
+                  "<name>%s</name>"
+                  "<comment>%s</comment>"
+                  "<type>%s</type>"
+                  "<login>%s</login>"
+                  "<password>%s</password>"
+                  "<kdc>%s</kdc>"
+                  "<realm>%s</realm>"
+                  "<allow_insecure>%s</allow_insecure>"
+                  "</create_credential>",
+                  name, comment ? comment : "", type,
+                  credential_login ? credential_login : "",
+                  password ? password : "",
+                  kdc ? kdc : "", realm ? realm : "",
+                  allow_insecure);
         }
       else if (str_equal (type, "usk"))
         {
@@ -3637,6 +3665,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *credential_id, *public_key;
   const char *name, *comment, *credential_login, *password, *passphrase, *type;
   const char *private_key, *certificate, *community, *privacy_password;
+  const char *kdc, *realm;
   const char *auth_algorithm, *privacy_algorithm, *allow_insecure;
   GString *command;
   entity_t entity;
@@ -3654,6 +3683,8 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   privacy_password = params_value (params, "privacy_password");
   auth_algorithm = params_value (params, "auth_algorithm");
   privacy_algorithm = params_value (params, "privacy_algorithm");
+  kdc = params_value (params, "kdc");
+  realm = params_value (params, "realm");
   allow_insecure = params_value (params, "allow_insecure");
   public_key = params_value (params, "public_key");
 
@@ -3673,6 +3704,14 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
       if (params_given (params, "change_passphrase"))
         CHECK_VARIABLE_INVALID (passphrase, "Save Credential");
+    }
+  else if (str_equal (type, "krb5"))
+    {
+      if (params_given (params, "kdc"))
+        CHECK_VARIABLE_INVALID (kdc, "Save Credential");
+
+      if (params_given (params, "realm"))
+        CHECK_VARIABLE_INVALID (realm, "Save Credential");
     }
   else if (str_equal (type, "snmp"))
     {
@@ -3747,6 +3786,19 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
             }
 
           xml_string_append (command, "</privacy>");
+        }
+    }
+  else if (str_equal (type, "krb5"))
+    {
+      if ((kdc && strcmp (kdc, "")))
+        {
+          xml_string_append (command, "<kdc>%s</kdc>",
+                             kdc);
+        }
+      if ((realm && strcmp (realm, "")))
+        {
+          xml_string_append (command, "<realm>%s</realm>",
+                             realm);
         }
     }
   else if (str_equal (type, "cc"))
@@ -5354,12 +5406,14 @@ create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *name, *hosts, *exclude_hosts, *comment;
   const char *target_ssh_credential, *port, *target_smb_credential;
   const char *target_ssh_elevate_credential;
+  const char *target_krb5_credential;
   const char *target_esxi_credential, *target_snmp_credential, *target_source;
   const char *target_exclude_source;
   const char *port_list_id, *reverse_lookup_only, *reverse_lookup_unify;
   const char *alive_tests, *hosts_filter, *file, *exclude_file;
   const char *allow_simultaneous_ips;
   gchar *ssh_credentials_element, *smb_credentials_element;
+  gchar *krb5_credentials_element;
   gchar *esxi_credentials_element, *snmp_credentials_element;
   gchar *ssh_elevate_credentials_element;
   gchar *asset_hosts_element;
@@ -5382,6 +5436,7 @@ create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
   port = params_value (params, "port");
   target_smb_credential = params_value (params, "smb_credential_id");
   target_esxi_credential = params_value (params, "esxi_credential_id");
+  target_krb5_credential = params_value (params, "krb5_credential_id");
   target_snmp_credential = params_value (params, "snmp_credential_id");
   alive_tests = params_value (params, "alive_tests");
   hosts_filter = params_value (params, "hosts_filter");
@@ -5419,6 +5474,7 @@ create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
     CHECK_VARIABLE_INVALID (target_ssh_elevate_credential, "Create Target");
   CHECK_VARIABLE_INVALID (target_smb_credential, "Create Target");
   CHECK_VARIABLE_INVALID (target_esxi_credential, "Create Target");
+  CHECK_VARIABLE_INVALID (target_krb5_credential, "Create Target");
   CHECK_VARIABLE_INVALID (target_snmp_credential, "Create Target");
   CHECK_VARIABLE_INVALID (alive_tests, "Create Target");
   CHECK_VARIABLE_INVALID (allow_simultaneous_ips, "Create Target");
@@ -5459,6 +5515,12 @@ create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
     esxi_credentials_element =
       g_strdup_printf ("<esxi_credential id=\"%s\"/>", target_esxi_credential);
 
+  if (strcmp (target_krb5_credential, "0") == 0)
+    krb5_credentials_element = g_strdup ("");
+  else
+    krb5_credentials_element =
+      g_strdup_printf ("<krb5_credential id=\"%s\"/>", target_krb5_credential);
+
   if (strcmp (target_snmp_credential, "0") == 0)
     snmp_credentials_element = g_strdup ("");
   else
@@ -5497,12 +5559,12 @@ create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   command = g_strdup_printf (
     "<create_target>"
-    "%s%s%s%s%s%s%s%s"
+    "%s%s%s%s%s%s%s%s%s"
     "</create_target>",
     xml->str, comment_element, ssh_credentials_element,
     ssh_elevate_credentials_element ? ssh_elevate_credentials_element : "",
     smb_credentials_element, esxi_credentials_element, snmp_credentials_element,
-    asset_hosts_element);
+    krb5_credentials_element, asset_hosts_element);
 
   g_string_free (xml, TRUE);
   g_free (comment_element);
@@ -6267,6 +6329,7 @@ save_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *target_ssh_credential, *port, *target_smb_credential;
   const char *target_ssh_elevate_credential;
   const char *target_esxi_credential, *target_snmp_credential;
+  const char *target_krb5_credential;
   const char *target_source, *target_exclude_source;
   const char *target_id, *port_list_id, *reverse_lookup_only;
   const char *reverse_lookup_unify, *alive_tests, *in_use;
@@ -6362,6 +6425,7 @@ save_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
   port = params_value (params, "port");
   target_smb_credential = params_value (params, "smb_credential_id");
   target_esxi_credential = params_value (params, "esxi_credential_id");
+  target_krb5_credential = params_value (params, "krb5_credential_id");
   target_snmp_credential = params_value (params, "snmp_credential_id");
   allow_simultaneous_ips = params_value (params, "allow_simultaneous_ips");
 
@@ -6371,6 +6435,7 @@ save_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
   CHECK_VARIABLE_INVALID (target_ssh_credential, "Save Target");
   CHECK_VARIABLE_INVALID (target_smb_credential, "Save Target");
   CHECK_VARIABLE_INVALID (target_esxi_credential, "Save Target");
+  CHECK_VARIABLE_INVALID (target_krb5_credential, "Save Target");
   CHECK_VARIABLE_INVALID (target_snmp_credential, "Save Target");
   CHECK_VARIABLE_INVALID (allow_simultaneous_ips, "Save Target");
 
@@ -6392,6 +6457,7 @@ save_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
     gchar *ssh_credentials_element, *smb_credentials_element;
     gchar *ssh_elevate_credentials_element;
     gchar *esxi_credentials_element, *snmp_credentials_element;
+    gchar *krb5_credentials_element;
     gchar *comment_element;
     entity_t entity;
 
@@ -6432,6 +6498,12 @@ save_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
       esxi_credentials_element = g_strdup_printf (
         "<esxi_credential id=\"%s\"/>", target_esxi_credential);
 
+    if (str_equal (target_krb5_credential, "--"))
+      krb5_credentials_element = g_strdup ("");
+    else
+      krb5_credentials_element = g_strdup_printf (
+        "<krb5_credential id=\"%s\"/>", target_krb5_credential);
+
     if (str_equal (target_snmp_credential, "--"))
       snmp_credentials_element = g_strdup ("");
     else
@@ -6461,11 +6533,11 @@ save_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
     g_string_append_printf (
       command,
-      "%s%s%s%s%s%s"
+      "%s%s%s%s%s%s%s"
       "</modify_target>",
       comment_element, ssh_credentials_element,
       ssh_elevate_credentials_element ? ssh_elevate_credentials_element : "",
-      smb_credentials_element, esxi_credentials_element,
+      smb_credentials_element, esxi_credentials_element, krb5_credentials_element,
       snmp_credentials_element);
 
     g_free (comment_element);
@@ -6473,6 +6545,7 @@ save_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
     g_free (ssh_elevate_credentials_element);
     g_free (smb_credentials_element);
     g_free (esxi_credentials_element);
+    g_free (krb5_credentials_element);
     g_free (snmp_credentials_element);
 
     /* Modify the target. */
