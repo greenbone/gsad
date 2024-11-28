@@ -3122,23 +3122,21 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           CHECK_VARIABLE_INVALID (kdc, "Create Credential");
           CHECK_VARIABLE_INVALID (realm, "Create Credential");
 
-          ret =
-            gmpf (connection, credentials, &response, &entity, response_data,
-                  "<create_credential>"
-                  "<name>%s</name>"
-                  "<comment>%s</comment>"
-                  "<type>%s</type>"
-                  "<login>%s</login>"
-                  "<password>%s</password>"
-                  "<kdc>%s</kdc>"
-                  "<realm>%s</realm>"
-                  "<allow_insecure>%s</allow_insecure>"
-                  "</create_credential>",
-                  name, comment ? comment : "", type,
-                  credential_login ? credential_login : "",
-                  password ? password : "",
-                  kdc ? kdc : "", realm ? realm : "",
-                  allow_insecure);
+          ret = gmpf (
+            connection, credentials, &response, &entity, response_data,
+            "<create_credential>"
+            "<name>%s</name>"
+            "<comment>%s</comment>"
+            "<type>%s</type>"
+            "<login>%s</login>"
+            "<password>%s</password>"
+            "<kdc>%s</kdc>"
+            "<realm>%s</realm>"
+            "<allow_insecure>%s</allow_insecure>"
+            "</create_credential>",
+            name, comment ? comment : "", type,
+            credential_login ? credential_login : "", password ? password : "",
+            kdc ? kdc : "", realm ? realm : "", allow_insecure);
         }
       else if (str_equal (type, "usk"))
         {
@@ -3792,13 +3790,11 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
     {
       if ((kdc && strcmp (kdc, "")))
         {
-          xml_string_append (command, "<kdc>%s</kdc>",
-                             kdc);
+          xml_string_append (command, "<kdc>%s</kdc>", kdc);
         }
       if ((realm && strcmp (realm, "")))
         {
-          xml_string_append (command, "<realm>%s</realm>",
-                             realm);
+          xml_string_append (command, "<realm>%s</realm>", realm);
         }
     }
   else if (str_equal (type, "cc"))
@@ -6537,8 +6533,8 @@ save_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
       "</modify_target>",
       comment_element, ssh_credentials_element,
       ssh_elevate_credentials_element ? ssh_elevate_credentials_element : "",
-      smb_credentials_element, esxi_credentials_element, krb5_credentials_element,
-      snmp_credentials_element);
+      smb_credentials_element, esxi_credentials_element,
+      krb5_credentials_element, snmp_credentials_element);
 
     g_free (comment_element);
     g_free (ssh_credentials_element);
