@@ -5568,6 +5568,8 @@ create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
   g_free (ssh_elevate_credentials_element);
   g_free (smb_credentials_element);
   g_free (esxi_credentials_element);
+  g_free (krb5_credentials_element);
+  g_free (asset_hosts_element);
 
   ret =
     gmp (connection, credentials, &response, &entity, response_data, command);
