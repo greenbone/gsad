@@ -20,7 +20,7 @@ cmake_minimum_required (VERSION 3.0)
 
 message ("-- Configuring gsad")
 
-project (gsad VERSION 22.12.1 LANGUAGES C)
+project (gsad VERSION 24.1.1 LANGUAGES C)
 
 if (NOT DEFINED PROJECT_VERSION_STRING)
    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -117,11 +117,13 @@ else (NOT GVM_STATE_DIR)
   set (GVM_STATE_DIR "${GVM_STATE_DIR}")
 endif (NOT GVM_STATE_DIR)
 
-if (NOT GVM_LOG_DIR)
-  set (GVM_LOG_DIR "${LOCALSTATEDIR}/log/gvm")
-else (NOT GVM_LOG_DIR)
-  set (GVM_LOG_DIR "${GVM_LOG_DIR}")
-endif (NOT GVM_LOG_DIR)
+if (NOT GSAD_LOG_FILE)
+  if (GVM_LOG_DIR)
+    set (GSAD_LOG_FILE "${GVM_LOG_DIR}/gsad.log")
+  else (GVM_LOG_DIR)
+    set (GSAD_LOG_FILE "-")
+  endif (GVM_LOG_DIR)
+endif (NOT GSAD_LOG_FILE)
 
 if (NOT GVM_SERVER_CERTIFICATE)
   set (GVM_SERVER_CERTIFICATE "${GVM_STATE_DIR}/CA/servercert.pem")
