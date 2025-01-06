@@ -7465,9 +7465,10 @@ save_config_nvt_gmp (gvm_connection_t *connection, credentials_t *credentials,
             }
           g_strfreev (splits);
 
-          value = preference->value_size ? g_base64_encode (
-                    (guchar *) preference->value, preference->value_size)
-                                         : g_strdup ("");
+          value = preference->value_size
+                    ? g_base64_encode ((guchar *) preference->value,
+                                       preference->value_size)
+                    : g_strdup ("");
 
           if (is_timeout)
             {
