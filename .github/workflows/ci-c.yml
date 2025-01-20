@@ -16,28 +16,23 @@ jobs:
         run: |
           clang-format -i -style=file src/*.{c,h}
           git diff --exit-code
+
   build-gsad:
     name: Build gsad
     runs-on: "ubuntu-latest"
-    strategy:
-      matrix:
-        container:
-          - greenbone/gsad-build:stable
-    container: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v4
+      - name: Install build dependencies
+        run: sh .github/install-build-dependencies.sh
       - name: Configure and compile gsad
         run: |
-          mkdir build
           rm -rf .git
-          cd build/
-          cmake -DCMAKE_BUILD_TYPE=Release ..
-          make install
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j $(nproc) -- install
 
   unittests:
     name: Unit Tests
     runs-on: ubuntu-latest
-    container: greenbone/gsad-build:stable
     steps:
       - name: Install git for Codecov uploader
         run: |
@@ -45,6 +40,10 @@ jobs:
           apt install --no-install-recommends -y ca-certificates git
           rm -rf /var/lib/apt/lists/*
       - uses: actions/checkout@v4
+      - name: Install build dependencies
+        run: sh .github/install-build-dependencies.sh
+      - name: Install cgreen
+        uses: greenbone/actions/install-cgreen@v3
       - name: Configure and compile gsad
         run: |
           cmake -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=1 -DENABLE_COVERAGE=1 .
