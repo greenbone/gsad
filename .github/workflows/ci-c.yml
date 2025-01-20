@@ -47,7 +47,6 @@ jobs:
       - name: Configure and compile gsad
         run: |
           cmake -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=1 -DENABLE_COVERAGE=1 .
-          cmake --build build
       - name: Configure and run tests
         run: CTEST_OUTPUT_ON_FAILURE=1 cmake --build build -- tests test
       - name: Upload test coverage to Codecov
