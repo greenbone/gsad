@@ -5517,9 +5517,8 @@ create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
       if (strcmp (target_krb5_credential, "0") == 0)
         krb5_credentials_element = g_strdup ("");
       else
-        krb5_credentials_element =
-          g_strdup_printf ("<krb5_credential id=\"%s\"/>",
-                             target_krb5_credential);
+        krb5_credentials_element = g_strdup_printf (
+          "<krb5_credential id=\"%s\"/>", target_krb5_credential);
     }
   else
     krb5_credentials_element = NULL;
