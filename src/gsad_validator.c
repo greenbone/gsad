@@ -311,7 +311,7 @@ init_validator ()
   gvm_validator_add (validator, "credential_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "create_credentials_type", "^(gen|pass|key)$");
   gvm_validator_add (validator, "credential_type",
-                     "^(cc|up|usk|smime|pgp|snmp|pw)$");
+                     "^(cc|up|usk|smime|pgp|snmp|krb5|pw)$");
   gvm_validator_add (validator, "credential_login", "^[-_[:alnum:]\\.@\\\\]*$");
   gvm_validator_add (validator, "condition_data:name", "^.*$");
   gvm_validator_add (validator, "condition_data:value", "(?s)^.*$");
@@ -703,6 +703,7 @@ init_validator ()
   gvm_validator_alias (validator, "show_all", "boolean");
   gvm_validator_alias (validator, "slave_id", "id");
   gvm_validator_alias (validator, "smb_credential_id", "credential_id");
+  gvm_validator_alias (validator, "krb5_credential_id", "credential_id");
   gvm_validator_alias (validator, "snmp_credential_id", "credential_id");
   gvm_validator_alias (validator, "ssh_credential_id", "credential_id");
   gvm_validator_alias (validator, "ssh_elevate_credential_id", "credential_id");
