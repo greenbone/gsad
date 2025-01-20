@@ -5566,7 +5566,7 @@ create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
     xml->str, comment_element, ssh_credentials_element,
     ssh_elevate_credentials_element ? ssh_elevate_credentials_element : "",
     smb_credentials_element, esxi_credentials_element, snmp_credentials_element,
-    krb5_credentials_element, asset_hosts_element);
+    krb5_credentials_element ? : "", asset_hosts_element);
 
   g_string_free (xml, TRUE);
   g_free (comment_element);
@@ -6548,7 +6548,7 @@ save_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
       comment_element, ssh_credentials_element,
       ssh_elevate_credentials_element ? ssh_elevate_credentials_element : "",
       smb_credentials_element, esxi_credentials_element,
-      krb5_credentials_element, snmp_credentials_element);
+      krb5_credentials_element ? : "", snmp_credentials_element);
 
     g_free (comment_element);
     g_free (ssh_credentials_element);
