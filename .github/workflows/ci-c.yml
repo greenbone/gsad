@@ -20,6 +20,13 @@ jobs:
   build-gsad:
     name: Build gsad
     runs-on: "ubuntu-latest"
+    strategy:
+      matrix:
+        container:
+          - stable
+          - oldstable
+          - testing
+    container: registry.community.greenbone.net/community/gvm-libs:${{ matrix.container }}
     steps:
       - uses: actions/checkout@v4
       - name: Install build dependencies
