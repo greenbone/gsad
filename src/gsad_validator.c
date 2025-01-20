@@ -397,7 +397,6 @@ init_validator ()
                      "^(Browser Language|"
                      "([a-z]{2,3})(_[A-Z]{2})?(@[[:alnum:]_-]+)?"
                      "(:([a-z]{2,3})(_[A-Z]{2})?(@[[:alnum:]_-]+)?)*)$");
-  gvm_validator_add (validator, "levels", "^(h|m|l|g|f){0,5}$");
   gvm_validator_add (validator, "list_fname",
                      "^([[:alnum:]_-]|%[%CcDFMmNTtUu])+$");
   /* Used for users, credentials, and scanner login name. */
@@ -501,8 +500,6 @@ init_validator ()
   gvm_validator_add (validator, "text", "^.*");
   gvm_validator_add (validator, "text_columns:name", "^[0123456789]+$");
   gvm_validator_add (validator, "text_columns:value", "^[_[:alnum:]]+$");
-  gvm_validator_add (validator, "threat",
-                     "^(High|Medium|Low|Alarm|Log|False Positive|)$");
   gvm_validator_add (validator, "ticket_status", "^(Open|Fixed|Closed)$");
   gvm_validator_add (validator, "trend", "^(0|1)$");
   gvm_validator_add (validator, "trend:value", "^(0|1)$");
@@ -643,7 +640,6 @@ init_validator ()
   gvm_validator_alias (validator, "new_severity", "severity_optional");
   gvm_validator_alias (validator, "new_severity_from_list",
                        "severity_optional");
-  gvm_validator_alias (validator, "new_threat", "threat");
   gvm_validator_alias (validator, "next", "page");
   gvm_validator_alias (validator, "next_next", "page");
   gvm_validator_alias (validator, "next_error", "page");

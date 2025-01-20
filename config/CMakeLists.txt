@@ -17,7 +17,7 @@
 
 
 if (NOT SYSTEMD_SERVICE_DIR)
-  set (SYSTEMD_SERVICE_DIR "/lib/systemd/system")
+  set (SYSTEMD_SERVICE_DIR "${LIBDIR}/systemd/system")
 endif (NOT SYSTEMD_SERVICE_DIR)
 
 if (NOT LOGROTATE_DIR)
