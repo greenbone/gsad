@@ -6,18 +6,18 @@ FROM registry.community.greenbone.net/community/gvm-libs:${GVM_LIBS_VERSION} AS 
 COPY . /source
 WORKDIR /source
 
-RUN sh /source/.github/install-build-dependencies.sh
-RUN cmake -DCMAKE_BUILD_TYPE=Release -B /build /source
-RUN DESTDIR=/install cmake --build /build -j$(nproc) -- install
+RUN sh /source/.github/install-dependencies.sh \
+    /source/.github/build-dependencies.list \
+    && rm -rf /var/lib/apt/lists/*
+RUN cmake -DCMAKE_BUILD_TYPE=Release -B /build /source \
+    && DESTDIR=/install cmake --build /build -j$(nproc) -- install
 
 FROM registry.community.greenbone.net/community/gvm-libs:${GVM_LIBS_VERSION}
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends --no-install-suggests \
-    gosu \
-    libmicrohttpd12 \
+RUN --mount=type=bind,source=.github,target=/source/ \
+    sh /source/install-dependencies.sh /source/runtime-dependencies.list \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /install/ /

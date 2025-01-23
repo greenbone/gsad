@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install build dependencies
-        run: sh .github/install-build-dependencies.sh
+        run: sh .github/install-dependencies.sh .github/build-dependencies.list
       - name: Configure and compile gsad
         run: |
           rm -rf .git
@@ -46,10 +46,9 @@ jobs:
         run: |
           apt-get update
           apt-get install --no-install-recommends -y ca-certificates git
-          rm -rf /var/lib/apt/lists/*
       - uses: actions/checkout@v4
       - name: Install build dependencies
-        run: sh .github/install-build-dependencies.sh
+        run: sh .github/install-dependencies.sh .github/build-dependencies.list
       - name: Install cgreen
         uses: greenbone/actions/install-cgreen@v3
       - name: Configure and compile gsad
