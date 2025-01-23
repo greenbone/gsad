@@ -19,7 +19,7 @@ jobs:
       actions: read
       contents: read
       security-events: write
-    container: registry.community.greenbone.net/community/gvm-libs:stable
+    container: ${{ vars.SELF_HOSTED_REGISTRY }}/community/gvm-libs:stable
 
     steps:
     - name: Checkout repository
