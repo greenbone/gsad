@@ -2,9 +2,11 @@ name: Build and test C
 
 on:
   push:
-    branches: [main, stable, oldstable]
+    branches:
+      - main
   pull_request:
-    branches: [main, stable, oldstable]
+    branches:
+      - main
 
 jobs:
   c-format-check:
