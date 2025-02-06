@@ -717,6 +717,7 @@ file_content_response (http_connection_t *connection, const char *url,
   if ((buf.st_mode & S_IFMT) != S_IFREG)
     {
       fclose (file);
+      g_debug ("Path %s is not a file.", path);
       return create_not_found_response (response_data);
     }
 
