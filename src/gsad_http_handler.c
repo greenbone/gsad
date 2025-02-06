@@ -702,7 +702,66 @@ handle_static_file (http_connection_t *connection, const char *method,
       path = g_strconcat (relative_url, NULL);
     }
 
-  g_debug ("Requesting url %s for static ng path %s", url, path);
+  g_debug ("Requesting url %s for static path %s", url, path);
+
+  response_data = cmd_response_data_new ();
+  cmd_response_data_set_allow_caching (response_data, TRUE);
+
+  response = file_content_response (connection, url, path, response_data);
+
+  g_free (path);
+
+  return handler_send_response (connection, response, response_data, NULL);
+}
+
+int
+handle_static_content (http_connection_t *connection, const char *method,
+                       const char *url, gsad_connection_info_t *con_info,
+                       http_handler_t *handler, void *data)
+{
+  gchar *path;
+  http_response_t *response;
+  char *default_file = "index.html";
+  cmd_response_data_t *response_data;
+
+  /** @todo validation, URL length restriction (allows you to view ANY
+   *       file that the user running the gsad might look at!) */
+  /** @todo use glibs path functions */
+  /* Attempt to prevent disclosing non-gsa content. */
+  if (strstr (url, ".."))
+    path = g_strconcat (default_file, NULL);
+  else
+    {
+      /* Ensure that url is relative. */
+      const char *relative_url = url;
+      if (*url == '/')
+        relative_url = url + 1;
+      path = g_strconcat (relative_url, NULL);
+    }
+
+  g_debug ("Requesting url %s for static content %s", url, path);
+
+  if (g_file_test (path, (G_FILE_TEST_IS_DIR)))
+    {
+      if (url[strlen (url) - 1] != '/')
+        {
+          g_debug ("Redirecting to %s/", url);
+          url = g_strconcat (url, "/", NULL);
+          response =
+            MHD_create_response_from_buffer (0, NULL, MHD_RESPMEM_PERSISTENT);
+          MHD_add_response_header (response, "Location", url);
+          response_data = cmd_response_data_new ();
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_MOVED_PERMANENTLY);
+          g_free (path);
+          return handler_send_response (connection, response, response_data,
+                                        NULL);
+        }
+
+      gchar *old_path = path;
+      path = g_strconcat (path, "/", default_file, NULL);
+      g_free (old_path);
+    }
 
   response_data = cmd_response_data_new ();
   cmd_response_data_set_allow_caching (response_data, TRUE);
@@ -772,7 +831,7 @@ make_url_handlers ()
   url_handler_add_func (url_handlers, "^/assets/.+$", handle_static_file);
   url_handler_add_func (url_handlers, "^/static/(img|js|css|media)/.+$",
                         handle_static_file);
-  url_handler_add_func (url_handlers, "^/manual/.+$", handle_static_file);
+  url_handler_add_func (url_handlers, "^/manual/.+$", handle_static_content);
 
   // Create /gmp handler.
 
