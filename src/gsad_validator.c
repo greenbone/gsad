@@ -440,11 +440,13 @@ init_validator ()
   gvm_validator_add (validator, "definitions_file", "(?s)^.*$");
   gvm_validator_add (validator, "ca_pub", "(?s)^.*$");
   gvm_validator_add (validator, "which_cert", "^(default|existing|new)$");
+  gvm_validator_add (validator, "kdc", "(?s)^.*$");
   gvm_validator_add (validator, "key_pub", "(?s)^.*$");
   gvm_validator_add (validator, "key_priv", "(?s)^.*$");
   gvm_validator_add (validator, "radiuskey", "^.*$");
   gvm_validator_add (validator, "range_type",
                      "^(duration|until_end|from_start|start_to_end)$");
+  gvm_validator_add (validator, "realm", "(?s)^.*$");
   gvm_validator_add (validator, "related:name", "^.*$");
   gvm_validator_add (validator, "related:value", "^.*$");
   gvm_validator_add (validator, "report_fname",
