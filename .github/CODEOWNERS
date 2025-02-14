@@ -1,6 +1,6 @@
 # default reviewers
-*                 @greenbone/gea @mattmundell
+*                 @greenbone/gea @greenbone/team-matt
 
 # dev ops
-.github/          @greenbone/devops @greenbone/gea @mattmundell
-.docker/          @greenbone/devops @greenbone/gea @mattmundell
+.github/          @greenbone/devops @greenbone/gea @greenbone/team-matt
+.docker/          @greenbone/devops @greenbone/gea @greenbone/team-matt
