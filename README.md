@@ -17,6 +17,7 @@ full-featured HTTP interface for vulnerability management.
   - [Compiling](#compiling)
 - [Logging Configuration](#logging-configuration)
 - [Usage](#usage)
+- [Development](#development)
 - [Support](#support)
 - [Maintainer](#maintainer)
 - [Contributing](#contributing)
@@ -183,6 +184,14 @@ gsad tries to serve at port 9392 as a fallback (`https://<your host>:9392`).
 To see all available command line options of gsad, enter this command:
 
     gsad --help
+
+## Development
+
+For development a [Devcontainers](https://containers.dev/) setup can be used.
+Devcontainers are currently supported by [Visual Studio Code](https://code.visualstudio.com/docs/devcontainers/containers)
+and [IntelliJ IDEA](https://blog.jetbrains.com/idea/2024/07/using-dev-containers-in-jetbrains-ides-part-1/).
+The provided Devcontainers setup comes with all required dependencies for building
+gsad out of the box.
 
 ## Support
 
