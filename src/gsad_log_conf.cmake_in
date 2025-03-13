@@ -4,43 +4,20 @@
 #          group to include debug may reveal passwords in the logs.
 
 [gsad main]
-prepend=%t %s %p
-separator=:
-prepend_time_format=%Y-%m-%d %Hh%M.%S %Z
-file=${GSAD_LOG_FILE}
-level=127
+level=info
 
-[gsad  gmp]
-prepend=%t %s %p
-separator=:
-prepend_time_format=%Y-%m-%d %Hh%M.%S %Z
-file=${GSAD_LOG_FILE}
-level=127
-
-[gsad i18n]
-prepend=%t %s %p
-separator=:
-prepend_time_format=%Y-%m-%d %Hh%M.%S %Z
-file=${GSAD_LOG_FILE}
-level=127
+[gsad gmp]
+level=info
 
 [gsad http]
-prepend=%t %s %p
-separator=:
-prepend_time_format=%Y-%m-%d %Hh%M.%S %Z
-file=${GSAD_LOG_FILE}
-level=127
+level=info
 
-[gsad vali]
-prepend=%t %s %p
-separator=:
-prepend_time_format=%Y-%m-%d %Hh%M.%S %Z
-file=${GSAD_LOG_FILE}
-level=127
+[gsad http handler]
+level=info
 
 [*]
 prepend=%t %s %p
 separator=:
 prepend_time_format=%Y-%m-%d %Hh%M.%S %Z
 file=${GSAD_LOG_FILE}
-level=0
+level=warning
