@@ -63,7 +63,7 @@
 /**
  * @brief GLib log domain.
  */
-#define G_LOG_DOMAIN "gsad  gmp"
+#define G_LOG_DOMAIN "gsad gmp"
 
 /**
  * @brief Manager (gvmd) address.
