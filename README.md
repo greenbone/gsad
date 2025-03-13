@@ -137,21 +137,25 @@ Logging is configured entirely by the file
 
 The configuration is divided into domains like this one
 
-    [gsad main]
-    prepend=%t %p
-    prepend_time_format=%Y-%m-%d %Hh%M.%S %Z
-    file=/var/log/gvm/gsad.log
-    level=128
+```ini
+[gsad main]
+prepend=%t %p
+prepend_time_format=%Y-%m-%d %Hh%M.%S %Z
+file=/var/log/gvm/gsad.log
+level=debug
+```
 
 The `level` field controls the amount of logging that is written.
 The value of `level` can be:
 
-      4  Errors.
-      8  Critical situation.
-     16  Warnings.
-     32  Messages.
-     64  Information.
-    128  Debug.  (Lots of output.)
+```text
+error      4  Errors.
+critical   8  Critical situation.
+warning   16  Warnings.
+message   32  Messages.
+info      64  Information.
+debug    128  Debug.  (Lots of output.)
+```
 
 Enabling any level includes all the levels above it. So enabling Information
 will include Warnings, Critical situations and Errors.
@@ -161,12 +165,14 @@ configuration file.
 
 Logging to `syslog` can be enabled in each domain like:
 
-    [gsad main]
-    prepend=%t %p
-    prepend_time_format=%Y-%m-%d %Hh%M.%S %Z
-    file=syslog
-    syslog_facility=daemon
-    level=128
+```ini
+[gsad main]
+prepend=%t %p
+prepend_time_format=%Y-%m-%d %Hh%M.%S %Z
+file=syslog
+syslog_facility=daemon
+level=debug
+```
 
 ## Usage
 
