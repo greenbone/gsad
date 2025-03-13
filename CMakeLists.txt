@@ -109,8 +109,6 @@ if (NOT GVMD_RUN_DIR)
   set (GVMD_RUN_DIR  "/run/gvmd")
 endif (NOT GVMD_RUN_DIR)
 
-
-
 if (NOT GVM_STATE_DIR)
   set (GVM_STATE_DIR "${LOCALSTATEDIR}/lib/gvm")
 else (NOT GVM_STATE_DIR)

@@ -20,6 +20,8 @@ if (NOT SYSTEMD_SERVICE_DIR)
   set (SYSTEMD_SERVICE_DIR "${LIBDIR}/systemd/system")
 endif (NOT SYSTEMD_SERVICE_DIR)
 
+message(STATUS "Installing systemd service files to ${SYSTEMD_SERVICE_DIR}")
+
 if (NOT LOGROTATE_DIR)
   set (LOGROTATE_DIR "${SYSCONFDIR}/logrotate.d")
 endif (NOT LOGROTATE_DIR)
