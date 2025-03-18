@@ -12093,7 +12093,7 @@ save_my_settings_gmp (gvm_connection_t *connection, credentials_t *credentials,
   date_format = params_value (params, "date_format");
 
   CHECK_VARIABLE_INVALID (text, "Save Settings")
-  CHECK_VARIABLE_INVALID (text, "Save Settings")
+  CHECK_VARIABLE_INVALID (passwd, "Save Settings")
   CHECK_VARIABLE_INVALID (old_passwd, "Save Settings")
   CHECK_VARIABLE_INVALID (max, "Save Settings")
   CHECK_VARIABLE_INVALID (lang, "Save Settings")
