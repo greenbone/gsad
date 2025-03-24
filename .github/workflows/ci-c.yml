@@ -42,7 +42,7 @@ jobs:
   unittests:
     name: Unit Tests
     runs-on: ubuntu-latest
-    container: greenbone/gvm-libs:stable
+    container: ${{ vars.SELF_HOSTED_REGISTRY }}/community/gvm-libs:stable
     steps:
       - name: Install git for Codecov uploader
         run: |
