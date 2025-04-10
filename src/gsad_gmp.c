@@ -130,6 +130,37 @@
     }
 
 /**
+ * @brief Check if login name is valid on create.
+ *
+ * @param[in]  name      Param name.
+ * @param[in]  op_name   Operation name.
+ */
+#define CHECK_LOGIN_NAME_INVALID_CREATE(name, op_name)                        \
+  if (name == NULL || !credential_username_is_valid (name))                   \
+    {                                                                         \
+      return message_invalid (connection, credentials, params, response_data, \
+                              "Login name must not be empty and may contain"  \
+                              " only alphanumeric characters or the"          \
+                              " following: - _ \\ . @",                       \
+                              op_name);                                       \
+    }
+
+/**
+ * @brief Check if login name is valid on edit.
+ *
+ * @param[in]  name      Param name.
+ * @param[in]  op_name   Operation name.
+ */
+#define CHECK_LOGIN_NAME_INVALID_EDIT(name, op_name)                          \
+  if (name == NULL || !credential_username_is_valid (name))                   \
+    {                                                                         \
+      return message_invalid (connection, credentials, params, response_data, \
+                              "Login may only contain alphanumeric characters"\
+                              " or the following: - _ \\ . @",                \
+                              op_name);                                       \
+    }
+
+/**
  * @brief Whether to use TLS for Manager connections.
  */
 int manager_use_tls = 0;
@@ -3117,10 +3148,9 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
         }
       else if (str_equal (type, "krb5"))
         {
-          CHECK_VARIABLE_INVALID (credential_login, "Create Credential");
+          CHECK_LOGIN_NAME_INVALID_CREATE (credential_login, "Create Credential");
+
           CHECK_VARIABLE_INVALID (password, "Create Credential");
-          CHECK_VARIABLE_INVALID (kdc, "Create Credential");
-          CHECK_VARIABLE_INVALID (realm, "Create Credential");
 
           ret = gmpf (
             connection, credentials, &response, &entity, response_data,
@@ -3705,11 +3735,8 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
     }
   else if (str_equal (type, "krb5"))
     {
-      if (params_given (params, "kdc"))
-        CHECK_VARIABLE_INVALID (kdc, "Save Credential");
-
-      if (params_given (params, "realm"))
-        CHECK_VARIABLE_INVALID (realm, "Save Credential");
+      if (params_given (params, "credential_login"))
+        CHECK_LOGIN_NAME_INVALID_EDIT (credential_login, "Create Credential");
     }
   else if (str_equal (type, "snmp"))
     {
@@ -3741,7 +3768,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
         CHECK_VARIABLE_INVALID (public_key, "Save Credential");
     }
 
-  if (params_given (params, "credential_login"))
+  if (params_given (params, "credential_login") && !str_equal(type, "krb5"))
     CHECK_VARIABLE_INVALID (credential_login, "Save Credential");
 
   change_password = params_value_bool (params, "change_password");
