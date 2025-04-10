@@ -151,13 +151,13 @@
  * @param[in]  name      Param name.
  * @param[in]  op_name   Operation name.
  */
-#define CHECK_LOGIN_NAME_INVALID_EDIT(name, op_name)                          \
-  if (name == NULL || !credential_username_is_valid (name))                   \
-    {                                                                         \
-      return message_invalid (connection, credentials, params, response_data, \
-                              "Login may only contain alphanumeric characters"\
-                              " or the following: - _ \\ . @",                \
-                              op_name);                                       \
+#define CHECK_LOGIN_NAME_INVALID_EDIT(name, op_name)                           \
+  if (name == NULL || !credential_username_is_valid (name))                    \
+    {                                                                          \
+      return message_invalid (connection, credentials, params, response_data,  \
+                              "Login may only contain alphanumeric characters" \
+                              " or the following: - _ \\ . @",                 \
+                              op_name);                                        \
     }
 
 /**
@@ -3148,7 +3148,8 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
         }
       else if (str_equal (type, "krb5"))
         {
-          CHECK_LOGIN_NAME_INVALID_CREATE (credential_login, "Create Credential");
+          CHECK_LOGIN_NAME_INVALID_CREATE (credential_login,
+                                           "Create Credential");
 
           CHECK_VARIABLE_INVALID (password, "Create Credential");
 
@@ -3768,7 +3769,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
         CHECK_VARIABLE_INVALID (public_key, "Save Credential");
     }
 
-  if (params_given (params, "credential_login") && !str_equal(type, "krb5"))
+  if (params_given (params, "credential_login") && !str_equal (type, "krb5"))
     CHECK_VARIABLE_INVALID (credential_login, "Save Credential");
 
   change_password = params_value_bool (params, "change_password");

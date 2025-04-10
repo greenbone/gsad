@@ -90,8 +90,7 @@ credential_username_is_valid (const gchar *username)
   const char *s;
   s = username;
   while (*s)
-    if (isalnum (*s)
-        || strchr ("-_\\.@", *s))
+    if (isalnum (*s) || strchr ("-_\\.@", *s))
       s++;
     else
       return FALSE;
