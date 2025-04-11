@@ -15,22 +15,26 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-
-if (NOT SYSTEMD_SERVICE_DIR)
-  set (SYSTEMD_SERVICE_DIR "${LIBDIR}/systemd/system")
-endif (NOT SYSTEMD_SERVICE_DIR)
+if(NOT SYSTEMD_SERVICE_DIR)
+  set(SYSTEMD_SERVICE_DIR "${LIBDIR}/systemd/system")
+endif(NOT SYSTEMD_SERVICE_DIR)
 
 message(STATUS "Installing systemd service files to ${SYSTEMD_SERVICE_DIR}")
 
-if (NOT LOGROTATE_DIR)
-  set (LOGROTATE_DIR "${SYSCONFDIR}/logrotate.d")
-endif (NOT LOGROTATE_DIR)
+if(NOT LOGROTATE_DIR)
+  set(LOGROTATE_DIR "${SYSCONFDIR}/logrotate.d")
+endif(NOT LOGROTATE_DIR)
 
-configure_file (gsad.service.in gsad.service)
-configure_file (gsad.logrotate.in gsad.logrotate)
+configure_file(gsad.service.in gsad.service)
+configure_file(gsad.logrotate.in gsad.logrotate)
 
-install (FILES ${CMAKE_CURRENT_BINARY_DIR}/gsad.service
-         DESTINATION ${SYSTEMD_SERVICE_DIR}/)
+install(
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/gsad.service
+  DESTINATION ${SYSTEMD_SERVICE_DIR}/
+)
 
-install (FILES ${CMAKE_CURRENT_BINARY_DIR}/gsad.logrotate
-         DESTINATION ${LOGROTATE_DIR}/ RENAME gsad)
+install(
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/gsad.logrotate
+  DESTINATION ${LOGROTATE_DIR}/
+  RENAME gsad
+)
