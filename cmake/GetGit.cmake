@@ -20,7 +20,7 @@
 
 find_package (Git)
 
-macro (Git_GET_REVISION dir variable)
+macro (git_get_revision dir variable)
   if (GIT_FOUND)
     execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
                     WORKING_DIRECTORY ${dir}
@@ -37,4 +37,4 @@ macro (Git_GET_REVISION dir variable)
       set (${variable} "${GIT_COMMIT_HASH}-${GIT_BRANCH}")
     endif()
   endif()
-endmacro (Git_GET_REVISION)
+endmacro ()
