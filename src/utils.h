@@ -32,4 +32,7 @@ str_equal (const gchar *, const gchar *);
 gchar *
 capitalize (const char *);
 
+gboolean
+credential_username_is_valid (const gchar *);
+
 #endif /* not _GSAD_UTILS_H */
