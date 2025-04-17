@@ -155,8 +155,8 @@
   if (name == NULL || !credential_username_is_valid (name))                    \
     {                                                                          \
       return message_invalid (connection, credentials, params, response_data,  \
-                              "Login may only contain alphanumeric characters" \
-                              " or the following: - _ \\ . @",                 \
+                              "Login name may only contain alphanumeric"       \
+                              " characters or the following: - _ \\ . @",      \
                               op_name);                                        \
     }
 
