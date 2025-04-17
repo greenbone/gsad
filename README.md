@@ -21,6 +21,8 @@ full-featured HTTP interface for vulnerability management.
 - [Support](#support)
 - [Maintainer](#maintainer)
 - [Contributing](#contributing)
+  - [Code style and formatting](#code-style-and-formatting)
+  - [CMake formatting](#cmake-formatting)
 - [License](#license)
 
 ## Releases
@@ -56,21 +58,23 @@ See at the end of this section how to easily install these prerequisites on
 some supported platforms.
 
 Prerequisites:
-* libgvm_base, libgvm_util, libgvm_gmp >= 20.8.2
-* gnutls >= 3.2.15
-* libgcrypt
-* cmake >= 3.0
-* glib-2.0 >= 2.42
-* libxml
-* libmicrohttpd >= 0.9.0
-* pkg-config
-* gcc
-* zlib >= 1.2
-* libbrotli (optional, for Brotli compression)
+
+- libgvm_base, libgvm_util, libgvm_gmp >= 20.8.2
+- gnutls >= 3.2.15
+- libgcrypt
+- cmake >= 3.0
+- glib-2.0 >= 2.42
+- libxml
+- libmicrohttpd >= 0.9.0
+- pkg-config
+- gcc
+- zlib >= 1.2
+- libbrotli (optional, for Brotli compression)
 
 Prerequisites for building documentation:
-* Doxygen
-* xmltoman (optional, for building man page)
+
+- Doxygen
+- xmltoman (optional, for building man page)
 
 Install prerequisites on Debian GNU/Linux:
 
@@ -87,6 +91,7 @@ files before configuring:
 ```bash
 export PKG_CONFIG_PATH=/your/location/lib/pkgconfig:$PKG_CONFIG_PATH
 ```
+
 Create a build directory and change into it with:
 
 ```bash
@@ -109,11 +114,13 @@ This only needs to be done once.
 
 Thereafter, the following commands are useful:
 
-    make                # build the scanner
-    make doc            # build the documentation
-    make doc-full       # build more developer-oriented documentation
-    make install        # install the build
-    make rebuild_cache  # rebuild the cmake cache
+```sh
+make                # build the scanner
+make doc            # build the documentation
+make doc-full       # build more developer-oriented documentation
+make install        # install the build
+make rebuild_cache  # rebuild the cmake cache
+```
 
 Please note that you may have to execute `make install` as root, especially if
 you have specified a prefix for which your user does not have full permissions.
@@ -129,11 +136,15 @@ explicitly before running `cmake`. See the top-level CMakeLists.txt.
 
 By default, gsad writes logs to the file
 
-    <install-prefix>/var/log/gvm/gsad.log
+```text
+<install-prefix>/var/log/gvm/gsad.log
+```
 
 Logging is configured entirely by the file
 
-    <install-prefix>/etc/gvm/gsad_log.conf
+```text
+<install-prefix>/etc/gvm/gsad_log.conf
+```
 
 The configuration is divided into domains like this one
 
@@ -179,7 +190,9 @@ level=debug
 In case everything was installed using the defaults, then starting the HTTP
 daemon of the Greenbone Security Assistant can be done with this simple command:
 
-    gsad
+```sh
+gsad
+```
 
 The daemon will listen on port 443, making the web interface
 available in your network at `https://<your host>`.
@@ -189,7 +202,9 @@ gsad tries to serve at port 9392 as a fallback (`https://<your host>:9392`).
 
 To see all available command line options of gsad, enter this command:
 
-    gsad --help
+```sh
+gsad --help
+```
 
 ## Development
 
@@ -219,8 +234,35 @@ request](https://github.com/greenbone/gsad/pulls) on GitHub. Bigger changes need
 to be discussed with the development team via the [issues section at
 github](https://github.com/greenbone/gsad/issues) first.
 
+### Code style and formatting
+
+Before creating a pull request, it is recommended to run the following command:
+
+```sh
+make format
+```
+
+This reformats the new code to ensure that it follows the code style and
+formatting guidelines.
+
+### CMake formatting
+
+All CMake files are formatted using [gersemi](https://github.com/BlankSpruce/gersemi).
+To install gersemi on a Debian based system the following commands can be used:
+
+```sh
+sudo apt install pipx
+pipx install gersemi
+```
+
+To format all CMake files run the command:
+
+```sh
+gersemi -i cmake .
+```
+
 ## License
 
-Copyright (C) 2009-2024 [Greenbone AG](https://www.greenbone.net/)
+Copyright (C) 2009-2025 [Greenbone AG](https://www.greenbone.net/)
 
 Licensed under the [GNU Affero General Public License v3.0 or later](LICENSE).
