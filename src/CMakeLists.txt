@@ -211,6 +211,8 @@ add_dependencies(tags etags ctags)
 if(BUILD_TESTING)
   find_package(cgreen REQUIRED)
 
+  add_executable(utils-test EXCLUDE_FROM_ALL utils_test.c)
+
   add_executable(
     gsad-validator-test
     EXCLUDE_FROM_ALL
@@ -219,10 +221,13 @@ if(BUILD_TESTING)
   )
 
   target_link_libraries(gsad-validator-test ${CGREEN_LIBRARIES} ${GLIB_LDFLAGS})
+  target_link_libraries(utils-test ${CGREEN_LIBRARIES} ${GLIB_LDFLAGS})
 
+  target_link_libraries(gsad-validator-test ${CGREEN_LIBRARIES} ${GLIB_LDFLAGS})
   add_test(gsad-validator-test gsad-validator-test)
+  add_test(utils-test utils-test)
 
-  add_custom_target(tests DEPENDS gsad-validator-test)
+  add_custom_target(tests DEPENDS gsad-validator-test utils-test)
 endif(BUILD_TESTING)
 
 if(ENABLE_COVERAGE)

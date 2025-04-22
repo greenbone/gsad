@@ -23,6 +23,7 @@
 
 #include "utils.h"
 
+#include <ctype.h>
 #include <string.h> // For strcmp
 
 /**
@@ -71,4 +72,32 @@ capitalize (const char *input)
         }
       return output;
     }
+}
+
+/**
+ * @brief Test if a username is valid to use in a credential.
+ *
+ * Valid usernames may only contain alphanumeric characters and a few
+ * special ones to avoid problems with installer package generation.
+ *
+ * @param[in]  username  The username string to test.
+ *
+ * @return Returns TRUE if the username is valid, FALSE otherwise.
+ */
+gboolean
+credential_username_is_valid (const gchar *username)
+{
+  const char *s;
+  s = username;
+
+  if (s == NULL || !strcmp (s, ""))
+    return FALSE;
+
+  while (*s)
+    if (isalnum (*s) || strchr ("-_\\.@", *s))
+      s++;
+    else
+      return FALSE;
+
+  return TRUE;
 }
