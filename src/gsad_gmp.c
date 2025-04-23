@@ -17717,6 +17717,7 @@ save_license_gmp (gvm_connection_t *connection, credentials_t *credentials,
   return ret;
 }
 
+#if ENABLE_AGENTS
 /**
  * @brief Get agent installers.
  *
@@ -17870,6 +17871,7 @@ delete_agent_installer_gmp (gvm_connection_t *connection,
   return move_resource_to_trash (connection, "agent_installer", credentials,
                                  params, response_data);
 }
+#endif
 
 char *
 renew_session_gmp (gvm_connection_t *connection, credentials_t *credentials,
