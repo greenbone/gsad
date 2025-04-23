@@ -65,6 +65,7 @@ init_validator ()
                      "|(delete_asset)"
                      "|(delete_config)"
                      "|(delete_credential)"
+                     "|(delete_agent_installer)"
                      "|(delete_alert)"
                      "|(delete_filter)"
                      "|(delete_from_trash)"
@@ -137,6 +138,9 @@ init_validator ()
                      "|(export_tasks)"
                      "|(export_user)"
                      "|(export_users)"
+                     "|(get_agent_installers)"
+                     "|(get_agent_installer)"
+                     "|(get_agent_installer_file)"
                      "|(get_aggregate)"
                      "|(get_alert)"
                      "|(get_alerts)"
@@ -556,6 +560,7 @@ init_validator ()
 
   gvm_validator_alias (validator, "optional_task_id", "optional_id");
   gvm_validator_alias (validator, "add_tag", "boolean");
+  gvm_validator_alias (validator, "agent_installer_id", "id");
   gvm_validator_alias (validator, "alert_id_2", "alert_id");
   gvm_validator_alias (validator, "alert_id_optional:name", "number");
   gvm_validator_alias (validator, "alert_id_optional:value",

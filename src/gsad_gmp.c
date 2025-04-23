@@ -17717,6 +17717,162 @@ save_license_gmp (gvm_connection_t *connection, credentials_t *credentials,
   return ret;
 }
 
+#if ENABLE_AGENTS
+/**
+ * @brief Get agent installers.
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Credentials for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_agent_installers_gmp (gvm_connection_t *connection,
+                          credentials_t *credentials, params_t *params,
+                          cmd_response_data_t *response_data)
+{
+  return get_many (connection, "agent_installers", credentials, params, NULL,
+                   response_data);
+}
+
+/**
+ * @brief Get a single agent installer.
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Credentials for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_agent_installer_gmp (gvm_connection_t *connection,
+                         credentials_t *credentials, params_t *params,
+                         cmd_response_data_t *response_data)
+{
+  return get_one (connection, "agent_installer", credentials, params, NULL,
+                  NULL, response_data);
+}
+
+/**
+ * @brief Get an agent installer file.
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Credentials for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_agent_installer_file_gmp (gvm_connection_t *connection,
+                              credentials_t *credentials, params_t *params,
+                              cmd_response_data_t *response_data)
+{
+  const gchar *id = params_value (params, "agent_installer_id");
+  entity_t entity = NULL;
+  entity_t file_entity = NULL;
+  const gchar *format = NULL;
+  const gchar *name = NULL;
+  const gchar *content_type = NULL;
+  char *content = NULL;
+
+  if (!id || strlen (id) == 0)
+    {
+      cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
+      return gsad_message (
+        credentials, "Missing installer ID", __func__, __LINE__,
+        "The 'agent_installer_id' parameter is required.", response_data);
+    }
+
+  // Send request
+  if (gvm_connection_sendf (
+        connection, "<get_agent_installer_file agent_installer_id=\"%s\"/>", id)
+      == -1)
+    {
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (credentials, "GMP send failed", __func__, __LINE__,
+                           "Failed to send GMP command to retrieve installer.",
+                           response_data);
+    }
+
+  // Parse response
+  if (read_entity_c (connection, &entity))
+    {
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "GMP receive failed", __func__, __LINE__,
+        "Failed to receive installer file response.", response_data);
+    }
+
+  file_entity = entity_child (entity, "agent_installer");
+
+  if (!file_entity || !entity_text (file_entity))
+    {
+      free_entity (entity);
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (credentials, "No installer file", __func__, __LINE__,
+                           "No agent installer content was returned.",
+                           response_data);
+    }
+
+  format = entity_attribute (file_entity, "file_extension");
+  name = entity_attribute (file_entity, "name");
+  content_type = entity_attribute (file_entity, "content_type");
+
+  if (!format || strlen (format) == 0)
+    format = "";
+
+  if (!name || strlen (name) == 0)
+    name = "agent_installer";
+
+  if (!content_type || strlen (content_type) == 0)
+    {
+      cmd_response_data_set_content_type (response_data,
+                                          GSAD_CONTENT_TYPE_OCTET_STREAM);
+    }
+  else
+    {
+      cmd_response_data_set_content_type_string (response_data,
+                                                 g_strdup (content_type));
+    }
+
+  content = strdup (entity_text (file_entity));
+
+  cmd_response_data_set_content_disposition (
+    response_data,
+    g_strdup_printf ("attachment; filename=%s.%s", name, format));
+  cmd_response_data_set_content_length (response_data, strlen (content));
+
+  free_entity (entity);
+  return content;
+}
+
+/**
+ * @brief Delete an agent installer.
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Credentials for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+delete_agent_installer_gmp (gvm_connection_t *connection,
+                            credentials_t *credentials, params_t *params,
+                            cmd_response_data_t *response_data)
+{
+  return move_resource_to_trash (connection, "agent_installer", credentials,
+                                 params, response_data);
+}
+#endif
+
 char *
 renew_session_gmp (gvm_connection_t *connection, credentials_t *credentials,
                    params_t *params, cmd_response_data_t *response_data)

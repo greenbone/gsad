@@ -838,6 +838,9 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (create_tls_certificate)
   ELSE (create_user)
   ELSE (create_role)
+#if ENABLE_AGENTS
+  ELSE (delete_agent_installer)
+#endif
   ELSE (delete_asset)
   ELSE (delete_alert)
   ELSE (delete_config)
@@ -1516,6 +1519,11 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (export_tasks)
   ELSE (export_user)
   ELSE (export_users)
+#if ENABLE_AGENTS
+  ELSE (get_agent_installers)
+  ELSE (get_agent_installer)
+  ELSE (get_agent_installer_file)
+#endif
   ELSE (get_asset)
   ELSE (get_assets)
 

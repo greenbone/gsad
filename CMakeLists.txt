@@ -30,6 +30,13 @@ set(GSAD_VERSION "${PROJECT_VERSION_STRING}")
 
 message(STATUS "Building gsad version ${GSAD_VERSION}")
 
+# Feature toggles
+
+if(NOT ENABLE_AGENTS)
+  set(ENABLE_AGENTS 0)
+endif(NOT ENABLE_AGENTS)
+add_definitions(-DENABLE_AGENTS=${ENABLE_AGENTS})
+
 ## Code coverage
 
 option(ENABLE_COVERAGE "Enable support for coverage analysis" OFF)
