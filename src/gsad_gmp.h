@@ -806,6 +806,22 @@ get_capabilities_gmp (gvm_connection_t *, credentials_t *, params_t *,
                       cmd_response_data_t *);
 
 char *
+get_agent_installers_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                          cmd_response_data_t *);
+
+char *
+get_agent_installer_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                         cmd_response_data_t *);
+
+char *
+get_agent_installer_file_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                              cmd_response_data_t *);
+
+char *
+delete_agent_installer_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                            cmd_response_data_t *);
+
+char *
 renew_session_gmp (gvm_connection_t *, credentials_t *, params_t *,
                    cmd_response_data_t *);
 char *

@@ -132,6 +132,16 @@ In case you have installed the Greenbone Security Assistant Daemon into a path
 different from the other GVM modules, you might need to set some paths
 explicitly before running `cmake`. See the top-level CMakeLists.txt.
 
+### Unit tests
+
+In order to build and run unit tests use the commands below: 
+
+```sh
+cmake -DBUILD_TESTING=1 ..  # enable building unit tests
+make tests                  # build the unit tests
+make test                   # run the unit tests
+```
+
 ## Logging Configuration
 
 By default, gsad writes logs to the file

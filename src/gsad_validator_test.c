@@ -76,11 +76,27 @@ Ensure (gsad_validator, validate_comment)
                is_equal_to (0));
 }
 
+Ensure (gsad_validator, validate_agent_installer_id)
+{
+  validator_t validator = get_validator ();
+  assert_that (gvm_validate (validator, "agent_installer_id", "a1b2c3d4"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "agent_installer_id",
+                             "123e4567-e89b-12d3-a456-426614174000"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "agent_installer_id", ""),
+               is_equal_to (2));
+  assert_that (
+    gvm_validate (validator, "agent_installer_id", "invalid id with space"),
+    is_equal_to (2));
+}
+
 int
 main (int argc, char **argv)
 {
   TestSuite *suite = create_test_suite ();
   add_test_with_context (suite, gsad_validator, validate_name);
   add_test_with_context (suite, gsad_validator, validate_comment);
+  add_test_with_context (suite, gsad_validator, validate_agent_installer_id);
   return run_test_suite (suite, create_text_reporter ());
 }
