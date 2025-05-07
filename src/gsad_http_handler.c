@@ -570,7 +570,7 @@ handle_system_report (http_connection_t *connection, const char *method,
   params_t *params = params_new ();
   credentials_t *credentials = (credentials_t *) data;
   const char *slave_id;
-  char *res;
+  gchar *res;
   gvm_connection_t con;
   cmd_response_data_t *response_data;
 
@@ -601,6 +601,18 @@ handle_system_report (http_connection_t *connection, const char *method,
         &con, credentials, &url[0] + strlen ("/system_report/"), params,
         response_data);
       gvm_connection_close (&con);
+      if (res == NULL)
+        {
+          g_info ("%s: failed to get system report for sensor %s", __func__,
+                  slave_id);
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          res =
+            gsad_message (credentials, "Internal error", __func__, __LINE__,
+                          "An internal error occurred. "
+                          "Diagnostics: Could not receive the system report. ",
+                          response_data);
+        }
       break;
     case 1: /* manager closed connection */
       cmd_response_data_set_status_code (response_data,
