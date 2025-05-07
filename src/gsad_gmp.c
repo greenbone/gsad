@@ -10135,106 +10135,11 @@ get_system_reports_gmp (gvm_connection_t *connection,
                         cmd_response_data_t *response_data)
 {
   GString *xml;
-  time_t now, duration, duration_start;
-  struct tm start_time, end_time;
-
-  const char *slave_id, *given_duration, *range_type;
-  const char *start_year, *start_month, *start_day, *start_hour, *start_minute;
-  const char *end_year, *end_month, *end_day, *end_hour, *end_minute;
+  const char *slave_id;
 
   slave_id = params_value (params, "slave_id");
 
-  now = time (NULL);
-
-  given_duration = params_value (params, "duration");
-  range_type = params_value (params, "range_type");
-  if (!range_type)
-    range_type = "duration";
-
-  duration = given_duration ? atoi (given_duration) : 86400;
-  duration_start = now - duration;
-
   xml = g_string_new ("<get_system_reports>");
-
-  g_string_append_printf (xml, "<slave id=\"%s\"/>", slave_id ? slave_id : "0");
-
-  if (strcmp (range_type, "duration") == 0)
-    {
-      struct tm time_broken;
-      localtime_r (&now, &time_broken);
-      end_time.tm_year = time_broken.tm_year;
-      end_time.tm_mon = time_broken.tm_mon;
-      end_time.tm_mday = time_broken.tm_mday;
-      end_time.tm_hour = time_broken.tm_hour;
-      end_time.tm_min = time_broken.tm_min;
-
-      localtime_r (&duration_start, &time_broken);
-      start_time.tm_year = time_broken.tm_year;
-      start_time.tm_mon = time_broken.tm_mon;
-      start_time.tm_mday = time_broken.tm_mday;
-      start_time.tm_hour = time_broken.tm_hour;
-      start_time.tm_min = time_broken.tm_min;
-
-      g_string_append_printf (xml, "<duration>%ld</duration>", duration);
-    }
-  else
-    {
-      struct tm time_broken;
-      localtime_r (&now, &time_broken);
-
-      start_year = params_value (params, "start_year");
-      start_month = params_value (params, "start_month");
-      start_day = params_value (params, "start_day");
-      start_hour = params_value (params, "start_hour");
-      start_minute = params_value (params, "start_minute");
-
-      end_year = params_value (params, "end_year");
-      end_month = params_value (params, "end_month");
-      end_day = params_value (params, "end_day");
-      end_hour = params_value (params, "end_hour");
-      end_minute = params_value (params, "end_minute");
-
-      start_time.tm_year =
-        start_year ? atoi (start_year) - 1900 : time_broken.tm_year;
-      start_time.tm_mon =
-        start_month ? atoi (start_month) - 1 : time_broken.tm_mon;
-      start_time.tm_mday = start_day ? atoi (start_day) : time_broken.tm_mday;
-      start_time.tm_hour = start_hour ? atoi (start_hour) : time_broken.tm_hour;
-      start_time.tm_min =
-        start_minute ? atoi (start_minute) : time_broken.tm_min;
-
-      end_time.tm_year =
-        end_year ? atoi (end_year) - 1900 : time_broken.tm_year;
-      end_time.tm_mon = end_month ? atoi (end_month) - 1 : time_broken.tm_mon;
-      end_time.tm_mday = end_day ? atoi (end_day) : time_broken.tm_mday;
-      end_time.tm_hour = end_hour ? atoi (end_hour) : time_broken.tm_hour;
-      end_time.tm_min = end_minute ? atoi (end_minute) : time_broken.tm_min;
-    }
-
-  g_string_append_printf (xml,
-                          "<start_time>"
-                          "<minute>%i</minute>"
-                          "<hour>%i</hour>"
-                          "<day_of_month>%i</day_of_month>"
-                          "<month>%i</month>"
-                          "<year>%i</year>"
-                          "</start_time>",
-                          start_time.tm_min, start_time.tm_hour,
-                          start_time.tm_mday, start_time.tm_mon + 1,
-                          start_time.tm_year + 1900);
-
-  g_string_append_printf (xml,
-                          "<end_time>"
-                          "<minute>%i</minute>"
-                          "<hour>%i</hour>"
-                          "<day_of_month>%i</day_of_month>"
-                          "<month>%i</month>"
-                          "<year>%i</year>"
-                          "</end_time>"
-                          "<range_type>%s</range_type>",
-                          end_time.tm_min, end_time.tm_hour, end_time.tm_mday,
-                          end_time.tm_mon + 1, end_time.tm_year + 1900,
-                          range_type);
 
   /* Get the system reports. */
 
@@ -10265,40 +10170,6 @@ get_system_reports_gmp (gvm_connection_t *connection,
         "The current list of system reports is not available. "
         "Diagnostics: Failure to receive response from manager daemon.",
         response_data);
-    }
-
-  if (command_enabled (credentials, "GET_SCANNERS"))
-    {
-      /* Get the GMP scanners. */
-
-      if (gvm_connection_sendf (connection,
-                                "<get_scanners"
-                                " filter=\"sort=name rows=-1 type=4\"/>")
-          == -1)
-        {
-          g_string_free (xml, TRUE);
-          cmd_response_data_set_status_code (response_data,
-                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_message (
-            credentials, "Internal error", __func__, __LINE__,
-            "An internal error occurred while getting the system reports. "
-            "The current list of system reports is not available. "
-            "Diagnostics: Failure to send command to manager daemon.",
-            response_data);
-        }
-
-      if (read_string_c (connection, &xml))
-        {
-          g_string_free (xml, TRUE);
-          cmd_response_data_set_status_code (response_data,
-                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_message (
-            credentials, "Internal error", __func__, __LINE__,
-            "An internal error occurred while getting the system reports. "
-            "The current list of system reports is not available. "
-            "Diagnostics: Failure to receive response from manager daemon.",
-            response_data);
-        }
     }
 
   /* Cleanup, and return transformed XML. */
