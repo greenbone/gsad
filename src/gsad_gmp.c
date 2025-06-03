@@ -17742,6 +17742,265 @@ delete_agent_installer_gmp (gvm_connection_t *connection,
   return move_resource_to_trash (connection, "agent_installer", credentials,
                                  params, response_data);
 }
+
+/**
+ * @brief Get one agent, envelope the result.
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Credentials for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
+               params_t *params, cmd_response_data_t *response_data)
+{
+  return get_one (connection, "agent", credentials, params, NULL, NULL,
+                  response_data);
+}
+
+/**
+ * @brief Get agents, envelope the result.
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Credentials for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                params_t *params, cmd_response_data_t *response_data)
+{
+  return get_many (connection, "agents", credentials, params, NULL,
+                   response_data);
+}
+
+/**
+ * @brief Modify a list of agents.
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Credentials for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+save_agent_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                     params_t *params, cmd_response_data_t *response_data)
+{
+  gchar *html, *response, *format;
+  const char *authorized, *min_interval, *heartbeat_interval;
+  const char *schedule, *comment;
+  int ret;
+  GString *agents_element;
+  params_t *agent_ids;
+  entity_t entity;
+
+  agent_ids = params_values (params, "agent_ids");
+  authorized = params_value (params, "authorized");
+  min_interval = params_value (params, "min_interval");
+  heartbeat_interval = params_value (params, "heartbeat_interval");
+  schedule = params_value (params, "schedule");
+  comment = params_value (params, "comment");
+
+  CHECK_VARIABLE_INVALID (authorized, "Save Agent List");
+  CHECK_VARIABLE_INVALID (min_interval, "Save Agent List");
+  CHECK_VARIABLE_INVALID (heartbeat_interval, "Save Agent List");
+  CHECK_VARIABLE_INVALID (schedule, "Save Agent List");
+  if (params_given (params, "comment"))
+    {
+      CHECK_VARIABLE_INVALID (comment, "Save Agent List");
+    }
+  else
+    comment = "";
+
+  if (!agent_ids)
+    {
+      cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
+      return gsad_message (credentials, "Missing agent IDs", __func__, __LINE__,
+                           "The 'agent_ids' parameter is required.",
+                           response_data);
+    }
+
+  agents_element = g_string_new ("");
+  xml_string_append (agents_element, "<agents>");
+
+  char *name;
+  params_iterator_t iter;
+  param_t *param;
+  params_iterator_init (&iter, agent_ids);
+  while (params_iterator_next (&iter, &name, &param))
+    {
+      if (param->value && strcmp (param->value, "0"))
+        g_string_append_printf (agents_element, "<agent id=\"%s\"/>",
+                                param->value ? param->value : "");
+    }
+  xml_string_append (agents_element, "</agents>");
+
+  gchar *scan_schedule =
+    g_strdup_printf ("<schedule>@every %sh</schedule>", schedule);
+
+  format =
+    g_strdup_printf ("<modify_agents>"
+                     "%s"
+                     "<authorized>%i</authorized>"
+                     "<min_interval>%%s</min_interval>"
+                     "<heartbeat_interval>%%s</heartbeat_interval>"
+                     "%s"
+                     "<comment>%%s</comment>"
+                     "</modify_agents>",
+                     agents_element->str,
+                     authorized ? strcmp (authorized, "0") : 0, scan_schedule);
+  response = NULL;
+  entity = NULL;
+  ret = gmpf (connection, credentials, &response, &entity, response_data,
+              format, min_interval, heartbeat_interval, comment);
+  g_free (format);
+  g_free (scan_schedule);
+  g_string_free (agents_element, TRUE);
+
+  switch (ret)
+    {
+    case 0:
+    case -1:
+      break;
+    case 1:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving an agent list. "
+        "The agents list was not saved. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving an agent list. "
+        "It is unclear whether the agents list has been saved or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving an agents list. "
+        "It is unclear whether the agent list has been saved or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
+    }
+
+  html = response_from_entity (connection, credentials, params, entity,
+                               "Save Agent List", response_data);
+  free_entity (entity);
+  g_free (response);
+  return html;
+}
+
+/**
+ * @brief Delete a list of agents.
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Credentials for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+delete_agent_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                       params_t *params, cmd_response_data_t *response_data)
+{
+  gchar *html, *response, *format;
+  int ret;
+  char *name;
+  GString *agents_element;
+  params_t *agent_ids;
+  entity_t entity;
+
+  agent_ids = params_values (params, "agent_ids");
+
+  if (!agent_ids)
+    {
+      cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
+      return gsad_message (credentials, "Missing agent IDs", __func__, __LINE__,
+                           "The 'agent_ids' parameter is required.",
+                           response_data);
+    }
+
+  agents_element = g_string_new ("");
+  xml_string_append (agents_element, "<agents>");
+
+  params_iterator_t iter;
+  param_t *param;
+  params_iterator_init (&iter, agent_ids);
+  while (params_iterator_next (&iter, &name, &param))
+    {
+      if (param->value && strcmp (param->value, "0"))
+        g_string_append_printf (agents_element, "<agent id=\"%s\"/>",
+                                param->value ? param->value : "");
+    }
+  xml_string_append (agents_element, "</agents>");
+
+  format = g_strdup_printf ("<delete_agents>"
+                            "%s"
+                            "</delete_agents>",
+                            agents_element->str);
+  response = NULL;
+  entity = NULL;
+  ret =
+    gmpf (connection, credentials, &response, &entity, response_data, format);
+  g_free (format);
+  g_string_free (agents_element, TRUE);
+
+  switch (ret)
+    {
+    case 0:
+    case -1:
+      break;
+    case 1:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while deleting an agent list. "
+        "The agents list was not deleted. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while deleting an agent list. "
+        "It is unclear whether the agents list has been deleted or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while deleting an agents list. "
+        "It is unclear whether the agent list has been deleted or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
+    }
+
+  html = response_from_entity (connection, credentials, params, entity,
+                               "Delete Agent List", response_data);
+  free_entity (entity);
+  g_free (response);
+  return html;
+}
 #endif
 
 char *

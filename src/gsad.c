@@ -1520,9 +1520,13 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (export_user)
   ELSE (export_users)
 #if ENABLE_AGENTS
+  ELSE (get_agent)
+  ELSE (get_agents)
   ELSE (get_agent_installers)
   ELSE (get_agent_installer)
   ELSE (get_agent_installer_file)
+  ELSE (save_agent_list)
+  ELSE (delete_agent_list)
 #endif
   ELSE (get_asset)
   ELSE (get_assets)

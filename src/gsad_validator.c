@@ -62,6 +62,7 @@ init_validator ()
                      "|(create_tls_certificate)"
                      "|(create_user)"
                      "|(cvss_calculator)"
+                     "|(delete_agent_list)"
                      "|(delete_asset)"
                      "|(delete_config)"
                      "|(delete_credential)"
@@ -138,6 +139,8 @@ init_validator ()
                      "|(export_tasks)"
                      "|(export_user)"
                      "|(export_users)"
+                     "|(get_agent)"
+                     "|(get_agents)"
                      "|(get_agent_installers)"
                      "|(get_agent_installer)"
                      "|(get_agent_installer_file)"
@@ -232,6 +235,7 @@ init_validator ()
                      "|(resume_task)"
                      "|(run_wizard)"
                      "|(test_alert)"
+                     "|(save_agent_list)"
                      "|(save_alert)"
                      "|(save_asset)"
                      "|(save_auth)"
@@ -474,8 +478,9 @@ init_validator ()
   gvm_validator_add (validator, "port_range_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (
     validator, "resource_type",
-    "^(alert|asset|audit_report|audit|cert_bund_adv|config|cpe|credential|cve|"
-    "dfn_cert_adv|filter|group|host|info|nvt|note|os|ovaldef|override|"
+    "^(agent|alert|asset|audit_report|audit|cert_bund_adv|config|cpe|"
+    "credential|"
+    "cve|dfn_cert_adv|filter|group|host|info|nvt|note|os|ovaldef|override|"
     "permission|policy|port_list|report|report_config|report_format|result|"
     "role|scanner|"
     "schedule|tag|target|task|ticket|tls_certificate|user|vuln|)$");
@@ -561,6 +566,12 @@ init_validator ()
   gvm_validator_alias (validator, "optional_task_id", "optional_id");
   gvm_validator_alias (validator, "add_tag", "boolean");
   gvm_validator_alias (validator, "agent_installer_id", "id");
+  gvm_validator_alias (validator, "authorized", "boolean");
+  gvm_validator_alias (validator, "agent_ids:name", "number");
+  gvm_validator_alias (validator, "agent_ids:value", "id");
+  gvm_validator_alias (validator, "min_interval", "number");
+  gvm_validator_alias (validator, "heartbeat_interval", "number");
+  gvm_validator_alias (validator, "schedule", "number");
   gvm_validator_alias (validator, "alert_id_2", "alert_id");
   gvm_validator_alias (validator, "alert_id_optional:name", "number");
   gvm_validator_alias (validator, "alert_id_optional:value",
