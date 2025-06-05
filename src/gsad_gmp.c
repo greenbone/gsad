@@ -17793,7 +17793,7 @@ char *
 save_agent_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
                      params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *html, *response, *format;
+  gchar *xml, *response, *format;
   const char *authorized, *min_interval, *heartbeat_interval;
   const char *schedule, *comment;
   int ret;
@@ -17827,8 +17827,7 @@ save_agent_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
                            response_data);
     }
 
-  agents_element = g_string_new ("");
-  xml_string_append (agents_element, "<agents>");
+  agents_element = g_string_new ("<agents>");
 
   char *name;
   params_iterator_t iter;
@@ -17838,30 +17837,25 @@ save_agent_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
     {
       if (param->value && strcmp (param->value, "0"))
         g_string_append_printf (agents_element, "<agent id=\"%s\"/>",
-                                param->value ? param->value : "");
+                                param->value);
     }
   xml_string_append (agents_element, "</agents>");
 
-  gchar *scan_schedule =
-    g_strdup_printf ("<schedule>@every %sh</schedule>", schedule);
-
-  format =
-    g_strdup_printf ("<modify_agents>"
-                     "%s"
-                     "<authorized>%i</authorized>"
-                     "<min_interval>%%s</min_interval>"
-                     "<heartbeat_interval>%%s</heartbeat_interval>"
-                     "%s"
-                     "<comment>%%s</comment>"
-                     "</modify_agents>",
-                     agents_element->str,
-                     authorized ? strcmp (authorized, "0") : 0, scan_schedule);
+  format = g_strdup_printf ("<modify_agents>"
+                            "%s"
+                            "<authorized>%i</authorized>"
+                            "<min_interval>%%s</min_interval>"
+                            "<heartbeat_interval>%%s</heartbeat_interval>"
+                            "<schedule>@every %%sh</schedule>"
+                            "<comment>%%s</comment>"
+                            "</modify_agents>",
+                            agents_element->str,
+                            authorized ? strcmp (authorized, "0") : 0);
   response = NULL;
   entity = NULL;
   ret = gmpf (connection, credentials, &response, &entity, response_data,
-              format, min_interval, heartbeat_interval, comment);
+              format, min_interval, heartbeat_interval, schedule, comment);
   g_free (format);
-  g_free (scan_schedule);
   g_string_free (agents_element, TRUE);
 
   switch (ret)
@@ -17898,11 +17892,11 @@ save_agent_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
         response_data);
     }
 
-  html = response_from_entity (connection, credentials, params, entity,
-                               "Save Agent List", response_data);
+  xml = response_from_entity (connection, credentials, params, entity,
+                              "Save Agent List", response_data);
   free_entity (entity);
   g_free (response);
-  return html;
+  return xml;
 }
 
 /**
@@ -17919,7 +17913,7 @@ char *
 delete_agent_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
                        params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *html, *response, *format;
+  gchar *xml, *response, *format;
   int ret;
   char *name;
   GString *agents_element;
@@ -17936,8 +17930,7 @@ delete_agent_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
                            response_data);
     }
 
-  agents_element = g_string_new ("");
-  xml_string_append (agents_element, "<agents>");
+  agents_element = g_string_new ("<agents>");
 
   params_iterator_t iter;
   param_t *param;
@@ -17946,7 +17939,7 @@ delete_agent_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
     {
       if (param->value && strcmp (param->value, "0"))
         g_string_append_printf (agents_element, "<agent id=\"%s\"/>",
-                                param->value ? param->value : "");
+                                param->value);
     }
   xml_string_append (agents_element, "</agents>");
 
@@ -17995,11 +17988,11 @@ delete_agent_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
         response_data);
     }
 
-  html = response_from_entity (connection, credentials, params, entity,
-                               "Delete Agent List", response_data);
+  xml = response_from_entity (connection, credentials, params, entity,
+                              "Delete Agent List", response_data);
   free_entity (entity);
   g_free (response);
-  return html;
+  return xml;
 }
 #endif
 
