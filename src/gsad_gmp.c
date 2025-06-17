@@ -18007,9 +18007,8 @@ delete_agent_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_agent_groups_gmp (gvm_connection_t *connection,
-                      credentials_t *credentials, params_t *params,
-                      cmd_response_data_t *response_data)
+get_agent_groups_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                      params_t *params, cmd_response_data_t *response_data)
 {
   return get_many (connection, "agent_groups", credentials, params, NULL,
                    response_data)
@@ -18026,12 +18025,11 @@ get_agent_groups_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-get_agent_group_gmp (gvm_connection_t *connection,
-                    credentials_t *credentials, params_t *params,
-                    cmd_response_data_t *response_data)
+get_agent_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                     params_t *params, cmd_response_data_t *response_data)
 {
-  return get_one (connection, "agent_group", credentials, params, NULL,
-                  NULL, response_data);
+  return get_one (connection, "agent_group", credentials, params, NULL, NULL,
+                  response_data);
 }
 
 /**
@@ -18046,8 +18044,8 @@ get_agent_group_gmp (gvm_connection_t *connection,
  */
 char *
 create_agent_group_gmp (gvm_connection_t *connection,
-  credentials_t *credentials, params_t *params,
-  cmd_response_data_t *response_data)
+                        credentials_t *credentials, params_t *params,
+                        cmd_response_data_t *response_data)
 {
   gchar *html, *response, *format;
   entity_t entity;
@@ -18063,61 +18061,59 @@ create_agent_group_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (comment, "Create Agent Group")
   CHECK_VARIABLE_INVALID (controller_id, "Create Agent Group");
 
-  format = g_strdup_printf(
-    "<create_agent_group>"
-    "<controller id=\"%%s\" />"
-    "<name>%%s</name>"
-    "<comment>%%s</comment>"
-    "</create_agent_group>",
-  );
+  format = g_strdup_printf ("<create_agent_group>"
+                            "<controller id=\"%%s\" />"
+                            "<name>%%s</name>"
+                            "<comment>%%s</comment>"
+                            "</create_agent_group>", );
 
   response = NULL;
   entity = NULL;
 
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
-              name, comment, controller_id);
+  ret = gmpf (connection, credentials, &response, &entity, response_data, name,
+              comment, controller_id);
   g_free (format);
 
   switch (ret)
     {
-      case 0:
-        break;
-      case -1:
-        /* 'gmp' set response. */
-        return response;
-      case 1:
-        cmd_response_data_set_status_code (response_data,
-                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
-        return gsad_message (
-          credentials, "Internal error", __func__, __LINE__,
-          "An internal error occurred while creating a new agent group. "
-          "No new agent group created. "
-          "Diagnostics: Failure to send command to manager daemon.",
-          response_data);
-      case 2:
-        cmd_response_data_set_status_code (response_data,
-                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
-        return gsad_message (
-          credentials, "Internal error", __func__, __LINE__,
-          "An internal error occurred while creating a new agent group. "
-          "It is unclear whether the agent group has been created or not. "
-          "Diagnostics: Failure to receive response from manager daemon.",
-          response_data);
-      default:
-        cmd_response_data_set_status_code (response_data,
-                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
-        return gsad_message (
-          credentials, "Internal error", __func__, __LINE__,
-          "An internal error occurred while creating a new agent group. "
-          "It is unclear whether the agent group has been created or not. "
-          "Diagnostics: Internal Error.",
-          response_data);
+    case 0:
+      break;
+    case -1:
+      /* 'gmp' set response. */
+      return response;
+    case 1:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while creating a new agent group. "
+        "No new agent group created. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while creating a new agent group. "
+        "It is unclear whether the agent group has been created or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while creating a new agent group. "
+        "It is unclear whether the agent group has been created or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
     }
 
   if (entity_attribute (entity, "id"))
     params_add (params, "agent_group_id", entity_attribute (entity, "id"));
   html = response_from_entity (connection, credentials, params, entity,
-                              "Create Agent Group", response_data);
+                               "Create Agent Group", response_data);
   free_entity (entity);
   g_free (response);
   return html;
@@ -18134,9 +18130,8 @@ create_agent_group_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-save_agent_group_gmp (gvm_connection_t *connection,
-  credentials_t *credentials, params_t *params,
-  cmd_response_data_t *response_data)
+save_agent_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                      params_t *params, cmd_response_data_t *response_data)
 {
   gchar *html, *response, *format;
   int ret;
@@ -18147,59 +18142,58 @@ save_agent_group_gmp (gvm_connection_t *connection,
   agent_group_id = params_value (params, "agent_group_id");
   name = params_value (params, "name");
   comment = params_value (params, "comment");
-  controller_id = params_value(params, "controller_id");
+  controller_id = params_value (params, "controller_id");
 
   CHECK_VARIABLE_INVALID (agent_group_id, "Save Agent Group");
   CHECK_VARIABLE_INVALID (name, "Save Agent Group");
   CHECK_VARIABLE_INVALID (comment, "Save Agent Group");
   CHECK_VARIABLE_INVALID (controller_id, "Save Agent Group");
 
-  format = g_strdup_printf(
-    "<modify_agent_group agent_group_id=\"%%s\">"
-    "<controller id=\"%%s\" />"
-    "<name>%%s</name>"
-    "<comment>%%s</comment>"
-    "</modify_agent_group>");
+  format = g_strdup_printf ("<modify_agent_group agent_group_id=\"%%s\">"
+                            "<controller id=\"%%s\" />"
+                            "<name>%%s</name>"
+                            "<comment>%%s</comment>"
+                            "</modify_agent_group>");
 
   response = NULL;
   entity = NULL;
 
   ret = gmpf (connection, credentials, &response, &entity, response_data,
-             format, agent_group_id, controller_id, name, comment);
+              format, agent_group_id, controller_id, name, comment);
   g_free (format);
 
   switch (ret)
     {
-      case 0:
-      case -1:
-        break;
-      case 1:
-        cmd_response_data_set_status_code (response_data,
-                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
-        return gsad_message (
-          credentials, "Internal error", __func__, __LINE__,
-          "An internal error occurred while saving an agent group. "
-          "The agent group was not saved. "
-          "Diagnostics: Failure to send command to manager daemon.",
-          response_data);
-                case 2:
-        cmd_response_data_set_status_code (response_data,
-                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
-        return gsad_message (
-          credentials, "Internal error", __func__, __LINE__,
-          "An internal error occurred while saving an agent group. "
-          "It is unclear whether the agent group has been saved or not. "
-          "Diagnostics: Failure to receive response from manager daemon.",
-          response_data);
-      default:
-        cmd_response_data_set_status_code (response_data,
-                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
-        return gsad_message (
-          credentials, "Internal error", __func__, __LINE__,
-          "An internal error occurred while saving an agent group. "
-          "It is unclear whether the agent group has been created or not. "
-          "Diagnostics: Internal Error.",
-          response_data);
+    case 0:
+    case -1:
+      break;
+    case 1:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving an agent group. "
+        "The agent group was not saved. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving an agent group. "
+        "It is unclear whether the agent group has been saved or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving an agent group. "
+        "It is unclear whether the agent group has been created or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
     }
 
   html = response_from_entity (connection, credentials, params, entity,
@@ -18222,11 +18216,11 @@ save_agent_group_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 delete_agent_group_gmp (gvm_connection_t *connection,
-  credentials_t *credentials, params_t *params,
-  cmd_response_data_t *response_data)
+                        credentials_t *credentials, params_t *params,
+                        cmd_response_data_t *response_data)
 {
-  return move_resource_to_trash (connection, "agent_group", credentials,
-                                params, response_data);
+  return move_resource_to_trash (connection, "agent_group", credentials, params,
+                                 response_data);
 }
 #endif
 

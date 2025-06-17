@@ -839,23 +839,23 @@ delete_agent_list_gmp (gvm_connection_t *, credentials_t *, params_t *,
                        cmd_response_data_t *);
 
 get_agent_groups_gmp (gvm_connection_t *, credentials_t *, params_t *,
-       cmd_response_data_t *);
+                      cmd_response_data_t *);
 
 char *
-get_agent_group_gmp(gvm_connection_t *, credentials_t *, params_t *,
-       cmd_response_data_t *);
+get_agent_group_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                     cmd_response_data_t *);
 
 char *
-create_agent_group_gmp(gvm_connection_t *, credentials_t *, params_t *,
-       cmd_response_data_t *);
+create_agent_group_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                        cmd_response_data_t *);
 
 char *
-save_agent_group_gmp(gvm_connection_t *, credentials_t *, params_t *,
-       cmd_response_data_t *);
+save_agent_group_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                      cmd_response_data_t *);
 
 char *
 delete_agent_group_gmp (gvm_connection_t *, credentials_t *, params_t *,
-       cmd_response_data_t *);
+                        cmd_response_data_t *);
 #endif
 
 char *
