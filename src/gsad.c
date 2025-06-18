@@ -839,6 +839,8 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (create_user)
   ELSE (create_role)
 #if ENABLE_AGENTS
+  ELSE (create_agent_group)
+  ELSE (delete_agent_group)
   ELSE (delete_agent_installer)
 #endif
   ELSE (delete_asset)
@@ -875,6 +877,9 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (restore)
   ELSE (resume_task)
   ELSE (run_wizard)
+#if ENABLE_AGENTS
+  ELSE (save_agent_group)
+#endif
   ELSE (save_alert)
   ELSE (save_asset)
   ELSE (save_auth)
@@ -1522,6 +1527,8 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
 #if ENABLE_AGENTS
   ELSE (get_agent)
   ELSE (get_agents)
+  ELSE (get_agent_group)
+  ELSE (get_agent_groups)
   ELSE (get_agent_installers)
   ELSE (get_agent_installer)
   ELSE (get_agent_installer_file)

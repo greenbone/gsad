@@ -61,12 +61,14 @@ init_validator ()
                      "|(create_ticket)"
                      "|(create_tls_certificate)"
                      "|(create_user)"
+                     "|(create_agent_group)"
                      "|(cvss_calculator)"
                      "|(delete_agent_list)"
+                     "|(delete_agent_group)"
+                     "|(delete_agent_installer)"
                      "|(delete_asset)"
                      "|(delete_config)"
                      "|(delete_credential)"
-                     "|(delete_agent_installer)"
                      "|(delete_alert)"
                      "|(delete_filter)"
                      "|(delete_from_trash)"
@@ -141,6 +143,8 @@ init_validator ()
                      "|(export_users)"
                      "|(get_agent)"
                      "|(get_agents)"
+                     "|(get_agent_group)"
+                     "|(get_agent_groups)"
                      "|(get_agent_installers)"
                      "|(get_agent_installer)"
                      "|(get_agent_installer_file)"
@@ -236,6 +240,7 @@ init_validator ()
                      "|(run_wizard)"
                      "|(test_alert)"
                      "|(save_agent_list)"
+                     "|(save_agent_group)"
                      "|(save_alert)"
                      "|(save_asset)"
                      "|(save_auth)"
@@ -572,6 +577,7 @@ init_validator ()
   gvm_validator_alias (validator, "min_interval", "number");
   gvm_validator_alias (validator, "heartbeat_interval", "number");
   gvm_validator_alias (validator, "schedule", "number");
+  gvm_validator_alias (validator, "agent_group_id", "id");
   gvm_validator_alias (validator, "alert_id_2", "alert_id");
   gvm_validator_alias (validator, "alert_id_optional:name", "number");
   gvm_validator_alias (validator, "alert_id_optional:value",
