@@ -18011,7 +18011,7 @@ get_agent_groups_gmp (gvm_connection_t *connection, credentials_t *credentials,
                       params_t *params, cmd_response_data_t *response_data)
 {
   return get_many (connection, "agent_groups", credentials, params, NULL,
-                   response_data)
+                   response_data);
 }
 
 /**
@@ -18065,7 +18065,8 @@ create_agent_group_gmp (gvm_connection_t *connection,
                             "<controller id=\"%%s\" />"
                             "<name>%%s</name>"
                             "<comment>%%s</comment>"
-                            "</create_agent_group>", );
+                            "</create_agent_group>",
+                            controller_id, name, comment);
 
   response = NULL;
   entity = NULL;
@@ -18215,6 +18216,7 @@ save_agent_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
  *
  * @return Enveloped XML object.
  */
+char *
 delete_agent_group_gmp (gvm_connection_t *connection,
                         credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
