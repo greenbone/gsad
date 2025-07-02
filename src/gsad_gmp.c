@@ -3066,6 +3066,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *privacy_password, *auth_algorithm, *privacy_algorithm;
   const char *autogenerate, *allow_insecure;
   const char *kdc, *realm;
+  params_t *kdcs_param;
   entity_t entity;
 
   name = params_value (params, "name");
@@ -3085,6 +3086,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   autogenerate = params_value (params, "autogenerate");
   kdc = params_value (params, "kdc");
   realm = params_value (params, "realm");
+  kdcs_param = params_values (params, "kdcs:");
 
   CHECK_VARIABLE_INVALID (name, "Create Credential");
   CHECK_VARIABLE_INVALID (comment, "Create Credential");
@@ -3153,21 +3155,74 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
           CHECK_VARIABLE_INVALID (password, "Create Credential");
 
-          ret = gmpf (
-            connection, credentials, &response, &entity, response_data,
+          // escape provided values
+          gchar *name_esc = g_markup_escape_text (name ? name : "", -1);
+          gchar *comment_esc =
+            g_markup_escape_text (comment ? comment : "", -1);
+          gchar *type_esc = g_markup_escape_text (type, -1);
+          gchar *login_esc =
+            g_markup_escape_text (credential_login ? credential_login : "", -1);
+          gchar *password_esc =
+            g_markup_escape_text (password ? password : "", -1);
+          gchar *realm_esc = g_markup_escape_text (realm ? realm : "", -1);
+          gchar *allow_esc = g_markup_escape_text (allow_insecure, -1);
+
+          GString *kdcs_xml = g_string_new ("");
+          if (kdcs_param)
+            {
+              g_string_append (kdcs_xml, "<kdcs>");
+              params_iterator_t iter;
+              char *param_name;
+              param_t *param;
+
+              params_iterator_init (&iter, kdcs_param);
+              while (params_iterator_next (&iter, &param_name, &param))
+                {
+                  if (param->value && *param->value)
+                    {
+                      gchar *escaped = g_markup_escape_text (param->value, -1);
+                      g_string_append_printf (kdcs_xml, "<kdc>%s</kdc>",
+                                              escaped);
+                      g_free (escaped);
+                    }
+                }
+              g_string_append (kdcs_xml, "</kdcs>");
+            }
+          else if (kdc && *kdc)
+            {
+              gchar *kdc_esc = g_markup_escape_text (kdc, -1);
+              g_string_append_printf (kdcs_xml, "<kdc>%s</kdc>", kdc_esc);
+              g_free (kdc_esc);
+            }
+
+          // build full command XML
+          gchar *command = g_strdup_printf (
             "<create_credential>"
             "<name>%s</name>"
             "<comment>%s</comment>"
             "<type>%s</type>"
             "<login>%s</login>"
             "<password>%s</password>"
-            "<kdc>%s</kdc>"
+            "%s" // kdcs or kdc block
             "<realm>%s</realm>"
             "<allow_insecure>%s</allow_insecure>"
             "</create_credential>",
-            name, comment ? comment : "", type,
-            credential_login ? credential_login : "", password ? password : "",
-            kdc ? kdc : "", realm ? realm : "", allow_insecure);
+            name_esc, comment_esc, type_esc, login_esc, password_esc,
+            kdcs_xml->str ? kdcs_xml->str : "", realm_esc, allow_esc);
+
+          ret = gmp (connection, credentials, &response, &entity, response_data,
+                     command);
+
+          // cleanup
+          g_free (command);
+          g_string_free (kdcs_xml, TRUE);
+          g_free (name_esc);
+          g_free (comment_esc);
+          g_free (type_esc);
+          g_free (login_esc);
+          g_free (password_esc);
+          g_free (realm_esc);
+          g_free (allow_esc);
         }
       else if (str_equal (type, "usk"))
         {
@@ -3696,6 +3751,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *private_key, *certificate, *community, *privacy_password;
   const char *kdc, *realm;
   const char *auth_algorithm, *privacy_algorithm, *allow_insecure;
+  params_t *kdcs_param;
   GString *command;
   entity_t entity;
 
@@ -3716,6 +3772,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   realm = params_value (params, "realm");
   allow_insecure = params_value (params, "allow_insecure");
   public_key = params_value (params, "public_key");
+  kdcs_param = params_values (params, "kdcs:");
 
   CHECK_VARIABLE_INVALID (credential_id, "Save Credential");
   CHECK_VARIABLE_INVALID (name, "Save Credential");
@@ -3816,9 +3873,27 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
     }
   else if (str_equal (type, "krb5"))
     {
-      if (kdc && strcmp (kdc, ""))
+      if (kdcs_param)
         {
-          xml_string_append (command, "<kdc>%s</kdc>", kdc);
+          xml_string_append (command, "<kdcs>");
+          params_iterator_t iter;
+          char *param_name;
+          param_t *param;
+
+          params_iterator_init (&iter, kdcs_param);
+          while (params_iterator_next (&iter, &param_name, &param))
+            {
+              if (param->value && *param->value)
+                xml_string_append (command, "<kdc>%s</kdc>", param->value);
+            }
+          xml_string_append (command, "</kdcs>");
+        }
+      else
+        {
+          if (kdc && strcmp (kdc, "") != 0)
+            {
+              xml_string_append (command, "<kdc>%s</kdc>", kdc);
+            }
         }
       if (realm && strcmp (realm, ""))
         {
@@ -18062,9 +18137,9 @@ create_agent_group_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (controller_id, "Create Agent Group");
 
   format = g_strdup_printf ("<create_agent_group>"
-                            "<controller id=\"%%s\" />"
-                            "<name>%%s</name>"
-                            "<comment>%%s</comment>"
+                            "<controller id=\"%s\" />"
+                            "<name>%s</name>"
+                            "<comment>%s</comment>"
                             "</create_agent_group>",
                             controller_id, name, comment);
 

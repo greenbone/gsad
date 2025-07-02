@@ -106,6 +106,27 @@ Ensure (gsad_validator, validate_agent_list_ids)
     is_equal_to (2));
 }
 
+Ensure (gsad_validator, validate_kdcs_name_and_value)
+{
+  validator_t validator = get_validator ();
+
+  // valid KDC values (allowing anything, as per regex "(?s)^.*$")
+  assert_that (gvm_validate (validator, "kdcs:value", "127.0.0.1"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "kdcs:value", "kdc1"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "kdcs:value", "kdc.example.internal"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "kdcs:value", ""), is_equal_to (0));
+
+  // invalid example for edge case
+  assert_that (gvm_validate (validator, "kdcs:value", NULL), is_equal_to (5));
+
+  // "kdcs:name" uses alias to "number", expect it to fail non-numeric
+  assert_that (gvm_validate (validator, "kdcs:name", "1"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "kdcs:name", "abc"), is_equal_to (2));
+  assert_that (gvm_validate (validator, "kdcs:name", ""), is_equal_to (2));
+}
+
 int
 main (int argc, char **argv)
 {
@@ -114,5 +135,6 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_validator, validate_comment);
   add_test_with_context (suite, gsad_validator, validate_agent_installer_id);
   add_test_with_context (suite, gsad_validator, validate_agent_list_ids);
+  add_test_with_context (suite, gsad_validator, validate_kdcs_name_and_value);
   return run_test_suite (suite, create_text_reporter ());
 }
