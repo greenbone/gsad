@@ -427,7 +427,7 @@ params_append_mhd (params_t *params, const char *name, const char *filename,
       || (strcmp (name, "group_ids:") == 0)
       || (strcmp (name, "report_format_ids:") == 0)
       || (strcmp (name, "id_list:") == 0)
-      || (strcmp (name, "resource_ids:") == 0))
+      || (strcmp (name, "resource_ids:") == 0) || (strcmp (name, "kdcs:") == 0))
     {
       param_t *param;
       gchar *index_str;
