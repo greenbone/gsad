@@ -16074,17 +16074,21 @@ char *
 save_setting_gmp (gvm_connection_t *connection, credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
-  const gchar *setting_id = params_value (params, "setting_id");
   const gchar *setting_value = params_value (params, "setting_value");
   const gchar *setting_name = NULL;
+  const gchar *setting_id = NULL;
 
-  CHECK_VARIABLE_INVALID (setting_id, "Save Setting");
   CHECK_VARIABLE_INVALID (setting_value, "Save Setting");
 
   if (params_given (params, "setting_name"))
     {
       setting_name = params_value (params, "setting_name");
       CHECK_VARIABLE_INVALID (setting_name, "Save Settings")
+    }
+  else
+    {
+      setting_id = params_value (params, "setting_id");
+      CHECK_VARIABLE_INVALID (setting_id, "Save Setting");
     }
 
   gchar *value_64 =
@@ -16095,14 +16099,20 @@ save_setting_gmp (gvm_connection_t *connection, credentials_t *credentials,
   int ret;
   GString *xml = g_string_new ("");
 
-  xml_string_append (xml,
-                     "<modify_setting setting_id=\"%s\">"
-                     "<value>%s</value>",
-                     setting_id, value_64);
-
   if (setting_name)
     {
-      xml_string_append (xml, "<name>%s</name>", setting_name);
+      xml_string_append (xml,
+                         "<modify_setting>"
+                         "<name>%s</name>"
+                         "<value>%s</value>",
+                         setting_name, value_64);
+    }
+  else
+    {
+      xml_string_append (xml,
+                         "<modify_setting setting_id=\"%s\">"
+                         "<value>%s</value>",
+                         setting_id, value_64);
     }
 
   xml_string_append (xml, "</modify_setting>");
