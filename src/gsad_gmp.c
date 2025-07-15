@@ -17726,9 +17726,7 @@ change_password_gmp (gvm_connection_t *connection, credentials_t *credentials,
       return gsad_message (credentials, "Invalid Password", __func__, __LINE__,
                            "You tried to change your password, but the old"
                            " password was not provided or was incorrect. "
-                           " Please enter the correct old password or remove"
-                           " old and new passwords to apply any other changes"
-                           " of your settings.",
+                           " Please enter the correct old password to proceed.",
                            response_data);
     default:
       cmd_response_data_set_status_code (response_data,
@@ -17768,7 +17766,7 @@ change_password_gmp (gvm_connection_t *connection, credentials_t *credentials,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
         credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while saving settings. "
+        "An internal error occurred while changing the password. "
         "Diagnostics: Failure to receive response from manager daemon.",
         response_data);
     }
