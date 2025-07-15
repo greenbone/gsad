@@ -17674,6 +17674,119 @@ save_license_gmp (gvm_connection_t *connection, credentials_t *credentials,
   return ret;
 }
 
+/**
+ * @brief Change user password
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return An action response.
+ */
+char *
+change_password_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                     params_t *params, cmd_response_data_t *response_data)
+{
+  const char *old_passwd, *passwd;
+  gchar *passwd_64 = NULL;
+  gchar *html = NULL;
+  entity_t entity = NULL;
+  user_t *user = NULL;
+  gmp_authenticate_info_opts_t auth_opts;
+
+  user = credentials_get_user (credentials);
+
+  old_passwd = params_value (params, "old_password");
+  passwd = params_value (params, "password");
+
+  CHECK_VARIABLE_INVALID (passwd, "Change Password")
+  CHECK_VARIABLE_INVALID (old_passwd, "Change Password")
+
+  auth_opts = gmp_authenticate_info_opts_defaults;
+  auth_opts.username = user_get_username (user);
+  auth_opts.password = old_passwd;
+
+  switch (gmp_authenticate_info_ext_c (connection, auth_opts))
+    {
+    case 0:
+      break;
+    case 1:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while changing the password. "
+        "The password was not changed. "
+        "Diagnostics: Manager closed connection during authenticate.",
+        response_data);
+    case 2:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (credentials, "Invalid Password", __func__, __LINE__,
+                           "You tried to change your password, but the old"
+                           " password was not provided or was incorrect. "
+                           " Please enter the correct old password or remove"
+                           " old and new passwords to apply any other changes"
+                           " of your settings.",
+                           response_data);
+    default:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while changing the password. "
+        "The password was not changed. "
+        "Diagnostics: Internal Error.",
+        response_data);
+    }
+
+  passwd_64 = g_base64_encode ((guchar *) passwd, strlen (passwd));
+
+  if (gvm_connection_sendf (connection,
+                            "<modify_setting>"
+                            "<name>Password</name>"
+                            "<value>%s</value>"
+                            "</modify_setting>",
+                            passwd_64 ? passwd_64 : "")
+      == -1)
+    {
+      g_free (passwd_64);
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while changing the password. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    }
+  g_free (passwd_64);
+
+  if (read_entity_c (connection, &entity))
+    {
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving settings. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    }
+
+  if (gmp_success (entity) == 1)
+    {
+      user_set_password (user, passwd);
+      session_remove_other_sessions (user_get_token (user),
+                                     user_get_username (user));
+      session_add_user (user_get_token (user), user);
+    }
+
+  cmd_response_data_set_content_type (response_data, GSAD_CONTENT_TYPE_APP_XML);
+  html = response_from_entity (connection, credentials, params, entity,
+                               "Change Password", response_data);
+  return html;
+}
+
 #if ENABLE_AGENTS
 /**
  * @brief Get agent installers.

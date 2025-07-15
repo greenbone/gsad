@@ -812,6 +812,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
     }
   ELSE (bulk_delete)
   ELSE (bulk_export)
+  ELSE (change_password)
   ELSE (clone)
   ELSE (create_alert)
   ELSE (create_asset)

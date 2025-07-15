@@ -34,6 +34,7 @@ init_validator ()
   gvm_validator_add (validator, "cmd",
                      "^((bulk_delete)"
                      "|(bulk_export)"
+                     "|(change_password)"
                      "|(clone)"
                      "|(create_asset)"
                      "|(create_config)"
