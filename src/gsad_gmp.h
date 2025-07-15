@@ -865,6 +865,10 @@ char *
 ping_gmp (gvm_connection_t *, credentials_t *, params_t *,
           cmd_response_data_t *);
 
+char *
+change_password_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                     cmd_response_data_t *);
+
 int
 login (http_connection_t *con, params_t *params,
        cmd_response_data_t *response_data, const char *client_address);
