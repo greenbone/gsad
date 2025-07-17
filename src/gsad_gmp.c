@@ -18284,7 +18284,8 @@ create_agent_group_gmp (gvm_connection_t *connection,
       while (params_iterator_next (&iter, &param_name, &param))
         {
           if (param->value && strcmp (param->value, "0") != 0)
-            g_string_append_printf (agents_element, "<agent id=\"%s\"/>", param->value);
+            g_string_append_printf (agents_element, "<agent id=\"%s\"/>",
+                                    param->value);
         }
       g_string_append (agents_element, "</agents>");
       g_string_append (cmd, agents_element->str);
@@ -18295,7 +18296,8 @@ create_agent_group_gmp (gvm_connection_t *connection,
   command = g_string_free (cmd, FALSE);
 
   /* Send the command */
-  ret = gmp (connection, credentials, &response, &entity, response_data, command);
+  ret =
+    gmp (connection, credentials, &response, &entity, response_data, command);
   g_free (command);
 
   switch (ret)
@@ -18384,8 +18386,8 @@ save_agent_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
       while (params_iterator_next (&iter, &key, &param))
         {
           if (param->value && strcmp (param->value, "0") != 0)
-            g_string_append_printf (agents_element,
-                                    "<agent id=\"%s\"/>", param->value);
+            g_string_append_printf (agents_element, "<agent id=\"%s\"/>",
+                                    param->value);
         }
     }
   g_string_append (agents_element, "</agents>");
