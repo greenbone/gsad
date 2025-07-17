@@ -18243,40 +18243,66 @@ create_agent_group_gmp (gvm_connection_t *connection,
                         credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
-  gchar *html, *response, *format;
-  entity_t entity;
+  gchar *command = NULL, *response = NULL, *html = NULL;
+  GString *agents_element = NULL, *cmd = NULL;
+  const char *name = NULL, *comment = NULL, *copy = NULL;
+  char *param_name = NULL;
+  entity_t entity = NULL;
   int ret;
 
-  const char *name, *comment, *controller_id;
+  params_t *agent_ids = NULL;
+  param_t *param = NULL;
+  params_iterator_t iter;
 
   name = params_value (params, "name");
-  comment = params_value (params, "comments");
-  controller_id = params_value (params, "controller_id");
+  comment = params_value (params, "comment");
+  copy = params_value (params, "copy");
+  agent_ids = params_values (params, "agent_ids");
 
   CHECK_VARIABLE_INVALID (name, "Create Agent Group");
-  CHECK_VARIABLE_INVALID (comment, "Create Agent Group")
-  CHECK_VARIABLE_INVALID (controller_id, "Create Agent Group");
+  CHECK_VARIABLE_INVALID (comment, "Create Agent Group");
 
-  format = g_strdup_printf ("<create_agent_group>"
-                            "<controller id=\"%s\" />"
-                            "<name>%s</name>"
-                            "<comment>%s</comment>"
-                            "</create_agent_group>",
-                            controller_id, name, comment);
+  cmd = g_string_new ("<create_agent_group>");
+  g_string_append_printf (cmd, "<name>%s</name>", name);
+  g_string_append_printf (cmd, "<comment>%s</comment>", comment ? comment : "");
 
-  response = NULL;
-  entity = NULL;
+  if (copy)
+    g_string_append_printf (cmd, "<copy>%s</copy>", copy);
 
-  ret = gmpf (connection, credentials, &response, &entity, response_data, name,
-              comment, controller_id);
-  g_free (format);
+  if (!agent_ids && !copy)
+    {
+      cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
+      return gsad_message (credentials, "Missing agent IDs", __func__, __LINE__,
+                           "The 'agent_ids' parameter is required.",
+                           response_data);
+    }
+
+  if (agent_ids)
+    {
+      agents_element = g_string_new ("<agents>");
+      params_iterator_init (&iter, agent_ids);
+      while (params_iterator_next (&iter, &param_name, &param))
+        {
+          if (param->value && strcmp (param->value, "0") != 0)
+            g_string_append_printf (agents_element, "<agent id=\"%s\"/>", param->value);
+        }
+      g_string_append (agents_element, "</agents>");
+      g_string_append (cmd, agents_element->str);
+      g_string_free (agents_element, TRUE);
+    }
+
+  g_string_append (cmd, "</create_agent_group>");
+  command = g_string_free (cmd, FALSE);
+
+  /* Send the command */
+  ret = gmp (connection, credentials, &response, &entity, response_data, command);
+  g_free (command);
 
   switch (ret)
     {
     case 0:
       break;
     case -1:
-      /* 'gmp' set response. */
       return response;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -18309,6 +18335,7 @@ create_agent_group_gmp (gvm_connection_t *connection,
 
   if (entity_attribute (entity, "id"))
     params_add (params, "agent_group_id", entity_attribute (entity, "id"));
+
   html = response_from_entity (connection, credentials, params, entity,
                                "Create Agent Group", response_data);
   free_entity (entity);
@@ -18330,34 +18357,51 @@ char *
 save_agent_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
                       params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *html, *response, *format;
+  gchar *html = NULL, *response = NULL, *format = NULL;
+  const char *agent_group_id = NULL, *name = NULL, *comment = NULL;
+  params_t *agent_ids = NULL;
+  GString *agents_element = NULL;
+  entity_t entity = NULL;
   int ret;
-  entity_t entity;
-
-  const char *agent_group_id, *name, *comment, *controller_id;
 
   agent_group_id = params_value (params, "agent_group_id");
   name = params_value (params, "name");
   comment = params_value (params, "comment");
-  controller_id = params_value (params, "controller_id");
+  agent_ids = params_values (params, "agent_ids");
 
   CHECK_VARIABLE_INVALID (agent_group_id, "Save Agent Group");
   CHECK_VARIABLE_INVALID (name, "Save Agent Group");
   CHECK_VARIABLE_INVALID (comment, "Save Agent Group");
-  CHECK_VARIABLE_INVALID (controller_id, "Save Agent Group");
 
-  format = g_strdup_printf ("<modify_agent_group agent_group_id=\"%%s\">"
-                            "<controller id=\"%%s\" />"
-                            "<name>%%s</name>"
-                            "<comment>%%s</comment>"
-                            "</modify_agent_group>");
+  agents_element = g_string_new ("<agents>");
+  if (agent_ids)
+    {
+      params_iterator_t iter;
+      param_t *param;
+      char *key;
 
-  response = NULL;
-  entity = NULL;
+      params_iterator_init (&iter, agent_ids);
+      while (params_iterator_next (&iter, &key, &param))
+        {
+          if (param->value && strcmp (param->value, "0") != 0)
+            g_string_append_printf (agents_element,
+                                    "<agent id=\"%s\"/>", param->value);
+        }
+    }
+  g_string_append (agents_element, "</agents>");
+
+  format = g_strdup_printf ("<modify_agent_group agent_group_id=\"%s\">"
+                            "<name>%s</name>"
+                            "<comment>%s</comment>"
+                            "%s"
+                            "</modify_agent_group>",
+                            agents_element->str);
 
   ret = gmpf (connection, credentials, &response, &entity, response_data,
-              format, agent_group_id, controller_id, name, comment);
+              format, agent_group_id, name, comment);
+
   g_free (format);
+  g_string_free (agents_element, TRUE);
 
   switch (ret)
     {
