@@ -823,6 +823,9 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (create_group)
   ELSE (create_host)
   ELSE (create_note)
+#if ENABLE_CONTAINER_SCANNING
+  ELSE (create_oci_image_target)
+#endif
   ELSE (create_override)
   ELSE (create_permission)
   ELSE (create_permissions)
@@ -852,6 +855,9 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (delete_from_trash)
   ELSE (delete_group)
   ELSE (delete_note)
+#if ENABLE_CONTAINER_SCANNING
+  ELSE (delete_oci_image_target)
+#endif
   ELSE (delete_override)
   ELSE (delete_permission)
   ELSE (delete_port_list)
@@ -898,6 +904,9 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   }
   ELSE (save_license)
   ELSE (save_note)
+#if ENABLE_CONTAINER_SCANNING
+  ELSE (save_oci_image_target)
+#endif
   ELSE (save_override)
   ELSE (save_permission)
   ELSE (save_port_list)
@@ -1498,6 +1507,10 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (export_groups)
   ELSE (export_note)
   ELSE (export_notes)
+#if ENABLE_CONTAINER_SCANNING
+  ELSE (export_oci_image_target)
+  ELSE (export_oci_image_targets)
+#endif
   ELSE (export_override)
   ELSE (export_overrides)
   ELSE (export_permission)
@@ -1592,6 +1605,10 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_note)
   ELSE (get_notes)
   ELSE (get_nvt_families)
+#if ENABLE_CONTAINER_SCANNING
+  ELSE (get_oci_image_target)
+  ELSE (get_oci_image_targets)
+#endif
   ELSE (get_override)
   ELSE (get_overrides)
   ELSE (get_permission)
@@ -1633,6 +1650,9 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_trash_filters)
   ELSE (get_trash_groups)
   ELSE (get_trash_notes)
+#if ENABLE_CONTAINER_SCANNING
+  ELSE (get_trash_oci_image_targets)
+#endif
   ELSE (get_trash_overrides)
   ELSE (get_trash_permissions)
   ELSE (get_trash_port_lists)

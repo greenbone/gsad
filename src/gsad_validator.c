@@ -45,6 +45,7 @@ init_validator ()
                      "|(create_group)"
                      "|(create_host)"
                      "|(create_note)"
+                     "|(create_oci_image_target)"
                      "|(create_override)"
                      "|(create_permission)"
                      "|(create_permissions)"
@@ -75,6 +76,7 @@ init_validator ()
                      "|(delete_from_trash)"
                      "|(delete_group)"
                      "|(delete_note)"
+                     "|(delete_oci_image_target)"
                      "|(delete_override)"
                      "|(delete_permission)"
                      "|(delete_port_list)"
@@ -114,6 +116,8 @@ init_validator ()
                      "|(export_groups)"
                      "|(export_note)"
                      "|(export_notes)"
+                     "|(export_oci_image_target)"
+                     "|(export_oci_image_targets)"
                      "|(export_omp_doc)"
                      "|(export_override)"
                      "|(export_overrides)"
@@ -171,6 +175,8 @@ init_validator ()
                      "|(get_note)"
                      "|(get_notes)"
                      "|(get_nvt_families)"
+                     "|(get_oci_image_target)"
+                     "|(get_oci_image_targets)"
                      "|(get_override)"
                      "|(get_overrides)"
                      "|(get_permission)"
@@ -212,6 +218,7 @@ init_validator ()
                      "|(get_trash_filters)"
                      "|(get_trash_groups)"
                      "|(get_trash_notes)"
+                     "|(get_trash_oci_image_targets)"
                      "|(get_trash_overrides)"
                      "|(get_trash_permissions)"
                      "|(get_trash_port_lists)"
@@ -256,6 +263,7 @@ init_validator ()
                      "|(save_license)"
                      "|(save_my_settings)"
                      "|(save_note)"
+                     "|(save_oci_image_target)"
                      "|(save_override)"
                      "|(save_permission)"
                      "|(save_port_list)"
@@ -432,6 +440,8 @@ init_validator ()
   gvm_validator_add (validator, "details", "^[0-1]$");
   /* Number is special cased in params_mhd_validate to remove the space. */
   gvm_validator_add (validator, "number", "^ *[0-9]+ *$");
+  gvm_validator_add (validator, "image_references",
+                     "^[-_[:alnum:],: \\./\\[\\]]+$");
   gvm_validator_add (validator, "optional_number", "^[0-9]*$");
   gvm_validator_add (validator, "oid", "^([0-9.]{1,80}|CVE-[-0-9]{1,14})$");
   gvm_validator_add (validator, "page", "^[_[:alnum:] ]+$");
@@ -488,10 +498,10 @@ init_validator ()
     validator, "resource_type",
     "^(agent|alert|asset|audit_report|audit|cert_bund_adv|config|cpe|"
     "credential|"
-    "cve|dfn_cert_adv|filter|group|host|info|nvt|note|os|ovaldef|override|"
-    "permission|policy|port_list|report|report_config|report_format|result|"
-    "role|scanner|"
-    "schedule|tag|target|task|ticket|tls_certificate|user|vuln|)$");
+    "cve|dfn_cert_adv|filter|group|host|info|nvt|note|oci_image_target|os|"
+    "ovaldef|override|permission|policy|port_list|report|report_config|"
+    "report_format|result|role|scanner|schedule|tag|target|task|ticket|"
+    "tls_certificate|user|vuln|)$");
   gvm_validator_add (validator, "resource_id", "^[[:alnum:]\\-_.:\\/~]*$");
   gvm_validator_add (validator, "resources_action", "^(|add|set|remove)$");
   gvm_validator_add (
@@ -514,6 +524,7 @@ init_validator ()
   gvm_validator_add (validator, "tag_value",
                      "^[\\-_@%[:alnum:], \\.\\/\\\\]*$");
   gvm_validator_add (validator, "target_id", "^[a-z0-9\\-]+$");
+  gvm_validator_add (validator, "oci_image_target_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "task_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "term", "^.*");
   gvm_validator_add (validator, "text", "^.*");
