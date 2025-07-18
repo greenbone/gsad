@@ -11618,6 +11618,36 @@ get_trash_notes_gmp (gvm_connection_t *connection, credentials_t *credentials,
                        g_string_free (xml, FALSE), response_data);
 }
 
+#if ENABLE_CONTAINER_SCANNING
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[in]  extra_xml      Extra XML to insert inside page element.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_oci_image_targets_gmp (gvm_connection_t *connection,
+                                 credentials_t *credentials, params_t *params,
+                                 cmd_response_data_t *response_data)
+{
+  GString *xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_OCI_IMAGE_TARGETS", "get_oci_image_targets",
+                      "oci_image_targets");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+#endif
+
 /**
  * @brief Setup trash page XML, envelope the result.
  *
@@ -18487,6 +18517,398 @@ renew_session_gmp (gvm_connection_t *connection, credentials_t *credentials,
   return html;
 }
 
+#if ENABLE_CONTAINER_SCANNING
+/**
+ * @brief Get one OCI image target, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_oci_image_target_gmp (gvm_connection_t *connection,
+                          credentials_t *credentials, params_t *params,
+                          cmd_response_data_t *response_data)
+{
+  gmp_arguments_t *arguments;
+  arguments = gmp_arguments_new ();
+
+  gmp_arguments_add (arguments, "tasks", "1");
+
+  return get_one (connection, "oci_image_target", credentials, params, NULL,
+                  arguments, response_data);
+}
+
+/**
+ * @brief Get all OCI image targets, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_oci_image_targets_gmp (gvm_connection_t *connection,
+                           credentials_t *credentials, params_t *params,
+                           cmd_response_data_t *response_data)
+{
+  return get_many (connection, "oci_image_targets", credentials, params, NULL,
+                   response_data);
+}
+
+/**
+ * @brief Export an OCI image target.
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Username and password for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data return for the HTTP response.
+ *
+ * @return OCI image target XML on success.  Enveloped XML
+ *         on error.
+ */
+char *
+export_oci_image_target_gmp (gvm_connection_t *connection,
+                             credentials_t *credentials, params_t *params,
+                             cmd_response_data_t *response_data)
+{
+  return export_resource (connection, "oci_image_target", credentials, params,
+                          response_data);
+}
+
+/**
+ * @brief Export a list of OCI image targets.
+ *
+ * @param[in]  connection       Connection to manager.
+ * @param[in]   credentials     Username and password for authentication.
+ * @param[in]   params          Request parameters.
+ * @param[out]  response_data   Extra data return for the HTTP response.
+ *
+ * @return OCI image targets XML on success.  Enveloped XML
+ *         on error.
+ */
+char *
+export_oci_image_targets_gmp (gvm_connection_t *connection,
+                              credentials_t *credentials, params_t *params,
+                              cmd_response_data_t *response_data)
+{
+  return export_many (connection, "oci_image_target", credentials, params,
+                      response_data);
+}
+
+/**
+ * @brief Create an OCI image target, get all targets, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+create_oci_image_target_gmp (gvm_connection_t *connection,
+                             credentials_t *credentials, params_t *params,
+                             cmd_response_data_t *response_data)
+{
+  int ret;
+  gchar *xml, *response;
+  const char *name, *image_references, *comment;
+  const char *credential, *target_source, *file;
+  gchar *credential_element;
+  gchar *comment_element = NULL;
+  entity_t entity;
+  GString *command;
+
+  name = params_value (params, "name");
+  image_references = params_value (params, "image_references");
+  comment = params_value (params, "comment");
+  credential = params_value (params, "credential_id");
+  target_source = params_value (params, "target_source");
+  file = params_value (params, "file");
+
+  CHECK_VARIABLE_INVALID (name, "Create OCI Image Target");
+  CHECK_VARIABLE_INVALID (target_source, "Create OCI Image Target")
+
+  if (strcmp (target_source, "manual") == 0)
+    CHECK_VARIABLE_INVALID (image_references, "Create OCI Image Target");
+
+  if (strcmp (target_source, "file") == 0)
+    CHECK_VARIABLE_INVALID (file, "Create OCI Image Target")
+
+  if (params_given (params, "comment"))
+    CHECK_VARIABLE_INVALID (comment, "Create OCI Image Target");
+
+  if (params_given (params, "credential_id"))
+    CHECK_VARIABLE_INVALID (credential, "Create OCI Image Target");
+
+  comment_element = NULL;
+  if (comment)
+    comment_element =
+      g_markup_printf_escaped ("<comment>%s</comment>", comment);
+
+  credential_element = NULL;
+  if (credential)
+    credential_element =
+      g_strdup_printf ("<credential id=\"%s\"/>", credential);
+
+  /* Create the OCI image target. */
+
+  command = g_string_new ("");
+
+  xml_string_append (
+    command,
+    "<create_oci_image_target>"
+    "<name>%s</name>"
+    "<image_references>%s</image_references>",
+    name, strcmp (target_source, "file") == 0 ? file : image_references);
+
+  g_string_append_printf (command,
+                          "%s%s"
+                          "</create_oci_image_target>",
+                          comment_element ?: "", credential_element ?: "");
+
+  g_free (comment_element);
+  g_free (credential_element);
+
+  ret = gmp (connection, credentials, &response, &entity, response_data,
+             command->str);
+  g_string_free (command, TRUE);
+  switch (ret)
+    {
+    case 0:
+      break;
+    case -1:
+      /* 'gmp' set response. */
+      return response;
+    case 1:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while creating a new OCI image target. "
+        "No new target was created. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while creating a new OCI image target. "
+        "It is unclear whether the target has been created or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while creating a new OCI image target. "
+        "It is unclear whether the target has been created or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
+    }
+
+  if (entity_attribute (entity, "id"))
+    params_add (params, "oci_image_target_id", entity_attribute (entity, "id"));
+  xml = response_from_entity (connection, credentials, params, entity,
+                              "Create OCI Image Target", response_data);
+  free_entity (entity);
+  g_free (response);
+  return xml;
+}
+
+/**
+ * @brief Delete an OCI image target, get all targets, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+delete_oci_image_target_gmp (gvm_connection_t *connection,
+                             credentials_t *credentials, params_t *params,
+                             cmd_response_data_t *response_data)
+{
+  return move_resource_to_trash (connection, "oci_image_target", credentials,
+                                 params, response_data);
+}
+
+/**
+ * @brief Modify an OCI image target, get all targets, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+save_oci_image_target_gmp (gvm_connection_t *connection,
+                           credentials_t *credentials, params_t *params,
+                           cmd_response_data_t *response_data)
+{
+  entity_t entity;
+  const char *name, *comment, *image_references;
+  const char *credential, *target_source, *file;
+  const char *oci_image_target_id, *in_use;
+  gchar *xml, *response;
+  GString *command;
+  int ret;
+
+  name = params_value (params, "name");
+  comment = params_value (params, "comment");
+  in_use = params_value (params, "in_use");
+  oci_image_target_id = params_value (params, "oci_image_target_id");
+
+  CHECK_VARIABLE_INVALID (name, "Save OCI Image Target");
+  CHECK_VARIABLE_INVALID (oci_image_target_id, "Save OCI Image Target");
+  CHECK_VARIABLE_INVALID (in_use, "Save OCI Image Target");
+  CHECK_VARIABLE_INVALID (comment, "Save OCI Image Target");
+
+  if (strcmp (in_use, "1") == 0)
+    {
+      /* Target is in use.  Modify fewer fields. */
+
+      command = g_string_new ("");
+      xml_string_append (command,
+                         "<modify_oci_image_target oci_image_target_id=\"%s\">"
+                         "<name>%s</name>"
+                         "<comment>%s</comment>"
+                         "</modify_oci_image_target>",
+                         oci_image_target_id, name, comment);
+
+      response = NULL;
+      entity = NULL;
+      ret = gmp (connection, credentials, &response, &entity, response_data,
+                 command->str);
+      g_string_free (command, TRUE);
+      switch (ret)
+        {
+        case 0:
+        case -1:
+          break;
+        case 1:
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          return gsad_message (
+            credentials, "Internal error", __func__, __LINE__,
+            "An internal error occurred while saving an OCI image target. "
+            "The target remains the same. "
+            "Diagnostics: Failure to send command to manager daemon.",
+            response_data);
+        case 2:
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          return gsad_message (
+            credentials, "Internal error", __func__, __LINE__,
+            "An internal error occurred while saving an OCI image target. "
+            "It is unclear whether the target has been saved or not. "
+            "Diagnostics: Failure to receive response from manager daemon.",
+            response_data);
+        default:
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          return gsad_message (
+            credentials, "Internal error", __func__, __LINE__,
+            "An internal error occurred while saving an OCI image target. "
+            "It is unclear whether the target has been saved or not. "
+            "Diagnostics: Internal Error.",
+            response_data);
+        }
+
+      xml = response_from_entity (connection, credentials, params, entity,
+                                  "Save OCI Image Target", response_data);
+
+      free_entity (entity);
+      g_free (response);
+      return xml;
+    }
+
+  file = params_value (params, "file");
+  image_references = params_value (params, "image_references");
+  target_source = params_value (params, "target_source");
+  credential = params_value (params, "credential_id");
+
+  CHECK_VARIABLE_INVALID (target_source, "Save OCI Image Target");
+
+  if (strcmp (target_source, "manual") == 0)
+    CHECK_VARIABLE_INVALID (image_references, "Save OCI Image Target")
+
+  if (strcmp (target_source, "file") == 0)
+    CHECK_VARIABLE_INVALID (file, "Create OCI Image Target")
+
+  if (params_given (params, "credential_id"))
+    CHECK_VARIABLE_INVALID (credential, "Save OCI Image Target");
+
+  gchar *credential_element = NULL;
+  if (credential)
+    credential_element =
+      g_strdup_printf ("<credential id=\"%s\"/>", credential);
+
+  command = g_string_new ("");
+  xml_string_append (command,
+                     "<modify_oci_image_target oci_image_target_id=\"%s\">"
+                     "<name>%s</name>"
+                     "<comment>%s</comment>"
+                     "<image_references>%s</image_references>",
+                     oci_image_target_id, name, comment,
+                     (strcmp (target_source, "file") == 0) ? file
+                                                           : image_references);
+
+  g_string_append_printf (command,
+                          "%s"
+                          "</modify_oci_image_target>",
+                          credential_element ?: "");
+
+  g_free (credential_element);
+
+  /* Modify the target. */
+
+  ret = gvm_connection_sendf (connection, "%s", command->str);
+  g_string_free (command, TRUE);
+
+  if (ret == -1)
+    {
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while modifying an OCI image target. "
+        "No target was modified. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    }
+
+  entity = NULL;
+  if (read_entity_and_text_c (connection, &entity, &response))
+    {
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while modifying an OCI image target. "
+        "It is unclear whether the target has been modified or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    }
+
+  xml = response_from_entity (connection, credentials, params, entity,
+                              "Save OCI Image Target", response_data);
+
+  return xml;
+}
+#endif
 /**
  * @brief Get assets, envelope the result.
  *
