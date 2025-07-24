@@ -3444,6 +3444,9 @@ get_credential (gvm_connection_t *connection, credentials_t *credentials,
 {
   gmp_arguments_t *arguments = gmp_arguments_new ();
   gmp_arguments_add (arguments, "targets", "1");
+#if ENABLE_CONTAINER_SCANNING
+  gmp_arguments_add (arguments, "oci_image_targets", "1");
+#endif
   gmp_arguments_add (arguments, "scanners", "1");
   return get_one (connection, "credential", credentials, params, extra_xml,
                   arguments, response_data);
