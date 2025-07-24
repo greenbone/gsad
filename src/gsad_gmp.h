@@ -694,6 +694,13 @@ get_trash_tags_gmp (gvm_connection_t *, credentials_t *, params_t *params,
 char *
 get_trash_targets_gmp (gvm_connection_t *, credentials_t *, params_t *params,
                        cmd_response_data_t *);
+
+#if ENABLE_CONTAINER_SCANNING
+char *
+get_trash_oci_image_targets_gmp (gvm_connection_t *, credentials_t *,
+                                 params_t *params, cmd_response_data_t *);
+#endif
+
 char *
 get_trash_tasks_gmp (gvm_connection_t *, credentials_t *, params_t *params,
                      cmd_response_data_t *);
