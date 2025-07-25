@@ -2,10 +2,10 @@ name: Build and Push Container Images
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     tags: ["v*"]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
     inputs:
       ref-name:
@@ -15,6 +15,7 @@ on:
 
 jobs:
   build:
+    if: github.repository == 'greenbone/gsad'
     name: Build and Push to Greenbone Registry
     uses: greenbone/workflows/.github/workflows/container-build-push-2nd-gen.yml@main
     with:
