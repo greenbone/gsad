@@ -169,7 +169,7 @@
   "style-src-elem 'self' 'unsafe-inline'; "  \
   "style-src 'self' 'unsafe-inline'; "       \
   "font-src 'self';"                         \
-  "img-src 'self' blob:;"
+  "img-src 'self' blob: data:;"
 
 /**
  * @brief Default "max-age" for HTTP header "Strict-Transport-Security"
