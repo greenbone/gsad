@@ -67,7 +67,6 @@ init_validator ()
                      "|(cvss_calculator)"
                      "|(delete_agent_list)"
                      "|(delete_agent_group)"
-                     "|(delete_agent_installer)"
                      "|(delete_asset)"
                      "|(delete_config)"
                      "|(delete_credential)"

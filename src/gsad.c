@@ -845,7 +845,6 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
 #if ENABLE_AGENTS
   ELSE (create_agent_group)
   ELSE (delete_agent_group)
-  ELSE (delete_agent_installer)
 #endif
   ELSE (delete_asset)
   ELSE (delete_alert)
