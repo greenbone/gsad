@@ -17955,25 +17955,6 @@ get_agent_installer_file_gmp (gvm_connection_t *connection,
 }
 
 /**
- * @brief Delete an agent installer.
- *
- * @param[in]  connection      Connection to manager.
- * @param[in]  credentials     Credentials for authentication.
- * @param[in]  params          Request parameters.
- * @param[out] response_data   Extra data for the HTTP response.
- *
- * @return Enveloped XML object.
- */
-char *
-delete_agent_installer_gmp (gvm_connection_t *connection,
-                            credentials_t *credentials, params_t *params,
-                            cmd_response_data_t *response_data)
-{
-  return move_resource_to_trash (connection, "agent_installer", credentials,
-                                 params, response_data);
-}
-
-/**
  * @brief Get one agent, envelope the result.
  *
  * @param[in]  connection      Connection to manager.
