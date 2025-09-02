@@ -841,7 +841,7 @@ get_agents_gmp (gvm_connection_t *, credentials_t *, params_t *,
                 cmd_response_data_t *);
 
 char *
-save_agent_list_gmp (gvm_connection_t *, credentials_t *, params_t *,
+modify_agents_gmp (gvm_connection_t *, credentials_t *, params_t *,
                      cmd_response_data_t *);
 
 char *

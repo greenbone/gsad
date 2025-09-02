@@ -18001,28 +18001,40 @@ get_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_agent_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
+modify_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
                      params_t *params, cmd_response_data_t *response_data)
 {
   gchar *xml, *response, *format;
-  const char *authorized, *min_interval, *heartbeat_interval;
-  const char *schedule, *comment;
+  const char *authorized, *attempts, *delay_in_seconds, *bulk_size;
+  const char *bulk_throttle_time_in_ms, *indexer_dir_depth;
+  const char *interval_in_seconds, *miss_until_inactive, *comment;
+  params_t *scheduler_cron_times;
   int ret;
   GString *agents_element;
   params_t *agent_ids;
   entity_t entity;
 
-  agent_ids = params_values (params, "agent_ids");
+  agent_ids = params_values (params, "agent_ids:");
   authorized = params_value (params, "authorized");
-  min_interval = params_value (params, "min_interval");
-  heartbeat_interval = params_value (params, "heartbeat_interval");
-  schedule = params_value (params, "schedule");
+  attempts = params_value (params, "attempts");
+  delay_in_seconds = params_value (params, "delay_in_seconds");
+  bulk_size = params_value (params, "bulk_size");
+  bulk_throttle_time_in_ms = params_value (params, "bulk_throttle_time_in_ms");
+  indexer_dir_depth = params_value (params, "indexer_dir_depth");
+  scheduler_cron_times = params_values (params, "scheduler_cron_times:");
+  interval_in_seconds = params_value (params, "interval_in_seconds");
+  miss_until_inactive = params_value (params, "miss_until_inactive");
+
   comment = params_value (params, "comment");
 
   CHECK_VARIABLE_INVALID (authorized, "Save Agent List");
-  CHECK_VARIABLE_INVALID (min_interval, "Save Agent List");
-  CHECK_VARIABLE_INVALID (heartbeat_interval, "Save Agent List");
-  CHECK_VARIABLE_INVALID (schedule, "Save Agent List");
+  CHECK_VARIABLE_INVALID (attempts, "Save Agent List");
+  CHECK_VARIABLE_INVALID (delay_in_seconds, "Save Agent List");
+  CHECK_VARIABLE_INVALID (bulk_size, "Save Agent List");
+  CHECK_VARIABLE_INVALID (bulk_throttle_time_in_ms, "Save Agent List");
+  CHECK_VARIABLE_INVALID (indexer_dir_depth, "Save Agent List");
+  CHECK_VARIABLE_INVALID (interval_in_seconds, "Save Agent List");
+  CHECK_VARIABLE_INVALID (miss_until_inactive, "Save Agent List");
   if (params_given (params, "comment"))
     {
       CHECK_VARIABLE_INVALID (comment, "Save Agent List");
@@ -18052,21 +18064,58 @@ save_agent_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
     }
   xml_string_append (agents_element, "</agents>");
 
+  GString *items_xml = g_string_new ("");
+  if (scheduler_cron_times)
+    {
+      params_iterator_init (&iter, scheduler_cron_times);
+      while (params_iterator_next (&iter, &name, &param))
+        {
+          if (param->value && *param->value)
+            {
+              gchar *escaped = g_markup_escape_text (param->value, -1);
+              g_string_append_printf (items_xml, "<item>%s</item>",
+                                      escaped);
+              g_free (escaped);
+            }
+        }
+    }
+
   format = g_strdup_printf ("<modify_agents>"
                             "%s"
                             "<authorized>%i</authorized>"
-                            "<min_interval>%%s</min_interval>"
-                            "<heartbeat_interval>%%s</heartbeat_interval>"
-                            "<schedule>@every %%sh</schedule>"
+                            "<config>"
+                             "<agent_control>"
+                              "<retry>"
+                               "<attempts>%%s</attempts>"
+                               "<delay_in_seconds>%%s</delay_in_seconds>"
+                              "</retry>"
+                             "</agent_control>"
+                             "<agent_script_executor>"
+                              "<bulk_size>%%s</bulk_size>"
+                              "<bulk_throttle_time_in_ms>%%s</bulk_throttle_time_in_ms>"
+                              "<indexer_dir_depth>%%s</indexer_dir_depth>"
+                              "<scheduler_cron_time is_list=\"1\">"
+                               "%s" // list of items
+                              "</scheduler_cron_time>"
+                             "</agent_script_executor>"
+                             "<heartbeat>"
+                              "<interval_in_seconds>%%s</interval_in_seconds>"
+                              "<miss_until_inactive>%%s</miss_until_inactive>"
+                             "</heartbeat>"
+                            "</config>"
                             "<comment>%%s</comment>"
                             "</modify_agents>",
                             agents_element->str,
-                            authorized ? strcmp (authorized, "0") : 0);
+                            authorized ? strcmp (authorized, "0") : 0,
+                            items_xml->str);
   response = NULL;
   entity = NULL;
   ret = gmpf (connection, credentials, &response, &entity, response_data,
-              format, min_interval, heartbeat_interval, schedule, comment);
+              format, attempts, delay_in_seconds, bulk_size,
+              bulk_throttle_time_in_ms, indexer_dir_depth, interval_in_seconds,
+              miss_until_inactive, comment);
   g_free (format);
+  g_string_free (items_xml, TRUE);
   g_string_free (agents_element, TRUE);
 
   switch (ret)
@@ -18406,9 +18455,9 @@ save_agent_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
     }
   g_string_append (agents_element, "</agents>");
 
-  format = g_strdup_printf ("<modify_agent_group agent_group_id=\"%s\">"
-                            "<name>%s</name>"
-                            "<comment>%s</comment>"
+  format = g_strdup_printf ("<modify_agent_group agent_group_id=\"%%s\">"
+                            "<name>%%s</name>"
+                            "<comment>%%s</comment>"
                             "%s"
                             "</modify_agent_group>",
                             agents_element->str);
@@ -19318,7 +19367,6 @@ login (http_connection_t *con, params_t *params,
   if ((password == NULL)
       && (params_original_value (params, "password") == NULL))
     password = "";
-
   if (login && password)
     {
       ret = authenticate_gmp (login, password, &role, &timezone, &capabilities,
