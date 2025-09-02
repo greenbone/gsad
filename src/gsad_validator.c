@@ -237,6 +237,7 @@ init_validator ()
                      "|(import_port_list)"
                      "|(import_report_format)"
                      "|(login)"
+                     "|(modify_agents)"
                      "|(move_task)"
                      "|(new_alert)"
                      "|(ping)"
@@ -587,8 +588,16 @@ init_validator ()
   gvm_validator_alias (validator, "authorized", "boolean");
   gvm_validator_alias (validator, "agent_ids:name", "number");
   gvm_validator_alias (validator, "agent_ids:value", "id");
-  gvm_validator_alias (validator, "min_interval", "number");
-  gvm_validator_alias (validator, "heartbeat_interval", "number");
+  gvm_validator_alias (validator, "scheduler_cron_times:name", "number");
+  gvm_validator_alias (validator, "scheduler_cron_times:value", "name");
+
+  gvm_validator_alias (validator, "attempts", "number");
+  gvm_validator_alias (validator, "delay_in_seconds", "number");
+  gvm_validator_alias (validator, "bulk_size", "number");
+  gvm_validator_alias (validator, "bulk_throttle_time_in_ms", "number");
+  gvm_validator_alias (validator, "indexer_dir_depth", "number");
+  gvm_validator_alias (validator, "interval_in_seconds", "number");
+  gvm_validator_alias (validator, "miss_until_inactive", "number");
   gvm_validator_alias (validator, "schedule", "number");
   gvm_validator_alias (validator, "agent_group_id", "id");
   gvm_validator_alias (validator, "alert_id_2", "alert_id");

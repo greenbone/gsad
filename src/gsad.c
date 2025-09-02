@@ -427,7 +427,9 @@ params_append_mhd (params_t *params, const char *name, const char *filename,
       || (strcmp (name, "group_ids:") == 0)
       || (strcmp (name, "report_format_ids:") == 0)
       || (strcmp (name, "id_list:") == 0)
-      || (strcmp (name, "resource_ids:") == 0) || (strcmp (name, "kdcs:") == 0))
+      || (strcmp (name, "resource_ids:") == 0) || (strcmp (name, "kdcs:") == 0)
+      || (strcmp (name, "agent_ids:") == 0)
+      || (strcmp (name, "scheduler_cron_times:") == 0))
     {
       param_t *param;
       gchar *index_str;
@@ -845,6 +847,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
 #if ENABLE_AGENTS
   ELSE (create_agent_group)
   ELSE (delete_agent_group)
+  ELSE (modify_agents)
 #endif
   ELSE (delete_asset)
   ELSE (delete_alert)
@@ -877,6 +880,9 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (import_config)
   ELSE (import_port_list)
   ELSE (import_report_format)
+#if ENABLE_AGENTS
+  ELSE (modify_agents)
+#endif
   ELSE (move_task)
   ELSE (renew_session)
   ELSE (report_alert)
@@ -1038,7 +1044,9 @@ params_mhd_add (void *params, enum MHD_ValueKind kind, const char *name,
   if ((strcmp (name, "alert_ids:") == 0) || (strcmp (name, "role_ids:") == 0)
       || (strcmp (name, "group_ids:") == 0)
       || (strcmp (name, "report_format_ids:") == 0)
-      || (strcmp (name, "id_list:") == 0))
+      || (strcmp (name, "id_list:") == 0)
+      || (strcmp (name, "agent_ids:") == 0)
+      || (strcmp (name, "scheduler_cron_times:") == 0))
     {
       param_t *param;
       gchar *index_str;
@@ -1545,7 +1553,6 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_agent_installers)
   ELSE (get_agent_installer)
   ELSE (get_agent_installer_file)
-  ELSE (save_agent_list)
   ELSE (delete_agent_list)
 #endif
   ELSE (get_asset)
