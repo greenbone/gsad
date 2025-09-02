@@ -18002,7 +18002,7 @@ get_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 modify_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                     params_t *params, cmd_response_data_t *response_data)
+                   params_t *params, cmd_response_data_t *response_data)
 {
   gchar *xml, *response, *format;
   const char *authorized, *attempts, *delay_in_seconds, *bulk_size;
@@ -18073,47 +18073,46 @@ modify_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
           if (param->value && *param->value)
             {
               gchar *escaped = g_markup_escape_text (param->value, -1);
-              g_string_append_printf (items_xml, "<item>%s</item>",
-                                      escaped);
+              g_string_append_printf (items_xml, "<item>%s</item>", escaped);
               g_free (escaped);
             }
         }
     }
 
-  format = g_strdup_printf ("<modify_agents>"
-                            "%s"
-                            "<authorized>%i</authorized>"
-                            "<config>"
-                             "<agent_control>"
-                              "<retry>"
-                               "<attempts>%%s</attempts>"
-                               "<delay_in_seconds>%%s</delay_in_seconds>"
-                              "</retry>"
-                             "</agent_control>"
-                             "<agent_script_executor>"
-                              "<bulk_size>%%s</bulk_size>"
-                              "<bulk_throttle_time_in_ms>%%s</bulk_throttle_time_in_ms>"
-                              "<indexer_dir_depth>%%s</indexer_dir_depth>"
-                              "<scheduler_cron_time is_list=\"1\">"
-                               "%s" // list of items
-                              "</scheduler_cron_time>"
-                             "</agent_script_executor>"
-                             "<heartbeat>"
-                              "<interval_in_seconds>%%s</interval_in_seconds>"
-                              "<miss_until_inactive>%%s</miss_until_inactive>"
-                             "</heartbeat>"
-                            "</config>"
-                            "<comment>%%s</comment>"
-                            "</modify_agents>",
-                            agents_element->str,
-                            authorized ? strcmp (authorized, "0") : 0,
-                            items_xml->str);
+  format =
+    g_strdup_printf ("<modify_agents>"
+                     "%s"
+                     "<authorized>%i</authorized>"
+                     "<config>"
+                     "<agent_control>"
+                     "<retry>"
+                     "<attempts>%%s</attempts>"
+                     "<delay_in_seconds>%%s</delay_in_seconds>"
+                     "</retry>"
+                     "</agent_control>"
+                     "<agent_script_executor>"
+                     "<bulk_size>%%s</bulk_size>"
+                     "<bulk_throttle_time_in_ms>%%s</bulk_throttle_time_in_ms>"
+                     "<indexer_dir_depth>%%s</indexer_dir_depth>"
+                     "<scheduler_cron_time is_list=\"1\">"
+                     "%s" // list of items
+                     "</scheduler_cron_time>"
+                     "</agent_script_executor>"
+                     "<heartbeat>"
+                     "<interval_in_seconds>%%s</interval_in_seconds>"
+                     "<miss_until_inactive>%%s</miss_until_inactive>"
+                     "</heartbeat>"
+                     "</config>"
+                     "<comment>%%s</comment>"
+                     "</modify_agents>",
+                     agents_element->str,
+                     authorized ? strcmp (authorized, "0") : 0, items_xml->str);
   response = NULL;
   entity = NULL;
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
-              format, attempts, delay_in_seconds, bulk_size,
-              bulk_throttle_time_in_ms, indexer_dir_depth, interval_in_seconds,
-              miss_until_inactive, comment);
+  ret =
+    gmpf (connection, credentials, &response, &entity, response_data, format,
+          attempts, delay_in_seconds, bulk_size, bulk_throttle_time_in_ms,
+          indexer_dir_depth, interval_in_seconds, miss_until_inactive, comment);
   g_free (format);
   g_string_free (items_xml, TRUE);
   g_string_free (agents_element, TRUE);

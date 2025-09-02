@@ -1044,8 +1044,7 @@ params_mhd_add (void *params, enum MHD_ValueKind kind, const char *name,
   if ((strcmp (name, "alert_ids:") == 0) || (strcmp (name, "role_ids:") == 0)
       || (strcmp (name, "group_ids:") == 0)
       || (strcmp (name, "report_format_ids:") == 0)
-      || (strcmp (name, "id_list:") == 0)
-      || (strcmp (name, "agent_ids:") == 0)
+      || (strcmp (name, "id_list:") == 0) || (strcmp (name, "agent_ids:") == 0)
       || (strcmp (name, "scheduler_cron_times:") == 0))
     {
       param_t *param;
