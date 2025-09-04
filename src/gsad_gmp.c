@@ -18210,9 +18210,9 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
   if (!agent_control_id)
     {
       cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
-      return gsad_message (credentials, "Missing agent control ID", __func__, __LINE__,
-                           "The 'agent_control_id' parameter is required.",
-                           response_data);
+      return gsad_message (
+        credentials, "Missing agent control ID", __func__, __LINE__,
+        "The 'agent_control_id' parameter is required.", response_data);
     }
 
   char *name;
@@ -18234,41 +18234,39 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
         }
     }
 
-  format =
-    g_strdup_printf ("<modify_agent_control_scan_config agent_control_id=\"%s\">"
-                     "<config>"
-                     "<agent_control>"
-                     "<retry>"
-                     "<attempts>%%s</attempts>"
-                     "<delay_in_seconds>%%s</delay_in_seconds>"
-                     "<max_jitter_in_seconds>%%s</max_jitter_in_seconds>"
-                     "</retry>"
-                     "</agent_control>"
-                     "<agent_script_executor>"
-                     "<bulk_size>%%s</bulk_size>"
-                     "<bulk_throttle_time_in_ms>%%s</bulk_throttle_time_in_ms>"
-                     "<indexer_dir_depth>%%s</indexer_dir_depth>"
-                     "<scheduler_cron_time is_list=\"1\">"
-                     "%s" // list of items
-                     "</scheduler_cron_time>"
-                     "</agent_script_executor>"
-                     "<heartbeat>"
-                     "<interval_in_seconds>%%s</interval_in_seconds>"
-                     "<miss_until_inactive>%%s</miss_until_inactive>"
-                     "</heartbeat>"
-                     "</config>"
-                     "</modify_agent_control_scan_config>",
-                     agent_control_id,
-                     items_xml->str);
+  format = g_strdup_printf (
+    "<modify_agent_control_scan_config agent_control_id=\"%s\">"
+    "<config>"
+    "<agent_control>"
+    "<retry>"
+    "<attempts>%%s</attempts>"
+    "<delay_in_seconds>%%s</delay_in_seconds>"
+    "<max_jitter_in_seconds>%%s</max_jitter_in_seconds>"
+    "</retry>"
+    "</agent_control>"
+    "<agent_script_executor>"
+    "<bulk_size>%%s</bulk_size>"
+    "<bulk_throttle_time_in_ms>%%s</bulk_throttle_time_in_ms>"
+    "<indexer_dir_depth>%%s</indexer_dir_depth>"
+    "<scheduler_cron_time is_list=\"1\">"
+    "%s" // list of items
+    "</scheduler_cron_time>"
+    "</agent_script_executor>"
+    "<heartbeat>"
+    "<interval_in_seconds>%%s</interval_in_seconds>"
+    "<miss_until_inactive>%%s</miss_until_inactive>"
+    "</heartbeat>"
+    "</config>"
+    "</modify_agent_control_scan_config>",
+    agent_control_id, items_xml->str);
 
   response = NULL;
   entity = NULL;
 
-  ret =
-    gmpf (connection, credentials, &response, &entity, response_data, format,
-          attempts, delay_in_seconds, max_jitter_in_seconds, bulk_size,
-          bulk_throttle_time_in_ms, indexer_dir_depth, interval_in_seconds,
-          miss_until_inactive);
+  ret = gmpf (connection, credentials, &response, &entity, response_data,
+              format, attempts, delay_in_seconds, max_jitter_in_seconds,
+              bulk_size, bulk_throttle_time_in_ms, indexer_dir_depth,
+              interval_in_seconds, miss_until_inactive);
 
   g_free (format);
   g_string_free (items_xml, TRUE);
@@ -18309,14 +18307,13 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
         response_data);
     }
 
-  xml = response_from_entity (connection, credentials, params, entity,
-                              "Modify Agent Control Scan Config",
-                              response_data);
+  xml =
+    response_from_entity (connection, credentials, params, entity,
+                          "Modify Agent Control Scan Config", response_data);
   free_entity (entity);
   g_free (response);
   return xml;
 }
-
 
 /**
  * @brief Delete a list of agents.
