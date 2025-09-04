@@ -18159,6 +18159,166 @@ modify_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
 }
 
 /**
+ * @brief Modify the scan config of an agent control
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Credentials for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
+                                      credentials_t *credentials,
+                                      params_t *params,
+                                      cmd_response_data_t *response_data)
+{
+  gchar *xml, *response, *format;
+  const char *agent_control_id, *attempts, *delay_in_seconds;
+  const char *max_jitter_in_seconds, *bulk_size, *bulk_throttle_time_in_ms;
+  const char *indexer_dir_depth, *interval_in_seconds, *miss_until_inactive;
+  params_t *scheduler_cron_times;
+  int ret;
+  entity_t entity;
+
+  attempts = params_value (params, "attempts");
+  delay_in_seconds = params_value (params, "delay_in_seconds");
+  max_jitter_in_seconds = params_value (params, "max_jitter_in_seconds");
+  bulk_size = params_value (params, "bulk_size");
+  bulk_throttle_time_in_ms = params_value (params, "bulk_throttle_time_in_ms");
+  indexer_dir_depth = params_value (params, "indexer_dir_depth");
+  scheduler_cron_times = params_values (params, "scheduler_cron_times:");
+  interval_in_seconds = params_value (params, "interval_in_seconds");
+  miss_until_inactive = params_value (params, "miss_until_inactive");
+
+  CHECK_VARIABLE_INVALID (attempts, "Modify Agent Control Scan Config");
+  CHECK_VARIABLE_INVALID (delay_in_seconds, "Modify Agent Control Scan Config");
+  CHECK_VARIABLE_INVALID (max_jitter_in_seconds,
+                          "Modify Agent Control Scan Config");
+  CHECK_VARIABLE_INVALID (bulk_size, "Modify Agent Control Scan Config");
+  CHECK_VARIABLE_INVALID (bulk_throttle_time_in_ms,
+                          "Modify Agent Control Scan Config");
+  CHECK_VARIABLE_INVALID (indexer_dir_depth,
+                          "Modify Agent Control Scan Config");
+  CHECK_VARIABLE_INVALID (interval_in_seconds,
+                          "Modify Agent Control Scan Config");
+  CHECK_VARIABLE_INVALID (miss_until_inactive,
+                          "Modify Agent Control Scan Config");
+
+  agent_control_id = params_value (params, "agent_control_id");
+  if (!agent_control_id)
+    {
+      cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
+      return gsad_message (credentials, "Missing agent control ID", __func__, __LINE__,
+                           "The 'agent_control_id' parameter is required.",
+                           response_data);
+    }
+
+  char *name;
+  params_iterator_t iter;
+  param_t *param;
+
+  GString *items_xml = g_string_new ("");
+  if (scheduler_cron_times)
+    {
+      params_iterator_init (&iter, scheduler_cron_times);
+      while (params_iterator_next (&iter, &name, &param))
+        {
+          if (param->value && *param->value)
+            {
+              gchar *escaped = g_markup_escape_text (param->value, -1);
+              g_string_append_printf (items_xml, "<item>%s</item>", escaped);
+              g_free (escaped);
+            }
+        }
+    }
+
+  format =
+    g_strdup_printf ("<modify_agent_control_scan_config agent_control_id=\"%s\">"
+                     "<config>"
+                     "<agent_control>"
+                     "<retry>"
+                     "<attempts>%%s</attempts>"
+                     "<delay_in_seconds>%%s</delay_in_seconds>"
+                     "<max_jitter_in_seconds>%%s</max_jitter_in_seconds>"
+                     "</retry>"
+                     "</agent_control>"
+                     "<agent_script_executor>"
+                     "<bulk_size>%%s</bulk_size>"
+                     "<bulk_throttle_time_in_ms>%%s</bulk_throttle_time_in_ms>"
+                     "<indexer_dir_depth>%%s</indexer_dir_depth>"
+                     "<scheduler_cron_time is_list=\"1\">"
+                     "%s" // list of items
+                     "</scheduler_cron_time>"
+                     "</agent_script_executor>"
+                     "<heartbeat>"
+                     "<interval_in_seconds>%%s</interval_in_seconds>"
+                     "<miss_until_inactive>%%s</miss_until_inactive>"
+                     "</heartbeat>"
+                     "</config>"
+                     "</modify_agent_control_scan_config>",
+                     agent_control_id,
+                     items_xml->str);
+
+  response = NULL;
+  entity = NULL;
+
+  ret =
+    gmpf (connection, credentials, &response, &entity, response_data, format,
+          attempts, delay_in_seconds, max_jitter_in_seconds, bulk_size,
+          bulk_throttle_time_in_ms, indexer_dir_depth, interval_in_seconds,
+          miss_until_inactive);
+
+  g_free (format);
+  g_string_free (items_xml, TRUE);
+
+  switch (ret)
+    {
+    case 0:
+    case -1:
+      break;
+    case 1:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while modifying the agent control "
+        "scan config. The scan config was not modified. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while modifying the agent control "
+        "scan config. It is unclear whether the scan config has been modified "
+        "or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while modifying the agent control "
+        "scan config. It is unclear whether the scan config has been modified "
+        "or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
+    }
+
+  xml = response_from_entity (connection, credentials, params, entity,
+                              "Modify Agent Control Scan Config",
+                              response_data);
+  free_entity (entity);
+  g_free (response);
+  return xml;
+}
+
+
+/**
  * @brief Delete a list of agents.
  *
  * @param[in]  connection      Connection to manager.
