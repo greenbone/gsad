@@ -847,7 +847,6 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
 #if ENABLE_AGENTS
   ELSE (create_agent_group)
   ELSE (delete_agent_group)
-  ELSE (modify_agents)
 #endif
   ELSE (delete_asset)
   ELSE (delete_alert)
@@ -881,6 +880,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (import_port_list)
   ELSE (import_report_format)
 #if ENABLE_AGENTS
+  ELSE (modify_agent_control_scan_config)
   ELSE (modify_agents)
 #endif
   ELSE (move_task)

@@ -238,6 +238,7 @@ init_validator ()
                      "|(import_report_format)"
                      "|(login)"
                      "|(modify_agents)"
+                     "|(modify_agent_control_scan_config)"
                      "|(move_task)"
                      "|(new_alert)"
                      "|(ping)"
@@ -591,6 +592,7 @@ init_validator ()
   gvm_validator_alias (validator, "scheduler_cron_times:name", "number");
   gvm_validator_alias (validator, "scheduler_cron_times:value", "name");
 
+  gvm_validator_alias (validator, "agent_control_id", "id");
   gvm_validator_alias (validator, "attempts", "number");
   gvm_validator_alias (validator, "delay_in_seconds", "number");
   gvm_validator_alias (validator, "bulk_size", "number");
@@ -598,6 +600,7 @@ init_validator ()
   gvm_validator_alias (validator, "indexer_dir_depth", "number");
   gvm_validator_alias (validator, "interval_in_seconds", "number");
   gvm_validator_alias (validator, "miss_until_inactive", "number");
+  gvm_validator_alias (validator, "max_jitter_in_seconds", "number");
   gvm_validator_alias (validator, "schedule", "number");
   gvm_validator_alias (validator, "agent_group_id", "id");
   gvm_validator_alias (validator, "alert_id_2", "alert_id");
