@@ -849,7 +849,7 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *, credentials_t *,
                                       params_t *, cmd_response_data_t *);
 
 char *
-delete_agent_list_gmp (gvm_connection_t *, credentials_t *, params_t *,
+delete_agents_gmp (gvm_connection_t *, credentials_t *, params_t *,
                        cmd_response_data_t *);
 char *
 get_agent_groups_gmp (gvm_connection_t *, credentials_t *, params_t *,

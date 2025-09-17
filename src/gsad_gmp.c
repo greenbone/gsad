@@ -18006,7 +18006,7 @@ modify_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
 {
   gchar *xml, *response, *format;
   const char *authorized, *attempts, *delay_in_seconds, *bulk_size;
-  const char *bulk_throttle_time_in_ms, *indexer_dir_depth;
+  const char *max_jitter_in_seconds, *bulk_throttle_time_in_ms, *indexer_dir_depth;
   const char *interval_in_seconds, *miss_until_inactive, *comment;
   params_t *scheduler_cron_times;
   int ret;
@@ -18024,6 +18024,7 @@ modify_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
   scheduler_cron_times = params_values (params, "scheduler_cron_times:");
   interval_in_seconds = params_value (params, "interval_in_seconds");
   miss_until_inactive = params_value (params, "miss_until_inactive");
+  max_jitter_in_seconds = params_value (params, "max_jitter_in_seconds");
 
   comment = params_value (params, "comment");
 
@@ -18088,6 +18089,7 @@ modify_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
                      "<retry>"
                      "<attempts>%%s</attempts>"
                      "<delay_in_seconds>%%s</delay_in_seconds>"
+                     "<max_jitter_in_seconds>%%s</max_jitter_in_seconds>"
                      "</retry>"
                      "</agent_control>"
                      "<agent_script_executor>"
@@ -18111,8 +18113,9 @@ modify_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
   entity = NULL;
   ret =
     gmpf (connection, credentials, &response, &entity, response_data, format,
-          attempts, delay_in_seconds, bulk_size, bulk_throttle_time_in_ms,
-          indexer_dir_depth, interval_in_seconds, miss_until_inactive, comment);
+          attempts, delay_in_seconds, max_jitter_in_seconds, bulk_size,
+          bulk_throttle_time_in_ms, indexer_dir_depth, interval_in_seconds,
+          miss_until_inactive, comment);
   g_free (format);
   g_string_free (items_xml, TRUE);
   g_string_free (agents_element, TRUE);
@@ -18326,7 +18329,7 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-delete_agent_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
+delete_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
                        params_t *params, cmd_response_data_t *response_data)
 {
   gchar *xml, *response, *format;
@@ -18336,7 +18339,7 @@ delete_agent_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
   params_t *agent_ids;
   entity_t entity;
 
-  agent_ids = params_values (params, "agent_ids");
+  agent_ids = params_values (params, "agent_ids:");
 
   if (!agent_ids)
     {
@@ -18476,7 +18479,7 @@ create_agent_group_gmp (gvm_connection_t *connection,
   name = params_value (params, "name");
   comment = params_value (params, "comment");
   copy = params_value (params, "copy");
-  agent_ids = params_values (params, "agent_ids");
+  agent_ids = params_values (params, "agent_ids:");
 
   CHECK_VARIABLE_INVALID (name, "Create Agent Group");
   CHECK_VARIABLE_INVALID (comment, "Create Agent Group");
