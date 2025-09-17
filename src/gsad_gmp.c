@@ -18006,7 +18006,8 @@ modify_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
 {
   gchar *xml, *response, *format;
   const char *authorized, *attempts, *delay_in_seconds, *bulk_size;
-  const char *max_jitter_in_seconds, *bulk_throttle_time_in_ms, *indexer_dir_depth;
+  const char *max_jitter_in_seconds, *bulk_throttle_time_in_ms,
+    *indexer_dir_depth;
   const char *interval_in_seconds, *miss_until_inactive, *comment;
   params_t *scheduler_cron_times;
   int ret;
@@ -18111,11 +18112,10 @@ modify_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
                      authorized ? strcmp (authorized, "0") : 0, items_xml->str);
   response = NULL;
   entity = NULL;
-  ret =
-    gmpf (connection, credentials, &response, &entity, response_data, format,
-          attempts, delay_in_seconds, max_jitter_in_seconds, bulk_size,
-          bulk_throttle_time_in_ms, indexer_dir_depth, interval_in_seconds,
-          miss_until_inactive, comment);
+  ret = gmpf (connection, credentials, &response, &entity, response_data,
+              format, attempts, delay_in_seconds, max_jitter_in_seconds,
+              bulk_size, bulk_throttle_time_in_ms, indexer_dir_depth,
+              interval_in_seconds, miss_until_inactive, comment);
   g_free (format);
   g_string_free (items_xml, TRUE);
   g_string_free (agents_element, TRUE);
@@ -18330,7 +18330,7 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
  */
 char *
 delete_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+                   params_t *params, cmd_response_data_t *response_data)
 {
   gchar *xml, *response, *format;
   int ret;
