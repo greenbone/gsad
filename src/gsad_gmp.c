@@ -11985,6 +11985,36 @@ get_trash_tickets_gmp (gvm_connection_t *connection, credentials_t *credentials,
                        g_string_free (xml, FALSE), response_data);
 }
 
+#if ENABLE_AGENTS
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_agent_group_gmp (gvm_connection_t *connection,
+                           credentials_t *credentials, params_t *params,
+                           cmd_response_data_t *response_data)
+{
+  GString *xml;
+
+  xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_AGENT_GROUPS", "get_agent_groups", "agent_groups");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+#endif /*ENABLE_AGENTS*/
+
 #undef GET_TRASH_RESOURCE
 
 /**
@@ -18001,8 +18031,8 @@ get_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-modify_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                  params_t *params, cmd_response_data_t *response_data)
 {
   gchar *xml, *response, *format;
   const char *authorized, *attempts, *delay_in_seconds, *bulk_size;
@@ -18082,7 +18112,7 @@ modify_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
     }
 
   format =
-    g_strdup_printf ("<modify_agents>"
+    g_strdup_printf ("<modify_agent>"
                      "%s"
                      "<authorized>%i</authorized>"
                      "<config>"
@@ -18107,7 +18137,7 @@ modify_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
                      "</heartbeat>"
                      "</config>"
                      "<comment>%%s</comment>"
-                     "</modify_agents>",
+                     "</modify_agent>",
                      agents_element->str,
                      authorized ? strcmp (authorized, "0") : 0, items_xml->str);
   response = NULL;
@@ -18155,7 +18185,7 @@ modify_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
     }
 
   xml = response_from_entity (connection, credentials, params, entity,
-                              "Save Agent List", response_data);
+                              "Save Agent", response_data);
   free_entity (entity);
   g_free (response);
   return xml;
@@ -18329,8 +18359,8 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-delete_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+delete_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                  params_t *params, cmd_response_data_t *response_data)
 {
   gchar *xml, *response, *format;
   int ret;
@@ -18362,9 +18392,9 @@ delete_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
     }
   xml_string_append (agents_element, "</agents>");
 
-  format = g_strdup_printf ("<delete_agents>"
+  format = g_strdup_printf ("<delete_agent>"
                             "%s"
-                            "</delete_agents>",
+                            "</delete_agent>",
                             agents_element->str);
   response = NULL;
   entity = NULL;
@@ -18408,7 +18438,7 @@ delete_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
     }
 
   xml = response_from_entity (connection, credentials, params, entity,
-                              "Delete Agent List", response_data);
+                              "Delete Agent", response_data);
   free_entity (entity);
   g_free (response);
   return xml;
