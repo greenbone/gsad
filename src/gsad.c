@@ -881,7 +881,8 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (import_report_format)
 #if ENABLE_AGENTS
   ELSE (modify_agent_control_scan_config)
-  ELSE (modify_agents)
+  ELSE (modify_agent)
+  ELSE (delete_agent)
 #endif
   ELSE (move_task)
   ELSE (renew_session)
@@ -1545,6 +1546,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (export_user)
   ELSE (export_users)
 #if ENABLE_AGENTS
+  ELSE (delete_agent)
   ELSE (get_agent)
   ELSE (get_agents)
   ELSE (get_agent_group)
@@ -1552,7 +1554,6 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_agent_installers)
   ELSE (get_agent_installer)
   ELSE (get_agent_installer_file)
-  ELSE (delete_agents)
 #endif
   ELSE (get_asset)
   ELSE (get_assets)
@@ -1649,6 +1650,9 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_tickets)
   ELSE (get_tls_certificate)
   ELSE (get_tls_certificates)
+#if ENABLE_AGENTS
+  ELSE (get_trash_agent_group)
+#endif
   ELSE (get_trash_alerts)
   ELSE (get_trash_configs)
   ELSE (get_trash_credentials)
