@@ -18621,7 +18621,7 @@ save_agent_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
   agent_group_id = params_value (params, "agent_group_id");
   name = params_value (params, "name");
   comment = params_value (params, "comment");
-  agent_ids = params_values (params, "agent_ids");
+  agent_ids = params_values (params, "agent_ids:");
 
   CHECK_VARIABLE_INVALID (agent_group_id, "Save Agent Group");
   CHECK_VARIABLE_INVALID (name, "Save Agent Group");
