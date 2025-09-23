@@ -465,7 +465,6 @@ init_validator ()
   gvm_validator_add (validator, "xml_file", "(?s)^.*$");
   gvm_validator_add (validator, "definitions_file", "(?s)^.*$");
   gvm_validator_add (validator, "ca_pub", "(?s)^.*$");
-  gvm_validator_add (validator, "which_cert", "^(default|existing|new)$");
   gvm_validator_add (validator, "kdc", "(?s)^.*$");
   gvm_validator_alias (validator, "kdcs:name", "number");
   gvm_validator_alias (validator, "kdcs:value", "kdc");
