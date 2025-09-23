@@ -9895,12 +9895,13 @@ char *
 save_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
+  GString *xml = NULL;
   gchar *response = NULL;
   entity_t entity = NULL;
   const char *scanner_id, *name, *comment, *port, *host, *type, *ca_pub;
-  const char *credential_id, *which_cert;
+  const char *credential_id;
   char *html;
-  int ret, is_unix_socket, in_use;
+  int ret, is_unix_socket;
 
   scanner_id = params_value (params, "scanner_id");
   name = params_value (params, "name");
@@ -9909,91 +9910,46 @@ save_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
   is_unix_socket = (host && *host == '/') ? 1 : 0;
   port = params_value (params, "port");
   type = params_value (params, "scanner_type");
-  which_cert = params_value (params, "which_cert");
   ca_pub = params_value (params, "ca_pub");
   credential_id = params_value (params, "credential_id");
+
   CHECK_VARIABLE_INVALID (scanner_id, "Edit Scanner");
   CHECK_VARIABLE_INVALID (name, "Edit Scanner");
-  if (params_given (params, "scanner_host") == 0)
-    in_use = 1;
-  else
-    {
-      in_use = 0;
-      CHECK_VARIABLE_INVALID (host, "Edit Scanner");
-      CHECK_VARIABLE_INVALID (port, "Edit Scanner");
-      CHECK_VARIABLE_INVALID (type, "Edit Scanner");
-    }
-  if (is_unix_socket == 0)
-    {
-      CHECK_VARIABLE_INVALID (ca_pub, "Edit Scanner");
-      CHECK_VARIABLE_INVALID (which_cert, "Edit Scanner");
-    }
 
-  if (is_unix_socket)
-    {
-      ret = gmpf (connection, credentials, &response, &entity, response_data,
-                  "<modify_scanner scanner_id=\"%s\">"
-                  "<name>%s</name>"
-                  "<comment>%s</comment>"
-                  "</modify_scanner>",
-                  scanner_id, name, comment ?: "");
-    }
-  else if (strcmp (which_cert, "new") == 0
-           || strcmp (which_cert, "default") == 0)
-    {
-      if (ca_pub == NULL)
-        ca_pub = "";
-      if (in_use)
-        ret = gmpf (connection, credentials, &response, &entity, response_data,
-                    "<modify_scanner scanner_id=\"%s\">"
-                    "<name>%s</name>"
-                    "<comment>%s</comment>"
-                    "<ca_pub>%s</ca_pub>"
-                    "<credential id=\"%s\"/>"
-                    "</modify_scanner>",
-                    scanner_id, name, comment ?: "",
-                    strcmp (which_cert, "new") == 0 ? ca_pub : "",
-                    credential_id ? credential_id : "");
-      else
-        ret = gmpf (connection, credentials, &response, &entity, response_data,
-                    "<modify_scanner scanner_id=\"%s\">"
-                    "<name>%s</name>"
-                    "<comment>%s</comment>"
-                    "<host>%s</host>"
-                    "<port>%s</port>"
-                    "<type>%s</type>"
-                    "<ca_pub>%s</ca_pub>"
-                    "<credential id=\"%s\"/>"
-                    "</modify_scanner>",
-                    scanner_id, name, comment ?: "", host, port, type,
-                    strcmp (which_cert, "new") == 0 ? ca_pub : "",
-                    credential_id ? credential_id : "");
-    }
-  else
-    {
-      /* Using existing CA cert. */
-      if (in_use)
-        ret = gmpf (connection, credentials, &response, &entity, response_data,
-                    "<modify_scanner scanner_id=\"%s\">"
-                    "<name>%s</name>"
-                    "<comment>%s</comment>"
-                    "<credential id=\"%s\"/>"
-                    "</modify_scanner>",
-                    scanner_id, name, comment ?: "",
-                    credential_id ? credential_id : "");
-      else
-        ret = gmpf (connection, credentials, &response, &entity, response_data,
-                    "<modify_scanner scanner_id=\"%s\">"
-                    "<name>%s</name>"
-                    "<comment>%s</comment>"
-                    "<host>%s</host>"
-                    "<port>%s</port>"
-                    "<type>%s</type>"
-                    "<credential id=\"%s\"/>"
-                    "</modify_scanner>",
-                    scanner_id, name, comment ?: "", host, port, type,
-                    credential_id ? credential_id : "");
-    }
+  if (params_given (params, "scanner_host"))
+    CHECK_VARIABLE_INVALID (host, "Edit Scanner");
+  if (!is_unix_socket && params_given (params, "port"))
+    CHECK_VARIABLE_INVALID (port, "Edit Scanner");
+  if (params_given (params, "scanner_type"))
+    CHECK_VARIABLE_INVALID (type, "Edit Scanner");
+  if (!is_unix_socket && params_given (params, "ca_pub"))
+    CHECK_VARIABLE_INVALID (ca_pub, "Edit Scanner");
+  if (!is_unix_socket && params_given (params, "credential_id"))
+    CHECK_VARIABLE_INVALID (credential_id, "Edit Scanner");
+
+  xml = g_string_new ("");
+  g_string_append_printf (xml, "<modify_scanner scanner_id=\"%s\">",
+                          scanner_id);
+  g_string_append_printf (xml, "<name>%s</name>", name);
+  g_string_append_printf (xml, "<comment>%s</comment>", comment ?: "");
+
+  if (!is_unix_socket && host != NULL)
+    g_string_append_printf (xml, "<host>%s</host>", host);
+  if (!is_unix_socket && port != NULL)
+    g_string_append_printf (xml, "<port>%s</port>", port);
+  if (!is_unix_socket && type != NULL)
+    g_string_append_printf (xml, "<type>%s</type>", type);
+  if (!is_unix_socket && ca_pub != NULL)
+    g_string_append_printf (xml, "<ca_pub>%s</ca_pub>", ca_pub);
+  if (!is_unix_socket && credential_id != NULL)
+    g_string_append_printf (xml, "<credential id=\"%s\"/>", credential_id);
+
+  g_string_append (xml, "</modify_scanner>");
+
+  ret =
+    gmp (connection, credentials, &response, &entity, response_data, xml->str);
+
+  g_string_free (xml, TRUE);
 
   switch (ret)
     {
@@ -10025,7 +9981,7 @@ save_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
         credentials, "Internal error", __func__, __LINE__,
         "An internal error occurred while saving a scanner. "
         "It is unclear whether the scanner has been saved or not. "
-        "Diagnostics: Internal Error.",
+        "Diagnostics: Unknown Error.",
         response_data);
     }
 
