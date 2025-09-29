@@ -18013,16 +18013,30 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
   miss_until_inactive = params_value (params, "miss_until_inactive");
   max_jitter_in_seconds = params_value (params, "max_jitter_in_seconds");
 
+  const gboolean has_config =
+    params_given (params, "attempts")
+    || params_given (params, "delay_in_seconds")
+    || params_given (params, "max_jitter_in_seconds")
+    || params_given (params, "bulk_size")
+    || params_given (params, "bulk_throttle_time_in_ms")
+    || params_given (params, "indexer_dir_depth")
+    || (scheduler_cron_times != NULL)
+    || params_given (params, "interval_in_seconds")
+    || params_given (params, "miss_until_inactive");
+
   comment = params_value (params, "comment");
 
-  CHECK_VARIABLE_INVALID (authorized, "Save Agent List");
-  CHECK_VARIABLE_INVALID (attempts, "Save Agent List");
-  CHECK_VARIABLE_INVALID (delay_in_seconds, "Save Agent List");
-  CHECK_VARIABLE_INVALID (bulk_size, "Save Agent List");
-  CHECK_VARIABLE_INVALID (bulk_throttle_time_in_ms, "Save Agent List");
-  CHECK_VARIABLE_INVALID (indexer_dir_depth, "Save Agent List");
-  CHECK_VARIABLE_INVALID (interval_in_seconds, "Save Agent List");
-  CHECK_VARIABLE_INVALID (miss_until_inactive, "Save Agent List");
+  if (has_config)
+    {
+      CHECK_VARIABLE_INVALID (authorized, "Save Agent List");
+      CHECK_VARIABLE_INVALID (attempts, "Save Agent List");
+      CHECK_VARIABLE_INVALID (delay_in_seconds, "Save Agent List");
+      CHECK_VARIABLE_INVALID (bulk_size, "Save Agent List");
+      CHECK_VARIABLE_INVALID (bulk_throttle_time_in_ms, "Save Agent List");
+      CHECK_VARIABLE_INVALID (indexer_dir_depth, "Save Agent List");
+      CHECK_VARIABLE_INVALID (interval_in_seconds, "Save Agent List");
+      CHECK_VARIABLE_INVALID (miss_until_inactive, "Save Agent List");
+    }
   if (params_given (params, "comment"))
     {
       CHECK_VARIABLE_INVALID (comment, "Save Agent List");
@@ -18067,41 +18081,64 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
         }
     }
 
-  format =
-    g_strdup_printf ("<modify_agent>"
-                     "%s"
-                     "<authorized>%i</authorized>"
-                     "<config>"
-                     "<agent_control>"
-                     "<retry>"
-                     "<attempts>%%s</attempts>"
-                     "<delay_in_seconds>%%s</delay_in_seconds>"
-                     "<max_jitter_in_seconds>%%s</max_jitter_in_seconds>"
-                     "</retry>"
-                     "</agent_control>"
-                     "<agent_script_executor>"
-                     "<bulk_size>%%s</bulk_size>"
-                     "<bulk_throttle_time_in_ms>%%s</bulk_throttle_time_in_ms>"
-                     "<indexer_dir_depth>%%s</indexer_dir_depth>"
-                     "<scheduler_cron_time is_list=\"1\">"
-                     "%s" // list of items
-                     "</scheduler_cron_time>"
-                     "</agent_script_executor>"
-                     "<heartbeat>"
-                     "<interval_in_seconds>%%s</interval_in_seconds>"
-                     "<miss_until_inactive>%%s</miss_until_inactive>"
-                     "</heartbeat>"
-                     "</config>"
-                     "<comment>%%s</comment>"
-                     "</modify_agent>",
-                     agents_element->str,
-                     authorized ? strcmp (authorized, "0") : 0, items_xml->str);
-  response = NULL;
-  entity = NULL;
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
-              format, attempts, delay_in_seconds, max_jitter_in_seconds,
-              bulk_size, bulk_throttle_time_in_ms, indexer_dir_depth,
-              interval_in_seconds, miss_until_inactive, comment);
+  if (has_config)
+    {
+      format = g_strdup_printf (
+        "<modify_agent>"
+        "%s" /* agents */
+        "<authorized>%d</authorized>"
+        "<config>"
+        "<agent_control>"
+        "<retry>"
+        "<attempts>%%s</attempts>"
+        "<delay_in_seconds>%%s</delay_in_seconds>"
+        "<max_jitter_in_seconds>%%s</max_jitter_in_seconds>"
+        "</retry>"
+        "</agent_control>"
+        "<agent_script_executor>"
+        "<bulk_size>%%s</bulk_size>"
+        "<bulk_throttle_time_in_ms>%%s</bulk_throttle_time_in_ms>"
+        "<indexer_dir_depth>%%s</indexer_dir_depth>"
+        "<scheduler_cron_time is_list=\"1\">"
+        "%s" /* items_xml->str */
+        "</scheduler_cron_time>"
+        "</agent_script_executor>"
+        "<heartbeat>"
+        "<interval_in_seconds>%%s</interval_in_seconds>"
+        "<miss_until_inactive>%%s</miss_until_inactive>"
+        "</heartbeat>"
+        "</config>"
+        "<comment>%%s</comment>"
+        "</modify_agent>",
+        agents_element->str, authorized ? strcmp (authorized, "0") : 0,
+        items_xml->str);
+
+      response = NULL;
+      entity = NULL;
+      ret = gmpf (
+        connection, credentials, &response, &entity, response_data, format,
+        /* retry */ attempts, delay_in_seconds, max_jitter_in_seconds,
+        /* executor */ bulk_size, bulk_throttle_time_in_ms, indexer_dir_depth,
+        /* heartbeat */ interval_in_seconds, miss_until_inactive,
+        /* comment */ comment);
+    }
+  else
+    {
+      format = g_strdup_printf ("<modify_agent>"
+                                "%s" /* agents */
+                                "<authorized>%d</authorized>"
+                                "<comment>%%s</comment>"
+                                "</modify_agent>",
+                                agents_element->str,
+                                authorized ? strcmp (authorized, "0") : 0);
+
+      response = NULL;
+      entity = NULL;
+      ret = gmpf (connection, credentials, &response, &entity, response_data,
+                  format,
+                  /* comment */ comment);
+    }
+
   g_free (format);
   g_string_free (items_xml, TRUE);
   g_string_free (agents_element, TRUE);
