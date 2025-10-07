@@ -877,6 +877,15 @@ save_agent_group_gmp (gvm_connection_t *, credentials_t *, params_t *,
 char *
 delete_agent_group_gmp (gvm_connection_t *, credentials_t *, params_t *,
                         cmd_response_data_t *);
+
+char *
+create_agent_group_task_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                             cmd_response_data_t *);
+
+char *
+save_agent_group_task_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                           cmd_response_data_t *);
+
 #endif
 
 #if ENABLE_CONTAINER_SCANNING
