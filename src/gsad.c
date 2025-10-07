@@ -846,6 +846,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (create_role)
 #if ENABLE_AGENTS
   ELSE (create_agent_group)
+  ELSE (create_agent_group_task)
   ELSE (delete_agent_group)
 #endif
   ELSE (delete_asset)
@@ -892,6 +893,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (run_wizard)
 #if ENABLE_AGENTS
   ELSE (save_agent_group)
+  ELSE (save_agent_group_task)
 #endif
   ELSE (save_alert)
   ELSE (save_asset)
