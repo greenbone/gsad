@@ -2449,7 +2449,7 @@ create_agent_group_task_gmp (gvm_connection_t *connection,
   const char *schedule_id, *schedule_periods;
   const char *in_assets, *alterable;
   const char *add_tag, *tag_id, *auto_delete, *auto_delete_data;
-  const char *apply_overrides, *min_qod, *usage_type;
+  const char *apply_overrides, *min_qod;
   gchar *name_escaped, *comment_escaped;
   params_t *alerts;
   GString *alert_element;
@@ -2467,34 +2467,32 @@ create_agent_group_task_gmp (gvm_connection_t *connection,
   schedule_periods = params_value (params, "schedule_periods");
   tag_id = params_value (params, "tag_id");
   agent_group_id = params_value (params, "agent_group_id");
-  usage_type = params_value (params, "usage_type");
 
-  CHECK_VARIABLE_INVALID (name, "Create Task");
-  CHECK_VARIABLE_INVALID (comment, "Create Task");
-  CHECK_VARIABLE_INVALID (usage_type, "Create Task");
-  CHECK_VARIABLE_INVALID (agent_group_id, "Create Task");
-  CHECK_VARIABLE_INVALID (schedule_id, "Create Task");
+  CHECK_VARIABLE_INVALID (name, "Create Agent Group Task");
+  CHECK_VARIABLE_INVALID (comment, "Create Agent Group Task");
+  CHECK_VARIABLE_INVALID (agent_group_id, "Create Agent Group Task");
+  CHECK_VARIABLE_INVALID (schedule_id, "Create Agent Group Task");
 
   if (str_equal (agent_group_id, "0"))
     {
       /* Don't allow to create agent group task via create_task */
       return message_invalid (connection, credentials, params, response_data,
                               "Given agent_group_id was invalid",
-                              "Create Task");
+                              "Create Agent Group Task");
     }
 
   if (params_given (params, "schedule_periods"))
     {
-      CHECK_VARIABLE_INVALID (schedule_periods, "Create Task");
+      CHECK_VARIABLE_INVALID (schedule_periods, "Create Agent Group Task");
     }
   else
     schedule_periods = "0";
 
-  CHECK_VARIABLE_INVALID (in_assets, "Create Task");
+  CHECK_VARIABLE_INVALID (in_assets, "Create Agent Group Task");
 
   if (!strcmp (in_assets, "1"))
     {
-      CHECK_VARIABLE_INVALID (apply_overrides, "Create Task");
+      CHECK_VARIABLE_INVALID (apply_overrides, "Create Agent Group Task");
       CHECK_VARIABLE_INVALID (min_qod, "Create Task");
     }
   else
@@ -2544,19 +2542,18 @@ create_agent_group_task_gmp (gvm_connection_t *connection,
   name_escaped = name ? g_markup_escape_text (name, -1) : NULL;
   comment_escaped = comment ? g_markup_escape_text (comment, -1) : NULL;
 
-  command =
-    g_strdup_printf ("<create_task>"
-                     "<schedule_periods>%s</schedule_periods>"
-                     "%s%s"
-                     "<agent_group id=\"%s\"/>"
-                     "<name>%s</name>"
-                     "<comment>%s</comment>"
-                     "<alterable>%i</alterable>"
-                     "<usage_type>%s</usage_type>"
-                     "</create_task>",
-                     schedule_periods, schedule_element, alert_element->str,
-                     agent_group_id, name_escaped, comment_escaped,
-                     alterable ? strcmp (alterable, "0") : 0, usage_type);
+  command = g_strdup_printf (
+    "<create_task>"
+    "<schedule_periods>%s</schedule_periods>"
+    "%s%s"
+    "<agent_group id=\"%s\"/>"
+    "<name>%s</name>"
+    "<comment>%s</comment>"
+    "<alterable>%i</alterable>"
+    "<usage_type>scan</usage_type>"
+    "</create_task>",
+    schedule_periods, schedule_element, alert_element->str, agent_group_id,
+    name_escaped, comment_escaped, alterable ? strcmp (alterable, "0") : 0);
 
   g_free (name_escaped);
   g_free (comment_escaped);
@@ -2580,7 +2577,7 @@ create_agent_group_task_gmp (gvm_connection_t *connection,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
         credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while creating a new task. "
+        "An internal error occurred while creating a new agent-group task. "
         "No new task was created. "
         "Diagnostics: Failure to send command to manager daemon.",
         response_data);
@@ -2589,7 +2586,7 @@ create_agent_group_task_gmp (gvm_connection_t *connection,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
         credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while creating a new task. "
+        "An internal error occurred while creating a new agent-group task. "
         "It is unclear whether the task has been created or not. "
         "Diagnostics: Failure to receive response from manager daemon.",
         response_data);
@@ -2598,7 +2595,7 @@ create_agent_group_task_gmp (gvm_connection_t *connection,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
         credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while creating a new task. "
+        "An internal error occurred while creating a new agent-group task. "
         "It is unclear whether the task has been created or not. "
         "Diagnostics: Internal Error.",
         response_data);
@@ -2664,9 +2661,9 @@ create_agent_group_task_gmp (gvm_connection_t *connection,
 
           if (entity_attribute (entity, "id"))
             params_add (params, "task_id", entity_attribute (entity, "id"));
-          html =
-            response_from_entity (connection, credentials, params, tag_entity,
-                                  "Create Task and Tag", response_data);
+          html = response_from_entity (
+            connection, credentials, params, tag_entity,
+            "Create Agent Group Task and Tag", response_data);
           free_entity (tag_entity);
           g_free (tag_response);
         }
@@ -2674,14 +2671,15 @@ create_agent_group_task_gmp (gvm_connection_t *connection,
         {
           if (entity_attribute (entity, "id"))
             params_add (params, "task_id", entity_attribute (entity, "id"));
-          html = response_from_entity (connection, credentials, params, entity,
-                                       "Create Task", response_data);
+          html =
+            response_from_entity (connection, credentials, params, entity,
+                                  "Create Agent Group Task", response_data);
         }
     }
   else
     {
       html = response_from_entity (connection, credentials, params, entity,
-                                   "Create Task", response_data);
+                                   "Create agent-group Task", response_data);
     }
   free_entity (entity);
   g_free (response);
@@ -3043,11 +3041,10 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
                            credentials_t *credentials, params_t *params,
                            cmd_response_data_t *response_data)
 {
-  gchar *html = NULL, *response = NULL, *format = NULL,
-        *usage_type_element = NULL;
+  gchar *html = NULL, *response = NULL, *format = NULL;
   const char *comment, *name, *schedule_id, *schedule_periods;
   const char *task_id, *agent_group_id;
-  const char *alterable, *usage_type;
+  const char *alterable;
   int ret;
   params_t *alerts;
   GString *alert_element;
@@ -3061,7 +3058,6 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
   schedule_periods = params_value (params, "schedule_periods");
   task_id = params_value (params, "task_id");
   agent_group_id = params_value (params, "agent_group_id");
-  usage_type = params_value (params, "usage_type");
 
   /* Optional schedule_periods -> default "0" if not provided */
   if (params_given (params, "schedule_periods"))
@@ -3077,18 +3073,6 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (schedule_id, "Save Agent Group Task");
   CHECK_VARIABLE_INVALID (task_id, "Save Agent Group Task");
   CHECK_VARIABLE_INVALID (agent_group_id, "Save Agent Group Task");
-
-  /* Optional usage_type element */
-  if (usage_type)
-    {
-      CHECK_VARIABLE_INVALID (usage_type, "Save Agent Group Task");
-      usage_type_element =
-        g_markup_printf_escaped ("<usage_type>%s</usage_type>", usage_type);
-    }
-  else
-    {
-      usage_type_element = g_strdup ("");
-    }
 
   /* Build alerts list */
   alert_element = g_string_new ("");
@@ -3124,11 +3108,9 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
     "<schedule id=\"%%s\"/>"
     "<schedule_periods>%%s</schedule_periods>"
     "%s%i%s" /* optional alterable wrapper with numeric value */
-    "%s"     /* optional usage_type element */
     "</modify_task>",
     alert_element->str, alterable ? "<alterable>" : "",
-    alterable ? strcmp (alterable, "0") : 0, alterable ? "</alterable>" : "",
-    usage_type_element);
+    alterable ? strcmp (alterable, "0") : 0, alterable ? "</alterable>" : "");
 
   /* Send */
   ret = gmpf (connection, credentials, &response, &entity, response_data,
@@ -3136,7 +3118,6 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
               schedule_periods);
 
   g_free (format);
-  g_free (usage_type_element);
   g_string_free (alert_element, TRUE);
 
   switch (ret)
