@@ -64,8 +64,9 @@ init_validator ()
                      "|(create_tls_certificate)"
                      "|(create_user)"
                      "|(create_agent_group)"
+                     "|(create_agent_group_task)"
                      "|(cvss_calculator)"
-                     "|(delete_agent_list)"
+                     "|(delete_agent)"
                      "|(delete_agent_group)"
                      "|(delete_asset)"
                      "|(delete_config)"
@@ -211,6 +212,7 @@ init_validator ()
                      "|(get_tickets)"
                      "|(get_tls_certificate)"
                      "|(get_tls_certificates)"
+                     "|(get_trash_agent_group)"
                      "|(get_trash_alerts)"
                      "|(get_trash_configs)"
                      "|(get_trash_credentials)"
@@ -237,7 +239,8 @@ init_validator ()
                      "|(import_port_list)"
                      "|(import_report_format)"
                      "|(login)"
-                     "|(modify_agents)"
+                     "|(modify_agent)"
+                     "|(modify_agent_control_scan_config)"
                      "|(move_task)"
                      "|(new_alert)"
                      "|(ping)"
@@ -249,6 +252,7 @@ init_validator ()
                      "|(test_alert)"
                      "|(save_agent_list)"
                      "|(save_agent_group)"
+                     "|(save_agent_group_task)"
                      "|(save_alert)"
                      "|(save_asset)"
                      "|(save_auth)"
@@ -295,9 +299,9 @@ init_validator ()
   gvm_validator_add (validator, "aggregate_mode", "^[a-z0-9_]+$");
   gvm_validator_add (
     validator, "aggregate_type",
-    "^(alert|config|credential|filter|group|host|nvt|note|os|override|"
-    "permission|port_list|report|report_config|report_format|result|role|"
-    "scanner|schedule|"
+    "^(agent|agent_group|agent_installer|alert|config|credential|filter|group|"
+    "host|nvt|note|os|override|permission|port_list|report|report_config|"
+    "report_format|result|role|scanner|schedule|"
     "tag|target|task|user|cve|cpe|ovaldef|cert_bund_adv|dfn_cert_adv|"
     "vuln|tls_certificate)$");
   gvm_validator_add (
@@ -464,7 +468,6 @@ init_validator ()
   gvm_validator_add (validator, "xml_file", "(?s)^.*$");
   gvm_validator_add (validator, "definitions_file", "(?s)^.*$");
   gvm_validator_add (validator, "ca_pub", "(?s)^.*$");
-  gvm_validator_add (validator, "which_cert", "^(default|existing|new)$");
   gvm_validator_add (validator, "kdc", "(?s)^.*$");
   gvm_validator_alias (validator, "kdcs:name", "number");
   gvm_validator_alias (validator, "kdcs:value", "kdc");
@@ -497,12 +500,11 @@ init_validator ()
   gvm_validator_add (validator, "port_range_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (
     validator, "resource_type",
-    "^(agent|alert|asset|audit_report|audit|cert_bund_adv|config|cpe|"
-    "credential|"
-    "cve|dfn_cert_adv|filter|group|host|info|nvt|note|oci_image_target|os|"
-    "ovaldef|override|permission|policy|port_list|report|report_config|"
-    "report_format|result|role|scanner|schedule|tag|target|task|ticket|"
-    "tls_certificate|user|vuln|)$");
+    "^(agent|agent_group|agent_installer|alert|asset|audit_report|audit|"
+    "cert_bund_adv|config|cpe|credential|cve|dfn_cert_adv|filter|group|"
+    "host|info|nvt|note|oci_image_target|os|ovaldef|override|permission|"
+    "policy|port_list|report|report_config|report_format|result|role|scanner|"
+    "schedule|tag|target|task|ticket|tls_certificate|user|vuln|)$");
   gvm_validator_add (validator, "resource_id", "^[[:alnum:]\\-_.:\\/~]*$");
   gvm_validator_add (validator, "resources_action", "^(|add|set|remove)$");
   gvm_validator_add (
@@ -592,6 +594,7 @@ init_validator ()
   gvm_validator_alias (validator, "scheduler_cron_times:name", "number");
   gvm_validator_alias (validator, "scheduler_cron_times:value", "name");
 
+  gvm_validator_alias (validator, "agent_control_id", "id");
   gvm_validator_alias (validator, "attempts", "number");
   gvm_validator_alias (validator, "delay_in_seconds", "number");
   gvm_validator_alias (validator, "bulk_size", "number");
@@ -599,6 +602,7 @@ init_validator ()
   gvm_validator_alias (validator, "indexer_dir_depth", "number");
   gvm_validator_alias (validator, "interval_in_seconds", "number");
   gvm_validator_alias (validator, "miss_until_inactive", "number");
+  gvm_validator_alias (validator, "max_jitter_in_seconds", "number");
   gvm_validator_alias (validator, "schedule", "number");
   gvm_validator_alias (validator, "agent_group_id", "id");
   gvm_validator_alias (validator, "alert_id_2", "alert_id");

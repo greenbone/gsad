@@ -708,6 +708,13 @@ char *
 get_trash_tickets_gmp (gvm_connection_t *, credentials_t *, params_t *params,
                        cmd_response_data_t *);
 
+#if ENABLE_AGENTS
+char *
+get_trash_agent_group_gmp (gvm_connection_t *connection,
+                           credentials_t *credentials, params_t *params,
+                           cmd_response_data_t *response_data);
+#endif
+
 #if ENABLE_CONTAINER_SCANNING
 char *
 get_trash_oci_image_targets (gvm_connection_t *, credentials_t *,
@@ -841,12 +848,16 @@ get_agents_gmp (gvm_connection_t *, credentials_t *, params_t *,
                 cmd_response_data_t *);
 
 char *
-modify_agents_gmp (gvm_connection_t *, credentials_t *, params_t *,
-                   cmd_response_data_t *);
+modify_agent_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                  cmd_response_data_t *);
 
 char *
-delete_agent_list_gmp (gvm_connection_t *, credentials_t *, params_t *,
-                       cmd_response_data_t *);
+modify_agent_control_scan_config_gmp (gvm_connection_t *, credentials_t *,
+                                      params_t *, cmd_response_data_t *);
+
+char *
+delete_agent_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                  cmd_response_data_t *);
 char *
 get_agent_groups_gmp (gvm_connection_t *, credentials_t *, params_t *,
                       cmd_response_data_t *);
@@ -866,6 +877,15 @@ save_agent_group_gmp (gvm_connection_t *, credentials_t *, params_t *,
 char *
 delete_agent_group_gmp (gvm_connection_t *, credentials_t *, params_t *,
                         cmd_response_data_t *);
+
+char *
+create_agent_group_task_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                             cmd_response_data_t *);
+
+char *
+save_agent_group_task_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                           cmd_response_data_t *);
+
 #endif
 
 #if ENABLE_CONTAINER_SCANNING

@@ -2425,6 +2425,269 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   return html;
 }
 
+#if ENABLE_AGENTS
+/**
+ * @brief Create a agent-group task, get all tasks, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+create_agent_group_task_gmp (gvm_connection_t *connection,
+                             credentials_t *credentials, params_t *params,
+                             cmd_response_data_t *response_data)
+{
+  entity_t entity;
+  int ret;
+  gchar *schedule_element, *command;
+  gchar *response, *html;
+  const char *name, *comment, *agent_group_id;
+  const char *schedule_id, *schedule_periods;
+  const char *in_assets, *alterable;
+  const char *add_tag, *tag_id, *auto_delete, *auto_delete_data;
+  const char *apply_overrides, *min_qod;
+  gchar *name_escaped, *comment_escaped;
+  params_t *alerts;
+  GString *alert_element;
+
+  add_tag = params_value (params, "add_tag");
+  alterable = params_value (params, "alterable");
+  apply_overrides = params_value (params, "apply_overrides");
+  auto_delete = params_value (params, "auto_delete");
+  auto_delete_data = params_value (params, "auto_delete_data");
+  comment = params_value (params, "comment");
+  in_assets = params_value (params, "in_assets");
+  min_qod = params_value (params, "min_qod");
+  name = params_value (params, "name");
+  schedule_id = params_value (params, "schedule_id");
+  schedule_periods = params_value (params, "schedule_periods");
+  tag_id = params_value (params, "tag_id");
+  agent_group_id = params_value (params, "agent_group_id");
+
+  CHECK_VARIABLE_INVALID (name, "Create Agent Group Task");
+  CHECK_VARIABLE_INVALID (comment, "Create Agent Group Task");
+  CHECK_VARIABLE_INVALID (agent_group_id, "Create Agent Group Task");
+  CHECK_VARIABLE_INVALID (schedule_id, "Create Agent Group Task");
+
+  if (str_equal (agent_group_id, "0"))
+    {
+      /* Don't allow to create agent group task via create_task */
+      return message_invalid (connection, credentials, params, response_data,
+                              "Given agent_group_id was invalid",
+                              "Create Agent Group Task");
+    }
+
+  if (params_given (params, "schedule_periods"))
+    {
+      CHECK_VARIABLE_INVALID (schedule_periods, "Create Agent Group Task");
+    }
+  else
+    schedule_periods = "0";
+
+  CHECK_VARIABLE_INVALID (in_assets, "Create Agent Group Task");
+
+  if (!strcmp (in_assets, "1"))
+    {
+      CHECK_VARIABLE_INVALID (apply_overrides, "Create Agent Group Task");
+      CHECK_VARIABLE_INVALID (min_qod, "Create Task");
+    }
+  else
+    {
+      if (!params_given (params, "apply_overrides")
+          || !params_valid (params, "apply_overrides"))
+        apply_overrides = "";
+
+      if (!params_given (params, "min_qod")
+          || !params_valid (params, "min_qod"))
+        min_qod = "";
+    }
+
+  CHECK_VARIABLE_INVALID (auto_delete, "Create Task");
+  CHECK_VARIABLE_INVALID (auto_delete_data, "Create Task");
+  CHECK_VARIABLE_INVALID (alterable, "Create Task");
+
+  if (add_tag && strcmp (add_tag, "1") == 0)
+    {
+      CHECK_VARIABLE_INVALID (tag_id, "Create Task");
+    }
+
+  if (schedule_id == NULL || strcmp (schedule_id, "0") == 0)
+    schedule_element = g_strdup ("");
+  else
+    schedule_element = g_strdup_printf ("<schedule id=\"%s\"/>", schedule_id);
+
+  alert_element = g_string_new ("");
+  if (params_given (params, "alert_id_optional:"))
+    alerts = params_values (params, "alert_id_optional:");
+  else
+    alerts = params_values (params, "alert_ids:");
+
+  if (alerts)
+    {
+      params_iterator_t iter;
+      char *name;
+      param_t *param;
+
+      params_iterator_init (&iter, alerts);
+      while (params_iterator_next (&iter, &name, &param))
+        if (param->value && strcmp (param->value, "0"))
+          g_string_append_printf (alert_element, "<alert id=\"%s\"/>",
+                                  param->value ? param->value : "");
+    }
+
+  name_escaped = name ? g_markup_escape_text (name, -1) : NULL;
+  comment_escaped = comment ? g_markup_escape_text (comment, -1) : NULL;
+
+  command = g_strdup_printf (
+    "<create_task>"
+    "<schedule_periods>%s</schedule_periods>"
+    "%s%s"
+    "<agent_group id=\"%s\"/>"
+    "<name>%s</name>"
+    "<comment>%s</comment>"
+    "<alterable>%i</alterable>"
+    "<usage_type>scan</usage_type>"
+    "</create_task>",
+    schedule_periods, schedule_element, alert_element->str, agent_group_id,
+    name_escaped, comment_escaped, alterable ? strcmp (alterable, "0") : 0);
+
+  g_free (name_escaped);
+  g_free (comment_escaped);
+
+  ret =
+    gmp (connection, credentials, &response, &entity, response_data, command);
+  g_free (command);
+
+  g_free (schedule_element);
+  g_string_free (alert_element, TRUE);
+
+  switch (ret)
+    {
+    case 0:
+      break;
+    case -1:
+      /* 'gmp' set response. */
+      return response;
+    case 1:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while creating a new agent-group task. "
+        "No new task was created. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while creating a new agent-group task. "
+        "It is unclear whether the task has been created or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while creating a new agent-group task. "
+        "It is unclear whether the task has been created or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
+    }
+
+  if (gmp_success (entity))
+    {
+      if (add_tag && strcmp (add_tag, "1") == 0)
+        {
+          const char *new_task_id = entity_attribute (entity, "id");
+          gchar *tag_command, *tag_response;
+          entity_t tag_entity;
+
+          tag_command = g_markup_printf_escaped ("<modify_tag tag_id=\"%s\">"
+                                                 "<resources action=\"add\">"
+                                                 "<resource id=\"%s\"/>"
+                                                 "</resources>"
+                                                 "</modify_tag>",
+                                                 tag_id, new_task_id);
+
+          ret = gmp (connection, credentials, &tag_response, &tag_entity,
+                     response_data, tag_command);
+
+          switch (ret)
+            {
+            case 0:
+            case -1:
+              break;
+            case 1:
+              free_entity (entity);
+              g_free (response);
+              cmd_response_data_set_status_code (
+                response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+              return gsad_message (
+                credentials, "Internal error", __func__, __LINE__,
+                "An internal error occurred while creating a new tag. "
+                "No new tag was created. "
+                "Diagnostics: Failure to send command to manager daemon.",
+                response_data);
+            case 2:
+              free_entity (entity);
+              g_free (response);
+              cmd_response_data_set_status_code (
+                response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+              return gsad_message (
+                credentials, "Internal error", __func__, __LINE__,
+                "An internal error occurred while creating a new tag. "
+                "It is unclear whether the tag has been created or not. "
+                "Diagnostics: Failure to receive response from manager daemon.",
+                response_data);
+            default:
+              free_entity (entity);
+              g_free (response);
+              cmd_response_data_set_status_code (
+                response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+              return gsad_message (
+                credentials, "Internal error", __func__, __LINE__,
+                "An internal error occurred while creating a new task. "
+                "It is unclear whether the tag has been created or not. "
+                "Diagnostics: Internal Error.",
+                response_data);
+            }
+
+          if (entity_attribute (entity, "id"))
+            params_add (params, "task_id", entity_attribute (entity, "id"));
+          html = response_from_entity (
+            connection, credentials, params, tag_entity,
+            "Create Agent Group Task and Tag", response_data);
+          free_entity (tag_entity);
+          g_free (tag_response);
+        }
+      else
+        {
+          if (entity_attribute (entity, "id"))
+            params_add (params, "task_id", entity_attribute (entity, "id"));
+          html =
+            response_from_entity (connection, credentials, params, entity,
+                                  "Create Agent Group Task", response_data);
+        }
+    }
+  else
+    {
+      html = response_from_entity (connection, credentials, params, entity,
+                                   "Create agent-group Task", response_data);
+    }
+  free_entity (entity);
+  g_free (response);
+  return html;
+}
+
+#endif /* ENABLE_AGENTS */
+
 /**
  * @brief Delete a task, get all tasks, envelope the result.
  *
@@ -2766,6 +3029,139 @@ save_container_task_gmp (gvm_connection_t *connection,
   g_free (response);
   return html;
 }
+
+#if ENABLE_AGENTS
+/**
+ * @brief Save an agent-group task, envelope the result.
+ *
+ * This variant updates only fields relevant to agent-group tasks.
+ */
+char *
+save_agent_group_task_gmp (gvm_connection_t *connection,
+                           credentials_t *credentials, params_t *params,
+                           cmd_response_data_t *response_data)
+{
+  gchar *html = NULL, *response = NULL, *format = NULL;
+  const char *comment, *name, *schedule_id, *schedule_periods;
+  const char *task_id, *agent_group_id;
+  const char *alterable;
+  int ret;
+  params_t *alerts;
+  GString *alert_element;
+  entity_t entity = NULL;
+
+  /* Read params */
+  alterable = params_value (params, "alterable");
+  comment = params_value (params, "comment");
+  name = params_value (params, "name");
+  schedule_id = params_value (params, "schedule_id");
+  schedule_periods = params_value (params, "schedule_periods");
+  task_id = params_value (params, "task_id");
+  agent_group_id = params_value (params, "agent_group_id");
+
+  /* Optional schedule_periods -> default "0" if not provided */
+  if (params_given (params, "schedule_periods"))
+    {
+      CHECK_VARIABLE_INVALID (schedule_periods, "Save Agent Group Task");
+    }
+  else
+    schedule_periods = "0";
+
+  /* Validate requireds */
+  CHECK_VARIABLE_INVALID (name, "Save Agent Group Task");
+  CHECK_VARIABLE_INVALID (comment, "Save Agent Group Task");
+  CHECK_VARIABLE_INVALID (schedule_id, "Save Agent Group Task");
+  CHECK_VARIABLE_INVALID (task_id, "Save Agent Group Task");
+  CHECK_VARIABLE_INVALID (agent_group_id, "Save Agent Group Task");
+
+  /* Build alerts list */
+  alert_element = g_string_new ("");
+  if (params_given (params, "alert_id_optional:"))
+    alerts = params_values (params, "alert_id_optional:");
+  else
+    alerts = params_values (params, "alert_ids:");
+
+  if (alerts)
+    {
+      params_iterator_t iter;
+      char *pname;
+      param_t *param;
+
+      params_iterator_init (&iter, alerts);
+      while (params_iterator_next (&iter, &pname, &param))
+        {
+          if (param->value && strcmp (param->value, "0"))
+            g_string_append_printf (alert_element, "<alert id=\"%s\"/>",
+                                    param->value ? param->value : "");
+        }
+    }
+
+  if (strcmp (alert_element->str, "") == 0)
+    g_string_append_printf (alert_element, "<alert id=\"0\"/>");
+
+  format = g_strdup_printf (
+    "<modify_task task_id=\"%%s\">"
+    "<name>%%s</name>"
+    "<comment>%%s</comment>"
+    "%s" /* alerts */
+    "<agent_group id=\"%%s\"/>"
+    "<schedule id=\"%%s\"/>"
+    "<schedule_periods>%%s</schedule_periods>"
+    "%s%i%s" /* optional alterable wrapper with numeric value */
+    "</modify_task>",
+    alert_element->str, alterable ? "<alterable>" : "",
+    alterable ? strcmp (alterable, "0") : 0, alterable ? "</alterable>" : "");
+
+  /* Send */
+  ret = gmpf (connection, credentials, &response, &entity, response_data,
+              format, task_id, name, comment, agent_group_id, schedule_id,
+              schedule_periods);
+
+  g_free (format);
+  g_string_free (alert_element, TRUE);
+
+  switch (ret)
+    {
+    case 0:
+    case -1:
+      break;
+    case 1:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving an agent-group task. "
+        "The task was not saved. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving an agent-group task. "
+        "It is unclear whether the task has been saved or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving an agent-group task. "
+        "It is unclear whether the task has been saved or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
+    }
+
+  html = response_from_entity (connection, credentials, params, entity,
+                               "Save Agent Group Task", response_data);
+  free_entity (entity);
+  g_free (response);
+  return html;
+}
+
+#endif /* ENABLE_AGENTS */
 
 /**
  * @brief Export a task.
@@ -9895,12 +10291,13 @@ char *
 save_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
+  GString *xml = NULL;
   gchar *response = NULL;
   entity_t entity = NULL;
   const char *scanner_id, *name, *comment, *port, *host, *type, *ca_pub;
-  const char *credential_id, *which_cert;
+  const char *credential_id;
   char *html;
-  int ret, is_unix_socket, in_use;
+  int ret, is_unix_socket;
 
   scanner_id = params_value (params, "scanner_id");
   name = params_value (params, "name");
@@ -9909,91 +10306,46 @@ save_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
   is_unix_socket = (host && *host == '/') ? 1 : 0;
   port = params_value (params, "port");
   type = params_value (params, "scanner_type");
-  which_cert = params_value (params, "which_cert");
   ca_pub = params_value (params, "ca_pub");
   credential_id = params_value (params, "credential_id");
+
   CHECK_VARIABLE_INVALID (scanner_id, "Edit Scanner");
   CHECK_VARIABLE_INVALID (name, "Edit Scanner");
-  if (params_given (params, "scanner_host") == 0)
-    in_use = 1;
-  else
-    {
-      in_use = 0;
-      CHECK_VARIABLE_INVALID (host, "Edit Scanner");
-      CHECK_VARIABLE_INVALID (port, "Edit Scanner");
-      CHECK_VARIABLE_INVALID (type, "Edit Scanner");
-    }
-  if (is_unix_socket == 0)
-    {
-      CHECK_VARIABLE_INVALID (ca_pub, "Edit Scanner");
-      CHECK_VARIABLE_INVALID (which_cert, "Edit Scanner");
-    }
 
-  if (is_unix_socket)
-    {
-      ret = gmpf (connection, credentials, &response, &entity, response_data,
-                  "<modify_scanner scanner_id=\"%s\">"
-                  "<name>%s</name>"
-                  "<comment>%s</comment>"
-                  "</modify_scanner>",
-                  scanner_id, name, comment ?: "");
-    }
-  else if (strcmp (which_cert, "new") == 0
-           || strcmp (which_cert, "default") == 0)
-    {
-      if (ca_pub == NULL)
-        ca_pub = "";
-      if (in_use)
-        ret = gmpf (connection, credentials, &response, &entity, response_data,
-                    "<modify_scanner scanner_id=\"%s\">"
-                    "<name>%s</name>"
-                    "<comment>%s</comment>"
-                    "<ca_pub>%s</ca_pub>"
-                    "<credential id=\"%s\"/>"
-                    "</modify_scanner>",
-                    scanner_id, name, comment ?: "",
-                    strcmp (which_cert, "new") == 0 ? ca_pub : "",
-                    credential_id ? credential_id : "");
-      else
-        ret = gmpf (connection, credentials, &response, &entity, response_data,
-                    "<modify_scanner scanner_id=\"%s\">"
-                    "<name>%s</name>"
-                    "<comment>%s</comment>"
-                    "<host>%s</host>"
-                    "<port>%s</port>"
-                    "<type>%s</type>"
-                    "<ca_pub>%s</ca_pub>"
-                    "<credential id=\"%s\"/>"
-                    "</modify_scanner>",
-                    scanner_id, name, comment ?: "", host, port, type,
-                    strcmp (which_cert, "new") == 0 ? ca_pub : "",
-                    credential_id ? credential_id : "");
-    }
-  else
-    {
-      /* Using existing CA cert. */
-      if (in_use)
-        ret = gmpf (connection, credentials, &response, &entity, response_data,
-                    "<modify_scanner scanner_id=\"%s\">"
-                    "<name>%s</name>"
-                    "<comment>%s</comment>"
-                    "<credential id=\"%s\"/>"
-                    "</modify_scanner>",
-                    scanner_id, name, comment ?: "",
-                    credential_id ? credential_id : "");
-      else
-        ret = gmpf (connection, credentials, &response, &entity, response_data,
-                    "<modify_scanner scanner_id=\"%s\">"
-                    "<name>%s</name>"
-                    "<comment>%s</comment>"
-                    "<host>%s</host>"
-                    "<port>%s</port>"
-                    "<type>%s</type>"
-                    "<credential id=\"%s\"/>"
-                    "</modify_scanner>",
-                    scanner_id, name, comment ?: "", host, port, type,
-                    credential_id ? credential_id : "");
-    }
+  if (params_given (params, "scanner_host"))
+    CHECK_VARIABLE_INVALID (host, "Edit Scanner");
+  if (!is_unix_socket && params_given (params, "port"))
+    CHECK_VARIABLE_INVALID (port, "Edit Scanner");
+  if (params_given (params, "scanner_type"))
+    CHECK_VARIABLE_INVALID (type, "Edit Scanner");
+  if (!is_unix_socket && params_given (params, "ca_pub"))
+    CHECK_VARIABLE_INVALID (ca_pub, "Edit Scanner");
+  if (!is_unix_socket && params_given (params, "credential_id"))
+    CHECK_VARIABLE_INVALID (credential_id, "Edit Scanner");
+
+  xml = g_string_new ("");
+  g_string_append_printf (xml, "<modify_scanner scanner_id=\"%s\">",
+                          scanner_id);
+  g_string_append_printf (xml, "<name>%s</name>", name);
+  g_string_append_printf (xml, "<comment>%s</comment>", comment ?: "");
+
+  if (!is_unix_socket && host != NULL)
+    g_string_append_printf (xml, "<host>%s</host>", host);
+  if (!is_unix_socket && port != NULL)
+    g_string_append_printf (xml, "<port>%s</port>", port);
+  if (!is_unix_socket && type != NULL)
+    g_string_append_printf (xml, "<type>%s</type>", type);
+  if (!is_unix_socket && ca_pub != NULL)
+    g_string_append_printf (xml, "<ca_pub>%s</ca_pub>", ca_pub);
+  if (!is_unix_socket && credential_id != NULL)
+    g_string_append_printf (xml, "<credential id=\"%s\"/>", credential_id);
+
+  g_string_append (xml, "</modify_scanner>");
+
+  ret =
+    gmp (connection, credentials, &response, &entity, response_data, xml->str);
+
+  g_string_free (xml, TRUE);
 
   switch (ret)
     {
@@ -10025,7 +10377,7 @@ save_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
         credentials, "Internal error", __func__, __LINE__,
         "An internal error occurred while saving a scanner. "
         "It is unclear whether the scanner has been saved or not. "
-        "Diagnostics: Internal Error.",
+        "Diagnostics: Unknown Error.",
         response_data);
     }
 
@@ -11984,6 +12336,36 @@ get_trash_tickets_gmp (gvm_connection_t *connection, credentials_t *credentials,
   return envelope_gmp (connection, credentials, params,
                        g_string_free (xml, FALSE), response_data);
 }
+
+#if ENABLE_AGENTS
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_agent_group_gmp (gvm_connection_t *connection,
+                           credentials_t *credentials, params_t *params,
+                           cmd_response_data_t *response_data)
+{
+  GString *xml;
+
+  xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_AGENT_GROUPS", "get_agent_groups", "agent_groups");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+#endif /*ENABLE_AGENTS*/
 
 #undef GET_TRASH_RESOURCE
 
@@ -18001,12 +18383,13 @@ get_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-modify_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                  params_t *params, cmd_response_data_t *response_data)
 {
   gchar *xml, *response, *format;
   const char *authorized, *attempts, *delay_in_seconds, *bulk_size;
-  const char *bulk_throttle_time_in_ms, *indexer_dir_depth;
+  const char *max_jitter_in_seconds, *bulk_throttle_time_in_ms,
+    *indexer_dir_depth;
   const char *interval_in_seconds, *miss_until_inactive, *comment;
   params_t *scheduler_cron_times;
   int ret;
@@ -18024,17 +18407,32 @@ modify_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
   scheduler_cron_times = params_values (params, "scheduler_cron_times:");
   interval_in_seconds = params_value (params, "interval_in_seconds");
   miss_until_inactive = params_value (params, "miss_until_inactive");
+  max_jitter_in_seconds = params_value (params, "max_jitter_in_seconds");
+
+  const gboolean has_config =
+    params_given (params, "attempts")
+    || params_given (params, "delay_in_seconds")
+    || params_given (params, "max_jitter_in_seconds")
+    || params_given (params, "bulk_size")
+    || params_given (params, "bulk_throttle_time_in_ms")
+    || params_given (params, "indexer_dir_depth")
+    || (scheduler_cron_times != NULL)
+    || params_given (params, "interval_in_seconds")
+    || params_given (params, "miss_until_inactive");
 
   comment = params_value (params, "comment");
 
-  CHECK_VARIABLE_INVALID (authorized, "Save Agent List");
-  CHECK_VARIABLE_INVALID (attempts, "Save Agent List");
-  CHECK_VARIABLE_INVALID (delay_in_seconds, "Save Agent List");
-  CHECK_VARIABLE_INVALID (bulk_size, "Save Agent List");
-  CHECK_VARIABLE_INVALID (bulk_throttle_time_in_ms, "Save Agent List");
-  CHECK_VARIABLE_INVALID (indexer_dir_depth, "Save Agent List");
-  CHECK_VARIABLE_INVALID (interval_in_seconds, "Save Agent List");
-  CHECK_VARIABLE_INVALID (miss_until_inactive, "Save Agent List");
+  if (has_config)
+    {
+      CHECK_VARIABLE_INVALID (authorized, "Save Agent List");
+      CHECK_VARIABLE_INVALID (attempts, "Save Agent List");
+      CHECK_VARIABLE_INVALID (delay_in_seconds, "Save Agent List");
+      CHECK_VARIABLE_INVALID (bulk_size, "Save Agent List");
+      CHECK_VARIABLE_INVALID (bulk_throttle_time_in_ms, "Save Agent List");
+      CHECK_VARIABLE_INVALID (indexer_dir_depth, "Save Agent List");
+      CHECK_VARIABLE_INVALID (interval_in_seconds, "Save Agent List");
+      CHECK_VARIABLE_INVALID (miss_until_inactive, "Save Agent List");
+    }
   if (params_given (params, "comment"))
     {
       CHECK_VARIABLE_INVALID (comment, "Save Agent List");
@@ -18079,40 +18477,64 @@ modify_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
         }
     }
 
-  format =
-    g_strdup_printf ("<modify_agents>"
-                     "%s"
-                     "<authorized>%i</authorized>"
-                     "<config>"
-                     "<agent_control>"
-                     "<retry>"
-                     "<attempts>%%s</attempts>"
-                     "<delay_in_seconds>%%s</delay_in_seconds>"
-                     "</retry>"
-                     "</agent_control>"
-                     "<agent_script_executor>"
-                     "<bulk_size>%%s</bulk_size>"
-                     "<bulk_throttle_time_in_ms>%%s</bulk_throttle_time_in_ms>"
-                     "<indexer_dir_depth>%%s</indexer_dir_depth>"
-                     "<scheduler_cron_time is_list=\"1\">"
-                     "%s" // list of items
-                     "</scheduler_cron_time>"
-                     "</agent_script_executor>"
-                     "<heartbeat>"
-                     "<interval_in_seconds>%%s</interval_in_seconds>"
-                     "<miss_until_inactive>%%s</miss_until_inactive>"
-                     "</heartbeat>"
-                     "</config>"
-                     "<comment>%%s</comment>"
-                     "</modify_agents>",
-                     agents_element->str,
-                     authorized ? strcmp (authorized, "0") : 0, items_xml->str);
-  response = NULL;
-  entity = NULL;
-  ret =
-    gmpf (connection, credentials, &response, &entity, response_data, format,
-          attempts, delay_in_seconds, bulk_size, bulk_throttle_time_in_ms,
-          indexer_dir_depth, interval_in_seconds, miss_until_inactive, comment);
+  if (has_config)
+    {
+      format = g_strdup_printf (
+        "<modify_agent>"
+        "%s" /* agents */
+        "<authorized>%d</authorized>"
+        "<config>"
+        "<agent_control>"
+        "<retry>"
+        "<attempts>%%s</attempts>"
+        "<delay_in_seconds>%%s</delay_in_seconds>"
+        "<max_jitter_in_seconds>%%s</max_jitter_in_seconds>"
+        "</retry>"
+        "</agent_control>"
+        "<agent_script_executor>"
+        "<bulk_size>%%s</bulk_size>"
+        "<bulk_throttle_time_in_ms>%%s</bulk_throttle_time_in_ms>"
+        "<indexer_dir_depth>%%s</indexer_dir_depth>"
+        "<scheduler_cron_time is_list=\"1\">"
+        "%s" /* items_xml->str */
+        "</scheduler_cron_time>"
+        "</agent_script_executor>"
+        "<heartbeat>"
+        "<interval_in_seconds>%%s</interval_in_seconds>"
+        "<miss_until_inactive>%%s</miss_until_inactive>"
+        "</heartbeat>"
+        "</config>"
+        "<comment>%%s</comment>"
+        "</modify_agent>",
+        agents_element->str, authorized ? strcmp (authorized, "0") : 0,
+        items_xml->str);
+
+      response = NULL;
+      entity = NULL;
+      ret = gmpf (
+        connection, credentials, &response, &entity, response_data, format,
+        /* retry */ attempts, delay_in_seconds, max_jitter_in_seconds,
+        /* executor */ bulk_size, bulk_throttle_time_in_ms, indexer_dir_depth,
+        /* heartbeat */ interval_in_seconds, miss_until_inactive,
+        /* comment */ comment);
+    }
+  else
+    {
+      format = g_strdup_printf ("<modify_agent>"
+                                "%s" /* agents */
+                                "<authorized>%d</authorized>"
+                                "<comment>%%s</comment>"
+                                "</modify_agent>",
+                                agents_element->str,
+                                authorized ? strcmp (authorized, "0") : 0);
+
+      response = NULL;
+      entity = NULL;
+      ret = gmpf (connection, credentials, &response, &entity, response_data,
+                  format,
+                  /* comment */ comment);
+    }
+
   g_free (format);
   g_string_free (items_xml, TRUE);
   g_string_free (agents_element, TRUE);
@@ -18152,7 +18574,164 @@ modify_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
     }
 
   xml = response_from_entity (connection, credentials, params, entity,
-                              "Save Agent List", response_data);
+                              "Save Agent", response_data);
+  free_entity (entity);
+  g_free (response);
+  return xml;
+}
+
+/**
+ * @brief Modify the scan config of an agent control
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Credentials for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
+                                      credentials_t *credentials,
+                                      params_t *params,
+                                      cmd_response_data_t *response_data)
+{
+  gchar *xml, *response, *format;
+  const char *agent_control_id, *attempts, *delay_in_seconds;
+  const char *max_jitter_in_seconds, *bulk_size, *bulk_throttle_time_in_ms;
+  const char *indexer_dir_depth, *interval_in_seconds, *miss_until_inactive;
+  params_t *scheduler_cron_times;
+  int ret;
+  entity_t entity;
+
+  attempts = params_value (params, "attempts");
+  delay_in_seconds = params_value (params, "delay_in_seconds");
+  max_jitter_in_seconds = params_value (params, "max_jitter_in_seconds");
+  bulk_size = params_value (params, "bulk_size");
+  bulk_throttle_time_in_ms = params_value (params, "bulk_throttle_time_in_ms");
+  indexer_dir_depth = params_value (params, "indexer_dir_depth");
+  scheduler_cron_times = params_values (params, "scheduler_cron_times:");
+  interval_in_seconds = params_value (params, "interval_in_seconds");
+  miss_until_inactive = params_value (params, "miss_until_inactive");
+
+  CHECK_VARIABLE_INVALID (attempts, "Modify Agent Control Scan Config");
+  CHECK_VARIABLE_INVALID (delay_in_seconds, "Modify Agent Control Scan Config");
+  CHECK_VARIABLE_INVALID (max_jitter_in_seconds,
+                          "Modify Agent Control Scan Config");
+  CHECK_VARIABLE_INVALID (bulk_size, "Modify Agent Control Scan Config");
+  CHECK_VARIABLE_INVALID (bulk_throttle_time_in_ms,
+                          "Modify Agent Control Scan Config");
+  CHECK_VARIABLE_INVALID (indexer_dir_depth,
+                          "Modify Agent Control Scan Config");
+  CHECK_VARIABLE_INVALID (interval_in_seconds,
+                          "Modify Agent Control Scan Config");
+  CHECK_VARIABLE_INVALID (miss_until_inactive,
+                          "Modify Agent Control Scan Config");
+
+  agent_control_id = params_value (params, "agent_control_id");
+  if (!agent_control_id)
+    {
+      cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
+      return gsad_message (
+        credentials, "Missing agent control ID", __func__, __LINE__,
+        "The 'agent_control_id' parameter is required.", response_data);
+    }
+
+  char *name;
+  params_iterator_t iter;
+  param_t *param;
+
+  GString *items_xml = g_string_new ("");
+  if (scheduler_cron_times)
+    {
+      params_iterator_init (&iter, scheduler_cron_times);
+      while (params_iterator_next (&iter, &name, &param))
+        {
+          if (param->value && *param->value)
+            {
+              gchar *escaped = g_markup_escape_text (param->value, -1);
+              g_string_append_printf (items_xml, "<item>%s</item>", escaped);
+              g_free (escaped);
+            }
+        }
+    }
+
+  format = g_strdup_printf (
+    "<modify_agent_control_scan_config agent_control_id=\"%s\">"
+    "<config>"
+    "<agent_control>"
+    "<retry>"
+    "<attempts>%%s</attempts>"
+    "<delay_in_seconds>%%s</delay_in_seconds>"
+    "<max_jitter_in_seconds>%%s</max_jitter_in_seconds>"
+    "</retry>"
+    "</agent_control>"
+    "<agent_script_executor>"
+    "<bulk_size>%%s</bulk_size>"
+    "<bulk_throttle_time_in_ms>%%s</bulk_throttle_time_in_ms>"
+    "<indexer_dir_depth>%%s</indexer_dir_depth>"
+    "<scheduler_cron_time is_list=\"1\">"
+    "%s" // list of items
+    "</scheduler_cron_time>"
+    "</agent_script_executor>"
+    "<heartbeat>"
+    "<interval_in_seconds>%%s</interval_in_seconds>"
+    "<miss_until_inactive>%%s</miss_until_inactive>"
+    "</heartbeat>"
+    "</config>"
+    "</modify_agent_control_scan_config>",
+    agent_control_id, items_xml->str);
+
+  response = NULL;
+  entity = NULL;
+
+  ret = gmpf (connection, credentials, &response, &entity, response_data,
+              format, attempts, delay_in_seconds, max_jitter_in_seconds,
+              bulk_size, bulk_throttle_time_in_ms, indexer_dir_depth,
+              interval_in_seconds, miss_until_inactive);
+
+  g_free (format);
+  g_string_free (items_xml, TRUE);
+
+  switch (ret)
+    {
+    case 0:
+    case -1:
+      break;
+    case 1:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while modifying the agent control "
+        "scan config. The scan config was not modified. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while modifying the agent control "
+        "scan config. It is unclear whether the scan config has been modified "
+        "or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while modifying the agent control "
+        "scan config. It is unclear whether the scan config has been modified "
+        "or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
+    }
+
+  xml =
+    response_from_entity (connection, credentials, params, entity,
+                          "Modify Agent Control Scan Config", response_data);
   free_entity (entity);
   g_free (response);
   return xml;
@@ -18169,8 +18748,8 @@ modify_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-delete_agent_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+delete_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                  params_t *params, cmd_response_data_t *response_data)
 {
   gchar *xml, *response, *format;
   int ret;
@@ -18179,7 +18758,7 @@ delete_agent_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
   params_t *agent_ids;
   entity_t entity;
 
-  agent_ids = params_values (params, "agent_ids");
+  agent_ids = params_values (params, "agent_ids:");
 
   if (!agent_ids)
     {
@@ -18202,9 +18781,9 @@ delete_agent_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
     }
   xml_string_append (agents_element, "</agents>");
 
-  format = g_strdup_printf ("<delete_agents>"
+  format = g_strdup_printf ("<delete_agent>"
                             "%s"
-                            "</delete_agents>",
+                            "</delete_agent>",
                             agents_element->str);
   response = NULL;
   entity = NULL;
@@ -18248,7 +18827,7 @@ delete_agent_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
     }
 
   xml = response_from_entity (connection, credentials, params, entity,
-                              "Delete Agent List", response_data);
+                              "Delete Agent", response_data);
   free_entity (entity);
   g_free (response);
   return xml;
@@ -18319,7 +18898,7 @@ create_agent_group_gmp (gvm_connection_t *connection,
   name = params_value (params, "name");
   comment = params_value (params, "comment");
   copy = params_value (params, "copy");
-  agent_ids = params_values (params, "agent_ids");
+  agent_ids = params_values (params, "agent_ids:");
 
   CHECK_VARIABLE_INVALID (name, "Create Agent Group");
   CHECK_VARIABLE_INVALID (comment, "Create Agent Group");
@@ -18431,7 +19010,7 @@ save_agent_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
   agent_group_id = params_value (params, "agent_group_id");
   name = params_value (params, "name");
   comment = params_value (params, "comment");
-  agent_ids = params_values (params, "agent_ids");
+  agent_ids = params_values (params, "agent_ids:");
 
   CHECK_VARIABLE_INVALID (agent_group_id, "Save Agent Group");
   CHECK_VARIABLE_INVALID (name, "Save Agent Group");

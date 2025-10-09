@@ -34,11 +34,15 @@ message(STATUS "Building gsad version ${GSAD_VERSION}")
 
 if(NOT ENABLE_AGENTS)
   set(ENABLE_AGENTS 0)
+else(NOT ENABLE_AGENTS)
+  message(STATUS "Building with agents feature enabled")
 endif(NOT ENABLE_AGENTS)
 add_definitions(-DENABLE_AGENTS=${ENABLE_AGENTS})
 
 if(NOT ENABLE_CONTAINER_SCANNING)
   set(ENABLE_CONTAINER_SCANNING 0)
+else(NOT ENABLE_CONTAINER_SCANNING)
+  message(STATUS "Building with container image scanning feature enabled")
 endif(NOT ENABLE_CONTAINER_SCANNING)
 add_definitions(-DENABLE_CONTAINER_SCANNING=${ENABLE_CONTAINER_SCANNING})
 

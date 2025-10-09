@@ -147,6 +147,15 @@ Ensure (gsad_validator, validate_oci_image_references)
                is_equal_to (2));
 }
 
+Ensure (gsad_validator, validate_ca_pub)
+{
+  validator_t validator = get_validator ();
+
+  assert_that (gvm_validate (validator, "ca_pub", ""), is_equal_to (0));
+  assert_that (gvm_validate (validator, "ca_pub", "foobar"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "ca_pub", "123"), is_equal_to (0));
+}
+
 int
 main (int argc, char **argv)
 {
@@ -157,5 +166,6 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_validator, validate_agent_list_ids);
   add_test_with_context (suite, gsad_validator, validate_kdcs_name_and_value);
   add_test_with_context (suite, gsad_validator, validate_oci_image_references);
+  add_test_with_context (suite, gsad_validator, validate_ca_pub);
   return run_test_suite (suite, create_text_reporter ());
 }
