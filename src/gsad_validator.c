@@ -329,6 +329,7 @@ init_validator ()
   gvm_validator_add (validator, "setting_name", "^.*$");
   gvm_validator_add (validator, "comment", "^[[:graph:][:space:]]*$");
   gvm_validator_add (validator, "config_id", "^[a-z0-9\\-]+$");
+  gvm_validator_add (validator, "familyTrend", "^[0-9]+$");
   gvm_validator_add (validator, "condition", "^[[:alnum:] ]*$");
   gvm_validator_add (validator, "credential_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "create_credentials_type", "^(gen|pass|key)$");

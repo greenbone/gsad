@@ -7088,8 +7088,8 @@ save_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
             "<family_selection>"
             "<growing>%i</growing>",
             params_value (params, "config_id"),
-            trends && params_value (params, "trend")
-              && strcmp (params_value (params, "trend"), "0"))
+            trends && params_value (params, "familyTrend")
+              && strcmp (params_value (params, "familyTrend"), "0"))
           == -1)
         {
           cmd_response_data_set_status_code (response_data,
