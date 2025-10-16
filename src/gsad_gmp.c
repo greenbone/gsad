@@ -18292,7 +18292,7 @@ get_agent_installer_file_gmp (gvm_connection_t *connection,
         "Failed to receive installer file response.", response_data);
     }
 
-  file_entity = entity_child (entity, "agent_installer");
+  file_entity = entity_child (entity, "file");
 
   if (!file_entity || !entity_text (file_entity))
     {
