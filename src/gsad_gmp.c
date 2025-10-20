@@ -18257,10 +18257,16 @@ get_agent_installer_file_gmp (gvm_connection_t *connection,
   const gchar *id = params_value (params, "agent_installer_id");
   entity_t entity = NULL;
   entity_t file_entity = NULL;
+  entity_t format_entity = NULL;
+  entity_t content_type_entity = NULL;
+  entity_t content_entity = NULL;
+  entity_t name_entity = NULL;
   const gchar *format = NULL;
   const gchar *name = NULL;
   const gchar *content_type = NULL;
-  char *content = NULL;
+  gchar *content = NULL;
+  gchar *content_decoded = NULL;
+  gsize content_length = 0;
 
   if (!id || strlen (id) == 0)
     {
@@ -18304,9 +18310,21 @@ get_agent_installer_file_gmp (gvm_connection_t *connection,
                            response_data);
     }
 
-  format = entity_attribute (file_entity, "file_extension");
-  name = entity_attribute (file_entity, "name");
-  content_type = entity_attribute (file_entity, "content_type");
+  format_entity = entity_child (file_entity, "file_extension");
+  format = format_entity ? entity_text (format_entity) : NULL;
+  name_entity = entity_child (file_entity, "name");
+  name = name_entity ? entity_text (name_entity) : NULL;
+  content_type_entity = entity_child (file_entity, "content_type");
+  content_type = content_type_entity ? entity_text (content_type_entity) : NULL;
+  content_entity = entity_child (file_entity, "content");
+  content = content_entity ? entity_text (content_entity) : "";
+
+  content_decoded = (gchar *) g_base64_decode (content, &content_length);
+  if (!content_decoded)
+    {
+      content_decoded = g_strdup ("");
+      content_length = 0;
+    }
 
   if (!format || strlen (format) == 0)
     format = "";
@@ -18325,15 +18343,13 @@ get_agent_installer_file_gmp (gvm_connection_t *connection,
                                                  g_strdup (content_type));
     }
 
-  content = strdup (entity_text (file_entity));
-
   cmd_response_data_set_content_disposition (
     response_data,
     g_strdup_printf ("attachment; filename=%s.%s", name, format));
-  cmd_response_data_set_content_length (response_data, strlen (content));
+  cmd_response_data_set_content_length (response_data, content_length);
 
   free_entity (entity);
-  return content;
+  return content_decoded;
 }
 
 /**
