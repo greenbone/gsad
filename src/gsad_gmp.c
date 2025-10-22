@@ -4167,28 +4167,27 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   path = params_value (params, "path");
   preferences = params_values (params, "preferences:");
 
-
   if (!credential_store_id)
     {
       cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
-      return gsad_message (credentials, "Missing credential store id", __func__, __LINE__,
-                           "The 'credential_store_id' parameter is required.",
-                           response_data);
+      return gsad_message (
+        credentials, "Missing credential store id", __func__, __LINE__,
+        "The 'credential_store_id' parameter is required.", response_data);
     }
 
   if (params_given (params, "active"))
     {
       CHECK_VARIABLE_INVALID (active, "Save Credential Store");
     }
-  if (params_given(params, "host"))
+  if (params_given (params, "host"))
     {
       CHECK_VARIABLE_INVALID (host, "Save Credential Store");
     }
-  if (params_given(params, "path"))
+  if (params_given (params, "path"))
     {
       CHECK_VARIABLE_INVALID (path, "Save Credential Store");
     }
-  if (params_given(params, "preferences"))
+  if (params_given (params, "preferences"))
     {
       CHECK_VARIABLE_INVALID (preferences, "Save Credential Store");
     }
@@ -4202,13 +4201,12 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   while (params_iterator_next (&iter, &name, &param))
     {
       if (param->value && param->value[0] != '\0')
-        g_string_append_printf (
-          preferences_element,
-          "<preference>"
-          "<name>%s</name>"
-          "<value>%s</value>"
-          "</preference>",
-          name, param->value);
+        g_string_append_printf (preferences_element,
+                                "<preference>"
+                                "<name>%s</name>"
+                                "<value>%s</value>"
+                                "</preference>",
+                                name, param->value);
     }
   xml_string_append (preferences_element, "</preferences>");
 
