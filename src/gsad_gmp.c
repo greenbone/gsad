@@ -4111,6 +4111,184 @@ get_credentials_gmp (gvm_connection_t *connection, credentials_t *credentials,
 }
 
 /**
+ * @brief Get credential stores, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_credential_stores_gmp (gvm_connection_t *connection,
+                           credentials_t *credentials, params_t *params,
+                           cmd_response_data_t *response_data)
+{
+  const char *credential_store_uuid =
+    params_value (params, "credential_store_id");
+  gmp_arguments_t *arguments = gmp_arguments_new ();
+
+  if (credential_store_uuid)
+    {
+      gmp_arguments_add (arguments, "credential_store_id",
+                         credential_store_uuid);
+    }
+
+  return get_many (connection, "credential_stores", credentials, params,
+                   arguments, response_data);
+}
+
+/**
+ * @brief Modify a credential store, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+modify_credential_store_gmp (gvm_connection_t *connection,
+                             credentials_t *credentials, params_t *params,
+                             cmd_response_data_t *response_data)
+{
+  gchar *xml, *response, *format;
+  int ret;
+  entity_t entity;
+  const char *credential_store_id, *active, *host, *path;
+  GHashTable *preferences;
+  GString *preferences_element;
+
+  credential_store_id = params_value (params, "credential_store_id");
+  active = params_value (params, "active");
+  host = params_value (params, "host");
+  path = params_value (params, "path");
+  preferences = params_values (params, "preferences:");
+
+
+  if (!credential_store_id)
+    {
+      cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
+      return gsad_message (credentials, "Missing credential store id", __func__, __LINE__,
+                           "The 'credential_store_id' parameter is required.",
+                           response_data);
+    }
+
+  if (params_given (params, "active"))
+    {
+      CHECK_VARIABLE_INVALID (active, "Save Credential Store");
+    }
+  if (params_given(params, "host"))
+    {
+      CHECK_VARIABLE_INVALID (host, "Save Credential Store");
+    }
+  if (params_given(params, "path"))
+    {
+      CHECK_VARIABLE_INVALID (path, "Save Credential Store");
+    }
+  if (params_given(params, "preferences"))
+    {
+      CHECK_VARIABLE_INVALID (preferences, "Save Credential Store");
+    }
+
+  char *name;
+  params_iterator_t iter;
+  param_t *param;
+
+  preferences_element = g_string_new ("<preferences>");
+  params_iterator_init (&iter, preferences);
+  while (params_iterator_next (&iter, &name, &param))
+    {
+      if (param->value && param->value[0] != '\0')
+        g_string_append_printf (
+          preferences_element,
+          "<preference>"
+          "<name>%s</name>"
+          "<value>%s</value>"
+          "</preference>",
+          name, param->value);
+    }
+  xml_string_append (preferences_element, "</preferences>");
+
+  format = g_strdup_printf ("<modify_credential_store>"
+                            "<credential_store_id>%%s</credential_store_id>"
+                            "<active>%%s</active>"
+                            "<host>%%s</host>"
+                            "<path>%%s</path>"
+                            "%s" /* preferences */
+                            "</modify_credential_store>",
+                            preferences_element->str);
+
+  response = NULL;
+  entity = NULL;
+  ret = gmpf (connection, credentials, &response, &entity, response_data,
+              format, credential_store_id, active, host, path);
+
+  g_free (format);
+  g_string_free (preferences_element, TRUE);
+
+  switch (ret)
+    {
+    case 0:
+    case -1:
+      break;
+    case 1:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving a credential store. "
+        "The credential store was not saved. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving a credential store. "
+        "It is unclear whether the credential store has been saved or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving a credential store. "
+        "It is unclear whether the credential store has been saved or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
+    }
+
+  xml = response_from_entity (connection, credentials, params, entity,
+                              "Save Credential Store", response_data);
+  free_entity (entity);
+  g_free (response);
+  return xml;
+}
+
+/**
+ * @brief Verify/Test a credential store, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+verify_credential_store_gmp (gvm_connection_t *connection,
+                             credentials_t *credentials, params_t *params,
+                             cmd_response_data_t *response_data)
+{
+  return NULL;
+}
+
+/**
  * @brief Delete credential, get all credentials, envelope result.
  *
  * @param[in]  connection     Connection to manager.

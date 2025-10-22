@@ -173,6 +173,17 @@ get_credential_gmp (gvm_connection_t *, credentials_t *, params_t *,
 char *
 get_credentials_gmp (gvm_connection_t *, credentials_t *, params_t *,
                      cmd_response_data_t *);
+#if ENABLE_CREDENTIAL_STORES
+char *
+get_credential_stores_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                           cmd_response_data_t *);
+char *
+modify_credential_store_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                             cmd_response_data_t *);
+char *
+verify_credential_store_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                             cmd_response_data_t *);
+#endif
 char *
 create_credential_gmp (gvm_connection_t *, credentials_t *, params_t *,
                        cmd_response_data_t *);
