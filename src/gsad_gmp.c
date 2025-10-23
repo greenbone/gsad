@@ -4291,7 +4291,57 @@ verify_credential_store_gmp (gvm_connection_t *connection,
                              credentials_t *credentials, params_t *params,
                              cmd_response_data_t *response_data)
 {
-  return NULL;
+  gchar *html, *response;
+  const char *credential_store_id;
+  int ret;
+  entity_t entity;
+
+  credential_store_id = params_value (params, "credential_store_id");
+  CHECK_VARIABLE_INVALID (credential_store_id, "Verify Credential Store");
+
+  ret = gmpf (connection, credentials, &response, &entity, response_data,
+              "<verify_credential_store credential_store_id=\"%s\"/>",
+              credential_store_id);
+
+  switch (ret)
+    {
+    case 0:
+    case -1:
+      break;
+    case 1:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while verifying a credential store. "
+        "The credential store was not verified. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while verifying a credential store. "
+        "It is unclear whether the credential store was verified or not. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    default:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while verifying a credential store. "
+        "It is unclear whether the credential store was verified or not. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    }
+
+  html = response_from_entity (connection, credentials, params, entity,
+                               "Verify Credential Store", response_data);
+  free_entity (entity);
+  g_free (response);
+  return html;
 }
 
 /**
