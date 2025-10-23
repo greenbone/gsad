@@ -885,6 +885,9 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (modify_agent)
   ELSE (delete_agent)
 #endif
+#if ENABLE_CREDENTIAL_STORES
+  ELSE (modify_credential_store)
+#endif
   ELSE (move_task)
   ELSE (renew_session)
   ELSE (report_alert)
@@ -937,6 +940,9 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (sync_cert)
   ELSE (test_alert)
   ELSE (toggle_tag)
+#if ENABLE_CREDENTIAL_STORES
+  ELSE (verify_credential_store)
+#endif
   ELSE (verify_scanner)
   else
   {
@@ -1602,6 +1608,9 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_config_nvt)
   ELSE (get_credential)
   ELSE (get_credentials)
+#if ENABLE_CREDENTIAL_STORES
+  ELSE (get_credential_stores)
+#endif
   ELSE (get_feeds)
   ELSE (get_filter)
   ELSE (get_filters)
