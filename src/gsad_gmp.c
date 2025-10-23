@@ -4157,7 +4157,7 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   gchar *xml, *response, *format;
   int ret;
   entity_t entity;
-  const char *credential_store_id, *active, *host, *path;
+  const char *credential_store_id, *active, *host, *path, *comment;
   GHashTable *preferences;
   GString *preferences_element;
 
@@ -4166,6 +4166,7 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   host = params_value (params, "host");
   path = params_value (params, "path");
   preferences = params_values (params, "preferences:");
+  comment = params_value (params, "comment");
 
   if (!credential_store_id)
     {
@@ -4191,6 +4192,12 @@ modify_credential_store_gmp (gvm_connection_t *connection,
     {
       CHECK_VARIABLE_INVALID (preferences, "Save Credential Store");
     }
+  if (params_given (params, "comment"))
+    {
+      CHECK_VARIABLE_INVALID (comment, "Save Agent List");
+    }
+  else
+    comment = "";
 
   char *name;
   params_iterator_t iter;
@@ -4216,13 +4223,14 @@ modify_credential_store_gmp (gvm_connection_t *connection,
                             "<host>%%s</host>"
                             "<path>%%s</path>"
                             "%s" /* preferences */
+                            "<comment>%%s</comment>"
                             "</modify_credential_store>",
                             preferences_element->str);
 
   response = NULL;
   entity = NULL;
   ret = gmpf (connection, credentials, &response, &entity, response_data,
-              format, credential_store_id, active, host, path);
+              format, credential_store_id, active, host, path, comment);
 
   g_free (format);
   g_string_free (preferences_element, TRUE);
