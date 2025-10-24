@@ -580,7 +580,6 @@ init_validator ()
   gvm_validator_alias (validator, "alert_id_2", "alert_id");
   gvm_validator_alias (validator, "alert_id", "id");
   gvm_validator_alias (validator, "config_id", "id");
-  gvm_validator_alias (validator, "credential_id", "id");
   gvm_validator_alias (validator, "cve_scanner_id", "id");
   gvm_validator_alias (validator, "delta_report_id", "id");
   gvm_validator_alias (validator, "esxi_credential_id", "id");
@@ -622,6 +621,7 @@ init_validator ()
   gvm_validator_alias (validator, "report_uuid", "id");
 
   /* Define Optional IDs "^[a-z0-9\\-]*$" */
+  gvm_validator_alias (validator, "credential_id", "optional_id");
   gvm_validator_alias (validator, "optional_task_id", "optional_id");
   gvm_validator_alias (validator, "result_task_id", "optional_id");
   gvm_validator_alias (validator, "result_uuid", "optional_id");
