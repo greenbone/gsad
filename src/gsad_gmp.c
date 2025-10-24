@@ -4521,6 +4521,10 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   CHECK_VARIABLE_INVALID (allow_insecure, "Save Credential");
   CHECK_VARIABLE_INVALID (type, "Save Credential");
 
+  if (str_equal (credential_id, ""))
+    return message_invalid (connection, credentials, params, response_data,
+                            "Missing credential_id", "Save Credential");
+
   if (str_equal (type, "cc"))
     {
       if (params_given (params, "certificate"))
