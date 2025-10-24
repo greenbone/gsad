@@ -332,9 +332,7 @@ init_validator ()
   gvm_validator_add (validator, "setting_value", "^.*$");
   gvm_validator_add (validator, "setting_name", "^.*$");
   gvm_validator_add (validator, "comment", "^[[:graph:][:space:]]*$");
-  gvm_validator_add (validator, "config_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "condition", "^[[:alnum:] ]*$");
-  gvm_validator_add (validator, "credential_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "create_credentials_type", "^(gen|pass|key)$");
   gvm_validator_add (validator, "credential_type",
                      "^(cc|up|usk|smime|pgp|snmp|krb5|pw)$");
@@ -366,8 +364,6 @@ init_validator ()
   gvm_validator_add (
     validator, "email_list",
     "^[^@ ]{1,150}@[^@ ]{1,150}(, *[^@ ]{1,150}@[^@ ]{1,150})*$");
-  gvm_validator_add (validator, "alert_id", "^[a-z0-9\\-]+$");
-  gvm_validator_add (validator, "alert_id_optional", "^(--|[a-z0-9\\-]+)$");
   gvm_validator_add (validator, "event_data:name", "^.*$");
   gvm_validator_add (validator, "event_data:value", "(?s)^.*$");
   gvm_validator_add (validator, "family", "^[-_[:alnum:] :.]+$");
@@ -389,7 +385,6 @@ init_validator ()
   gvm_validator_add (validator, "first_group", "^[0-9]+$");
   gvm_validator_add (validator, "first_result", "^[0-9]+$");
   gvm_validator_add (validator, "filter", "^.*$");
-  gvm_validator_add (validator, "format_id", "^[a-z0-9\\-]+$");
   /* Validator for  save_auth group, e.g. "method:ldap_connect". */
   gvm_validator_add (validator, "group",
                      "^method:(ldap_connect|radius_connect)$");
@@ -434,8 +429,6 @@ init_validator ()
   gvm_validator_add (validator, "month", "^((0??[1-9])|1[012])$");
   gvm_validator_add (validator, "note_optional", "(?s)^(.)*$");
   gvm_validator_add (validator, "note_required", "(?s)^(.)+$");
-  gvm_validator_add (validator, "note_id", "^[a-z0-9\\-]+$");
-  gvm_validator_add (validator, "override_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "name", "^[[:graph:] ]*$");
   gvm_validator_add (validator, "info_name", "(?s)^.*$");
   gvm_validator_add (validator, "info_type", "(?s)^.*$");
@@ -480,14 +473,11 @@ init_validator ()
   gvm_validator_add (validator, "related:value", "^.*$");
   gvm_validator_add (validator, "report_fname",
                      "^([[:alnum:]_-]|%[%CcDFMmNTtUu])+$");
-  gvm_validator_add (validator, "report_config_id", "^[a-z0-9\\-]+$");
-  gvm_validator_add (validator, "report_format_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "report_section",
                      "^(summary|results|hosts|ports"
                      "|closed_cves|os|apps|errors"
                      "|topology|ssl_certs|cves)$");
   gvm_validator_add (validator, "resource_type", "(?s)^.*$");
-  gvm_validator_add (validator, "result_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "role", "^[[:alnum:] ]+$");
   gvm_validator_add (validator, "param:name", "^(.*){0,400}$");
   gvm_validator_add (validator, "param:value", "(?s)^.*$");
@@ -495,8 +485,6 @@ init_validator ()
   gvm_validator_add (validator, "param_using_default:value", "(?s)^.*$");
   gvm_validator_add (validator, "permission", "^([_a-z]+|Super)$");
   gvm_validator_add (validator, "permission_type", "^(read|write)$");
-  gvm_validator_add (validator, "port_list_id", "^[a-z0-9\\-]+$");
-  gvm_validator_add (validator, "port_range_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (
     validator, "resource_type",
     "^(agent|agent_group|agent_installer|alert|asset|audit_report|audit|"
@@ -521,13 +509,9 @@ init_validator ()
   gvm_validator_add (validator, "restrict_credential_type", "^[a-z0-9\\_|]+$");
   gvm_validator_add (validator, "subject_type", "^(group|role|user)$");
   gvm_validator_add (validator, "summary", "^.*$");
-  gvm_validator_add (validator, "tag_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "tag_name", "^[\\:\\-_[:alnum:], \\./]+$");
   gvm_validator_add (validator, "tag_value",
                      "^[\\-_@%[:alnum:], \\.\\/\\\\]*$");
-  gvm_validator_add (validator, "target_id", "^[a-z0-9\\-]+$");
-  gvm_validator_add (validator, "oci_image_target_id", "^[a-z0-9\\-]+$");
-  gvm_validator_add (validator, "task_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "term", "^.*");
   gvm_validator_add (validator, "text", "^.*");
   gvm_validator_add (validator, "text_columns:name", "^[0123456789]+$");
@@ -553,9 +537,6 @@ init_validator ()
   gvm_validator_add (validator, "target_exclude_source", "^(file|manual)$");
   gvm_validator_add (validator, "timezone", "^.*$");
   gvm_validator_add (validator, "token", "^[a-z0-9\\-]+$");
-  gvm_validator_add (validator, "scanner_id", "^[a-z0-9\\-]+$");
-  gvm_validator_add (validator, "cve_scanner_id", "^[a-z0-9\\-]+$");
-  gvm_validator_add (validator, "schedule_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "severity",
                      "^(-1(\\.0)?|[0-9](\\.[0-9])?|10(\\.0)?)$");
   gvm_validator_add (validator, "severity_optional",
@@ -584,16 +565,80 @@ init_validator ()
 
   /* Beware, the rule must be defined before the alias. */
 
-  gvm_validator_alias (validator, "optional_task_id", "optional_id");
   gvm_validator_alias (validator, "add_tag", "boolean");
-  gvm_validator_alias (validator, "agent_installer_id", "id");
   gvm_validator_alias (validator, "authorized", "boolean");
   gvm_validator_alias (validator, "agent_ids:name", "number");
-  gvm_validator_alias (validator, "agent_ids:value", "id");
   gvm_validator_alias (validator, "scheduler_cron_times:name", "number");
   gvm_validator_alias (validator, "scheduler_cron_times:value", "name");
 
+  /* Defined IDs "^[a-z0-9\\-]+$" */
+  gvm_validator_alias (validator, "_and_report_id", "id");
   gvm_validator_alias (validator, "agent_control_id", "id");
+  gvm_validator_alias (validator, "agent_group_id", "id");
+  gvm_validator_alias (validator, "agent_ids:value", "id");
+  gvm_validator_alias (validator, "agent_installer_id", "id");
+  gvm_validator_alias (validator, "alert_id_2", "alert_id");
+  gvm_validator_alias (validator, "alert_id", "id");
+  gvm_validator_alias (validator, "config_id", "id");
+  gvm_validator_alias (validator, "cve_scanner_id", "id");
+  gvm_validator_alias (validator, "delta_report_id", "id");
+  gvm_validator_alias (validator, "esxi_credential_id", "id");
+  gvm_validator_alias (validator, "filter_id", "id");
+  gvm_validator_alias (validator, "format_id", "id");
+  gvm_validator_alias (validator, "inheritor_id", "id");
+  gvm_validator_alias (validator, "krb5_credential_id", "id");
+  gvm_validator_alias (validator, "note_id", "id");
+  gvm_validator_alias (validator, "oci_image_target_id", "id");
+  gvm_validator_alias (validator, "override_id", "id");
+  gvm_validator_alias (validator, "permission_group_id", "id");
+  gvm_validator_alias (validator, "permission_id", "id");
+  gvm_validator_alias (validator, "permission_role_id", "id");
+  gvm_validator_alias (validator, "permission_user_id", "id");
+  gvm_validator_alias (validator, "port_list_id", "id");
+  gvm_validator_alias (validator, "port_range_id", "id");
+  gvm_validator_alias (validator, "report_config_id", "id");
+  gvm_validator_alias (validator, "report_format_id", "id");
+  gvm_validator_alias (validator, "report_id", "id");
+  gvm_validator_alias (validator, "result_id", "id");
+  gvm_validator_alias (validator, "role_id", "id");
+  gvm_validator_alias (validator, "scanner_id", "id");
+  gvm_validator_alias (validator, "schedule_id", "id");
+  gvm_validator_alias (validator, "setting_id", "id");
+  gvm_validator_alias (validator, "slave_id", "id");
+  gvm_validator_alias (validator, "smb_credential_id", "id");
+  gvm_validator_alias (validator, "snmp_credential_id", "id");
+  gvm_validator_alias (validator, "ssh_credential_id", "id");
+  gvm_validator_alias (validator, "ssh_elevate_credential_id", "id");
+  gvm_validator_alias (validator, "subject_id", "id");
+  gvm_validator_alias (validator, "tag_id", "id");
+  gvm_validator_alias (validator, "target_id", "id");
+  gvm_validator_alias (validator, "task_id", "id");
+  gvm_validator_alias (validator, "ticket_id", "id");
+  gvm_validator_alias (validator, "tls_certificate_id", "id");
+  gvm_validator_alias (validator, "user_id", "id");
+  gvm_validator_alias (validator, "report_format_ids:value", "id");
+  gvm_validator_alias (validator, "report_result_id", "id");
+  gvm_validator_alias (validator, "report_uuid", "id");
+
+  /* Define Optional IDs "^[a-z0-9\\-]*$" */
+  gvm_validator_alias (validator, "credential_id", "optional_id");
+  gvm_validator_alias (validator, "optional_task_id", "optional_id");
+  gvm_validator_alias (validator, "result_task_id", "optional_id");
+  gvm_validator_alias (validator, "result_uuid", "optional_id");
+  gvm_validator_alias (validator, "task_uuid", "optional_id");
+
+  /* Define IDs optional "^(--|[a-z0-9\\-]+)$" */
+  gvm_validator_alias (validator, "alert_id_optional:value", "id_optional");
+  gvm_validator_alias (validator, "alert_id_optional", "id_optional");
+  gvm_validator_alias (validator, "alert_ids:value", "id_optional");
+  gvm_validator_alias (validator, "group_ids:value", "id_optional");
+  gvm_validator_alias (validator, "role_ids:value", "id_optional");
+  gvm_validator_alias (validator, "subject_id_optional", "id_optional");
+  gvm_validator_alias (validator, "user_id_optional", "id_optional");
+
+  gvm_validator_alias (validator, "next_id", "info_id");
+  gvm_validator_alias (validator, "resource_ids:value", "info_id");
+
   gvm_validator_alias (validator, "attempts", "number");
   gvm_validator_alias (validator, "delay_in_seconds", "number");
   gvm_validator_alias (validator, "bulk_size", "number");
@@ -603,14 +648,9 @@ init_validator ()
   gvm_validator_alias (validator, "miss_until_inactive", "number");
   gvm_validator_alias (validator, "max_jitter_in_seconds", "number");
   gvm_validator_alias (validator, "schedule", "number");
-  gvm_validator_alias (validator, "agent_group_id", "id");
-  gvm_validator_alias (validator, "alert_id_2", "alert_id");
   gvm_validator_alias (validator, "alert_id_optional:name", "number");
-  gvm_validator_alias (validator, "alert_id_optional:value",
-                       "alert_id_optional");
   gvm_validator_alias (validator, "alerts", "optional_number");
   gvm_validator_alias (validator, "alert_ids:name", "number");
-  gvm_validator_alias (validator, "alert_ids:value", "alert_id_optional");
   gvm_validator_alias (validator, "allow_insecure", "boolean");
   gvm_validator_alias (validator, "allow_simultaneous_ips", "boolean");
   gvm_validator_alias (validator, "alterable", "boolean");
@@ -649,18 +689,14 @@ init_validator ()
   gvm_validator_alias (validator, "enable", "boolean");
   gvm_validator_alias (validator, "enable_stop", "boolean");
   gvm_validator_alias (validator, "end_time", "isodate");
-  gvm_validator_alias (validator, "esxi_credential_id", "credential_id");
   gvm_validator_alias (validator, "filter_extra", "filter");
-  gvm_validator_alias (validator, "filter_id", "id");
   gvm_validator_alias (validator, "filterbox", "boolean");
   gvm_validator_alias (validator, "fixed_note", "note_optional");
   gvm_validator_alias (validator, "from_file", "boolean");
   gvm_validator_alias (validator, "force_wizard", "boolean");
   gvm_validator_alias (validator, "get_name", "name");
   gvm_validator_alias (validator, "grant_full", "boolean");
-  gvm_validator_alias (validator, "group_id", "id");
   gvm_validator_alias (validator, "group_ids:name", "number");
-  gvm_validator_alias (validator, "group_ids:value", "id_optional");
   gvm_validator_alias (validator, "groups", "optional_number");
   gvm_validator_alias (validator, "hosts_manual", "hosts");
   gvm_validator_alias (validator, "hosts_filter", "filter");
@@ -669,7 +705,6 @@ init_validator ()
   gvm_validator_alias (validator, "in_use", "boolean");
   gvm_validator_alias (validator, "include_related", "number");
   gvm_validator_alias (validator, "include_certificate_data", "boolean");
-  gvm_validator_alias (validator, "inheritor_id", "id");
   gvm_validator_alias (validator, "ignore_pagination", "boolean");
   gvm_validator_alias (validator, "event", "condition");
   gvm_validator_alias (validator, "access_hosts", "hosts_opt");
@@ -693,7 +728,6 @@ init_validator ()
   gvm_validator_alias (validator, "next", "page");
   gvm_validator_alias (validator, "next_next", "page");
   gvm_validator_alias (validator, "next_error", "page");
-  gvm_validator_alias (validator, "next_id", "info_id");
   gvm_validator_alias (validator, "next_type", "resource_type");
   gvm_validator_alias (validator, "next_subtype", "info_type");
   gvm_validator_alias (validator, "next_xml", "boolean");
@@ -711,10 +745,6 @@ init_validator ()
   gvm_validator_alias (validator, "passphrase", "lsc_password");
   gvm_validator_alias (validator, "password:name", "preference_name");
   gvm_validator_alias (validator, "permission", "name");
-  gvm_validator_alias (validator, "permission_id", "id");
-  gvm_validator_alias (validator, "permission_group_id", "id");
-  gvm_validator_alias (validator, "permission_role_id", "id");
-  gvm_validator_alias (validator, "permission_user_id", "id");
   gvm_validator_alias (validator, "port_manual", "port");
   gvm_validator_alias (validator, "port_range_end", "number");
   gvm_validator_alias (validator, "port_range_start", "number");
@@ -723,24 +753,12 @@ init_validator ()
   gvm_validator_alias (validator, "radiushost", "hostport");
   gvm_validator_alias (validator, "restrict_type", "resource_type");
   gvm_validator_alias (validator, "resource_ids:name", "number");
-  gvm_validator_alias (validator, "resource_ids:value", "info_id");
   gvm_validator_alias (validator, "result_hosts_only", "boolean");
   gvm_validator_alias (validator, "report_format_ids:name", "number");
-  gvm_validator_alias (validator, "report_format_ids:value",
-                       "report_format_id");
-  gvm_validator_alias (validator, "report_id", "id");
-  gvm_validator_alias (validator, "_and_report_id", "id");
-  gvm_validator_alias (validator, "delta_report_id", "id");
-  gvm_validator_alias (validator, "result_task_id", "optional_task_id");
-  gvm_validator_alias (validator, "result_uuid", "optional_id");
-  gvm_validator_alias (validator, "report_result_id", "result_id");
-  gvm_validator_alias (validator, "report_uuid", "result_id");
   gvm_validator_alias (validator, "replace_task_id", "boolean");
   gvm_validator_alias (validator, "reverse_lookup_only", "boolean");
   gvm_validator_alias (validator, "reverse_lookup_unify", "boolean");
-  gvm_validator_alias (validator, "role_id", "id");
   gvm_validator_alias (validator, "role_ids:name", "number");
-  gvm_validator_alias (validator, "role_ids:value", "id_optional");
   gvm_validator_alias (validator, "roles", "optional_number");
   gvm_validator_alias (validator, "period", "optional_number");
   gvm_validator_alias (validator, "period_unit", "calendar_unit");
@@ -749,27 +767,13 @@ init_validator ()
   gvm_validator_alias (validator, "schedules_only", "boolean");
   gvm_validator_alias (validator, "schedule_periods", "number");
   gvm_validator_alias (validator, "select:name", "family");
-  gvm_validator_alias (validator, "setting_id", "id");
   gvm_validator_alias (validator, "show_all", "boolean");
-  gvm_validator_alias (validator, "slave_id", "id");
-  gvm_validator_alias (validator, "smb_credential_id", "credential_id");
-  gvm_validator_alias (validator, "krb5_credential_id", "credential_id");
-  gvm_validator_alias (validator, "snmp_credential_id", "credential_id");
-  gvm_validator_alias (validator, "ssh_credential_id", "credential_id");
-  gvm_validator_alias (validator, "ssh_elevate_credential_id", "credential_id");
   gvm_validator_alias (validator, "subgroup_column", "group_column");
-  gvm_validator_alias (validator, "subject_id", "id");
-  gvm_validator_alias (validator, "subject_id_optional", "id_optional");
   gvm_validator_alias (validator, "subtype", "asset_type");
   gvm_validator_alias (validator, "start_time", "isodate");
-  gvm_validator_alias (validator, "task_uuid", "optional_id");
-  gvm_validator_alias (validator, "ticket_id", "id");
   gvm_validator_alias (validator, "timeout", "boolean");
-  gvm_validator_alias (validator, "tls_certificate_id", "id");
   gvm_validator_alias (validator, "trend:name", "family");
   gvm_validator_alias (validator, "trust", "boolean");
-  gvm_validator_alias (validator, "user_id", "id");
-  gvm_validator_alias (validator, "user_id_optional", "id_optional");
   gvm_validator_alias (validator, "xml", "boolean");
   gvm_validator_alias (validator, "esc_filter", "filter");
 }
