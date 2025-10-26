@@ -4168,12 +4168,12 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   preferences = params_values (params, "preferences:");
   comment = params_value (params, "comment");
 
-  if (!credential_store_id)
+  CHECK_VARIABLE_INVALID (credential_store_id, "Save Credential Store");
+  if (str_equal (credential_store_id, ""))
     {
-      cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
-      return gsad_message (
-        credentials, "Missing credential store id", __func__, __LINE__,
-        "The 'credential_store_id' parameter is required.", response_data);
+      return message_invalid (connection, credentials, params, response_data,
+                              "Missing credential_store_id",
+                              "Save Credential Store");
     }
 
   if (params_given (params, "active"))
