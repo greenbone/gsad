@@ -592,7 +592,7 @@ init_validator ()
   gvm_validator_alias (validator, "agent_ids:value", "id");
   gvm_validator_alias (validator, "scheduler_cron_times:name", "number");
   gvm_validator_alias (validator, "scheduler_cron_times:value", "name");
-
+  gvm_validator_alias (validator, "credential_store_id", "optional_id");
   gvm_validator_alias (validator, "agent_control_id", "id");
   gvm_validator_alias (validator, "attempts", "number");
   gvm_validator_alias (validator, "delay_in_seconds", "number");
