@@ -3458,7 +3458,9 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   int ret;
   gchar *html, *response;
   const char *name, *comment, *credential_login, *type, *password, *passphrase;
+#if ENABLE_CREDENTIAL_STORES
   const char *vault_id, *host_identifier;
+#endif
   const char *private_key, *public_key, *certificate, *community;
   const char *privacy_password, *auth_algorithm, *privacy_algorithm;
   const char *autogenerate, *allow_insecure;
@@ -3472,8 +3474,10 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   type = params_value (params, "credential_type");
   password = params_value (params, "lsc_password");
   passphrase = params_value (params, "passphrase");
+#if ENABLE_CREDENTIAL_STORES
   vault_id = params_value (params, "vault_id");
   host_identifier = params_value (params, "host_identifier");
+#endif
   private_key = params_value (params, "private_key");
   public_key = params_value (params, "public_key");
   certificate = params_value (params, "certificate");
@@ -3768,6 +3772,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
                   name, comment ? comment : "", type, password ? password : "",
                   allow_insecure);
         }
+#if ENABLE_CREDENTIAL_STORES
       else if (str_equal (type, "cs_up") || str_equal (type, "cs_usk")
                || str_equal (type, "cs_cc") || str_equal (type, "cs_snmp")
                || str_equal (type, "cs_pgp") || str_equal (type, "cs_pw")
@@ -3789,6 +3794,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
                   name, comment ? comment : "", type, vault_id ? vault_id : "",
                   host_identifier ? host_identifier : "", allow_insecure);
         }
+#endif
       else
         {
           cmd_response_data_set_status_code (response_data,
@@ -4420,8 +4426,10 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   credential_login = params_value (params, "credential_login");
   password = params_value (params, "password");
   passphrase = params_value (params, "passphrase");
+#if ENABLE_CREDENTIAL_STORES
   vault_id = params_value (params, "vault_id");
   host_identifier = params_value (params, "host_identifier");
+#endif
   private_key = params_value (params, "private_key");
   certificate = params_value (params, "certificate");
   community = params_value (params, "community");
@@ -4485,6 +4493,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
       if (params_given (params, "public_key"))
         CHECK_VARIABLE_INVALID (public_key, "Save Credential");
     }
+#if ENABLE_CREDENTIAL_STORES
   else if (str_equal (type, "cs_up") || str_equal (type, "cs_usk")
            || str_equal (type, "cs_cc") || str_equal (type, "cs_snmp")
            || str_equal (type, "cs_pgp") || str_equal (type, "cs_pw")
@@ -4495,6 +4504,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
       if (params_given (params, "host_identifier"))
         CHECK_VARIABLE_INVALID (host_identifier, "Save Credential");
     }
+#endif
 
   if (params_given (params, "credential_login") && !str_equal (type, "krb5"))
     CHECK_VARIABLE_INVALID (credential_login, "Save Credential");
@@ -4626,6 +4636,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           xml_string_append (command, "</key>");
         }
     }
+#if ENABLE_CREDENTIAL_STORES
   else if (str_equal (type, "cs_up") || str_equal (type, "cs_usk")
            || str_equal (type, "cs_cc") || str_equal (type, "cs_snmp")
            || str_equal (type, "cs_pgp") || str_equal (type, "cs_pw")
@@ -4641,6 +4652,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
                              host_identifier);
         }
     }
+#endif
 
   if (credential_login && strcmp (credential_login, ""))
     xml_string_append (command, "<login>%s</login>", credential_login);
