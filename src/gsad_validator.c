@@ -592,7 +592,6 @@ init_validator ()
   gvm_validator_alias (validator, "agent_ids:value", "id");
   gvm_validator_alias (validator, "scheduler_cron_times:name", "number");
   gvm_validator_alias (validator, "scheduler_cron_times:value", "name");
-  gvm_validator_alias (validator, "credential_store_id", "optional_id");
   gvm_validator_alias (validator, "agent_control_id", "id");
   gvm_validator_alias (validator, "attempts", "number");
   gvm_validator_alias (validator, "delay_in_seconds", "number");
@@ -637,6 +636,7 @@ init_validator ()
   gvm_validator_alias (validator, "closed_note", "note_optional");
   gvm_validator_alias (validator, "custom_severity", "boolean");
   gvm_validator_alias (validator, "current_user", "boolean");
+  gvm_validator_alias (validator, "credential_store_id", "optional_id");
   gvm_validator_alias (validator, "dashboard_name", "name");
   gvm_validator_alias (validator, "debug", "boolean");
   gvm_validator_alias (validator, "delta_state_changed", "boolean");
