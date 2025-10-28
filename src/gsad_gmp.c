@@ -4411,7 +4411,9 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   gchar *html, *response;
   const char *credential_id, *public_key;
   const char *name, *comment, *credential_login, *password, *passphrase, *type;
+#if ENABLE_CREDENTIAL_STORES
   const char *vault_id, *host_identifier;
+#endif
   const char *private_key, *certificate, *community, *privacy_password;
   const char *kdc, *realm;
   const char *auth_algorithm, *privacy_algorithm, *allow_insecure;
