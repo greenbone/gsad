@@ -336,8 +336,16 @@ init_validator ()
   gvm_validator_add (validator, "condition", "^[[:alnum:] ]*$");
   gvm_validator_add (validator, "credential_id", "^[a-z0-9\\-]+$");
   gvm_validator_add (validator, "create_credentials_type", "^(gen|pass|key)$");
+#if ENABLE_CREDENTIAL_STORES
+  gvm_validator_add (validator, "credential_type",
+                     "^(cc|up|usk|smime|pgp|snmp|krb5|pw|cs_cc|cs_up|cs_usk"
+                     "|cs_smime|cs_pgp|cs_snmp|cs_krb5|cs_pw)$");
+  gvm_validator_add (validator, "vault_id", "^[-_[:alnum:] :.]+$");
+  gvm_validator_add (validator, "host_identifier", "^[-_[:alnum:] :.]+$");
+#else
   gvm_validator_add (validator, "credential_type",
                      "^(cc|up|usk|smime|pgp|snmp|krb5|pw)$");
+#endif
   gvm_validator_add (validator, "credential_login", "^[-_[:alnum:]\\.@\\\\]*$");
   gvm_validator_add (validator, "condition_data:name", "^.*$");
   gvm_validator_add (validator, "condition_data:value", "(?s)^.*$");
