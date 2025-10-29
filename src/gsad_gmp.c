@@ -4277,7 +4277,7 @@ modify_credential_store_gmp (gvm_connection_t *connection,
                               "</preference>",
                               app_id);
     }
-  if (port)
+  if (port && strcmp (port, ""))
     {
       g_string_append_printf (preferences_element,
                               "<preference>"
