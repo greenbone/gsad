@@ -165,6 +165,9 @@ init_validator ()
                      "|(get_configs)"
                      "|(get_credential)"
                      "|(get_credentials)"
+#if ENABLE_CREDENTIAL_STORES
+                     "|(get_credential_stores)"
+#endif
                      "|(get_feeds)"
                      "|(get_filter)"
                      "|(get_filters)"
@@ -241,6 +244,9 @@ init_validator ()
                      "|(login)"
                      "|(modify_agent)"
                      "|(modify_agent_control_scan_config)"
+#if ENABLE_CREDENTIAL_STORES
+                     "|(modify_credential_store)"
+#endif
                      "|(move_task)"
                      "|(new_alert)"
                      "|(ping)"
@@ -289,6 +295,9 @@ init_validator ()
                      "|(sync_cert)"
                      "|(sync_config)"
                      "|(toggle_tag)"
+#if ENABLE_CREDENTIAL_STORES
+                     "|(verify_credential_store)"
+#endif
                      "|(verify_scanner)"
                      "|(wizard)"
                      "|(wizard_get))$");
