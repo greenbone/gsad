@@ -4271,76 +4271,75 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   if (app_id)
     {
       g_string_append_printf (preferences_element,
-                                "<preference>"
-                                "<name>app_id</name>"
-                                "<value>%s</value>"
-                                "</preference>",
-                                app_id);
+                              "<preference>"
+                              "<name>app_id</name>"
+                              "<value>%s</value>"
+                              "</preference>",
+                              app_id);
     }
   if (port)
     {
       g_string_append_printf (preferences_element,
-                                "<preference>"
-                                "<name>port</name>"
-                                "<value>%s</value>"
-                                "</preference>",
-                                port);
+                              "<preference>"
+                              "<name>port</name>"
+                              "<value>%s</value>"
+                              "</preference>",
+                              port);
     }
   if (ssl_only)
     {
       g_string_append_printf (preferences_element,
-                                "<preference>"
-                                "<name>ssl_only</name>"
-                                "<value>%s</value>"
-                                "</preference>",
-                                ssl_only);
+                              "<preference>"
+                              "<name>ssl_only</name>"
+                              "<value>%s</value>"
+                              "</preference>",
+                              ssl_only);
     }
   if (client_certificate)
     {
       g_string_append_printf (preferences_element,
-                                "<preference>"
-                                "<name>client_certificate</name>"
-                                "<value>%s</value>"
-                                "</preference>",
-                                client_certificate);
+                              "<preference>"
+                              "<name>client_certificate</name>"
+                              "<value>%s</value>"
+                              "</preference>",
+                              client_certificate);
     }
   if (client_key)
     {
       g_string_append_printf (preferences_element,
-                                "<preference>"
-                                "<name>client_key</name>"
-                                "<value>%s</value>"
-                                "</preference>",
-                                client_key);
+                              "<preference>"
+                              "<name>client_key</name>"
+                              "<value>%s</value>"
+                              "</preference>",
+                              client_key);
     }
   if (pkcs12_file)
     {
       g_string_append_printf (preferences_element,
-                                "<preference>"
-                                "<name>pkcs12_file</name>"
-                                "<value>%s</value>"
-                                "</preference>",
-                                pkcs12_file);
+                              "<preference>"
+                              "<name>pkcs12_file</name>"
+                              "<value>%s</value>"
+                              "</preference>",
+                              pkcs12_file);
     }
   if (passphrase)
     {
       g_string_append_printf (preferences_element,
-                                "<preference>"
-                                "<name>passphrase</name>"
-                                "<value>%s</value>"
-                                "</preference>",
-                                passphrase);
+                              "<preference>"
+                              "<name>passphrase</name>"
+                              "<value>%s</value>"
+                              "</preference>",
+                              passphrase);
     }
   if (server_ca_certificate)
     {
       g_string_append_printf (preferences_element,
-                                "<preference>"
-                                "<name>server_ca_certificate</name>"
-                                "<value>%s</value>"
-                                "</preference>",
-                                server_ca_certificate);
+                              "<preference>"
+                              "<name>server_ca_certificate</name>"
+                              "<value>%s</value>"
+                              "</preference>",
+                              server_ca_certificate);
     }
-
 
   xml_string_append (preferences_element, "</preferences>");
 
