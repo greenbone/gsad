@@ -4187,15 +4187,24 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   gchar *xml, *response, *format;
   int ret;
   entity_t entity;
-  const char *credential_store_id, *active, *host, *path, *comment;
-  GHashTable *preferences;
+  const char *credential_store_id, *active, *host, *path, *comment, *app_id,
+    *port, *ssl_only, *client_certificate, *client_key, *pkcs12_file,
+    *passphrase, *server_ca_certificate;
   GString *preferences_element;
 
   credential_store_id = params_value (params, "credential_store_id");
   active = params_value (params, "active");
   host = params_value (params, "host");
   path = params_value (params, "path");
-  preferences = params_values (params, "preferences:");
+  app_id = params_value (params, "preferences:app_id");
+  port = params_value (params, "preferences:port");
+  ssl_only = params_value (params, "preferences:ssl_only");
+  client_certificate = params_value (params, "preferences:client_certificate");
+  client_key = params_value (params, "preferences:client_key");
+  pkcs12_file = params_value (params, "preferences:pkcs12_file");
+  passphrase = params_value (params, "preferences:passphrase");
+  server_ca_certificate =
+    params_value (params, "preferences:server_ca_certificate");
   comment = params_value (params, "comment");
 
   CHECK_VARIABLE_INVALID (credential_store_id, "Save Credential Store");
@@ -4218,9 +4227,37 @@ modify_credential_store_gmp (gvm_connection_t *connection,
     {
       CHECK_VARIABLE_INVALID (path, "Save Credential Store");
     }
-  if (params_given (params, "preferences"))
+  if (params_given (params, "preferences:app_id"))
     {
-      CHECK_VARIABLE_INVALID (preferences, "Save Credential Store");
+      CHECK_VARIABLE_INVALID (app_id, "Save Credential Store");
+    }
+  if (params_given (params, "preferences:port"))
+    {
+      CHECK_VARIABLE_INVALID (port, "Save Credential Store");
+    }
+  if (params_given (params, "preferences:ssl_only"))
+    {
+      CHECK_VARIABLE_INVALID (ssl_only, "Save Credential Store");
+    }
+  if (params_given (params, "preferences:client_certificate"))
+    {
+      CHECK_VARIABLE_INVALID (client_certificate, "Save Credential Store");
+    }
+  if (params_given (params, "preferences:client_key"))
+    {
+      CHECK_VARIABLE_INVALID (client_key, "Save Credential Store");
+    }
+  if (params_given (params, "preferences:pkcs12_file"))
+    {
+      CHECK_VARIABLE_INVALID (pkcs12_file, "Save Credential Store");
+    }
+  if (params_given (params, "preferences:passphrase"))
+    {
+      CHECK_VARIABLE_INVALID (passphrase, "Save Credential Store");
+    }
+  if (params_given (params, "preferences:server_ca_certificate"))
+    {
+      CHECK_VARIABLE_INVALID (server_ca_certificate, "Save Credential Store");
     }
   if (params_given (params, "comment"))
     {
@@ -4229,33 +4266,93 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   else
     comment = "";
 
-  char *name;
-  params_iterator_t iter;
-  param_t *param;
-
   preferences_element = g_string_new ("<preferences>");
-  params_iterator_init (&iter, preferences);
-  while (params_iterator_next (&iter, &name, &param))
+
+  if (app_id)
     {
-      if (param->value && param->value[0] != '\0')
-        g_string_append_printf (preferences_element,
+      g_string_append_printf (preferences_element,
                                 "<preference>"
-                                "<name>%s</name>"
+                                "<name>app_id</name>"
                                 "<value>%s</value>"
                                 "</preference>",
-                                name, param->value);
+                                app_id);
     }
+  if (port)
+    {
+      g_string_append_printf (preferences_element,
+                                "<preference>"
+                                "<name>port</name>"
+                                "<value>%s</value>"
+                                "</preference>",
+                                port);
+    }
+  if (ssl_only)
+    {
+      g_string_append_printf (preferences_element,
+                                "<preference>"
+                                "<name>ssl_only</name>"
+                                "<value>%s</value>"
+                                "</preference>",
+                                ssl_only);
+    }
+  if (client_certificate)
+    {
+      g_string_append_printf (preferences_element,
+                                "<preference>"
+                                "<name>client_certificate</name>"
+                                "<value>%s</value>"
+                                "</preference>",
+                                client_certificate);
+    }
+  if (client_key)
+    {
+      g_string_append_printf (preferences_element,
+                                "<preference>"
+                                "<name>client_key</name>"
+                                "<value>%s</value>"
+                                "</preference>",
+                                client_key);
+    }
+  if (pkcs12_file)
+    {
+      g_string_append_printf (preferences_element,
+                                "<preference>"
+                                "<name>pkcs12_file</name>"
+                                "<value>%s</value>"
+                                "</preference>",
+                                pkcs12_file);
+    }
+  if (passphrase)
+    {
+      g_string_append_printf (preferences_element,
+                                "<preference>"
+                                "<name>passphrase</name>"
+                                "<value>%s</value>"
+                                "</preference>",
+                                passphrase);
+    }
+  if (server_ca_certificate)
+    {
+      g_string_append_printf (preferences_element,
+                                "<preference>"
+                                "<name>server_ca_certificate</name>"
+                                "<value>%s</value>"
+                                "</preference>",
+                                server_ca_certificate);
+    }
+
+
   xml_string_append (preferences_element, "</preferences>");
 
-  format = g_strdup_printf ("<modify_credential_store>"
-                            "<credential_store_id>%%s</credential_store_id>"
-                            "<active>%%s</active>"
-                            "<host>%%s</host>"
-                            "<path>%%s</path>"
-                            "%s" /* preferences */
-                            "<comment>%%s</comment>"
-                            "</modify_credential_store>",
-                            preferences_element->str);
+  format =
+    g_strdup_printf ("<modify_credential_store credential_store_id=\"%%s\">"
+                     "<active>%%s</active>"
+                     "<host>%%s</host>"
+                     "<path>%%s</path>"
+                     "%s" /* preferences */
+                     "<comment>%%s</comment>"
+                     "</modify_credential_store>",
+                     preferences_element->str);
 
   response = NULL;
   entity = NULL;
