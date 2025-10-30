@@ -4229,7 +4229,7 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   int ret;
   entity_t entity;
   const char *credential_store_id, *active, *host, *port, *path, *comment,
-    *app_id, *ssl_only, *passphrase;
+    *app_id, *passphrase;
   param_t *client_certificate, *client_key, *pkcs12_file,
     *server_ca_certificate;
   GString *preferences_element;
@@ -4240,7 +4240,6 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   port = params_value (params, "port");
   path = params_value (params, "path");
   app_id = params_value (params, "preferences:app_id");
-  ssl_only = params_value (params, "preferences:ssl_only");
   client_certificate = params_get (params, "preferences:client_certificate");
   client_key = params_get (params, "preferences:client_key");
   pkcs12_file = params_get (params, "preferences:pkcs12_file");
@@ -4277,10 +4276,6 @@ modify_credential_store_gmp (gvm_connection_t *connection,
     {
       CHECK_VARIABLE_INVALID (app_id, "Save Credential Store");
     }
-  if (params_given (params, "preferences:ssl_only"))
-    {
-      CHECK_VARIABLE_INVALID (ssl_only, "Save Credential Store");
-    }
   if (params_given (params, "preferences:client_certificate"))
     {
       CHECK_VARIABLE_INVALID (client_certificate, "Save Credential Store");
@@ -4311,7 +4306,6 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   preferences_element = g_string_new ("<preferences>");
 
   add_preference_to_xml (preferences_element, "app_id", app_id);
-  add_preference_to_xml (preferences_element, "ssl_only", ssl_only);
   add_preference_to_xml (preferences_element, "passphrase", passphrase);
   add_preference_to_xml_base64 (preferences_element, "client_cert",
                                 client_certificate);
