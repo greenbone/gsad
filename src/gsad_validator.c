@@ -351,10 +351,7 @@ init_validator ()
                      "|cs_smime|cs_pgp|cs_snmp|cs_krb5|cs_pw)$");
   gvm_validator_add (validator, "vault_id", "^[-_[:alnum:] :.]+$");
   gvm_validator_add (validator, "host_identifier", "^[-_[:alnum:] :.]+$");
-  gvm_validator_add (validator, "preferences:client_certificate", "^.*$");
-  gvm_validator_add (validator, "preferences:client_key", "^.*$");
   gvm_validator_add (validator, "preferences:passphrase", "^.*$");
-  gvm_validator_add (validator, "preferences:server_ca_certificate", "^.*$");
 #else
   gvm_validator_add (validator, "credential_type",
                      "^(cc|up|usk|smime|pgp|snmp|krb5|pw)$");
@@ -603,7 +600,10 @@ init_validator ()
   gvm_validator_add_binary (validator, "installer");
   gvm_validator_add_binary (validator, "method_data:pkcs12:");
 #if ENABLE_CREDENTIAL_STORES
+  gvm_validator_add_binary (validator, "preferences:client_certificate");
+  gvm_validator_add_binary (validator, "preferences:client_key");
   gvm_validator_add_binary (validator, "preferences:pkcs12_file");
+  gvm_validator_add_binary (validator, "preferences:server_ca_certificate");
 #endif
 
   /* Beware, the rule must be defined before the alias. */
