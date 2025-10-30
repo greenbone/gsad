@@ -4299,7 +4299,7 @@ modify_credential_store_gmp (gvm_connection_t *connection,
     {
       g_string_append_printf (preferences_element,
                               "<preference>"
-                              "<name>client_certificate</name>"
+                              "<name>client_cert</name>"
                               "<value>%s</value>"
                               "</preference>",
                               client_certificate);
