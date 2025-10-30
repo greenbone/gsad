@@ -4187,17 +4187,17 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   gchar *xml, *response, *format;
   int ret;
   entity_t entity;
-  const char *credential_store_id, *active, *host, *path, *comment, *app_id,
-    *port, *ssl_only, *client_certificate, *client_key, *pkcs12_file,
+  const char *credential_store_id, *active, *host, *port, *path, *comment,
+    *app_id, *ssl_only, *client_certificate, *client_key, *pkcs12_file,
     *passphrase, *server_ca_certificate;
   GString *preferences_element;
 
   credential_store_id = params_value (params, "credential_store_id");
   active = params_value (params, "active");
   host = params_value (params, "host");
+  port = params_value (params, "port");
   path = params_value (params, "path");
   app_id = params_value (params, "preferences:app_id");
-  port = params_value (params, "preferences:port");
   ssl_only = params_value (params, "preferences:ssl_only");
   client_certificate = params_value (params, "preferences:client_certificate");
   client_key = params_value (params, "preferences:client_key");
@@ -4223,6 +4223,10 @@ modify_credential_store_gmp (gvm_connection_t *connection,
     {
       CHECK_VARIABLE_INVALID (host, "Save Credential Store");
     }
+  if (params_given (params, "port"))
+    {
+      CHECK_VARIABLE_INVALID (port, "Save Credential Store");
+    }
   if (params_given (params, "path"))
     {
       CHECK_VARIABLE_INVALID (path, "Save Credential Store");
@@ -4230,10 +4234,6 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   if (params_given (params, "preferences:app_id"))
     {
       CHECK_VARIABLE_INVALID (app_id, "Save Credential Store");
-    }
-  if (params_given (params, "preferences:port"))
-    {
-      CHECK_VARIABLE_INVALID (port, "Save Credential Store");
     }
   if (params_given (params, "preferences:ssl_only"))
     {
@@ -4276,15 +4276,6 @@ modify_credential_store_gmp (gvm_connection_t *connection,
                               "<value>%s</value>"
                               "</preference>",
                               app_id);
-    }
-  if (port && strcmp (port, ""))
-    {
-      g_string_append_printf (preferences_element,
-                              "<preference>"
-                              "<name>port</name>"
-                              "<value>%s</value>"
-                              "</preference>",
-                              port);
     }
   if (ssl_only)
     {
@@ -4347,6 +4338,7 @@ modify_credential_store_gmp (gvm_connection_t *connection,
     g_strdup_printf ("<modify_credential_store credential_store_id=\"%%s\">"
                      "<active>%%s</active>"
                      "<host>%%s</host>"
+                     "<port>%%s</port>"
                      "<path>%%s</path>"
                      "%s" /* preferences */
                      "<comment>%%s</comment>"
@@ -4356,7 +4348,7 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   response = NULL;
   entity = NULL;
   ret = gmpf (connection, credentials, &response, &entity, response_data,
-              format, credential_store_id, active, host, path, comment);
+              format, credential_store_id, active, host, port, path, comment);
 
   g_free (format);
   g_string_free (preferences_element, TRUE);
