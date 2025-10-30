@@ -351,6 +351,7 @@ init_validator ()
                      "|cs_smime|cs_pgp|cs_snmp|cs_krb5|cs_pw)$");
   gvm_validator_add (validator, "vault_id", "^[-_[:alnum:] :.]+$");
   gvm_validator_add (validator, "host_identifier", "^[-_[:alnum:] :.]+$");
+  gvm_validator_add (validator, "preferences:app_id", "^[-_[:alnum:] :.]+$");
   gvm_validator_add (validator, "preferences:passphrase", "^.*$");
 #else
   gvm_validator_add (validator, "credential_type",
@@ -748,9 +749,7 @@ init_validator ()
   gvm_validator_alias (validator, "pos", "number");
 #if ENABLE_CREDENTIAL_STORES
   gvm_validator_alias (validator, "preferences:ssl_only", "boolean");
-  gvm_validator_alias (validator, "preferences:app_id", "optional_id");
   gvm_validator_alias (validator, "preferences:port", "port");
-
 #endif
   gvm_validator_alias (validator, "privacy_password", "lsc_password");
   gvm_validator_alias (validator, "radiushost", "hostport");
