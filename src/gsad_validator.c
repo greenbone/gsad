@@ -748,7 +748,6 @@ init_validator ()
   gvm_validator_alias (validator, "port_range_start", "number");
   gvm_validator_alias (validator, "pos", "number");
 #if ENABLE_CREDENTIAL_STORES
-  gvm_validator_alias (validator, "preferences:ssl_only", "boolean");
   gvm_validator_alias (validator, "preferences:port", "port");
 #endif
   gvm_validator_alias (validator, "privacy_password", "lsc_password");
