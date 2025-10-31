@@ -4169,6 +4169,47 @@ get_credential_stores_gmp (gvm_connection_t *connection,
                    arguments, response_data);
 }
 
+void
+add_preference_to_xml (GString *xml, const char *name, const char *value)
+{
+  if (!xml || !name)
+    return;
+
+  if (value)
+    {
+      g_string_append_printf (xml,
+                              "<preference>"
+                              "<name>%s</name>"
+                              "<value>%s</value>"
+                              "</preference>",
+                              name, value);
+    }
+}
+
+void
+add_preference_to_xml_base64 (GString *xml, const char *name,
+                              const param_t *value)
+{
+  if (!xml || !name)
+    return;
+
+  if (value)
+    {
+      gchar *base64 =
+        (value->value && value->value_size)
+          ? g_base64_encode ((guchar *) value->value, value->value_size)
+          : g_strdup ("");
+
+      g_string_append_printf (xml,
+                              "<preference>"
+                              "<name>%s</name>"
+                              "<value>%s</value>"
+                              "</preference>",
+                              name, base64);
+      g_free (base64);
+    }
+}
+
 /**
  * @brief Modify a credential store, envelope the result.
  *
@@ -4187,15 +4228,24 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   gchar *xml, *response, *format;
   int ret;
   entity_t entity;
-  const char *credential_store_id, *active, *host, *path, *comment;
-  GHashTable *preferences;
+  const char *credential_store_id, *active, *host, *port, *path, *comment,
+    *app_id, *passphrase;
+  param_t *client_certificate, *client_key, *pkcs12_file,
+    *server_ca_certificate;
   GString *preferences_element;
 
   credential_store_id = params_value (params, "credential_store_id");
   active = params_value (params, "active");
   host = params_value (params, "host");
+  port = params_value (params, "port");
   path = params_value (params, "path");
-  preferences = params_values (params, "preferences:");
+  app_id = params_value (params, "preferences:app_id");
+  client_certificate = params_get (params, "preferences:client_certificate");
+  client_key = params_get (params, "preferences:client_key");
+  pkcs12_file = params_get (params, "preferences:pkcs12_file");
+  passphrase = params_value (params, "preferences:passphrase");
+  server_ca_certificate =
+    params_get (params, "preferences:server_ca_certificate");
   comment = params_value (params, "comment");
 
   CHECK_VARIABLE_INVALID (credential_store_id, "Save Credential Store");
@@ -4214,13 +4264,37 @@ modify_credential_store_gmp (gvm_connection_t *connection,
     {
       CHECK_VARIABLE_INVALID (host, "Save Credential Store");
     }
+  if (params_given (params, "port"))
+    {
+      CHECK_VARIABLE_INVALID (port, "Save Credential Store");
+    }
   if (params_given (params, "path"))
     {
       CHECK_VARIABLE_INVALID (path, "Save Credential Store");
     }
-  if (params_given (params, "preferences"))
+  if (params_given (params, "preferences:app_id"))
     {
-      CHECK_VARIABLE_INVALID (preferences, "Save Credential Store");
+      CHECK_VARIABLE_INVALID (app_id, "Save Credential Store");
+    }
+  if (params_given (params, "preferences:client_certificate"))
+    {
+      CHECK_VARIABLE_INVALID (client_certificate, "Save Credential Store");
+    }
+  if (params_given (params, "preferences:client_key"))
+    {
+      CHECK_VARIABLE_INVALID (client_key, "Save Credential Store");
+    }
+  if (params_given (params, "preferences:pkcs12_file"))
+    {
+      CHECK_VARIABLE_INVALID (pkcs12_file, "Save Credential Store");
+    }
+  if (params_given (params, "preferences:passphrase"))
+    {
+      CHECK_VARIABLE_INVALID (passphrase, "Save Credential Store");
+    }
+  if (params_given (params, "preferences:server_ca_certificate"))
+    {
+      CHECK_VARIABLE_INVALID (server_ca_certificate, "Save Credential Store");
     }
   if (params_given (params, "comment"))
     {
@@ -4229,38 +4303,35 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   else
     comment = "";
 
-  char *name;
-  params_iterator_t iter;
-  param_t *param;
-
   preferences_element = g_string_new ("<preferences>");
-  params_iterator_init (&iter, preferences);
-  while (params_iterator_next (&iter, &name, &param))
-    {
-      if (param->value && param->value[0] != '\0')
-        g_string_append_printf (preferences_element,
-                                "<preference>"
-                                "<name>%s</name>"
-                                "<value>%s</value>"
-                                "</preference>",
-                                name, param->value);
-    }
+
+  add_preference_to_xml (preferences_element, "app_id", app_id);
+  add_preference_to_xml (preferences_element, "passphrase", passphrase);
+  add_preference_to_xml_base64 (preferences_element, "client_cert",
+                                client_certificate);
+  add_preference_to_xml_base64 (preferences_element, "client_key", client_key);
+  add_preference_to_xml_base64 (preferences_element, "client_pkcs12_file",
+                                pkcs12_file);
+  add_preference_to_xml_base64 (preferences_element, "server_ca_certificate",
+                                server_ca_certificate);
+
   xml_string_append (preferences_element, "</preferences>");
 
-  format = g_strdup_printf ("<modify_credential_store>"
-                            "<credential_store_id>%%s</credential_store_id>"
-                            "<active>%%s</active>"
-                            "<host>%%s</host>"
-                            "<path>%%s</path>"
-                            "%s" /* preferences */
-                            "<comment>%%s</comment>"
-                            "</modify_credential_store>",
-                            preferences_element->str);
+  format =
+    g_strdup_printf ("<modify_credential_store credential_store_id=\"%%s\">"
+                     "<active>%%s</active>"
+                     "<host>%%s</host>"
+                     "<port>%%s</port>"
+                     "<path>%%s</path>"
+                     "%s" /* preferences */
+                     "<comment>%%s</comment>"
+                     "</modify_credential_store>",
+                     preferences_element->str);
 
   response = NULL;
   entity = NULL;
   ret = gmpf (connection, credentials, &response, &entity, response_data,
-              format, credential_store_id, active, host, path, comment);
+              format, credential_store_id, active, host, port, path, comment);
 
   g_free (format);
   g_string_free (preferences_element, TRUE);
