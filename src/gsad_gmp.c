@@ -4312,7 +4312,7 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   add_preference_to_xml_base64 (preferences_element, "client_key", client_key);
   add_preference_to_xml_base64 (preferences_element, "client_pkcs12_file",
                                 pkcs12_file);
-  add_preference_to_xml_base64 (preferences_element, "server_ca_certificate",
+  add_preference_to_xml_base64 (preferences_element, "server_ca_cert",
                                 server_ca_certificate);
 
   xml_string_append (preferences_element, "</preferences>");
