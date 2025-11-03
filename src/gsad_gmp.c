@@ -3915,7 +3915,7 @@ download_credential_gmp (gvm_connection_t *connection,
                          cmd_response_data_t *response_data)
 {
   entity_t entity;
-  const char *credential_id, *format;
+  const gchar *credential_id, *format;
 
   assert (html);
 
@@ -3924,13 +3924,24 @@ download_credential_gmp (gvm_connection_t *connection,
   credential_id = params_value (params, "credential_id");
   format = params_value (params, "package_format");
 
-  if ((credential_id == NULL) || (format == NULL))
+  if (credential_id == NULL || str_equal (credential_id, ""))
+    {
+      cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
+      *html = gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while getting a credential. "
+        "Diagnostics: Required credential_id parameter is missing.",
+        response_data);
+      return 1;
+    }
+
+  if (format == NULL)
     {
       cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
       *html =
         gsad_message (credentials, "Internal error", __func__, __LINE__,
                       "An internal error occurred while getting a credential. "
-                      "Diagnostics: Required parameter was NULL.",
+                      "Diagnostics: Required format parameter is missing.",
                       response_data);
       return 1;
     }
