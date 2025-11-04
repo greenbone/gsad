@@ -10587,11 +10587,14 @@ create_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
   type = params_value (params, "scanner_type");
   ca_pub = params_value (params, "ca_pub");
   credential_id = params_value (params, "credential_id");
+
   CHECK_VARIABLE_INVALID (name, "Create Scanner");
   CHECK_VARIABLE_INVALID (comment, "Create Scanner");
   CHECK_VARIABLE_INVALID (host, "Create Scanner");
   CHECK_VARIABLE_INVALID (port, "Create Scanner");
   CHECK_VARIABLE_INVALID (type, "Create Scanner");
+  CHECK_VARIABLE_INVALID (credential_id, "Create Scanner");
+
   if (params_given (params, "ca_pub"))
     CHECK_VARIABLE_INVALID (ca_pub, "Create Scanner");
 
