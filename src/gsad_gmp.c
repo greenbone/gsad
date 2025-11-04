@@ -453,6 +453,44 @@ member1 (params_t *params, const char *string)
 }
 
 /**
+ * @brief Set a content type from a format string.
+ *
+ * For example set the content type to GSAD_CONTENT_TYPE_APP_DEB when given
+ * format "deb".
+ *
+ * @param[out]  content_type  Return location for the newly set content type,
+ *                            defaults to GSAD_CONTENT_TYPE_OCTET_STREAM.
+ * @param[in]   format        Lowercase format string as in the respective
+ *                            GMP commands.
+ */
+static void
+content_type_from_format_string (enum content_type *content_type,
+                                 const char *format)
+{
+  if (!format)
+    *content_type = GSAD_CONTENT_TYPE_OCTET_STREAM;
+
+  else if (strcmp (format, "deb") == 0)
+    *content_type = GSAD_CONTENT_TYPE_APP_DEB;
+  else if (strcmp (format, "exe") == 0)
+    *content_type = GSAD_CONTENT_TYPE_APP_EXE;
+  else if (strcmp (format, "html") == 0)
+    *content_type = GSAD_CONTENT_TYPE_TEXT_HTML;
+  else if (strcmp (format, "key") == 0)
+    *content_type = GSAD_CONTENT_TYPE_APP_KEY;
+  else if (strcmp (format, "nbe") == 0)
+    *content_type = GSAD_CONTENT_TYPE_APP_NBE;
+  else if (strcmp (format, "pdf") == 0)
+    *content_type = GSAD_CONTENT_TYPE_APP_PDF;
+  else if (strcmp (format, "rpm") == 0)
+    *content_type = GSAD_CONTENT_TYPE_APP_RPM;
+  else if (strcmp (format, "xml") == 0)
+    *content_type = GSAD_CONTENT_TYPE_APP_XML;
+  else
+    *content_type = GSAD_CONTENT_TYPE_OCTET_STREAM;
+}
+
+/**
  * @brief Check a modify_config response.
  *
  * @param[in]  connection   Connection with manager.
@@ -3901,50 +3939,30 @@ get_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @param[in]   connection     Connection to manager.
  * @param[in]   credentials    Username and password for authentication.
  * @param[in]   params         Request parameters.
- * @param[out]  html           Result. Required.
- * @param[out]  login          Login name return.  NULL to skip.  Only set on
- *                             success with credential_id.
  * @param[out]  response_data  Extra data return for the HTTP response.
  *
- * @return 0 success, 1 failure.
+ * @return Binary data
  */
-int
+char *
 download_credential_gmp (gvm_connection_t *connection,
                          credentials_t *credentials, params_t *params,
-                         char **html, char **login,
                          cmd_response_data_t *response_data)
 {
-  entity_t entity;
+  entity_t entity = NULL, credential_entity = NULL;
   const gchar *credential_id, *format;
-
-  assert (html);
-
-  /* Send the request. */
+  gchar *data = NULL, *content_disposition = NULL, *login = NULL;
+  content_type_t content_type = GSAD_CONTENT_TYPE_OCTET_STREAM;
 
   credential_id = params_value (params, "credential_id");
   format = params_value (params, "package_format");
 
-  if (credential_id == NULL || str_equal (credential_id, ""))
-    {
-      cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
-      *html = gsad_message (
-        credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while getting a credential. "
-        "Diagnostics: Required credential_id parameter is missing.",
-        response_data);
-      return 1;
-    }
+  CHECK_VARIABLE_INVALID (format, "Download Credential");
+  CHECK_VARIABLE_INVALID (credential_id, "Download Credential");
 
-  if (format == NULL)
-    {
-      cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
-      *html =
-        gsad_message (credentials, "Internal error", __func__, __LINE__,
-                      "An internal error occurred while getting a credential. "
-                      "Diagnostics: Required format parameter is missing.",
-                      response_data);
-      return 1;
-    }
+  if (str_equal (credential_id, ""))
+    return message_invalid (connection, credentials, params, response_data,
+                            "Required credential_id parameter is missing.",
+                            "Download Credential");
 
   if (gvm_connection_sendf (connection,
                             "<get_credentials"
@@ -3955,36 +3973,29 @@ download_credential_gmp (gvm_connection_t *connection,
     {
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
-      *html =
-        gsad_message (credentials, "Internal error", __func__, __LINE__,
-                      "An internal error occurred while getting a credential. "
-                      "Diagnostics: Failure to send command to manager daemon.",
-                      response_data);
-      return 1;
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while getting a credential. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
     }
-
-  /* Read and handle the response. */
 
   if (strcmp (format, "rpm") == 0 || strcmp (format, "deb") == 0
       || strcmp (format, "exe") == 0)
     {
-      gchar *package_decoded = NULL;
-      entity_t package_entity = NULL, credential_entity;
+      entity_t package_entity = NULL;
 
       /* A base64 encoded package. */
-
-      entity = NULL;
       if (read_entity_c (connection, &entity))
         {
           cmd_response_data_set_status_code (response_data,
                                              MHD_HTTP_INTERNAL_SERVER_ERROR);
-          *html = gsad_message (
+          return gsad_message (
             credentials, "Internal error", __func__, __LINE__,
             "An internal error occurred while getting a credential. "
             "The credential is not available. "
             "Diagnostics: Failure to receive response from manager daemon.",
             response_data);
-          return 1;
         }
 
       credential_entity = entity_child (entity, "credential");
@@ -3992,71 +4003,49 @@ download_credential_gmp (gvm_connection_t *connection,
         package_entity = entity_child (credential_entity, "package");
       if (package_entity != NULL)
         {
-          gsize len;
           char *package_encoded = entity_text (package_entity);
           if (strlen (package_encoded))
             {
-              package_decoded =
-                (gchar *) g_base64_decode (package_encoded, &len);
-              if (package_decoded == NULL)
+              gsize len;
+              data = (gchar *) g_base64_decode (package_encoded, &len);
+              if (data == NULL)
                 {
-                  package_decoded = (gchar *) g_strdup ("");
-                  len = 0;
+                  data = g_strdup ("");
                 }
             }
           else
             {
-              package_decoded = (gchar *) g_strdup ("");
-              len = 0;
+              data = g_strdup ("");
             }
-
-          cmd_response_data_set_content_length (response_data, len);
-
-          *html = package_decoded;
-          if (login)
-            {
-              entity_t login_entity;
-              login_entity = entity_child (credential_entity, "login");
-              if (login_entity)
-                *login = g_strdup (entity_text (login_entity));
-              else
-                *login = NULL;
-            }
-          free_entity (entity);
-          return 0;
         }
       else
         {
           free_entity (entity);
           cmd_response_data_set_status_code (response_data,
                                              MHD_HTTP_INTERNAL_SERVER_ERROR);
-          *html = gsad_message (
+          return gsad_message (
             credentials, "Internal error", __func__, __LINE__,
             "An internal error occurred while getting a credential. "
             "The credential could not be delivered. "
             "Diagnostics: Failure to receive credential from manager daemon.",
             response_data);
-          return 1;
         }
     }
   else
     {
-      entity_t credential_entity, key_entity = NULL;
+      entity_t key_entity = NULL;
 
       /* A key or certificate. */
-
-      entity = NULL;
       if (read_entity_c (connection, &entity))
         {
           cmd_response_data_set_status_code (response_data,
                                              MHD_HTTP_INTERNAL_SERVER_ERROR);
-          *html = gsad_message (
+          return gsad_message (
             credentials, "Internal error", __func__, __LINE__,
             "An internal error occurred while getting a credential. "
             "The credential could not be delivered. "
             "Diagnostics: Failure to receive credential from manager daemon.",
             response_data);
-          return 1;
         }
 
       credential_entity = entity_child (entity, "credential");
@@ -4069,29 +4058,52 @@ download_credential_gmp (gvm_connection_t *connection,
         }
       if (key_entity != NULL)
         {
-          *html = g_strdup (entity_text (key_entity));
-          if (login)
-            {
-              entity_t login_entity = entity_child (credential_entity, "login");
-              if (login_entity)
-                *login = g_strdup (entity_text (login_entity));
-              else
-                *login = NULL;
-            }
-          free_entity (entity);
-          return 0;
+          data = g_strdup (entity_text (key_entity));
+          entity_t login_entity = entity_child (credential_entity, "login");
+          if (login_entity)
+            login = g_strdup (entity_text (login_entity));
+          else
+            login = NULL;
         }
-      cmd_response_data_set_status_code (response_data,
-                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
-      *html = gsad_message (
-        credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while getting a credential. "
-        "The credential could not be delivered. "
-        "Diagnostics: Failure to parse credential from manager daemon.",
-        response_data);
-      free_entity (entity);
-      return 1;
+      else
+        {
+          cmd_response_data_set_status_code (response_data,
+                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          free_entity (entity);
+          return gsad_message (
+            credentials, "Internal error", __func__, __LINE__,
+            "An internal error occurred while getting a credential. "
+            "The credential could not be delivered. "
+            "Diagnostics: Failure to parse credential from manager daemon.",
+            response_data);
+        }
     }
+
+  if (credential_entity != NULL)
+    {
+      entity_t login_entity;
+      login_entity = entity_child (credential_entity, "login");
+      if (login_entity)
+        login = g_strdup (entity_text (login_entity));
+      else
+        login = NULL;
+    }
+
+  content_disposition =
+    g_strdup_printf ("attachment; filename=credential-%s.%s",
+                     (login && strcmp (login, "")) ? login : credential_id,
+                     (strcmp (format, "key") == 0 ? "pub" : format));
+  content_type_from_format_string (&content_type, format);
+
+  cmd_response_data_set_content_length (response_data, strlen (data));
+  cmd_response_data_set_content_disposition (response_data,
+                                             content_disposition);
+  cmd_response_data_set_content_type (response_data, content_type);
+
+  free_entity (entity);
+  g_free (login);
+
+  return data;
 }
 
 /**

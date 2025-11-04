@@ -242,44 +242,6 @@ int chroot_state = 0;
 int client_watch_interval = DEFAULT_CLIENT_WATCH_INTERVAL;
 
 /**
- * @brief Set a content type from a format string.
- *
- * For example set the content type to GSAD_CONTENT_TYPE_APP_DEB when given
- * format "deb".
- *
- * @param[out]  content_type  Return location for the newly set content type,
- *                            defaults to GSAD_CONTENT_TYPE_OCTET_STREAM.
- * @param[in]   format        Lowercase format string as in the respective
- *                            GMP commands.
- */
-static void
-content_type_from_format_string (enum content_type *content_type,
-                                 const char *format)
-{
-  if (!format)
-    *content_type = GSAD_CONTENT_TYPE_OCTET_STREAM;
-
-  else if (strcmp (format, "deb") == 0)
-    *content_type = GSAD_CONTENT_TYPE_APP_DEB;
-  else if (strcmp (format, "exe") == 0)
-    *content_type = GSAD_CONTENT_TYPE_APP_EXE;
-  else if (strcmp (format, "html") == 0)
-    *content_type = GSAD_CONTENT_TYPE_TEXT_HTML;
-  else if (strcmp (format, "key") == 0)
-    *content_type = GSAD_CONTENT_TYPE_APP_KEY;
-  else if (strcmp (format, "nbe") == 0)
-    *content_type = GSAD_CONTENT_TYPE_APP_NBE;
-  else if (strcmp (format, "pdf") == 0)
-    *content_type = GSAD_CONTENT_TYPE_APP_PDF;
-  else if (strcmp (format, "rpm") == 0)
-    *content_type = GSAD_CONTENT_TYPE_APP_RPM;
-  else if (strcmp (format, "xml") == 0)
-    *content_type = GSAD_CONTENT_TYPE_APP_XML;
-  else
-    *content_type = GSAD_CONTENT_TYPE_OCTET_STREAM;
-}
-
-/**
  * @brief Free resources.
  *
  * Used as free callback for HTTP daemon.
@@ -1479,41 +1441,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (export_assets)
   ELSE (export_config)
   ELSE (export_configs)
-
-  else if (!strcmp (cmd, "download_credential"))
-  {
-    char *html;
-    gchar *credential_login;
-    const char *credential_id;
-    const char *package_format;
-    char *content_disposition;
-    content_type_t content_type = GSAD_CONTENT_TYPE_OCTET_STREAM;
-
-    package_format = params_value (params, "package_format");
-    credential_login = NULL;
-    credential_id = params_value (params, "credential_id");
-
-    if (download_credential_gmp (&connection, credentials, params, &html,
-                                 &credential_login, response_data)
-        == 0)
-      {
-        content_type_from_format_string (&content_type, package_format);
-
-        content_disposition = g_strdup_printf (
-          "attachment; filename=credential-%s.%s",
-          (credential_login && strcmp (credential_login, "")) ? credential_login
-                                                              : credential_id,
-          (strcmp (package_format, "key") == 0 ? "pub" : package_format));
-        cmd_response_data_set_content_disposition (response_data,
-                                                   content_disposition);
-        cmd_response_data_set_content_type (response_data, content_type);
-      }
-
-    g_free (credential_login);
-
-    res = html;
-  }
-
+  ELSE (download_credential)
   ELSE (export_credential)
   ELSE (export_credentials)
   ELSE (export_filter)

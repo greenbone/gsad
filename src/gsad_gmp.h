@@ -157,10 +157,9 @@ char *
 export_alerts_gmp (gvm_connection_t *, credentials_t *, params_t *,
                    cmd_response_data_t *);
 
-int
+char *
 download_credential_gmp (gvm_connection_t *, credentials_t *, params_t *,
-                         char **, char **, cmd_response_data_t *);
-
+                         cmd_response_data_t *);
 char *
 export_credential_gmp (gvm_connection_t *, credentials_t *, params_t *,
                        cmd_response_data_t *);
