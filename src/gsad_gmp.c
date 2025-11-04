@@ -19681,7 +19681,7 @@ create_oci_image_target_gmp (gvm_connection_t *connection,
       g_markup_printf_escaped ("<comment>%s</comment>", comment);
 
   credential_element = NULL;
-  if (credential)
+  if (credential && !str_equal (credential, ""))
     credential_element =
       g_strdup_printf ("<credential id=\"%s\"/>", credential);
 
