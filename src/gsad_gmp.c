@@ -4195,10 +4195,10 @@ get_credential_stores_gmp (gvm_connection_t *connection,
 void
 add_preference_to_xml (GString *xml, const char *name, const char *value)
 {
-  if (!xml || !name)
+  if (!xml || !name || !value)
     return;
 
-  if (value)
+  if (*name && *value)
     {
       g_string_append_printf (xml,
                               "<preference>"
