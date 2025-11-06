@@ -18699,6 +18699,19 @@ get_agent_installer_file_gmp (gvm_connection_t *connection,
         "Failed to receive installer file response.", response_data);
     }
 
+  if (gmp_success (entity) != 1)
+    {
+      gchar *message;
+
+      set_http_status_from_entity (entity, response_data);
+
+      message =
+        gsad_message (credentials, "Error", __func__, __LINE__,
+                      entity_attribute (entity, "status_text"), response_data);
+      free_entity (entity);
+      return message;
+    }
+
   file_entity = entity_child (entity, "file");
 
   if (!file_entity || !entity_text (file_entity))
