@@ -2749,7 +2749,7 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
   const char *schedule_id, *schedule_periods;
   const char *in_assets, *alterable;
   const char *add_tag, *tag_id, *auto_delete, *auto_delete_data;
-  const char *apply_overrides, *min_qod;
+  const char *apply_overrides, *min_qod, *scanner_id;
   const char *accept_invalid_certs, *registry_allow_insecure;
   gchar *name_escaped, *comment_escaped;
   params_t *alerts;
@@ -2770,6 +2770,7 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
   oci_image_target_id = params_value (params, "oci_image_target_id");
   accept_invalid_certs = params_value (params, "accept_invalid_certs");
   registry_allow_insecure = params_value (params, "registry_allow_insecure");
+  scanner_id = params_value (params, "scanner_id");
 
   CHECK_VARIABLE_INVALID (name, "Create OCI Image Task");
   CHECK_VARIABLE_INVALID (comment, "Create OCI Image Task");
@@ -2777,6 +2778,7 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (schedule_id, "Create OCI Image Task");
   CHECK_VARIABLE_INVALID (accept_invalid_certs, "Create OCI Image Task");
   CHECK_VARIABLE_INVALID (registry_allow_insecure, "Create OCI Image Task");
+  CHECK_VARIABLE_INVALID (scanner_id, "Create OCI Image Task");
 
   if (str_equal (oci_image_target_id, "0"))
     {
@@ -2866,11 +2868,13 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
     "</preference>"
     "</preferences>"
     "<usage_type>scan</usage_type>"
+    "<scanner id=\"%s\"/>"
     "</create_task>",
     schedule_periods, schedule_element, alert_element->str, oci_image_target_id,
     name_escaped, comment_escaped, alterable ? strcmp (alterable, "0") : 0,
     accept_invalid_certs ? strcmp (accept_invalid_certs, "0") : 0,
-    registry_allow_insecure ? strcmp (registry_allow_insecure, "0") : 0);
+    registry_allow_insecure ? strcmp (registry_allow_insecure, "0") : 0,
+    scanner_id);
 
   g_free (name_escaped);
   g_free (comment_escaped);
@@ -3491,7 +3495,7 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
 {
   gchar *html = NULL, *response = NULL, *format = NULL;
   const char *comment, *name, *schedule_id, *schedule_periods;
-  const char *task_id, *oci_image_target_id;
+  const char *task_id, *oci_image_target_id, *scanner_id;
   const char *accept_invalid_certs, *registry_allow_insecure;
   const char *alterable;
   int ret;
@@ -3509,6 +3513,7 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
   oci_image_target_id = params_value (params, "oci_image_target_id");
   accept_invalid_certs = params_value (params, "accept_invalid_certs");
   registry_allow_insecure = params_value (params, "registry_allow_insecure");
+  scanner_id = params_value (params, "scanner_id");
 
   /* Optional schedule_periods -> default "0" if not provided */
   if (params_given (params, "schedule_periods"))
@@ -3526,6 +3531,7 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (oci_image_target_id, "Save OCI Image Task");
   CHECK_VARIABLE_INVALID (accept_invalid_certs, "Save OCI Image Task");
   CHECK_VARIABLE_INVALID (registry_allow_insecure, "Save OCI Image Task");
+  CHECK_VARIABLE_INVALID (scanner_id, "Save OCI Image Task");
 
   /* Build alerts list */
   alert_element = g_string_new ("");
@@ -3560,6 +3566,7 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
     "<oci_image_target id=\"%%s\"/>"
     "<schedule id=\"%%s\"/>"
     "<schedule_periods>%%s</schedule_periods>"
+    "<scanner id=\"%%s\"/>"
     "%s%i%s" /* optional alterable wrapper with numeric value */
     "<preferences>"
     "<preference>"
@@ -3579,7 +3586,7 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
   ret = gmpf (
     connection, credentials, &response, &entity, response_data, format, task_id,
     name, comment, oci_image_target_id, schedule_id, schedule_periods,
-    accept_invalid_certs ? strcmp (accept_invalid_certs, "0") : 0,
+    scanner_id, accept_invalid_certs ? strcmp (accept_invalid_certs, "0") : 0,
     registry_allow_insecure ? strcmp (registry_allow_insecure, "0") : 0);
 
   g_free (format);
