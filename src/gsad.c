@@ -789,6 +789,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (create_note)
 #if ENABLE_CONTAINER_SCANNING
   ELSE (create_oci_image_target)
+  ELSE (create_oci_image_task)
 #endif
   ELSE (create_override)
   ELSE (create_permission)
@@ -879,6 +880,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (save_note)
 #if ENABLE_CONTAINER_SCANNING
   ELSE (save_oci_image_target)
+  ELSE (save_oci_image_task)
 #endif
   ELSE (save_override)
   ELSE (save_permission)
