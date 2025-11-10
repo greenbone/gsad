@@ -3930,7 +3930,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   gchar *html, *response;
   const char *name, *comment, *credential_login, *type, *password, *passphrase;
 #if ENABLE_CREDENTIAL_STORES
-  const char *vault_id, *host_identifier;
+  const char *credential_store_id, *vault_id, *host_identifier;
 #endif
   const char *private_key, *public_key, *certificate, *community;
   const char *privacy_password, *auth_algorithm, *privacy_algorithm;
@@ -3946,6 +3946,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   password = params_value (params, "lsc_password");
   passphrase = params_value (params, "passphrase");
 #if ENABLE_CREDENTIAL_STORES
+  credential_store_id = params_value (params, "credential_store_id");
   vault_id = params_value (params, "vault_id");
   host_identifier = params_value (params, "host_identifier");
 #endif
@@ -4249,21 +4250,44 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
                || str_equal (type, "cs_pgp") || str_equal (type, "cs_pw")
                || str_equal (type, "cs_smime") || str_equal (type, "cs_krb5"))
         {
+          if (params_given (params, "credential_store_id"))
+            CHECK_VARIABLE_INVALID (credential_store_id, "Create Credential");
+
           CHECK_VARIABLE_INVALID (vault_id, "Create Credential");
           CHECK_VARIABLE_INVALID (host_identifier, "Create Credential");
 
-          ret =
-            gmpf (connection, credentials, &response, &entity, response_data,
-                  "<create_credential>"
-                  "<name>%s</name>"
-                  "<comment>%s</comment>"
-                  "<type>%s</type>"
-                  "<vault_id>%s</vault_id>"
-                  "<host_identifier>%s</host_identifier>"
-                  "<allow_insecure>%s</allow_insecure>"
-                  "</create_credential>",
-                  name, comment ? comment : "", type, vault_id ? vault_id : "",
-                  host_identifier ? host_identifier : "", allow_insecure);
+          if (credential_store_id && strcmp (credential_store_id, ""))
+            {
+              ret = gmpf (
+                connection, credentials, &response, &entity, response_data,
+                "<create_credential>"
+                "<name>%s</name>"
+                "<comment>%s</comment>"
+                "<type>%s</type>"
+                "<credential_store_id>%s</credential-store_id>"
+                "<vault_id>%s</vault_id>"
+                "<host_identifier>%s</host_identifier>"
+                "<allow_insecure>%s</allow_insecure>"
+                "</create_credential>",
+                name, comment ? comment : "", type, credential_store_id,
+                vault_id ? vault_id : "",
+                host_identifier ? host_identifier : "", allow_insecure);
+            }
+          else
+            {
+              ret = gmpf (
+                connection, credentials, &response, &entity, response_data,
+                "<create_credential>"
+                "<name>%s</name>"
+                "<comment>%s</comment>"
+                "<type>%s</type>"
+                "<vault_id>%s</vault_id>"
+                "<host_identifier>%s</host_identifier>"
+                "<allow_insecure>%s</allow_insecure>"
+                "</create_credential>",
+                name, comment ? comment : "", type, vault_id ? vault_id : "",
+                host_identifier ? host_identifier : "", allow_insecure);
+            }
         }
 #endif
       else
@@ -4939,7 +4963,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *credential_id, *public_key;
   const char *name, *comment, *credential_login, *password, *passphrase, *type;
 #if ENABLE_CREDENTIAL_STORES
-  const char *vault_id, *host_identifier;
+  const char *credential_store_id, *vault_id, *host_identifier;
 #endif
   const char *private_key, *certificate, *community, *privacy_password;
   const char *kdc, *realm;
@@ -4956,6 +4980,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   password = params_value (params, "password");
   passphrase = params_value (params, "passphrase");
 #if ENABLE_CREDENTIAL_STORES
+  credential_store_id = params_value (params, "credential_store_id");
   vault_id = params_value (params, "vault_id");
   host_identifier = params_value (params, "host_identifier");
 #endif
@@ -5032,6 +5057,8 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
            || str_equal (type, "cs_pgp") || str_equal (type, "cs_pw")
            || str_equal (type, "cs_smime") || str_equal (type, "cs_krb5"))
     {
+      if (params_given (params, "credential_store_id"))
+        CHECK_VARIABLE_INVALID (credential_store_id, "Save Credential")
       if (params_given (params, "vault_id"))
         CHECK_VARIABLE_INVALID (vault_id, "Save Credential");
       if (params_given (params, "host_identifier"))
@@ -5175,6 +5202,12 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
            || str_equal (type, "cs_pgp") || str_equal (type, "cs_pw")
            || str_equal (type, "cs_smime") || str_equal (type, "cs_krb5"))
     {
+      if (credential_store_id && strcmp (credential_store_id, ""))
+        {
+          xml_string_append (command,
+                             "<credential_store_id>%s</credential_store_id>",
+                             credential_store_id);
+        }
       if (vault_id && strcmp (vault_id, ""))
         {
           xml_string_append (command, "<vault_id>%s</vault_id>", vault_id);
