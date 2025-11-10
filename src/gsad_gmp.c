@@ -2780,9 +2780,9 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
 
   if (str_equal (oci_image_target_id, "0"))
     {
-      /* Don't allow to create agent group task via create_task */
+      /* Don't allow to create oci image task via create_task */
       return message_invalid (connection, credentials, params, response_data,
-                              "Given agent_group_id was invalid",
+                              "Given oci_image_target_id was invalid",
                               "Create OCI Image Task");
     }
 
@@ -2895,7 +2895,7 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
         credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while creating a new agent-group task. "
+        "An internal error occurred while creating a new oci image task. "
         "No new task was created. "
         "Diagnostics: Failure to send command to manager daemon.",
         response_data);
@@ -2904,7 +2904,7 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
         credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while creating a new agent-group task. "
+        "An internal error occurred while creating a new oci image task. "
         "It is unclear whether the task has been created or not. "
         "Diagnostics: Failure to receive response from manager daemon.",
         response_data);
@@ -2913,7 +2913,7 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
         credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while creating a new agent-group task. "
+        "An internal error occurred while creating a new oci image task. "
         "It is unclear whether the task has been created or not. "
         "Diagnostics: Internal Error.",
         response_data);
@@ -3597,7 +3597,7 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
         credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while saving an agent-group task. "
+        "An internal error occurred while saving an oci image task. "
         "The task was not saved. "
         "Diagnostics: Failure to send command to manager daemon.",
         response_data);
@@ -3606,7 +3606,7 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
         credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while saving an agent-group task. "
+        "An internal error occurred while saving an oci image task. "
         "It is unclear whether the task has been saved or not. "
         "Diagnostics: Failure to receive response from manager daemon.",
         response_data);
@@ -3615,7 +3615,7 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
         credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while saving an agent-group task. "
+        "An internal error occurred while saving an oci image task. "
         "It is unclear whether the task has been saved or not. "
         "Diagnostics: Internal Error.",
         response_data);
