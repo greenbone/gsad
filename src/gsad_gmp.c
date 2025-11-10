@@ -2864,7 +2864,6 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
     "<scanner_name>registry_allow_insecure</scanner_name>"
     "<value>%d</value>"
     "</preference>"
-    "<preference>"
     "</preferences>"
     "<usage_type>scan</usage_type>"
     "</create_task>",
@@ -3571,7 +3570,6 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
     "<scanner_name>registry_allow_insecure</scanner_name>"
     "<value>%%d</value>"
     "</preference>"
-    "<preference>"
     "</preferences>"
     "</modify_task>",
     alert_element->str, alterable ? "<alterable>" : "",
