@@ -2725,6 +2725,284 @@ create_agent_group_task_gmp (gvm_connection_t *connection,
 }
 
 #endif /* ENABLE_AGENTS */
+#if ENABLE_CONTAINER_SCANNING
+/**
+ * @brief Create an oci image task, get all tasks, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+create_oci_image_task_gmp (gvm_connection_t *connection,
+                           credentials_t *credentials, params_t *params,
+                           cmd_response_data_t *response_data)
+{
+  entity_t entity;
+  int ret;
+  gchar *schedule_element, *command;
+  gchar *response, *html;
+  const char *name, *comment, *oci_image_target_id;
+  const char *schedule_id, *schedule_periods;
+  const char *in_assets, *alterable;
+  const char *add_tag, *tag_id, *auto_delete, *auto_delete_data;
+  const char *apply_overrides, *min_qod;
+  const char *accept_invalid_certs, *registry_allow_insecure;
+  gchar *name_escaped, *comment_escaped;
+  params_t *alerts;
+  GString *alert_element;
+
+  add_tag = params_value (params, "add_tag");
+  alterable = params_value (params, "alterable");
+  apply_overrides = params_value (params, "apply_overrides");
+  auto_delete = params_value (params, "auto_delete");
+  auto_delete_data = params_value (params, "auto_delete_data");
+  comment = params_value (params, "comment");
+  in_assets = params_value (params, "in_assets");
+  min_qod = params_value (params, "min_qod");
+  name = params_value (params, "name");
+  schedule_id = params_value (params, "schedule_id");
+  schedule_periods = params_value (params, "schedule_periods");
+  tag_id = params_value (params, "tag_id");
+  oci_image_target_id = params_value (params, "oci_image_target_id");
+  accept_invalid_certs = params_value (params, "accept_invalid_certs");
+  registry_allow_insecure = params_value (params, "registry_allow_insecure");
+
+  CHECK_VARIABLE_INVALID (name, "Create OCI Image Task");
+  CHECK_VARIABLE_INVALID (comment, "Create OCI Image Task");
+  CHECK_VARIABLE_INVALID (oci_image_target_id, "Create OCI Image Task");
+  CHECK_VARIABLE_INVALID (schedule_id, "Create OCI Image Task");
+  CHECK_VARIABLE_INVALID (accept_invalid_certs, "Create OCI Image Task");
+  CHECK_VARIABLE_INVALID (registry_allow_insecure, "Create OCI Image Task");
+
+  if (str_equal (oci_image_target_id, "0"))
+    {
+      /* Don't allow to create agent group task via create_task */
+      return message_invalid (connection, credentials, params, response_data,
+                              "Given agent_group_id was invalid",
+                              "Create OCI Image Task");
+    }
+
+  if (params_given (params, "schedule_periods"))
+    {
+      CHECK_VARIABLE_INVALID (schedule_periods, "Create OCI Image Task");
+    }
+  else
+    schedule_periods = "0";
+
+  CHECK_VARIABLE_INVALID (in_assets, "Create OCI Image Task");
+
+  if (!strcmp (in_assets, "1"))
+    {
+      CHECK_VARIABLE_INVALID (apply_overrides, "Create OCI Image Task");
+      CHECK_VARIABLE_INVALID (min_qod, "Create Task");
+    }
+  else
+    {
+      if (!params_given (params, "apply_overrides")
+          || !params_valid (params, "apply_overrides"))
+        apply_overrides = "";
+
+      if (!params_given (params, "min_qod")
+          || !params_valid (params, "min_qod"))
+        min_qod = "";
+    }
+
+  CHECK_VARIABLE_INVALID (auto_delete, "Create Task");
+  CHECK_VARIABLE_INVALID (auto_delete_data, "Create Task");
+  CHECK_VARIABLE_INVALID (alterable, "Create Task");
+
+  if (add_tag && strcmp (add_tag, "1") == 0)
+    {
+      CHECK_VARIABLE_INVALID (tag_id, "Create Task");
+    }
+
+  if (schedule_id == NULL || strcmp (schedule_id, "0") == 0)
+    schedule_element = g_strdup ("");
+  else
+    schedule_element = g_strdup_printf ("<schedule id=\"%s\"/>", schedule_id);
+
+  alert_element = g_string_new ("");
+  if (params_given (params, "alert_id_optional:"))
+    alerts = params_values (params, "alert_id_optional:");
+  else
+    alerts = params_values (params, "alert_ids:");
+
+  if (alerts)
+    {
+      params_iterator_t iter;
+      char *name;
+      param_t *param;
+
+      params_iterator_init (&iter, alerts);
+      while (params_iterator_next (&iter, &name, &param))
+        if (param->value && strcmp (param->value, "0"))
+          g_string_append_printf (alert_element, "<alert id=\"%s\"/>",
+                                  param->value ? param->value : "");
+    }
+
+  name_escaped = name ? g_markup_escape_text (name, -1) : NULL;
+  comment_escaped = comment ? g_markup_escape_text (comment, -1) : NULL;
+
+  command = g_strdup_printf (
+    "<create_task>"
+    "<schedule_periods>%s</schedule_periods>"
+    "%s%s"
+    "<oci_image_target id=\"%s\"/>"
+    "<name>%s</name>"
+    "<comment>%s</comment>"
+    "<alterable>%i</alterable>"
+    "<preferences>"
+    "<preference>"
+    "<scanner_name>accept_invalid_certs</scanner_name>"
+    "<value>%d</value>"
+    "</preference>"
+    "<preference>"
+    "<scanner_name>registry_allow_insecure</scanner_name>"
+    "<value>%d</value>"
+    "</preference>"
+    "<preference>"
+    "</preferences>"
+    "<usage_type>scan</usage_type>"
+    "</create_task>",
+    schedule_periods, schedule_element, alert_element->str, oci_image_target_id,
+    name_escaped, comment_escaped, alterable ? strcmp (alterable, "0") : 0,
+    accept_invalid_certs ? strcmp (accept_invalid_certs, "0") : 0,
+    registry_allow_insecure ? strcmp (registry_allow_insecure, "0") : 0);
+
+  g_free (name_escaped);
+  g_free (comment_escaped);
+
+  ret =
+    gmp (connection, credentials, &response, &entity, response_data, command);
+  g_free (command);
+
+  g_free (schedule_element);
+  g_string_free (alert_element, TRUE);
+
+  switch (ret)
+    {
+    case 0:
+      break;
+    case -1:
+      /* 'gmp' set response. */
+      return response;
+    case 1:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while creating a new agent-group task. "
+        "No new task was created. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while creating a new agent-group task. "
+        "It is unclear whether the task has been created or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while creating a new agent-group task. "
+        "It is unclear whether the task has been created or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
+    }
+
+  if (gmp_success (entity))
+    {
+      if (add_tag && strcmp (add_tag, "1") == 0)
+        {
+          const char *new_task_id = entity_attribute (entity, "id");
+          gchar *tag_command, *tag_response;
+          entity_t tag_entity;
+
+          tag_command = g_markup_printf_escaped ("<modify_tag tag_id=\"%s\">"
+                                                 "<resources action=\"add\">"
+                                                 "<resource id=\"%s\"/>"
+                                                 "</resources>"
+                                                 "</modify_tag>",
+                                                 tag_id, new_task_id);
+
+          ret = gmp (connection, credentials, &tag_response, &tag_entity,
+                     response_data, tag_command);
+
+          switch (ret)
+            {
+            case 0:
+            case -1:
+              break;
+            case 1:
+              free_entity (entity);
+              g_free (response);
+              cmd_response_data_set_status_code (
+                response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+              return gsad_message (
+                credentials, "Internal error", __func__, __LINE__,
+                "An internal error occurred while creating a new tag. "
+                "No new tag was created. "
+                "Diagnostics: Failure to send command to manager daemon.",
+                response_data);
+            case 2:
+              free_entity (entity);
+              g_free (response);
+              cmd_response_data_set_status_code (
+                response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+              return gsad_message (
+                credentials, "Internal error", __func__, __LINE__,
+                "An internal error occurred while creating a new tag. "
+                "It is unclear whether the tag has been created or not. "
+                "Diagnostics: Failure to receive response from manager daemon.",
+                response_data);
+            default:
+              free_entity (entity);
+              g_free (response);
+              cmd_response_data_set_status_code (
+                response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+              return gsad_message (
+                credentials, "Internal error", __func__, __LINE__,
+                "An internal error occurred while creating a new task. "
+                "It is unclear whether the tag has been created or not. "
+                "Diagnostics: Internal Error.",
+                response_data);
+            }
+
+          if (entity_attribute (entity, "id"))
+            params_add (params, "task_id", entity_attribute (entity, "id"));
+          html = response_from_entity (
+            connection, credentials, params, tag_entity,
+            "Create OCI Image Task and Tag", response_data);
+          free_entity (tag_entity);
+          g_free (tag_response);
+        }
+      else
+        {
+          if (entity_attribute (entity, "id"))
+            params_add (params, "task_id", entity_attribute (entity, "id"));
+          html = response_from_entity (connection, credentials, params, entity,
+                                       "Create OCI Image Task", response_data);
+        }
+    }
+  else
+    {
+      html = response_from_entity (connection, credentials, params, entity,
+                                   "Create OCI Image Task", response_data);
+    }
+  free_entity (entity);
+  g_free (response);
+  return html;
+}
+#endif /* ENABLE_CONTAINER_SCANNING */
 
 /**
  * @brief Delete a task, get all tasks, envelope the result.
@@ -3200,6 +3478,156 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
 }
 
 #endif /* ENABLE_AGENTS */
+
+#if ENABLE_CONTAINER_SCANNING
+/**
+ * @brief Save an oci image task, envelope the result.
+ *
+ * This variant updates only fields relevant to agent-group tasks.
+ */
+char *
+save_oci_image_task_gmp (gvm_connection_t *connection,
+                         credentials_t *credentials, params_t *params,
+                         cmd_response_data_t *response_data)
+{
+  gchar *html = NULL, *response = NULL, *format = NULL;
+  const char *comment, *name, *schedule_id, *schedule_periods;
+  const char *task_id, *oci_image_target_id;
+  const char *accept_invalid_certs, *registry_allow_insecure;
+  const char *alterable;
+  int ret;
+  params_t *alerts;
+  GString *alert_element;
+  entity_t entity = NULL;
+
+  /* Read params */
+  alterable = params_value (params, "alterable");
+  comment = params_value (params, "comment");
+  name = params_value (params, "name");
+  schedule_id = params_value (params, "schedule_id");
+  schedule_periods = params_value (params, "schedule_periods");
+  task_id = params_value (params, "task_id");
+  oci_image_target_id = params_value (params, "oci_image_target_id");
+  accept_invalid_certs = params_value (params, "accept_invalid_certs");
+  registry_allow_insecure = params_value (params, "registry_allow_insecure");
+
+  /* Optional schedule_periods -> default "0" if not provided */
+  if (params_given (params, "schedule_periods"))
+    {
+      CHECK_VARIABLE_INVALID (schedule_periods, "Save OCI Image Task");
+    }
+  else
+    schedule_periods = "0";
+
+  /* Validate requireds */
+  CHECK_VARIABLE_INVALID (name, "Save OCI Image Task");
+  CHECK_VARIABLE_INVALID (comment, "Save OCI Image Task");
+  CHECK_VARIABLE_INVALID (schedule_id, "Save OCI Image Task");
+  CHECK_VARIABLE_INVALID (task_id, "Save OCI Image Task");
+  CHECK_VARIABLE_INVALID (oci_image_target_id, "Save OCI Image Task");
+  CHECK_VARIABLE_INVALID (accept_invalid_certs, "Save OCI Image Task");
+  CHECK_VARIABLE_INVALID (registry_allow_insecure, "Save OCI Image Task");
+
+  /* Build alerts list */
+  alert_element = g_string_new ("");
+  if (params_given (params, "alert_id_optional:"))
+    alerts = params_values (params, "alert_id_optional:");
+  else
+    alerts = params_values (params, "alert_ids:");
+
+  if (alerts)
+    {
+      params_iterator_t iter;
+      char *pname;
+      param_t *param;
+
+      params_iterator_init (&iter, alerts);
+      while (params_iterator_next (&iter, &pname, &param))
+        {
+          if (param->value && strcmp (param->value, "0"))
+            g_string_append_printf (alert_element, "<alert id=\"%s\"/>",
+                                    param->value ? param->value : "");
+        }
+    }
+
+  if (strcmp (alert_element->str, "") == 0)
+    g_string_append_printf (alert_element, "<alert id=\"0\"/>");
+
+  format = g_strdup_printf (
+    "<modify_task task_id=\"%%s\">"
+    "<name>%%s</name>"
+    "<comment>%%s</comment>"
+    "%s" /* alerts */
+    "<oci_image_target id=\"%%s\"/>"
+    "<schedule id=\"%%s\"/>"
+    "<schedule_periods>%%s</schedule_periods>"
+    "%s%i%s" /* optional alterable wrapper with numeric value */
+    "<preferences>"
+    "<preference>"
+    "<scanner_name>accept_invalid_certs</scanner_name>"
+    "<value>%%d</value>"
+    "</preference>"
+    "<preference>"
+    "<scanner_name>registry_allow_insecure</scanner_name>"
+    "<value>%%d</value>"
+    "</preference>"
+    "<preference>"
+    "</preferences>"
+    "</modify_task>",
+    alert_element->str, alterable ? "<alterable>" : "",
+    alterable ? strcmp (alterable, "0") : 0, alterable ? "</alterable>" : "");
+
+  /* Send */
+  ret = gmpf (
+    connection, credentials, &response, &entity, response_data, format, task_id,
+    name, comment, oci_image_target_id, schedule_id, schedule_periods,
+    accept_invalid_certs ? strcmp (accept_invalid_certs, "0") : 0,
+    registry_allow_insecure ? strcmp (registry_allow_insecure, "0") : 0);
+
+  g_free (format);
+  g_string_free (alert_element, TRUE);
+
+  switch (ret)
+    {
+    case 0:
+    case -1:
+      break;
+    case 1:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving an agent-group task. "
+        "The task was not saved. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving an agent-group task. "
+        "It is unclear whether the task has been saved or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while saving an agent-group task. "
+        "It is unclear whether the task has been saved or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
+    }
+
+  html = response_from_entity (connection, credentials, params, entity,
+                               "Save OCI Image Task", response_data);
+  free_entity (entity);
+  g_free (response);
+  return html;
+}
+#endif /* ENABLE_CONTAINER_SCANNING */
 
 /**
  * @brief Export a task.

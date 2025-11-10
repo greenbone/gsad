@@ -156,6 +156,114 @@ Ensure (gsad_validator, validate_ca_pub)
   assert_that (gvm_validate (validator, "ca_pub", "123"), is_equal_to (0));
 }
 
+Ensure (gsad_validator, alias_boolean_accept_invalid_certs)
+{
+  validator_t validator = get_validator ();
+  assert_that (gvm_validate (validator, "accept_invalid_certs", "0"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "accept_invalid_certs", "1"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "accept_invalid_certs", "yes"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "accept_invalid_certs", ""),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "accept_invalid_certs", NULL),
+               is_equal_to (5));
+}
+
+Ensure (gsad_validator, alias_number_agent_ids_name)
+{
+  validator_t validator = get_validator ();
+  assert_that (gvm_validate (validator, "agent_ids:name", "0"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "agent_ids:name", "42"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "agent_ids:name", "-1"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "agent_ids:name", "abc"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "agent_ids:name", ""), is_equal_to (2));
+}
+
+Ensure (gsad_validator, alias_id_optional_alert_id_optional_value)
+{
+  validator_t validator = get_validator ();
+  assert_that (gvm_validate (validator, "alert_id_optional:value", "--"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "alert_id_optional:value", "abc-123"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "alert_id_optional:value", ""),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "alert_id_optional:value", "ABC"),
+               is_equal_to (2)); /* uppercase not allowed */
+}
+
+Ensure (gsad_validator, alias_id_report_format_ids_value)
+{
+  validator_t validator = get_validator ();
+  assert_that (gvm_validate (validator, "report_format_ids:value", "id-1"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "report_format_ids:value",
+                             "123e4567-e89b-12d3-a456-426614174000"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "report_format_ids:value", ""),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "report_format_ids:value", "UPPER"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "report_format_ids:value", "bad id"),
+               is_equal_to (2));
+}
+
+Ensure (gsad_validator, alias_uuid_nvt_value)
+{
+  validator_t validator = get_validator ();
+  assert_that (gvm_validate (validator, "nvt:value",
+                             "123e4567-e89b-12d3-a456-426614174000"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "nvt:value", "deadbeef"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "nvt:value", "g-not-hex"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "nvt:value", ""), is_equal_to (2));
+}
+
+Ensure (gsad_validator, alias_email_list_method_data_to_address)
+{
+  validator_t validator = get_validator ();
+  assert_that (gvm_validate (validator, "method_data:to_address:", "a@b.com"),
+               is_equal_to (0));
+  assert_that (
+    gvm_validate (validator, "method_data:to_address:", "a@b.com, c@d.org"),
+    is_equal_to (0));
+  assert_that (gvm_validate (validator, "method_data:to_address:", ""),
+               is_equal_to (2));
+  assert_that (
+    gvm_validate (validator, "method_data:to_address:", "not-an-email"),
+    is_equal_to (2));
+}
+
+Ensure (gsad_validator, alias_hosts_hosts_manual)
+{
+  validator_t validator = get_validator ();
+  assert_that (
+    gvm_validate (validator, "hosts_manual", "192.168.0.1,example.com"),
+    is_equal_to (0));
+  assert_that (gvm_validate (validator, "hosts_manual", "fe80::1"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "hosts_manual", ""), is_equal_to (2));
+}
+
+Ensure (gsad_validator, alias_hostpath_scanner_host)
+{
+  validator_t validator = get_validator ();
+  assert_that (gvm_validate (validator, "scanner_host", "192.168.1.10:3000"),
+               is_equal_to (0));
+  assert_that (
+    gvm_validate (validator, "scanner_host", "unix:///var/run/openvas.sock"),
+    is_equal_to (0));
+  assert_that (gvm_validate (validator, "scanner_host", ""), is_equal_to (2));
+}
+
 int
 main (int argc, char **argv)
 {
@@ -167,5 +275,18 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_validator, validate_kdcs_name_and_value);
   add_test_with_context (suite, gsad_validator, validate_oci_image_references);
   add_test_with_context (suite, gsad_validator, validate_ca_pub);
+  add_test_with_context (suite, gsad_validator,
+                         alias_boolean_accept_invalid_certs);
+  add_test_with_context (suite, gsad_validator, alias_number_agent_ids_name);
+  add_test_with_context (suite, gsad_validator,
+                         alias_id_optional_alert_id_optional_value);
+  add_test_with_context (suite, gsad_validator,
+                         alias_id_report_format_ids_value);
+  add_test_with_context (suite, gsad_validator, alias_uuid_nvt_value);
+  add_test_with_context (suite, gsad_validator,
+                         alias_email_list_method_data_to_address);
+  add_test_with_context (suite, gsad_validator, alias_hosts_hosts_manual);
+  add_test_with_context (suite, gsad_validator, alias_hostpath_scanner_host);
+
   return run_test_suite (suite, create_text_reporter ());
 }

@@ -65,6 +65,7 @@ init_validator ()
                      "|(create_user)"
                      "|(create_agent_group)"
                      "|(create_agent_group_task)"
+                     "|(create_oci_image_task)"
                      "|(cvss_calculator)"
                      "|(delete_agent)"
                      "|(delete_agent_group)"
@@ -274,6 +275,7 @@ init_validator ()
                      "|(save_my_settings)"
                      "|(save_note)"
                      "|(save_oci_image_target)"
+                     "|(save_oci_image_task)"
                      "|(save_override)"
                      "|(save_permission)"
                      "|(save_port_list)"
@@ -592,6 +594,8 @@ init_validator ()
 
   gvm_validator_alias (validator, "add_tag", "boolean");
   gvm_validator_alias (validator, "authorized", "boolean");
+  gvm_validator_alias (validator, "accept_invalid_certs", "boolean");
+  gvm_validator_alias (validator, "registry_allow_insecure", "boolean");
   gvm_validator_alias (validator, "agent_ids:name", "number");
   gvm_validator_alias (validator, "scheduler_cron_times:name", "number");
   gvm_validator_alias (validator, "scheduler_cron_times:value", "name");

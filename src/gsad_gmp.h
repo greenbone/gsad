@@ -920,6 +920,14 @@ delete_oci_image_target_gmp (gvm_connection_t *, credentials_t *, params_t *,
 char *
 save_oci_image_target_gmp (gvm_connection_t *, credentials_t *, params_t *,
                            cmd_response_data_t *);
+
+char *
+create_oci_image_task_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                           cmd_response_data_t *);
+
+char *
+save_oci_image_task_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                         cmd_response_data_t *);
 #endif
 
 char *
