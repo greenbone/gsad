@@ -5202,17 +5202,17 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
            || str_equal (type, "cs_pgp") || str_equal (type, "cs_pw")
            || str_equal (type, "cs_smime") || str_equal (type, "cs_krb5"))
     {
-      if (credential_store_id && strcmp (credential_store_id, ""))
+      if (credential_store_id && !str_equal (credential_store_id, ""))
         {
           xml_string_append (command,
                              "<credential_store_id>%s</credential_store_id>",
                              credential_store_id);
         }
-      if (vault_id && strcmp (vault_id, ""))
+      if (vault_id && !str_equal (vault_id, ""))
         {
           xml_string_append (command, "<vault_id>%s</vault_id>", vault_id);
         }
-      if (host_identifier && strcmp (host_identifier, ""))
+      if (host_identifier && !str_equal (host_identifier, ""))
         {
           xml_string_append (command, "<host_identifier>%s</host_identifier>",
                              host_identifier);
