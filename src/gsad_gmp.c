@@ -2163,6 +2163,9 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *in_assets, *hosts_ordering, *alterable;
   const char *add_tag, *tag_id, *auto_delete, *auto_delete_data;
   const char *apply_overrides, *min_qod, *usage_type;
+#if ENABLE_CREDENTIAL_STORES
+  const char *cs_allow_failed_retrieval;
+#endif
   gchar *name_escaped, *comment_escaped;
   params_t *alerts;
   GString *alert_element;
@@ -2187,6 +2190,11 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   tag_id = params_value (params, "tag_id");
   target_id = params_value (params, "target_id");
   usage_type = params_value (params, "usage_type");
+#if ENABLE_CREDENTIAL_STORES
+  cs_allow_failed_retrieval =
+    params_value (params, "cs_allow_failed_retrieval");
+  CHECK_VARIABLE_INVALID (cs_allow_failed_retrieval, "Create Task");
+#endif
 
   CHECK_VARIABLE_INVALID (scanner_type, "Create Task");
   if (!strcmp (scanner_type, "1"))
@@ -2323,6 +2331,12 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
     "<scanner_name>auto_delete_data</scanner_name>"
     "<value>%s</value>"
     "</preference>"
+#if ENABLE_CREDENTIAL_STORES
+    "<preference>"
+    "<scanner_name>cs_allow_failed_retrieval</scanner_name>"
+    "<value>%d</value>"
+    "</preference>"
+#endif
     "</preferences>"
     "<alterable>%i</alterable>"
     "<usage_type>%s</usage_type>"
@@ -2331,7 +2345,11 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
     target_id, scanner_id, hosts_ordering, name_escaped, comment_escaped,
     max_checks, max_hosts, strcmp (in_assets, "0") ? "yes" : "no",
     strcmp (apply_overrides, "0") ? "yes" : "no", min_qod, auto_delete,
-    auto_delete_data, alterable ? strcmp (alterable, "0") : 0, usage_type);
+    auto_delete_data,
+#if ENABLE_CREDENTIAL_STORES
+    cs_allow_failed_retrieval ? strcmp (cs_allow_failed_retrieval, "0") : 0,
+#endif
+    alterable ? strcmp (alterable, "0") : 0, usage_type);
 
   g_free (name_escaped);
   g_free (comment_escaped);
@@ -3045,6 +3063,9 @@ save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *config_id, *target_id, *hosts_ordering, *alterable;
   const char *scanner_type, *schedule_periods, *auto_delete, *auto_delete_data;
   const char *apply_overrides, *min_qod;
+#if ENABLE_CREDENTIAL_STORES
+  const char *cs_allow_failed_retrieval;
+#endif
   int ret;
   params_t *alerts;
   GString *alert_element;
@@ -3068,6 +3089,11 @@ save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   schedule_periods = params_value (params, "schedule_periods");
   target_id = params_value (params, "target_id");
   task_id = params_value (params, "task_id");
+#if ENABLE_CREDENTIAL_STORES
+  cs_allow_failed_retrieval =
+    params_value (params, "cs_allow_failed_retrieval");
+  CHECK_VARIABLE_INVALID (cs_allow_failed_retrieval, "Save Task");
+#endif
 
   if (scanner_type != NULL)
     {
@@ -3184,6 +3210,12 @@ save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
     "<scanner_name>auto_delete</scanner_name>"
     "<value>%%s</value>"
     "</preference>"
+#if ENABLE_CREDENTIAL_STORES
+    "<preference>"
+    "<scanner_name>cs_allow_failed_retrieval</scanner_name>"
+    "<value>%%d</value>"
+    "</preference>"
+#endif
     "<preference>"
     "<scanner_name>auto_delete_data</scanner_name>"
     "<value>%%s</value>"
@@ -3195,12 +3227,15 @@ save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
     alterable ? strcmp (alterable, "0") : 0, alterable ? "</alterable>" : "");
   response = NULL;
   entity = NULL;
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
-              format, task_id, name, comment, target_id, config_id, schedule_id,
-              schedule_periods, scanner_id, max_checks, max_hosts,
-              strcmp (in_assets, "0") ? "yes" : "no",
-              strcmp (apply_overrides, "0") ? "yes" : "no", min_qod,
-              auto_delete, auto_delete_data);
+  ret = gmpf (
+    connection, credentials, &response, &entity, response_data, format, task_id,
+    name, comment, target_id, config_id, schedule_id, schedule_periods,
+    scanner_id, max_checks, max_hosts, strcmp (in_assets, "0") ? "yes" : "no",
+    strcmp (apply_overrides, "0") ? "yes" : "no", min_qod, auto_delete,
+#if ENABLE_CREDENTIAL_STORES
+    cs_allow_failed_retrieval ? strcmp (cs_allow_failed_retrieval, "0") : 0,
+#endif
+    auto_delete_data);
   g_free (format);
 
   g_string_free (alert_element, TRUE);
