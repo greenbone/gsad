@@ -4256,7 +4256,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           CHECK_VARIABLE_INVALID (vault_id, "Create Credential");
           CHECK_VARIABLE_INVALID (host_identifier, "Create Credential");
 
-          if (credential_store_id && strcmp (credential_store_id, ""))
+          if (credential_store_id && !str_equal (credential_store_id, ""))
             {
               ret = gmpf (
                 connection, credentials, &response, &entity, response_data,
@@ -4264,7 +4264,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 "<name>%s</name>"
                 "<comment>%s</comment>"
                 "<type>%s</type>"
-                "<credential_store_id>%s</credential-store_id>"
+                "<credential_store_id>%s</credential_store_id>"
                 "<vault_id>%s</vault_id>"
                 "<host_identifier>%s</host_identifier>"
                 "<allow_insecure>%s</allow_insecure>"
