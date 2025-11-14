@@ -6772,7 +6772,8 @@ create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *target_esxi_credential, *target_snmp_credential, *target_source;
   const char *target_exclude_source;
   const char *port_list_id, *reverse_lookup_only, *reverse_lookup_unify;
-  GHashTable *alive_tests;
+  const char *alive_tests;
+  GHashTable *alive_tests_table;
   const char *hosts_filter, *file, *exclude_file;
   const char *allow_simultaneous_ips;
   gchar *ssh_credentials_element, *smb_credentials_element;
@@ -6801,11 +6802,11 @@ create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
   target_esxi_credential = params_value (params, "esxi_credential_id");
   target_krb5_credential = params_value (params, "krb5_credential_id");
   target_snmp_credential = params_value (params, "snmp_credential_id");
-  alive_tests = params_values (params, "alive_tests");
   hosts_filter = params_value (params, "hosts_filter");
   file = params_value (params, "file");
   exclude_file = params_value (params, "exclude_file");
   allow_simultaneous_ips = params_value (params, "allow_simultaneous_ips");
+  alive_tests_table = params_values (params, "alive_tests:");
 
   CHECK_VARIABLE_INVALID (name, "Create Target");
   CHECK_VARIABLE_INVALID (target_source, "Create Target")
@@ -6816,6 +6817,12 @@ create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
   /* require hosts_filter if target_source is "asset_hosts" */
   if (strcmp (target_source, "asset_hosts") == 0)
     CHECK_VARIABLE_INVALID (hosts_filter, "Create Target");
+
+  if (params_given (params, "alive_tests"))
+    {
+      alive_tests = params_value (params, "alive_tests");
+      CHECK_VARIABLE_INVALID (alive_tests, "Create Target");
+    }
 
   if (params_given (params, "target_exclude_source"))
     {
@@ -6924,20 +6931,24 @@ create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
     reverse_lookup_unify ? reverse_lookup_unify : "0", port_list_id,
     allow_simultaneous_ips ? allow_simultaneous_ips : "1");
 
-  if (alive_tests)
+  if (alive_tests_table)
     {
       params_iterator_t iter;
       char *name;
       param_t *param;
 
-      params_iterator_init (&iter, alive_tests);
+      params_iterator_init (&iter, alive_tests_table);
       g_string_append (xml, "<alive_tests>");
       while (params_iterator_next (&iter, &name, &param))
         if (param->value)
-          g_string_append_printf (xml,
-                                  "<alive_test>%s</alive_test>",
+          g_string_append_printf (xml, "<alive_test>%s</alive_test>",
                                   param->value);
       g_string_append (xml, "</alive_tests>");
+    }
+  else if (alive_tests)
+    {
+      g_string_append_printf (xml, "<alive_tests>%s</alive_tests>",
+                              alive_tests);
     }
 
   command = g_strdup_printf (
@@ -7718,21 +7729,27 @@ save_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *target_source, *target_exclude_source;
   const char *target_id, *port_list_id, *reverse_lookup_only;
   const char *reverse_lookup_unify, *in_use;
-  GHashTable *alive_tests;
+  const char *alive_tests;
+  GHashTable *alive_tests_table;
   const char *allow_simultaneous_ips;
   GString *command;
 
-  alive_tests = params_values (params, "alive_tests");
   name = params_value (params, "name");
   comment = params_value (params, "comment");
   in_use = params_value (params, "in_use");
   target_id = params_value (params, "target_id");
+  alive_tests_table = params_values (params, "alive_tests:");
 
   CHECK_VARIABLE_INVALID (name, "Save Target");
   CHECK_VARIABLE_INVALID (target_id, "Save Target");
   CHECK_VARIABLE_INVALID (comment, "Save Target");
-  CHECK_VARIABLE_INVALID (alive_tests, "Save Target");
   CHECK_VARIABLE_INVALID (in_use, "Save Target");
+
+  if (params_given (params, "alive_tests"))
+    {
+      alive_tests = params_value (params, "alive_tests");
+      CHECK_VARIABLE_INVALID (alive_tests, "Save Target");
+    }
 
   if (str_equal (in_use, "1"))
     {
@@ -7922,20 +7939,24 @@ save_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
       reverse_lookup_unify ? reverse_lookup_unify : "0", port_list_id,
       allow_simultaneous_ips ? allow_simultaneous_ips : "1");
 
-    if (alive_tests)
+    if (alive_tests_table)
       {
         params_iterator_t iter;
         char *name;
         param_t *param;
 
-        params_iterator_init (&iter, alive_tests);
+        params_iterator_init (&iter, alive_tests_table);
         g_string_append (command, "<alive_tests>");
         while (params_iterator_next (&iter, &name, &param))
           if (param->value)
-            g_string_append_printf (command,
-                                    "<alive_test>%s</alive_test>",
+            g_string_append_printf (command, "<alive_test>%s</alive_test>",
                                     param->value);
         g_string_append (command, "</alive_tests>");
+      }
+    else if (alive_tests)
+      {
+        g_string_append_printf (command, "<alive_test>%s</alive_test>",
+                                alive_tests);
       }
 
     g_string_append_printf (
