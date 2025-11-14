@@ -316,10 +316,9 @@ init_validator ()
     "tag|target|task|user|cve|cpe|ovaldef|cert_bund_adv|dfn_cert_adv|"
     "vuln|tls_certificate)$");
   gvm_validator_add (
-    validator, "alive_tests",
+    validator, "alive_tests:value",
     "^(Scan Config Default|ICMP Ping|TCP-ACK Service Ping|TCP-SYN Service "
-    "Ping|ARP Ping|ICMP & TCP-ACK Service Ping|ICMP & ARP Ping|TCP-ACK Service "
-    "& ARP Ping|ICMP, TCP-ACK Service & ARP Ping|Consider Alive)$");
+    "Ping|ARP Ping|Consider Alive)$");
   gvm_validator_add (validator, "apply_filter", "^(no|no_pagination|full)$");
   gvm_validator_add (validator, "asset_name", "(?s)^.*$");
   gvm_validator_add (validator, "asset_type", "^(host|os)$");
@@ -681,6 +680,7 @@ init_validator ()
   gvm_validator_alias (validator, "alert_id_optional:name", "number");
   gvm_validator_alias (validator, "alerts", "optional_number");
   gvm_validator_alias (validator, "alert_ids:name", "number");
+  gvm_validator_alias (validator, "alive_tests:name", "number");
   gvm_validator_alias (validator, "allow_insecure", "boolean");
   gvm_validator_alias (validator, "allow_simultaneous_ips", "boolean");
   gvm_validator_alias (validator, "alterable", "boolean");
