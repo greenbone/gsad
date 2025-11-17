@@ -7721,297 +7721,250 @@ save_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   gchar *html, *response;
-  const char *name, *hosts, *exclude_hosts, *comment;
-  const char *target_ssh_credential, *port, *target_smb_credential;
-  const char *target_ssh_elevate_credential;
-  const char *target_esxi_credential, *target_snmp_credential;
-  const char *target_krb5_credential;
-  const char *target_source, *target_exclude_source;
-  const char *target_id, *port_list_id, *reverse_lookup_only;
-  const char *reverse_lookup_unify, *in_use;
-  const char *alive_tests;
-  GHashTable *alive_tests_table;
-  const char *allow_simultaneous_ips;
+  const char *name, *comment, *target_id;
+  const char *hosts = NULL, *exclude_hosts = NULL;
+  const char *hosts_file = NULL, *exclude_hosts_file = NULL;
+  const char *target_ssh_credential = NULL, *port = NULL;
+  const char *target_ssh_elevate_credential = NULL;
+  const char *target_esxi_credential = NULL, *target_snmp_credential = NULL;
+  const char *target_krb5_credential = NULL, *target_smb_credential = NULL;
+  const char *target_source = NULL, *target_exclude_source = NULL;
+  const char *reverse_lookup_unify = NULL, *reverse_lookup_only = NULL;
+  const char *allow_simultaneous_ips = NULL;
+  const char *port_list_id = NULL;
+  const char *alive_tests = NULL;
+  GHashTable *alive_tests_table = NULL;
   GString *command;
 
   name = params_value (params, "name");
   comment = params_value (params, "comment");
-  in_use = params_value (params, "in_use");
   target_id = params_value (params, "target_id");
   alive_tests_table = params_values (params, "alive_tests:");
 
   CHECK_VARIABLE_INVALID (name, "Save Target");
   CHECK_VARIABLE_INVALID (target_id, "Save Target");
-  CHECK_VARIABLE_INVALID (comment, "Save Target");
-  CHECK_VARIABLE_INVALID (in_use, "Save Target");
 
+  if (params_given (params, "comment"))
+    {
+      comment = params_value (params, "comment");
+      CHECK_VARIABLE_INVALID (comment, "Save Target");
+    }
   if (params_given (params, "alive_tests"))
     {
       alive_tests = params_value (params, "alive_tests");
       CHECK_VARIABLE_INVALID (alive_tests, "Save Target");
     }
-
-  if (str_equal (in_use, "1"))
+  if (params_given (params, "target_source"))
     {
-      entity_t entity;
-      int ret;
-
-      /* Target is in use.  Modify fewer fields. */
-
-      command = g_string_new ("");
-      xml_string_append (command,
-                         "<modify_target target_id=\"%s\">"
-                         "<name>%s</name>"
-                         "<comment>%s</comment>"
-                         "<alive_tests>%s</alive_tests>"
-                         "</modify_target>",
-                         target_id, name ? name : "", comment ? comment : "",
-                         alive_tests);
-
-      response = NULL;
-      entity = NULL;
-      ret = gmp (connection, credentials, &response, &entity, response_data,
-                 command->str);
-      g_string_free (command, TRUE);
-      switch (ret)
-        {
-        case 0:
-        case -1:
-          break;
-        case 1:
-          cmd_response_data_set_status_code (response_data,
-                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_message (
-            credentials, "Internal error", __func__, __LINE__,
-            "An internal error occurred while saving a target. "
-            "The target remains the same. "
-            "Diagnostics: Failure to send command to manager daemon.",
-            response_data);
-        case 2:
-          cmd_response_data_set_status_code (response_data,
-                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_message (
-            credentials, "Internal error", __func__, __LINE__,
-            "An internal error occurred while saving a target. "
-            "It is unclear whether the target has been saved or not. "
-            "Diagnostics: Failure to receive response from manager daemon.",
-            response_data);
-        default:
-          cmd_response_data_set_status_code (response_data,
-                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_message (
-            credentials, "Internal error", __func__, __LINE__,
-            "An internal error occurred while saving a target. "
-            "It is unclear whether the target has been saved or not. "
-            "Diagnostics: Internal Error.",
-            response_data);
-        }
-
-      html = response_from_entity (connection, credentials, params, entity,
-                                   "Save Target", response_data);
-
-      free_entity (entity);
-      g_free (response);
-      return html;
+      target_source = params_value (params, "target_source");
+      CHECK_VARIABLE_INVALID (target_source, "Save Target");
     }
-
-  hosts = params_value (params, "hosts");
-  exclude_hosts = params_value (params, "exclude_hosts");
-  reverse_lookup_only = params_value (params, "reverse_lookup_only");
-  reverse_lookup_unify = params_value (params, "reverse_lookup_unify");
-  target_source = params_value (params, "target_source");
-  target_exclude_source = params_value (params, "target_exclude_source");
-  port_list_id = params_value (params, "port_list_id");
-  target_ssh_credential = params_value (params, "ssh_credential_id");
-  target_ssh_elevate_credential =
-    params_value (params, "ssh_elevate_credential_id");
-  port = params_value (params, "port");
-  target_smb_credential = params_value (params, "smb_credential_id");
-  target_esxi_credential = params_value (params, "esxi_credential_id");
-  target_krb5_credential = params_value (params, "krb5_credential_id");
-  target_snmp_credential = params_value (params, "snmp_credential_id");
-  allow_simultaneous_ips = params_value (params, "allow_simultaneous_ips");
-
-  CHECK_VARIABLE_INVALID (target_source, "Save Target");
-  CHECK_VARIABLE_INVALID (target_exclude_source, "Save Target");
-  CHECK_VARIABLE_INVALID (port_list_id, "Save Target");
-  CHECK_VARIABLE_INVALID (target_ssh_credential, "Save Target");
-  CHECK_VARIABLE_INVALID (target_smb_credential, "Save Target");
-  CHECK_VARIABLE_INVALID (target_esxi_credential, "Save Target");
+  if (params_given (params, "target_exclude_source"))
+    {
+      target_exclude_source = params_value (params, "target_exclude_source");
+      CHECK_VARIABLE_INVALID (target_exclude_source, "Save Target");
+    }
+  if (params_given (params, "port_list_id"))
+    {
+      port_list_id = params_value (params, "port_list_id");
+      CHECK_VARIABLE_INVALID (port_list_id, "Save Target");
+    }
+  if (params_given (params, "reverse_lookup_only"))
+    {
+      reverse_lookup_only = params_value (params, "reverse_lookup_only");
+      CHECK_VARIABLE_INVALID (reverse_lookup_only, "Save Target");
+    }
+  if (params_given (params, "reverse_lookup_unify"))
+    {
+      reverse_lookup_unify = params_value (params, "reverse_lookup_unify");
+      CHECK_VARIABLE_INVALID (reverse_lookup_unify, "Save Target");
+    }
+  if (params_given (params, "ssh_credential_id"))
+    {
+      target_ssh_credential = params_value (params, "ssh_credential_id");
+      CHECK_VARIABLE_INVALID (target_ssh_credential, "Save Target");
+    }
+  if (params_given (params, "smb_credential_id"))
+    {
+      target_smb_credential = params_value (params, "smb_credential_id");
+      CHECK_VARIABLE_INVALID (target_smb_credential, "Save Target");
+    }
+  if (params_given (params, "esxi_credential_id"))
+    {
+      target_esxi_credential = params_value (params, "esxi_credential_id");
+      CHECK_VARIABLE_INVALID (target_esxi_credential, "Save Target");
+    }
   if (params_given (params, "krb5_credential_id"))
-    CHECK_VARIABLE_INVALID (target_krb5_credential, "Save Target");
-  CHECK_VARIABLE_INVALID (target_snmp_credential, "Save Target");
-  CHECK_VARIABLE_INVALID (allow_simultaneous_ips, "Save Target");
-
-  if (strcmp (target_ssh_credential, "--")
-      && strcmp (target_ssh_credential, "0"))
     {
+      target_krb5_credential = params_value (params, "krb5_credential_id");
+      CHECK_VARIABLE_INVALID (target_krb5_credential, "Save Target");
+    }
+  if (params_given (params, "snmp_credential_id"))
+    {
+      target_snmp_credential = params_value (params, "snmp_credential_id");
+      CHECK_VARIABLE_INVALID (target_snmp_credential, "Save Target");
+    }
+  if (params_given (params, "allow_simultaneous_ips"))
+    {
+      allow_simultaneous_ips = params_value (params, "allow_simultaneous_ips");
+      CHECK_VARIABLE_INVALID (allow_simultaneous_ips, "Save Target");
+    }
+  if (params_given (params, "ssh_elevate_credential_id"))
+    {
+      target_ssh_elevate_credential =
+        params_value (params, "ssh_elevate_credential_id");
+      CHECK_VARIABLE_INVALID (target_ssh_elevate_credential, "Save Target");
+    }
+  if (params_given (params, "port"))
+    {
+      port = params_value (params, "port");
       CHECK_VARIABLE_INVALID (port, "Save Target");
-      if (params_given (params, "ssh_elevate_credential_id"))
-        CHECK_VARIABLE_INVALID (target_ssh_elevate_credential, "Save Target");
     }
 
-  if (str_equal (target_source, "manual"))
+  if (target_source && str_equal (target_source, "manual"))
     {
+      hosts = params_value (params, "hosts");
       CHECK_VARIABLE_INVALID (hosts, "Save Target")
     }
+  else if (target_source && str_equal (target_source, "file"))
+    {
+      hosts_file = params_value (params, "file");
+      CHECK_VARIABLE_INVALID (hosts_file, "Save Target")
+    }
 
-  {
-    int ret;
-    gchar *ssh_credentials_element, *smb_credentials_element;
-    gchar *ssh_elevate_credentials_element;
-    gchar *esxi_credentials_element, *snmp_credentials_element;
-    gchar *krb5_credentials_element;
-    gchar *comment_element;
-    entity_t entity;
+  if (target_exclude_source && str_equal (target_exclude_source, "manual"))
+    {
+      exclude_hosts = params_value (params, "exclude_hosts");
+      CHECK_VARIABLE_INVALID (exclude_hosts, "Save Target")
+    }
+  else if (target_exclude_source && str_equal (target_exclude_source, "file"))
+    {
+      exclude_hosts_file = params_value (params, "exclude_file");
+      CHECK_VARIABLE_INVALID (exclude_hosts_file, "Save Target")
+    }
 
-    if (comment)
-      comment_element =
-        g_markup_printf_escaped ("<comment>%s</comment>", comment);
-    else
-      comment_element = g_strdup ("");
+  command = g_string_new ("");
+  xml_string_append (command,
+                     "<modify_target target_id=\"%s\">"
+                     "<name>%s</name>",
+                     target_id, name);
+  if (comment)
+    xml_string_append (command, "<comment>%s</comment>", comment);
 
-    if (str_equal (target_ssh_credential, "--"))
-      {
-        ssh_credentials_element = g_strdup ("");
-        ssh_elevate_credentials_element = g_strdup ("");
-      }
-    else
-      {
-        ssh_credentials_element = g_strdup_printf ("<ssh_credential id=\"%s\">"
-                                                   "<port>%s</port>"
-                                                   "</ssh_credential>",
-                                                   target_ssh_credential, port);
-        if (target_ssh_elevate_credential)
-          ssh_elevate_credentials_element =
-            g_strdup_printf ("<ssh_elevate_credential id=\"%s\"/>",
-                             target_ssh_elevate_credential);
-        else
-          ssh_elevate_credentials_element = NULL;
-      }
+  if (hosts)
+    xml_string_append (command, "<hosts>%s</hosts>", hosts);
+  else if (hosts_file)
+    xml_string_append (command, "<hosts>%s</hosts>", hosts_file);
 
-    if (str_equal (target_smb_credential, "--"))
-      smb_credentials_element = g_strdup ("");
-    else
-      smb_credentials_element =
-        g_strdup_printf ("<smb_credential id=\"%s\"/>", target_smb_credential);
+  if (exclude_hosts)
+    xml_string_append (command, "<exclude_hosts>%s</exclude_hosts>",
+                       exclude_hosts);
+  else if (exclude_hosts_file)
+    xml_string_append (command, "<exclude_hosts>%s</exclude_hosts>",
+                       exclude_hosts_file);
 
-    if (str_equal (target_esxi_credential, "--"))
-      esxi_credentials_element = g_strdup ("");
-    else
-      esxi_credentials_element = g_strdup_printf (
-        "<esxi_credential id=\"%s\"/>", target_esxi_credential);
+  if (reverse_lookup_only)
+    xml_string_append (command, "<reverse_lookup_only>%s</reverse_lookup_only>",
+                       reverse_lookup_only);
 
-    if (target_krb5_credential)
-      {
-        if (str_equal (target_krb5_credential, "--"))
-          krb5_credentials_element = g_strdup ("");
-        else
-          krb5_credentials_element = g_strdup_printf (
-            "<krb5_credential id=\"%s\"/>", target_krb5_credential);
-      }
-    else
-      krb5_credentials_element = NULL;
+  if (reverse_lookup_unify)
+    xml_string_append (command,
+                       "<reverse_lookup_unify>%s</reverse_lookup_unify>",
+                       reverse_lookup_unify);
 
-    if (str_equal (target_snmp_credential, "--"))
-      snmp_credentials_element = g_strdup ("");
-    else
-      snmp_credentials_element = g_strdup_printf (
-        "<snmp_credential id=\"%s\"/>", target_snmp_credential);
+  if (port_list_id)
+    xml_string_append (command, "<port_list id=\"%s\"/>", port_list_id);
 
-    command = g_string_new ("");
-    xml_string_append (
-      command,
-      "<modify_target target_id=\"%s\">"
-      "<name>%s</name>"
-      "<hosts>%s</hosts>"
-      "<exclude_hosts>%s</exclude_hosts>"
-      "<reverse_lookup_only>%s</reverse_lookup_only>"
-      "<reverse_lookup_unify>%s</reverse_lookup_unify>"
-      "<port_list id=\"%s\"/>"
-      "<allow_simultaneous_ips>%s</allow_simultaneous_ips>",
-      target_id, name,
-      str_equal (target_source, "file") ? params_value (params, "file") : hosts,
-      str_equal (target_exclude_source, "file")
-        ? params_value (params, "exclude_file")
-        : exclude_hosts,
-      reverse_lookup_only ? reverse_lookup_only : "0",
-      reverse_lookup_unify ? reverse_lookup_unify : "0", port_list_id,
-      allow_simultaneous_ips ? allow_simultaneous_ips : "1");
+  if (allow_simultaneous_ips)
+    xml_string_append (command,
+                       "<allow_simultaneous_ips>%s</allow_simultaneous_ips>",
+                       allow_simultaneous_ips);
 
-    if (alive_tests_table)
-      {
-        params_iterator_t iter;
-        char *name;
-        param_t *param;
+  if (target_ssh_credential && !str_equal (target_ssh_credential, "--"))
+    {
+      xml_string_append (command,
+                         "<ssh_credential id=\"%s\">"
+                         "<port>%s</port>"
+                         "</ssh_credential>",
+                         target_ssh_credential, port ? port : "");
+      if (target_ssh_elevate_credential)
+        xml_string_append (command, "<ssh_elevate_credential id=\"%s\"/>",
+                           target_ssh_elevate_credential);
+    }
 
-        params_iterator_init (&iter, alive_tests_table);
-        g_string_append (command, "<alive_tests>");
-        while (params_iterator_next (&iter, &name, &param))
-          if (param->value)
-            g_string_append_printf (command, "<alive_test>%s</alive_test>",
-                                    param->value);
-        g_string_append (command, "</alive_tests>");
-      }
-    else if (alive_tests)
-      {
-        g_string_append_printf (command, "<alive_test>%s</alive_test>",
-                                alive_tests);
-      }
+  if (target_smb_credential && !str_equal (target_smb_credential, "--"))
+    xml_string_append (command, "<smb_credential id=\"%s\"/>",
+                       target_smb_credential);
 
-    g_string_append_printf (
-      command,
-      "%s%s%s%s%s%s%s"
-      "</modify_target>",
-      comment_element, ssh_credentials_element,
-      ssh_elevate_credentials_element ? ssh_elevate_credentials_element : "",
-      smb_credentials_element, esxi_credentials_element,
-      krb5_credentials_element ?: "", snmp_credentials_element);
+  if (target_esxi_credential && !str_equal (target_esxi_credential, "--"))
+    xml_string_append (command, "<esxi_credential id=\"%s\"/>",
+                       target_esxi_credential);
 
-    g_free (comment_element);
-    g_free (ssh_credentials_element);
-    g_free (ssh_elevate_credentials_element);
-    g_free (smb_credentials_element);
-    g_free (esxi_credentials_element);
-    g_free (krb5_credentials_element);
-    g_free (snmp_credentials_element);
+  if (target_krb5_credential && !str_equal (target_krb5_credential, "--"))
+    xml_string_append (command, "<krb5_credential id=\"%s\"/>",
+                       target_krb5_credential);
 
-    /* Modify the target. */
+  if (target_snmp_credential && !str_equal (target_snmp_credential, "--"))
+    xml_string_append (command, "<snmp_credential id=\"%s\"/>",
+                       target_snmp_credential);
 
-    ret = gvm_connection_sendf (connection, "%s", command->str);
-    g_string_free (command, TRUE);
+  if (alive_tests_table)
+    {
+      params_iterator_t iter;
+      char *name;
+      param_t *param;
 
-    if (ret == -1)
-      {
-        cmd_response_data_set_status_code (response_data,
-                                           MHD_HTTP_INTERNAL_SERVER_ERROR);
-        return gsad_message (
-          credentials, "Internal error", __func__, __LINE__,
-          "An internal error occurred while modifying target. "
-          "No target was modified. "
-          "Diagnostics: Failure to send command to manager daemon.",
-          response_data);
-      }
+      params_iterator_init (&iter, alive_tests_table);
+      xml_string_append (command, "<alive_tests>");
+      while (params_iterator_next (&iter, &name, &param))
+        if (param->value)
+          xml_string_append (command, "<alive_test>%s</alive_test>",
+                             param->value);
+      xml_string_append (command, "</alive_tests>");
+    }
+  else if (alive_tests)
+    {
+      xml_string_append (command, "<alive_test>%s</alive_test>", alive_tests);
+    }
 
-    entity = NULL;
-    if (read_entity_and_text_c (connection, &entity, &response))
-      {
-        cmd_response_data_set_status_code (response_data,
-                                           MHD_HTTP_INTERNAL_SERVER_ERROR);
-        return gsad_message (
-          credentials, "Internal error", __func__, __LINE__,
-          "An internal error occurred while modifying a target. "
-          "It is unclear whether the target has been modified or not. "
-          "Diagnostics: Failure to receive response from manager daemon.",
-          response_data);
-      }
+  xml_string_append (command, "</modify_target>");
 
-    html = response_from_entity (connection, credentials, params, entity,
-                                 "Save Target", response_data);
-  }
+  /* Modify the target. */
+  int ret;
+  entity_t entity;
 
-  /* Pass response to handler of following page. */
+  ret = gvm_connection_sendf (connection, "%s", command->str);
+  g_string_free (command, TRUE);
 
+  if (ret == -1)
+    {
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while modifying target. "
+        "No target was modified. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    }
+
+  entity = NULL;
+  if (read_entity_and_text_c (connection, &entity, &response))
+    {
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while modifying a target. "
+        "It is unclear whether the target has been modified or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    }
+
+  html = response_from_entity (connection, credentials, params, entity,
+                               "Save Target", response_data);
+
+  free_entity (entity);
   return html;
 }
 
