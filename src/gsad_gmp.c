@@ -2193,7 +2193,10 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
 #if ENABLE_CREDENTIAL_STORES
   cs_allow_failed_retrieval =
     params_value (params, "cs_allow_failed_retrieval");
-  CHECK_VARIABLE_INVALID (cs_allow_failed_retrieval, "Create Task");
+
+  if (params_given (params, "cs_allow_failed_retrieval"))
+    CHECK_VARIABLE_INVALID (cs_allow_failed_retrieval, "Create Task");
+
 #endif
 
   CHECK_VARIABLE_INVALID (scanner_type, "Create Task");
