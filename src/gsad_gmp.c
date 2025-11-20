@@ -11102,7 +11102,9 @@ create_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
   CHECK_VARIABLE_INVALID (host, "Create Scanner");
   CHECK_VARIABLE_INVALID (port, "Create Scanner");
   CHECK_VARIABLE_INVALID (type, "Create Scanner");
-  CHECK_VARIABLE_INVALID (credential_id, "Create Scanner");
+
+  if (params_given (params, "credential_id"))
+    CHECK_VARIABLE_INVALID (credential_id, "Create Scanner");
 
   if (params_given (params, "ca_pub"))
     CHECK_VARIABLE_INVALID (ca_pub, "Create Scanner");
