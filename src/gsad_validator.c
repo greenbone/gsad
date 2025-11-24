@@ -669,7 +669,6 @@ init_validator ()
   gvm_validator_alias (validator, "alerts", "optional_number");
   gvm_validator_alias (validator, "alert_ids:name", "number");
   gvm_validator_alias (validator, "alive_tests:name", "number");
-  gvm_validator_alias (validator, "allow_insecure", "boolean");
   gvm_validator_alias (validator, "allow_simultaneous_ips", "boolean");
   gvm_validator_alias (validator, "alterable", "boolean");
   gvm_validator_alias (validator, "apply_overrides", "boolean");
