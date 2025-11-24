@@ -2163,9 +2163,7 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *in_assets, *hosts_ordering, *alterable;
   const char *add_tag, *tag_id, *auto_delete, *auto_delete_data;
   const char *apply_overrides, *min_qod, *usage_type;
-#if ENABLE_CREDENTIAL_STORES
   const char *cs_allow_failed_retrieval;
-#endif
   gchar *name_escaped, *comment_escaped;
   params_t *alerts;
   GString *alert_element;
@@ -2190,14 +2188,11 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   tag_id = params_value (params, "tag_id");
   target_id = params_value (params, "target_id");
   usage_type = params_value (params, "usage_type");
-#if ENABLE_CREDENTIAL_STORES
   cs_allow_failed_retrieval =
     params_value (params, "cs_allow_failed_retrieval");
 
   if (params_given (params, "cs_allow_failed_retrieval"))
     CHECK_VARIABLE_INVALID (cs_allow_failed_retrieval, "Create Task");
-
-#endif
 
   CHECK_VARIABLE_INVALID (scanner_type, "Create Task");
   if (!strcmp (scanner_type, "1"))
@@ -2334,12 +2329,10 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
     "<scanner_name>auto_delete_data</scanner_name>"
     "<value>%s</value>"
     "</preference>"
-#if ENABLE_CREDENTIAL_STORES
     "<preference>"
     "<scanner_name>cs_allow_failed_retrieval</scanner_name>"
     "<value>%d</value>"
     "</preference>"
-#endif
     "</preferences>"
     "<alterable>%i</alterable>"
     "<usage_type>%s</usage_type>"
@@ -2349,9 +2342,7 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
     max_checks, max_hosts, strcmp (in_assets, "0") ? "yes" : "no",
     strcmp (apply_overrides, "0") ? "yes" : "no", min_qod, auto_delete,
     auto_delete_data,
-#if ENABLE_CREDENTIAL_STORES
     cs_allow_failed_retrieval ? strcmp (cs_allow_failed_retrieval, "0") : 0,
-#endif
     alterable ? strcmp (alterable, "0") : 0, usage_type);
 
   g_free (name_escaped);
@@ -2484,7 +2475,6 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   return html;
 }
 
-#if ENABLE_AGENTS
 /**
  * @brief Create a agent-group task, get all tasks, envelope the result.
  *
@@ -2745,8 +2735,6 @@ create_agent_group_task_gmp (gvm_connection_t *connection,
   return html;
 }
 
-#endif /* ENABLE_AGENTS */
-#if ENABLE_CONTAINER_SCANNING
 /**
  * @brief Create an oci image task, get all tasks, envelope the result.
  *
@@ -3026,7 +3014,6 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
   g_free (response);
   return html;
 }
-#endif /* ENABLE_CONTAINER_SCANNING */
 
 /**
  * @brief Delete a task, get all tasks, envelope the result.
@@ -3066,9 +3053,7 @@ save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *config_id, *target_id, *hosts_ordering, *alterable;
   const char *scanner_type, *schedule_periods, *auto_delete, *auto_delete_data;
   const char *apply_overrides, *min_qod;
-#if ENABLE_CREDENTIAL_STORES
   const char *cs_allow_failed_retrieval;
-#endif
   int ret;
   params_t *alerts;
   GString *alert_element;
@@ -3092,11 +3077,9 @@ save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   schedule_periods = params_value (params, "schedule_periods");
   target_id = params_value (params, "target_id");
   task_id = params_value (params, "task_id");
-#if ENABLE_CREDENTIAL_STORES
   cs_allow_failed_retrieval =
     params_value (params, "cs_allow_failed_retrieval");
   CHECK_VARIABLE_INVALID (cs_allow_failed_retrieval, "Save Task");
-#endif
 
   if (scanner_type != NULL)
     {
@@ -3213,12 +3196,10 @@ save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
     "<scanner_name>auto_delete</scanner_name>"
     "<value>%%s</value>"
     "</preference>"
-#if ENABLE_CREDENTIAL_STORES
     "<preference>"
     "<scanner_name>cs_allow_failed_retrieval</scanner_name>"
     "<value>%%d</value>"
     "</preference>"
-#endif
     "<preference>"
     "<scanner_name>auto_delete_data</scanner_name>"
     "<value>%%s</value>"
@@ -3235,9 +3216,7 @@ save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
     name, comment, target_id, config_id, schedule_id, schedule_periods,
     scanner_id, max_checks, max_hosts, strcmp (in_assets, "0") ? "yes" : "no",
     strcmp (apply_overrides, "0") ? "yes" : "no", min_qod, auto_delete,
-#if ENABLE_CREDENTIAL_STORES
     cs_allow_failed_retrieval ? strcmp (cs_allow_failed_retrieval, "0") : 0,
-#endif
     auto_delete_data);
   g_free (format);
 
@@ -3387,7 +3366,6 @@ save_container_task_gmp (gvm_connection_t *connection,
   return html;
 }
 
-#if ENABLE_AGENTS
 /**
  * @brief Save an agent-group task, envelope the result.
  *
@@ -3518,9 +3496,6 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
   return html;
 }
 
-#endif /* ENABLE_AGENTS */
-
-#if ENABLE_CONTAINER_SCANNING
 /**
  * @brief Save an oci image task, envelope the result.
  *
@@ -3670,7 +3645,6 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
   g_free (response);
   return html;
 }
-#endif /* ENABLE_CONTAINER_SCANNING */
 
 /**
  * @brief Export a task.
@@ -3967,9 +3941,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   int ret;
   gchar *html, *response;
   const char *name, *comment, *credential_login, *type, *password, *passphrase;
-#if ENABLE_CREDENTIAL_STORES
   const char *credential_store_id, *vault_id, *host_identifier;
-#endif
   const char *private_key, *public_key, *certificate, *community;
   const char *privacy_password, *auth_algorithm, *privacy_algorithm;
   const char *autogenerate, *allow_insecure;
@@ -3983,11 +3955,9 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   type = params_value (params, "credential_type");
   password = params_value (params, "lsc_password");
   passphrase = params_value (params, "passphrase");
-#if ENABLE_CREDENTIAL_STORES
   credential_store_id = params_value (params, "credential_store_id");
   vault_id = params_value (params, "vault_id");
   host_identifier = params_value (params, "host_identifier");
-#endif
   private_key = params_value (params, "private_key");
   public_key = params_value (params, "public_key");
   certificate = params_value (params, "certificate");
@@ -4282,7 +4252,6 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
                   name, comment ? comment : "", type, password ? password : "",
                   allow_insecure);
         }
-#if ENABLE_CREDENTIAL_STORES
       else if (str_equal (type, "cs_up") || str_equal (type, "cs_usk")
                || str_equal (type, "cs_cc") || str_equal (type, "cs_snmp")
                || str_equal (type, "cs_pgp") || str_equal (type, "cs_pw")
@@ -4327,7 +4296,6 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 host_identifier ? host_identifier : "", allow_insecure);
             }
         }
-#endif
       else
         {
           cmd_response_data_set_status_code (response_data,
@@ -4403,9 +4371,7 @@ get_credential (gvm_connection_t *connection, credentials_t *credentials,
 {
   gmp_arguments_t *arguments = gmp_arguments_new ();
   gmp_arguments_add (arguments, "targets", "1");
-#if ENABLE_CONTAINER_SCANNING
   gmp_arguments_add (arguments, "oci_image_targets", "1");
-#endif
   gmp_arguments_add (arguments, "scanners", "1");
   return get_one (connection, "credential", credentials, params, extra_xml,
                   arguments, response_data);
@@ -5000,9 +4966,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   gchar *html, *response;
   const char *credential_id, *public_key;
   const char *name, *comment, *credential_login, *password, *passphrase, *type;
-#if ENABLE_CREDENTIAL_STORES
   const char *credential_store_id, *vault_id, *host_identifier;
-#endif
   const char *private_key, *certificate, *community, *privacy_password;
   const char *kdc, *realm;
   const char *auth_algorithm, *privacy_algorithm, *allow_insecure;
@@ -5017,11 +4981,9 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   credential_login = params_value (params, "credential_login");
   password = params_value (params, "password");
   passphrase = params_value (params, "passphrase");
-#if ENABLE_CREDENTIAL_STORES
   credential_store_id = params_value (params, "credential_store_id");
   vault_id = params_value (params, "vault_id");
   host_identifier = params_value (params, "host_identifier");
-#endif
   private_key = params_value (params, "private_key");
   certificate = params_value (params, "certificate");
   community = params_value (params, "community");
@@ -5089,7 +5051,6 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
       if (params_given (params, "public_key"))
         CHECK_VARIABLE_INVALID (public_key, "Save Credential");
     }
-#if ENABLE_CREDENTIAL_STORES
   else if (str_equal (type, "cs_up") || str_equal (type, "cs_usk")
            || str_equal (type, "cs_cc") || str_equal (type, "cs_snmp")
            || str_equal (type, "cs_pgp") || str_equal (type, "cs_pw")
@@ -5102,7 +5063,6 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
       if (params_given (params, "host_identifier"))
         CHECK_VARIABLE_INVALID (host_identifier, "Save Credential");
     }
-#endif
 
   if (params_given (params, "credential_login") && !str_equal (type, "krb5"))
     CHECK_VARIABLE_INVALID (credential_login, "Save Credential");
@@ -5234,7 +5194,6 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           xml_string_append (command, "</key>");
         }
     }
-#if ENABLE_CREDENTIAL_STORES
   else if (str_equal (type, "cs_up") || str_equal (type, "cs_usk")
            || str_equal (type, "cs_cc") || str_equal (type, "cs_snmp")
            || str_equal (type, "cs_pgp") || str_equal (type, "cs_pw")
@@ -5256,7 +5215,6 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
                              host_identifier);
         }
     }
-#endif
 
   if (credential_login && strcmp (credential_login, ""))
     xml_string_append (command, "<login>%s</login>", credential_login);
@@ -12885,7 +12843,6 @@ get_trash_notes_gmp (gvm_connection_t *connection, credentials_t *credentials,
                        g_string_free (xml, FALSE), response_data);
 }
 
-#if ENABLE_CONTAINER_SCANNING
 /**
  * @brief Setup trash page XML, envelope the result.
  *
@@ -12913,7 +12870,6 @@ get_trash_oci_image_targets_gmp (gvm_connection_t *connection,
   return envelope_gmp (connection, credentials, params,
                        g_string_free (xml, FALSE), response_data);
 }
-#endif
 
 /**
  * @brief Setup trash page XML, envelope the result.
@@ -13249,7 +13205,6 @@ get_trash_tickets_gmp (gvm_connection_t *connection, credentials_t *credentials,
                        g_string_free (xml, FALSE), response_data);
 }
 
-#if ENABLE_AGENTS
 /**
  * @brief Setup trash page XML, envelope the result.
  *
@@ -13277,7 +13232,6 @@ get_trash_agent_group_gmp (gvm_connection_t *connection,
   return envelope_gmp (connection, credentials, params,
                        g_string_free (xml, FALSE), response_data);
 }
-#endif /*ENABLE_AGENTS*/
 
 #undef GET_TRASH_RESOURCE
 
@@ -19112,7 +19066,6 @@ change_password_gmp (gvm_connection_t *connection, credentials_t *credentials,
   return html;
 }
 
-#if ENABLE_AGENTS
 /**
  * @brief Get agent installers.
  *
@@ -20048,7 +20001,6 @@ delete_agent_group_gmp (gvm_connection_t *connection,
   return move_resource_to_trash (connection, "agent_group", credentials, params,
                                  response_data);
 }
-#endif
 
 char *
 renew_session_gmp (gvm_connection_t *connection, credentials_t *credentials,
@@ -20069,7 +20021,6 @@ renew_session_gmp (gvm_connection_t *connection, credentials_t *credentials,
   return html;
 }
 
-#if ENABLE_CONTAINER_SCANNING
 /**
  * @brief Get one OCI image target, envelope the result.
  *
@@ -20460,7 +20411,7 @@ save_oci_image_target_gmp (gvm_connection_t *connection,
 
   return xml;
 }
-#endif
+
 /**
  * @brief Get assets, envelope the result.
  *
