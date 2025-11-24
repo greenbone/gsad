@@ -166,9 +166,7 @@ init_validator ()
                      "|(get_configs)"
                      "|(get_credential)"
                      "|(get_credentials)"
-#if ENABLE_CREDENTIAL_STORES
                      "|(get_credential_stores)"
-#endif
                      "|(get_features)"
                      "|(get_feeds)"
                      "|(get_filter)"
@@ -246,9 +244,7 @@ init_validator ()
                      "|(login)"
                      "|(modify_agent)"
                      "|(modify_agent_control_scan_config)"
-#if ENABLE_CREDENTIAL_STORES
                      "|(modify_credential_store)"
-#endif
                      "|(move_task)"
                      "|(new_alert)"
                      "|(ping)"
@@ -298,9 +294,7 @@ init_validator ()
                      "|(sync_cert)"
                      "|(sync_config)"
                      "|(toggle_tag)"
-#if ENABLE_CREDENTIAL_STORES
                      "|(verify_credential_store)"
-#endif
                      "|(verify_scanner)"
                      "|(wizard)"
                      "|(wizard_get))$");
@@ -345,7 +339,6 @@ init_validator ()
   gvm_validator_add (validator, "comment", "^[[:graph:][:space:]]*$");
   gvm_validator_add (validator, "condition", "^[[:alnum:] ]*$");
   gvm_validator_add (validator, "create_credentials_type", "^(gen|pass|key)$");
-#if ENABLE_CREDENTIAL_STORES
   gvm_validator_add (validator, "credential_type",
                      "^(cc|up|usk|smime|pgp|snmp|krb5|pw|cs_cc|cs_up|cs_usk"
                      "|cs_smime|cs_pgp|cs_snmp|cs_krb5|cs_pw)$");
@@ -353,10 +346,6 @@ init_validator ()
   gvm_validator_add (validator, "host_identifier", "^.*$");
   gvm_validator_add (validator, "preferences:app_id", "^.*$");
   gvm_validator_add (validator, "preferences:passphrase", "^.*$");
-#else
-  gvm_validator_add (validator, "credential_type",
-                     "^(cc|up|usk|smime|pgp|snmp|krb5|pw)$");
-#endif
   gvm_validator_add (validator, "credential_login", "^[-_[:alnum:]\\.@\\\\]*$");
   gvm_validator_add (validator, "condition_data:name", "^.*$");
   gvm_validator_add (validator, "condition_data:value", "(?s)^.*$");
@@ -583,12 +572,10 @@ init_validator ()
   gvm_validator_add_binary (validator, "certificate_bin");
   gvm_validator_add_binary (validator, "installer");
   gvm_validator_add_binary (validator, "method_data:pkcs12:");
-#if ENABLE_CREDENTIAL_STORES
   gvm_validator_add_binary (validator, "preferences:client_certificate");
   gvm_validator_add_binary (validator, "preferences:client_key");
   gvm_validator_add_binary (validator, "preferences:pkcs12_file");
   gvm_validator_add_binary (validator, "preferences:server_ca_certificate");
-#endif
 
   /* Beware, the rule must be defined before the alias. */
 
@@ -775,17 +762,13 @@ init_validator ()
   gvm_validator_alias (validator, "owner", "name");
   gvm_validator_alias (validator, "passphrase", "lsc_password");
   gvm_validator_alias (validator, "password:name", "preference_name");
-#if ENABLE_CREDENTIAL_STORES
   gvm_validator_alias (validator, "path", "hostpath");
-#endif
   gvm_validator_alias (validator, "permission", "name");
   gvm_validator_alias (validator, "port_manual", "port");
   gvm_validator_alias (validator, "port_range_end", "number");
   gvm_validator_alias (validator, "port_range_start", "number");
   gvm_validator_alias (validator, "pos", "number");
-#if ENABLE_CREDENTIAL_STORES
   gvm_validator_alias (validator, "preferences:port", "port");
-#endif
   gvm_validator_alias (validator, "privacy_password", "lsc_password");
   gvm_validator_alias (validator, "radiushost", "hostport");
   gvm_validator_alias (validator, "restrict_type", "resource_type");

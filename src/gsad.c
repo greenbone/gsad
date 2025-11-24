@@ -788,10 +788,8 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (create_group)
   ELSE (create_host)
   ELSE (create_note)
-#if ENABLE_CONTAINER_SCANNING
   ELSE (create_oci_image_target)
   ELSE (create_oci_image_task)
-#endif
   ELSE (create_override)
   ELSE (create_permission)
   ELSE (create_permissions)
@@ -808,11 +806,9 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (create_tls_certificate)
   ELSE (create_user)
   ELSE (create_role)
-#if ENABLE_AGENTS
   ELSE (create_agent_group)
   ELSE (create_agent_group_task)
   ELSE (delete_agent_group)
-#endif
   ELSE (delete_asset)
   ELSE (delete_alert)
   ELSE (delete_config)
@@ -821,9 +817,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (delete_from_trash)
   ELSE (delete_group)
   ELSE (delete_note)
-#if ENABLE_CONTAINER_SCANNING
   ELSE (delete_oci_image_target)
-#endif
   ELSE (delete_override)
   ELSE (delete_permission)
   ELSE (delete_port_list)
@@ -844,24 +838,18 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (import_config)
   ELSE (import_port_list)
   ELSE (import_report_format)
-#if ENABLE_AGENTS
   ELSE (modify_agent_control_scan_config)
   ELSE (modify_agent)
   ELSE (delete_agent)
-#endif
-#if ENABLE_CREDENTIAL_STORES
   ELSE (modify_credential_store)
-#endif
   ELSE (move_task)
   ELSE (renew_session)
   ELSE (report_alert)
   ELSE (restore)
   ELSE (resume_task)
   ELSE (run_wizard)
-#if ENABLE_AGENTS
   ELSE (save_agent_group)
   ELSE (save_agent_group_task)
-#endif
   ELSE (save_alert)
   ELSE (save_asset)
   ELSE (save_auth)
@@ -879,10 +867,8 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   }
   ELSE (save_license)
   ELSE (save_note)
-#if ENABLE_CONTAINER_SCANNING
   ELSE (save_oci_image_target)
   ELSE (save_oci_image_task)
-#endif
   ELSE (save_override)
   ELSE (save_permission)
   ELSE (save_port_list)
@@ -905,9 +891,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (sync_cert)
   ELSE (test_alert)
   ELSE (toggle_tag)
-#if ENABLE_CREDENTIAL_STORES
   ELSE (verify_credential_store)
-#endif
   ELSE (verify_scanner)
   else
   {
@@ -1454,10 +1438,8 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (export_groups)
   ELSE (export_note)
   ELSE (export_notes)
-#if ENABLE_CONTAINER_SCANNING
   ELSE (export_oci_image_target)
   ELSE (export_oci_image_targets)
-#endif
   ELSE (export_override)
   ELSE (export_overrides)
   ELSE (export_permission)
@@ -1485,7 +1467,6 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (export_tasks)
   ELSE (export_user)
   ELSE (export_users)
-#if ENABLE_AGENTS
   ELSE (get_agent)
   ELSE (get_agents)
   ELSE (get_agent_group)
@@ -1493,7 +1474,6 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_agent_installers)
   ELSE (get_agent_installer)
   ELSE (get_agent_installer_file)
-#endif
   ELSE (get_asset)
   ELSE (get_assets)
 
@@ -1540,9 +1520,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_config_nvt)
   ELSE (get_credential)
   ELSE (get_credentials)
-#if ENABLE_CREDENTIAL_STORES
   ELSE (get_credential_stores)
-#endif
   ELSE (get_features)
   ELSE (get_feeds)
   ELSE (get_filter)
@@ -1554,10 +1532,8 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_note)
   ELSE (get_notes)
   ELSE (get_nvt_families)
-#if ENABLE_CONTAINER_SCANNING
   ELSE (get_oci_image_target)
   ELSE (get_oci_image_targets)
-#endif
   ELSE (get_override)
   ELSE (get_overrides)
   ELSE (get_permission)
@@ -1593,18 +1569,14 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_tickets)
   ELSE (get_tls_certificate)
   ELSE (get_tls_certificates)
-#if ENABLE_AGENTS
   ELSE (get_trash_agent_group)
-#endif
   ELSE (get_trash_alerts)
   ELSE (get_trash_configs)
   ELSE (get_trash_credentials)
   ELSE (get_trash_filters)
   ELSE (get_trash_groups)
   ELSE (get_trash_notes)
-#if ENABLE_CONTAINER_SCANNING
   ELSE (get_trash_oci_image_targets)
-#endif
   ELSE (get_trash_overrides)
   ELSE (get_trash_permissions)
   ELSE (get_trash_port_lists)
