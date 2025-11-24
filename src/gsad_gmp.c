@@ -20533,18 +20533,33 @@ get_capabilities_gmp (gvm_connection_t *connection, credentials_t *credentials,
   /* Cleanup. */
   free_entity (entity);
 
+  /* Return transformed XML. */
+  g_string_append (xml, "</get_capabilities>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+char *
+get_features_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                  params_t *params, cmd_response_data_t *response_data)
+{
+  entity_t entity = NULL;
+  GString *xml;
+
   /* Get features list */
   if (gvm_connection_sendf (connection, "<get_features/>"))
     {
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
-      g_string_free (xml, TRUE);
       return gsad_message (
         credentials, "Internal error", __func__, __LINE__,
         "An internal error occurred while getting the features list. "
         "Diagnostics: Failure to send command to manager daemon.",
         response_data);
     }
+
+  xml = g_string_new ("");
+  g_string_append (xml, "<get_features>");
 
   /* Read the response. */
   if (read_entity_and_string_c (connection, &entity, &xml))
@@ -20574,8 +20589,9 @@ get_capabilities_gmp (gvm_connection_t *connection, credentials_t *credentials,
       return message;
     }
 
-  /* Return transformed XML. */
-  g_string_append (xml, "</get_capabilities>");
+  free_entity (entity);
+
+  g_string_append (xml, "</get_features>");
   return envelope_gmp (connection, credentials, params,
                        g_string_free (xml, FALSE), response_data);
 }

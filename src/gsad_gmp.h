@@ -570,6 +570,10 @@ get_resource_names_gmp (gvm_connection_t *, credentials_t *, params_t *,
                         cmd_response_data_t *);
 
 char *
+get_features_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                  cmd_response_data_t *);
+
+char *
 get_feeds_gmp (gvm_connection_t *, credentials_t *, params_t *,
                cmd_response_data_t *);
 char *
