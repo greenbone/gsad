@@ -169,6 +169,7 @@ init_validator ()
 #if ENABLE_CREDENTIAL_STORES
                      "|(get_credential_stores)"
 #endif
+                     "|(get_features)"
                      "|(get_feeds)"
                      "|(get_filter)"
                      "|(get_filters)"

@@ -1543,6 +1543,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
 #if ENABLE_CREDENTIAL_STORES
   ELSE (get_credential_stores)
 #endif
+  ELSE (get_features)
   ELSE (get_feeds)
   ELSE (get_filter)
   ELSE (get_filters)
