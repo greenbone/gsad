@@ -4951,9 +4951,8 @@ char *
 save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
                      params_t *params, cmd_response_data_t *response_data)
 {
-  int ret, change_password, change_ssh_passphrase, change_passphrase;
-  int change_community, change_privacy_password;
-  gchar *html, *response;
+  int ret;
+  gchar *html = NULL, *response = NULL;
   const char *credential_id, *public_key;
   const char *name, *comment, *credential_login, *password, *passphrase, *type;
   const char *credential_store_id, *vault_id, *host_identifier;
@@ -4962,7 +4961,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *auth_algorithm, *privacy_algorithm;
   params_t *kdcs_param;
   GString *command;
-  entity_t entity;
+  entity_t entity = NULL;
 
   credential_id = params_value (params, "credential_id");
   type = params_value (params, "credential_type");
@@ -5002,7 +5001,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
       if (params_given (params, "private_key"))
         CHECK_VARIABLE_INVALID (private_key, "Save Credential");
 
-      if (params_given (params, "change_passphrase"))
+      if (params_given (params, "passphrase"))
         CHECK_VARIABLE_INVALID (passphrase, "Save Credential");
     }
   else if (str_equal (type, "krb5"))
@@ -5018,15 +5017,15 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
       if (params_given (params, "privacy_algorithm"))
         CHECK_VARIABLE_INVALID (privacy_algorithm, "Save Credential");
 
-      if (params_given (params, "change_privacy_password"))
+      if (params_given (params, "privacy_password"))
         CHECK_VARIABLE_INVALID (privacy_password, "Save Credential");
 
-      if (params_given (params, "change_community"))
+      if (params_given (params, "community"))
         CHECK_VARIABLE_INVALID (community, "Save Credential");
     }
   else if (str_equal (type, "up") | str_equal (type, "pw"))
     {
-      if (params_given (params, "change_password"))
+      if (params_given (params, "password"))
         CHECK_VARIABLE_INVALID (password, "Save Credential");
     }
   else if (str_equal (type, "smime"))
@@ -5052,10 +5051,8 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
         CHECK_VARIABLE_INVALID (host_identifier, "Save Credential");
     }
 
-  if (params_given (params, "credential_login") && !str_equal (type, "krb5"))
+  if (!str_equal (type, "krb5") && params_given (params, "credential_login"))
     CHECK_VARIABLE_INVALID (credential_login, "Save Credential");
-
-  change_password = params_value_bool (params, "change_password");
 
   /* Prepare command */
   command = g_string_new ("");
@@ -5069,18 +5066,14 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   if (str_equal (type, "snmp"))
     {
-      change_community = params_value_bool (params, "change_community");
-      change_privacy_password =
-        params_value_bool (params, "change_privacy_password");
-
       if (auth_algorithm)
         xml_string_append (command, "<auth_algorithm>%s</auth_algorithm>",
                            auth_algorithm);
 
-      if (change_community)
+      if (community)
         xml_string_append (command, "<community>%s</community>", community);
 
-      if (privacy_algorithm || change_privacy_password)
+      if (privacy_algorithm || privacy_password)
         {
           xml_string_append (command, "<privacy>");
           if (privacy_algorithm)
@@ -5088,7 +5081,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
               xml_string_append (command, "<algorithm>%s</algorithm>",
                                  privacy_algorithm);
             }
-          if (change_privacy_password && privacy_password)
+          if (privacy_password)
             {
               xml_string_append (command, "<password>%s</password>",
                                  privacy_password);
@@ -5128,18 +5121,16 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
     }
   else if (str_equal (type, "cc"))
     {
-      change_passphrase = params_value_bool (params, "change_passphrase");
-
-      if ((certificate && strcmp (certificate, "")))
+      if (certificate)
         {
           xml_string_append (command, "<certificate>%s</certificate>",
                              certificate);
         }
 
-      if ((private_key && strcmp (private_key, "")) || change_passphrase)
+      if (private_key || passphrase)
         {
           xml_string_append (command, "<key>");
-          if (change_passphrase)
+          if (passphrase)
             xml_string_append (command, "<phrase>%s</phrase>", passphrase);
           if (private_key)
             xml_string_append (command, "<private>%s</private>", private_key);
@@ -5148,12 +5139,10 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
     }
   else if (str_equal (type, "usk"))
     {
-      change_ssh_passphrase = params_value_bool (params, "change_passphrase");
-
-      if ((private_key && strcmp (private_key, "")) || change_ssh_passphrase)
+      if (private_key || passphrase)
         {
           xml_string_append (command, "<key>");
-          if (change_ssh_passphrase)
+          if (passphrase)
             xml_string_append (command, "<phrase>%s</phrase>", passphrase);
           if (private_key)
             xml_string_append (command, "<private>%s</private>", private_key);
@@ -5162,12 +5151,12 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
     }
   else if (str_equal (type, "up") | str_equal (type, "pw"))
     {
-      if (change_password)
+      if (password)
         xml_string_append (command, "<password>%s</password>", password);
     }
   else if (str_equal (type, "smime"))
     {
-      if ((certificate && strcmp (certificate, "")))
+      if (certificate)
         {
           xml_string_append (command, "<certificate>%s</certificate>",
                              certificate);
@@ -5175,7 +5164,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
     }
   else if (str_equal (type, "pgp"))
     {
-      if ((public_key && strcmp (public_key, "")))
+      if (public_key)
         {
           xml_string_append (command, "<key>");
           xml_string_append (command, "<public>%s</public>", public_key);
@@ -5187,31 +5176,29 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
            || str_equal (type, "cs_pgp") || str_equal (type, "cs_pw")
            || str_equal (type, "cs_smime") || str_equal (type, "cs_krb5"))
     {
-      if (credential_store_id && !str_equal (credential_store_id, ""))
+      if (credential_store_id)
         {
           xml_string_append (command,
                              "<credential_store_id>%s</credential_store_id>",
                              credential_store_id);
         }
-      if (vault_id && !str_equal (vault_id, ""))
+      if (vault_id)
         {
           xml_string_append (command, "<vault_id>%s</vault_id>", vault_id);
         }
-      if (host_identifier && !str_equal (host_identifier, ""))
+      if (host_identifier)
         {
           xml_string_append (command, "<host_identifier>%s</host_identifier>",
                              host_identifier);
         }
     }
 
-  if (credential_login && strcmp (credential_login, ""))
+  if (credential_login)
     xml_string_append (command, "<login>%s</login>", credential_login);
 
   xml_string_append (command, "</modify_credential>");
 
   /* Modify the credential. */
-  response = NULL;
-  entity = NULL;
   ret = gmp (connection, credentials, &response, &entity, response_data,
              command->str);
   g_string_free (command, TRUE);

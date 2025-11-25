@@ -683,10 +683,6 @@ init_validator ()
   gvm_validator_alias (validator, "bulk_export.x", "number");
   gvm_validator_alias (validator, "bulk_trash.x", "number");
   gvm_validator_alias (validator, "bulk_select", "number");
-  gvm_validator_alias (validator, "change_community", "boolean");
-  gvm_validator_alias (validator, "change_passphrase", "boolean");
-  gvm_validator_alias (validator, "change_password", "boolean");
-  gvm_validator_alias (validator, "change_privacy_password", "boolean");
   gvm_validator_alias (validator, "charts", "boolean");
   gvm_validator_alias (validator, "chart_type", "name");
   gvm_validator_alias (validator, "chart_template", "name");
