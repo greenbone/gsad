@@ -4104,8 +4104,10 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
       else if (str_equal (type, "usk"))
         {
           CHECK_VARIABLE_INVALID (credential_login, "Create Credential");
-          CHECK_VARIABLE_INVALID (passphrase, "Create Credential");
           CHECK_VARIABLE_INVALID (private_key, "Create Credential");
+
+          if (params_given (params, "passphrase"))
+            CHECK_VARIABLE_INVALID (passphrase, "Create Credential");
 
           ret =
             gmpf (connection, credentials, &response, &entity, response_data,
@@ -4120,9 +4122,8 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
                   "</key>"
                   "<allow_insecure>1</allow_insecure>"
                   "</create_credential>",
-                  name, comment ? comment : "", type,
-                  credential_login ? credential_login : "",
-                  private_key ? private_key : "", passphrase ? passphrase : "");
+                  name, comment ? comment : "", type, credential_login,
+                  private_key, passphrase ? passphrase : "");
         }
       else if (str_equal (type, "cc"))
         {
