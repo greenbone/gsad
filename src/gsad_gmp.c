@@ -5007,7 +5007,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   else if (str_equal (type, "krb5"))
     {
       if (params_given (params, "credential_login"))
-        CHECK_LOGIN_NAME_INVALID_EDIT (credential_login, "Create Credential");
+        CHECK_LOGIN_NAME_INVALID_EDIT (credential_login, "Save Credential");
     }
   else if (str_equal (type, "snmp"))
     {
@@ -5049,6 +5049,14 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
         CHECK_VARIABLE_INVALID (vault_id, "Save Credential");
       if (params_given (params, "host_identifier"))
         CHECK_VARIABLE_INVALID (host_identifier, "Save Credential");
+    }
+  else if (str_equal (type, "usk"))
+    {
+      if (params_given (params, "private_key"))
+        CHECK_VARIABLE_INVALID (private_key, "Save Credential");
+
+      if (params_given (params, "passphrase"))
+        CHECK_VARIABLE_INVALID (passphrase, "Save Credential");
     }
 
   if (!str_equal (type, "krb5") && params_given (params, "credential_login"))
