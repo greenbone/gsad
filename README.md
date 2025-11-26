@@ -15,6 +15,7 @@ full-featured HTTP interface for vulnerability management.
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
   - [Compiling](#compiling)
+  - [Unit tests](#unit-tests)
 - [Logging Configuration](#logging-configuration)
 - [Usage](#usage)
 - [Development](#development)
@@ -62,7 +63,7 @@ Prerequisites:
 - libgvm_base, libgvm_util, libgvm_gmp >= 20.8.2
 - gnutls >= 3.2.15
 - libgcrypt
-- cmake >= 3.5
+- cmake >= 3.10
 - glib-2.0 >= 2.42
 - libxml
 - libmicrohttpd >= 0.9.0
@@ -134,7 +135,7 @@ explicitly before running `cmake`. See the top-level CMakeLists.txt.
 
 ### Unit tests
 
-In order to build and run unit tests use the commands below: 
+In order to build and run unit tests use the commands below:
 
 ```sh
 cmake -DBUILD_TESTING=1 ..  # enable building unit tests
