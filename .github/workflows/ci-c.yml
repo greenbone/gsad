@@ -44,15 +44,13 @@ jobs:
     runs-on: ubuntu-latest
     container: ${{ vars.SELF_HOSTED_REGISTRY || 'registry.community.greenbone.net' }}/community/gvm-libs:stable
     steps:
-      - name: Install git for Codecov uploader
+      - name: Install git for codecov uploader and cgreen for unit tests
         run: |
           apt-get update
-          apt-get install --no-install-recommends -y ca-certificates git
+          apt-get install --no-install-recommends -y ca-certificates git libcgreen1-dev
       - uses: actions/checkout@v6
       - name: Install build dependencies
         run: sh .github/install-dependencies.sh .github/build-dependencies.list
-      - name: Install cgreen
-        uses: greenbone/actions/install-cgreen@v3
       - name: Configure and compile gsad
         run: |
           cmake -B build -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=1 -DENABLE_COVERAGE=1 .
