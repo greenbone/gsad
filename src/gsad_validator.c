@@ -344,6 +344,7 @@ init_validator ()
                      "|cs_smime|cs_pgp|cs_snmp|cs_krb5|cs_pw)$");
   gvm_validator_add (validator, "vault_id", "^.*$");
   gvm_validator_add (validator, "host_identifier", "^.*$");
+  gvm_validator_add (validator, "privacy_host_identifier", "^.*$");
   gvm_validator_add (validator, "preferences:app_id", "^.*$");
   gvm_validator_add (validator, "preferences:passphrase", "^.*$");
   gvm_validator_add (validator, "credential_login", "^[-_[:alnum:]\\.@\\\\]*$");
