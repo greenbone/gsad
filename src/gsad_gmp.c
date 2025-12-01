@@ -3941,6 +3941,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   gchar *html, *response;
   const char *name, *comment, *credential_login, *type, *password, *passphrase;
   const char *credential_store_id, *vault_id, *host_identifier;
+  const char *privacy_host_identifier;
   const char *private_key, *public_key, *certificate, *community;
   const char *privacy_password, *auth_algorithm, *privacy_algorithm;
   const char *autogenerate;
@@ -3957,6 +3958,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   credential_store_id = params_value (params, "credential_store_id");
   vault_id = params_value (params, "vault_id");
   host_identifier = params_value (params, "host_identifier");
+  privacy_host_identifier = params_value (params, "privacy_host_identifier");
   private_key = params_value (params, "private_key");
   public_key = params_value (params, "public_key");
   certificate = params_value (params, "certificate");
@@ -4026,22 +4028,55 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
             name, comment ? comment : "", type,
             credential_login ? credential_login : "", password ? password : "");
         }
-      else if (str_equal (type, "krb5"))
+      else if (str_equal (type, "krb5") || str_equal (type, "cs_krb5"))
         {
-          CHECK_LOGIN_NAME_INVALID_CREATE (credential_login,
-                                           "Create Credential");
+          GString *login_password_xml = g_string_new ("");
+          if (str_equal (type, "krb5"))
+            {
+              CHECK_LOGIN_NAME_INVALID_CREATE (credential_login,
+                                               "Create Credential");
 
-          CHECK_VARIABLE_INVALID (password, "Create Credential");
+              CHECK_VARIABLE_INVALID (password, "Create Credential");
 
+              gchar *login_esc = g_markup_escape_text (
+                credential_login ? credential_login : "", -1);
+              gchar *password_esc =
+                g_markup_escape_text (password ? password : "", -1);
+
+              g_string_append_printf (login_password_xml,
+                                      "<login>%s</login>"
+                                      "<password>%s</password>",
+                                      login_esc, password_esc);
+              g_free (login_esc);
+              g_free (password_esc);
+            }
+          else
+            {
+              if (params_given (params, "credential_store_id"))
+                CHECK_VARIABLE_INVALID (credential_store_id,
+                                        "Create Credential");
+
+              CHECK_VARIABLE_INVALID (vault_id, "Create Credential");
+              CHECK_VARIABLE_INVALID (host_identifier, "Create Credential");
+
+              gchar *credential_store_id_esc =
+                g_markup_escape_text (credential_store_id ?: "", -1);
+              gchar *vault_id_esc = g_markup_escape_text (vault_id ?: "", -1);
+              gchar *host_identifier_esc =
+                g_markup_escape_text (host_identifier ?: "", -1);
+
+              g_string_append_printf (
+                login_password_xml,
+                "<credential_store_id>%s</credential_store_id>"
+                "<vault_id>%s</vault_id>"
+                "<host_identifier>%s</host_identifier>",
+                credential_store_id_esc, vault_id_esc, host_identifier_esc);
+            }
           // escape provided values
           gchar *name_esc = g_markup_escape_text (name ? name : "", -1);
           gchar *comment_esc =
             g_markup_escape_text (comment ? comment : "", -1);
           gchar *type_esc = g_markup_escape_text (type, -1);
-          gchar *login_esc =
-            g_markup_escape_text (credential_login ? credential_login : "", -1);
-          gchar *password_esc =
-            g_markup_escape_text (password ? password : "", -1);
           gchar *realm_esc = g_markup_escape_text (realm ? realm : "", -1);
 
           GString *kdcs_xml = g_string_new ("");
@@ -4078,13 +4113,13 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
             "<name>%s</name>"
             "<comment>%s</comment>"
             "<type>%s</type>"
-            "<login>%s</login>"
-            "<password>%s</password>"
+            "%s" // login and password block
             "%s" // kdcs or kdc block
             "<realm>%s</realm>"
             "<allow_insecure>1</allow_insecure>"
             "</create_credential>",
-            name_esc, comment_esc, type_esc, login_esc, password_esc,
+            name_esc, comment_esc, type_esc,
+            login_password_xml->str ? login_password_xml->str : "",
             kdcs_xml->str ? kdcs_xml->str : "", realm_esc);
 
           ret = gmp (connection, credentials, &response, &entity, response_data,
@@ -4096,8 +4131,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           g_free (name_esc);
           g_free (comment_esc);
           g_free (type_esc);
-          g_free (login_esc);
-          g_free (password_esc);
+          g_string_free (login_password_xml, TRUE);
           g_free (realm_esc);
         }
       else if (str_equal (type, "usk"))
@@ -4195,6 +4229,58 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
               credential_login ? credential_login : "",
               password ? password : "", auth_algorithm ? auth_algorithm : "");
         }
+      else if (str_equal (type, "cs_snmp"))
+        {
+          if (params_given (params, "credential_store_id"))
+            CHECK_VARIABLE_INVALID (credential_store_id, "Create Credential");
+
+          CHECK_VARIABLE_INVALID (vault_id, "Create Credential");
+          CHECK_VARIABLE_INVALID (host_identifier, "Create Credential");
+          CHECK_VARIABLE_INVALID (auth_algorithm, "Create Credential");
+          CHECK_VARIABLE_INVALID (privacy_algorithm, "Create Credential");
+
+          if (params_given (params, "privacy_host_identifier"))
+            CHECK_VARIABLE_INVALID (privacy_host_identifier,
+                                    "Create Credential");
+
+          if (privacy_host_identifier && strcmp (privacy_host_identifier, ""))
+            ret = gmpf (
+              connection, credentials, &response, &entity, response_data,
+              "<create_credential>"
+              "<name>%s</name>"
+              "<comment>%s</comment>"
+              "<type>%s</type>"
+              "<credential_store_id>%s</credential_store_id>"
+              "<vault_id>%s</vault_id>"
+              "<host_identifier>%s</host_identifier>"
+              "<privacy_host_identifier>%s</privacy_host_identifier>"
+              "<privacy>"
+              "<password></password>"
+              "<algorithm>%s</algorithm>"
+              "</privacy>"
+              "<auth_algorithm>%s</auth_algorithm>"
+              "<allow_insecure>1</allow_insecure>"
+              "</create_credential>",
+              name, comment ? comment : "", type, credential_store_id ?: "",
+              vault_id, host_identifier, privacy_host_identifier ?: "",
+              privacy_algorithm ? privacy_algorithm : "",
+              auth_algorithm ? auth_algorithm : "");
+          else
+            ret = gmpf (
+              connection, credentials, &response, &entity, response_data,
+              "<create_credential>"
+              "<name>%s</name>"
+              "<comment>%s</comment>"
+              "<type>%s</type>"
+              "<credential_store_id>%s</credential_store_id>"
+              "<vault_id>%s</vault_id>"
+              "<host_identifier>%s</host_identifier>"
+              "<auth_algorithm>%s</auth_algorithm>"
+              "<allow_insecure>1</allow_insecure>"
+              "</create_credential>",
+              name, comment ? comment : "", type, credential_store_id ?: "",
+              vault_id, host_identifier, auth_algorithm ? auth_algorithm : "");
+        }
       else if (str_equal (type, "pgp"))
         {
           CHECK_VARIABLE_INVALID (public_key, "Create Credential");
@@ -4243,9 +4329,8 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
                   name, comment ? comment : "", type, password ? password : "");
         }
       else if (str_equal (type, "cs_up") || str_equal (type, "cs_usk")
-               || str_equal (type, "cs_cc") || str_equal (type, "cs_snmp")
-               || str_equal (type, "cs_pgp") || str_equal (type, "cs_pw")
-               || str_equal (type, "cs_smime") || str_equal (type, "cs_krb5"))
+               || str_equal (type, "cs_cc") || str_equal (type, "cs_pgp")
+               || str_equal (type, "cs_pw") || str_equal (type, "cs_smime"))
         {
           if (params_given (params, "credential_store_id"))
             CHECK_VARIABLE_INVALID (credential_store_id, "Create Credential");
@@ -4253,38 +4338,19 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           CHECK_VARIABLE_INVALID (vault_id, "Create Credential");
           CHECK_VARIABLE_INVALID (host_identifier, "Create Credential");
 
-          if (credential_store_id && !str_equal (credential_store_id, ""))
-            {
-              ret = gmpf (connection, credentials, &response, &entity,
-                          response_data,
-                          "<create_credential>"
-                          "<name>%s</name>"
-                          "<comment>%s</comment>"
-                          "<type>%s</type>"
-                          "<credential_store_id>%s</credential_store_id>"
-                          "<vault_id>%s</vault_id>"
-                          "<host_identifier>%s</host_identifier>"
-                          "<allow_insecure>1</allow_insecure>"
-                          "</create_credential>",
-                          name, comment ? comment : "", type,
-                          credential_store_id, vault_id ? vault_id : "",
-                          host_identifier ? host_identifier : "");
-            }
-          else
-            {
-              ret = gmpf (
-                connection, credentials, &response, &entity, response_data,
-                "<create_credential>"
-                "<name>%s</name>"
-                "<comment>%s</comment>"
-                "<type>%s</type>"
-                "<vault_id>%s</vault_id>"
-                "<host_identifier>%s</host_identifier>"
-                "<allow_insecure>1</allow_insecure>"
-                "</create_credential>",
-                name, comment ? comment : "", type, vault_id ? vault_id : "",
-                host_identifier ? host_identifier : "");
-            }
+          ret =
+            gmpf (connection, credentials, &response, &entity, response_data,
+                  "<create_credential>"
+                  "<name>%s</name>"
+                  "<comment>%s</comment>"
+                  "<type>%s</type>"
+                  "<credential_store_id>%s</credential_store_id>"
+                  "<vault_id>%s</vault_id>"
+                  "<host_identifier>%s</host_identifier>"
+                  "<allow_insecure>1</allow_insecure>"
+                  "</create_credential>",
+                  name, comment ? comment : "", type, credential_store_id ?: "",
+                  vault_id, host_identifier);
         }
       else
         {
@@ -4956,6 +5022,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *credential_id, *public_key;
   const char *name, *comment, *credential_login, *password, *passphrase, *type;
   const char *credential_store_id, *vault_id, *host_identifier;
+  const char *privacy_host_identifier;
   const char *private_key, *certificate, *community, *privacy_password;
   const char *kdc, *realm;
   const char *auth_algorithm, *privacy_algorithm;
@@ -4973,6 +5040,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   credential_store_id = params_value (params, "credential_store_id");
   vault_id = params_value (params, "vault_id");
   host_identifier = params_value (params, "host_identifier");
+  privacy_host_identifier = params_value (params, "privacy_host_identifier");
   private_key = params_value (params, "private_key");
   certificate = params_value (params, "certificate");
   community = params_value (params, "community");
@@ -5023,6 +5091,26 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
       if (params_given (params, "community"))
         CHECK_VARIABLE_INVALID (community, "Save Credential");
     }
+  else if (str_equal (type, "cs_snmp"))
+    {
+      if (params_given (params, "auth_algorithm"))
+        CHECK_VARIABLE_INVALID (auth_algorithm, "Save Credential");
+
+      if (params_given (params, "privacy_algorithm"))
+        CHECK_VARIABLE_INVALID (privacy_algorithm, "Save Credential");
+
+      if (params_given (params, "credential_store_id"))
+        CHECK_VARIABLE_INVALID (credential_store_id, "Save Credential")
+
+      if (params_given (params, "vault_id"))
+        CHECK_VARIABLE_INVALID (vault_id, "Save Credential");
+
+      if (params_given (params, "host_identifier"))
+        CHECK_VARIABLE_INVALID (host_identifier, "Save Credential");
+
+      if (params_given (params, "privacy_host_identifier"))
+        CHECK_VARIABLE_INVALID (privacy_host_identifier, "Save Credential");
+    }
   else if (str_equal (type, "up") | str_equal (type, "pw"))
     {
       if (params_given (params, "password"))
@@ -5038,10 +5126,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
       if (params_given (params, "public_key"))
         CHECK_VARIABLE_INVALID (public_key, "Save Credential");
     }
-  else if (str_equal (type, "cs_up") || str_equal (type, "cs_usk")
-           || str_equal (type, "cs_cc") || str_equal (type, "cs_snmp")
-           || str_equal (type, "cs_pgp") || str_equal (type, "cs_pw")
-           || str_equal (type, "cs_smime") || str_equal (type, "cs_krb5"))
+  else if (g_str_has_prefix (type, "cs_"))
     {
       if (params_given (params, "credential_store_id"))
         CHECK_VARIABLE_INVALID (credential_store_id, "Save Credential")
@@ -5098,7 +5183,25 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           xml_string_append (command, "</privacy>");
         }
     }
-  else if (str_equal (type, "krb5"))
+  else if (str_equal (type, "cs_snmp"))
+    {
+      if (auth_algorithm)
+        xml_string_append (command, "<auth_algorithm>%s</auth_algorithm>",
+                           auth_algorithm);
+
+      if (privacy_algorithm)
+        {
+          xml_string_append (command, "<privacy>");
+          if (privacy_algorithm)
+            {
+              xml_string_append (command, "<algorithm>%s</algorithm>",
+                                 privacy_algorithm);
+            }
+
+          xml_string_append (command, "</privacy>");
+        }
+    }
+  else if (str_equal (type, "krb5") || str_equal (type, "cs_krb5"))
     {
       if (kdcs_param)
         {
@@ -5179,10 +5282,8 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           xml_string_append (command, "</key>");
         }
     }
-  else if (str_equal (type, "cs_up") || str_equal (type, "cs_usk")
-           || str_equal (type, "cs_cc") || str_equal (type, "cs_snmp")
-           || str_equal (type, "cs_pgp") || str_equal (type, "cs_pw")
-           || str_equal (type, "cs_smime") || str_equal (type, "cs_krb5"))
+
+  if (g_str_has_prefix (type, "cs_"))
     {
       if (credential_store_id)
         {
@@ -5198,6 +5299,12 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
         {
           xml_string_append (command, "<host_identifier>%s</host_identifier>",
                              host_identifier);
+        }
+      if (str_equal (type, "cs_snmp") && privacy_host_identifier)
+        {
+          xml_string_append (
+            command, "<privacy_host_identifier>%s</privacy_host_identifier>",
+            privacy_host_identifier);
         }
     }
 
