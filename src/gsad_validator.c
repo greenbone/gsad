@@ -688,6 +688,7 @@ init_validator ()
   gvm_validator_alias (validator, "chart_template", "name");
   gvm_validator_alias (validator, "community", "lsc_password");
   gvm_validator_alias (validator, "closed_note", "note_optional");
+  gvm_validator_alias (validator, "cs_allow_failed_retrieval", "boolean");
   gvm_validator_alias (validator, "custom_severity", "boolean");
   gvm_validator_alias (validator, "current_user", "boolean");
   gvm_validator_alias (validator, "dashboard_name", "name");
