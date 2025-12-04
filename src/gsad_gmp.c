@@ -779,7 +779,6 @@ setting_get_value (gvm_connection_t *connection, const char *setting_id,
  * @return Enveloped XML object.
  */
 static gchar *
-
 action_result (gvm_connection_t *connection, credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data,
                const char *action, const char *message, const char *details,
@@ -2057,7 +2056,7 @@ import_report_gmp (gvm_connection_t *connection, credentials_t *credentials,
 }
 
 /**
- * @brief Create a import task, serve next page.
+ * @brief Create an import task, serve next page.
  *
  * @param[in]  connection     Connection to manager.
  * @param[in]  credentials    Username and password for authentication.
@@ -2221,7 +2220,7 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   if (str_equal (target_id, "0"))
     {
-      /* Don't allow to create container task via create_task */
+      /* Don't allow to create import task via create_task */
       return message_invalid (connection, credentials, params, response_data,
                               "Given target_id was invalid", "Create Task");
     }
