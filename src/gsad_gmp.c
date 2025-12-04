@@ -4237,13 +4237,16 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           CHECK_VARIABLE_INVALID (vault_id, "Create Credential");
           CHECK_VARIABLE_INVALID (host_identifier, "Create Credential");
           CHECK_VARIABLE_INVALID (auth_algorithm, "Create Credential");
-          CHECK_VARIABLE_INVALID (privacy_algorithm, "Create Credential");
+
+          if (params_given (params, "privacy_algorithm"))
+            CHECK_VARIABLE_INVALID (privacy_algorithm, "Create Credential");
 
           if (params_given (params, "privacy_host_identifier"))
             CHECK_VARIABLE_INVALID (privacy_host_identifier,
                                     "Create Credential");
 
-          if (privacy_host_identifier && strcmp (privacy_host_identifier, ""))
+          if (privacy_host_identifier
+              && !str_equal (privacy_host_identifier, ""))
             ret = gmpf (
               connection, credentials, &response, &entity, response_data,
               "<create_credential>"
@@ -5190,16 +5193,11 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
                            auth_algorithm);
 
       if (privacy_algorithm)
-        {
-          xml_string_append (command, "<privacy>");
-          if (privacy_algorithm)
-            {
-              xml_string_append (command, "<algorithm>%s</algorithm>",
-                                 privacy_algorithm);
-            }
-
-          xml_string_append (command, "</privacy>");
-        }
+        xml_string_append (command,
+                           "<privacy>"
+                           "<algorithm>%s</algorithm>"
+                           "</privacy>",
+                           privacy_algorithm);
     }
   else if (str_equal (type, "krb5") || str_equal (type, "cs_krb5"))
     {
