@@ -779,6 +779,7 @@ setting_get_value (gvm_connection_t *connection, const char *setting_id,
  * @return Enveloped XML object.
  */
 static gchar *
+
 action_result (gvm_connection_t *connection, credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data,
                const char *action, const char *message, const char *details,
@@ -6752,7 +6753,7 @@ create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *target_esxi_credential, *target_snmp_credential, *target_source;
   const char *target_exclude_source;
   const char *port_list_id, *reverse_lookup_only, *reverse_lookup_unify;
-  const char *alive_tests;
+  const char *alive_tests = NULL;
   GHashTable *alive_tests_table;
   const char *hosts_filter, *file, *exclude_file;
   const char *allow_simultaneous_ips;
