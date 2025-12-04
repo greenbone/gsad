@@ -2056,7 +2056,7 @@ import_report_gmp (gvm_connection_t *connection, credentials_t *credentials,
 }
 
 /**
- * @brief Create a container task, serve next page.
+ * @brief Create a import task, serve next page.
  *
  * @param[in]  connection     Connection to manager.
  * @param[in]  credentials    Username and password for authentication.
@@ -2066,7 +2066,7 @@ import_report_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-create_container_task_gmp (gvm_connection_t *connection,
+create_import_task_gmp (gvm_connection_t *connection,
                            credentials_t *credentials, params_t *params,
                            cmd_response_data_t *response_data)
 {
@@ -2079,9 +2079,9 @@ create_container_task_gmp (gvm_connection_t *connection,
   comment = params_value (params, "comment");
   usage_type = params_value (params, "usage_type");
 
-  CHECK_VARIABLE_INVALID (name, "Create Container Task");
-  CHECK_VARIABLE_INVALID (comment, "Create Container Task");
-  CHECK_VARIABLE_INVALID (usage_type, "Create Container Task");
+  CHECK_VARIABLE_INVALID (name, "Create Import Task");
+  CHECK_VARIABLE_INVALID (comment, "Create Import Task");
+  CHECK_VARIABLE_INVALID (usage_type, "Create Import Task");
 
   command = g_markup_printf_escaped ("<create_task>"
                                      "<target id=\"0\"/>"
@@ -2106,7 +2106,7 @@ create_container_task_gmp (gvm_connection_t *connection,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
         credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while creating a container task. "
+        "An internal error occurred while creating an import task. "
         "No task was created. "
         "Diagnostics: Failure to send command to manager daemon.",
         response_data);
@@ -2115,7 +2115,7 @@ create_container_task_gmp (gvm_connection_t *connection,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
         credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while creating a container task. "
+        "An internal error occurred while creating an import task. "
         "It is unclear whether the task has been created or not. "
         "Diagnostics: Failure to receive response from manager daemon.",
         response_data);
@@ -2124,7 +2124,7 @@ create_container_task_gmp (gvm_connection_t *connection,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
         credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while creating a container task. "
+        "An internal error occurred while creating an import task. "
         "It is unclear whether the task has been created or not. "
         "Diagnostics: Internal Error.",
         response_data);
@@ -2133,7 +2133,7 @@ create_container_task_gmp (gvm_connection_t *connection,
   if (entity_attribute (entity, "id"))
     params_add (params, "task_id", entity_attribute (entity, "id"));
   html = response_from_entity (connection, credentials, params, entity,
-                               "Create Container Task", response_data);
+                               "Create Import Task", response_data);
   free_entity (entity);
   g_free (response);
   return html;
@@ -3266,7 +3266,7 @@ save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
 #undef CHECK
 
 /**
- * @brief Save container task, get next page, envelope the result.
+ * @brief Save import task, get next page, envelope the result.
  *
  * @param[in]  connection     Connection to manager.
  * @param[in]  credentials    Username and password for authentication.
@@ -3276,7 +3276,7 @@ save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_container_task_gmp (gvm_connection_t *connection,
+save_import_task_gmp (gvm_connection_t *connection,
                          credentials_t *credentials, params_t *params,
                          cmd_response_data_t *response_data)
 {
@@ -3292,12 +3292,12 @@ save_container_task_gmp (gvm_connection_t *connection,
   task_id = params_value (params, "task_id");
   auto_delete = params_value (params, "auto_delete");
   auto_delete_data = params_value (params, "auto_delete_data");
-  CHECK_VARIABLE_INVALID (name, "Save Task")
-  CHECK_VARIABLE_INVALID (comment, "Save Task")
-  CHECK_VARIABLE_INVALID (task_id, "Save Task")
-  CHECK_VARIABLE_INVALID (in_assets, "Save Task")
-  CHECK_VARIABLE_INVALID (auto_delete, "Save Task");
-  CHECK_VARIABLE_INVALID (auto_delete_data, "Save Task");
+  CHECK_VARIABLE_INVALID (name, "Save Import Task")
+  CHECK_VARIABLE_INVALID (comment, "Save Import Task")
+  CHECK_VARIABLE_INVALID (task_id, "Save Import Task")
+  CHECK_VARIABLE_INVALID (in_assets, "Save Import Task")
+  CHECK_VARIABLE_INVALID (auto_delete, "Save Import Task");
+  CHECK_VARIABLE_INVALID (auto_delete_data, "Save Import Task");
 
   format = g_strdup_printf ("<modify_task task_id=\"%%s\">"
                             "<name>%%s</name>"
@@ -3335,7 +3335,7 @@ save_container_task_gmp (gvm_connection_t *connection,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
         credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while saving a task. "
+        "An internal error occurred while saving an import task. "
         "No new task was created. "
         "Diagnostics: Failure to send command to manager daemon.",
         response_data);
@@ -3344,7 +3344,7 @@ save_container_task_gmp (gvm_connection_t *connection,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
         credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while saving a task. "
+        "An internal error occurred while saving an import task. "
         "It is unclear whether the task has been created or not. "
         "Diagnostics: Failure to receive response from manager daemon.",
         response_data);
@@ -3353,14 +3353,14 @@ save_container_task_gmp (gvm_connection_t *connection,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
         credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while saving a task. "
+        "An internal error occurred while saving an import task. "
         "It is unclear whether the task has been created or not. "
         "Diagnostics: Internal Error.",
         response_data);
     }
 
   html = response_from_entity (connection, credentials, params, entity,
-                               "Save Container Task", response_data);
+                               "Save Import Task", response_data);
   free_entity (entity);
   g_free (response);
   return html;
