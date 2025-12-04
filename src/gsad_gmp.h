@@ -47,7 +47,7 @@ create_report_gmp (gvm_connection_t *, credentials_t *, params_t *,
                    cmd_response_data_t *);
 char *
 create_import_task_gmp (gvm_connection_t *, credentials_t *, params_t *,
-                           cmd_response_data_t *);
+                        cmd_response_data_t *);
 char *
 create_task_gmp (gvm_connection_t *, credentials_t *, params_t *,
                  cmd_response_data_t *);
@@ -59,7 +59,7 @@ save_task_gmp (gvm_connection_t *, credentials_t *, params_t *,
                cmd_response_data_t *);
 char *
 save_import_task_gmp (gvm_connection_t *, credentials_t *, params_t *,
-                         cmd_response_data_t *);
+                      cmd_response_data_t *);
 char *
 resume_task_gmp (gvm_connection_t *, credentials_t *, params_t *,
                  cmd_response_data_t *);

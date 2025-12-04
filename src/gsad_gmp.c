@@ -2068,8 +2068,8 @@ import_report_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 create_import_task_gmp (gvm_connection_t *connection,
-                           credentials_t *credentials, params_t *params,
-                           cmd_response_data_t *response_data)
+                        credentials_t *credentials, params_t *params,
+                        cmd_response_data_t *response_data)
 {
   entity_t entity;
   int ret;
@@ -3277,9 +3277,8 @@ save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_import_task_gmp (gvm_connection_t *connection,
-                         credentials_t *credentials, params_t *params,
-                         cmd_response_data_t *response_data)
+save_import_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                      params_t *params, cmd_response_data_t *response_data)
 {
   gchar *format, *response, *html;
   const char *comment, *name, *task_id;
