@@ -496,22 +496,9 @@ init_validator ()
   gvm_validator_add (validator, "param_using_default:value", "(?s)^.*$");
   gvm_validator_add (validator, "permission", "^([_a-z]+|Super)$");
   gvm_validator_add (validator, "permission_type", "^(read|write)$");
-  gvm_validator_add (
-    validator, "resource_type",
-    "^(agent|agent_group|agent_installer|alert|asset|audit_report|audit|"
-    "cert_bund_adv|config|cpe|credential|cve|dfn_cert_adv|filter|group|"
-    "host|info|nvt|note|oci_image_target|os|ovaldef|override|permission|"
-    "policy|port_list|report|report_config|report_format|result|role|scanner|"
-    "schedule|tag|target|task|ticket|tls_certificate|user|vuln|)$");
   gvm_validator_add (validator, "resource_id", "^[[:alnum:]\\-_.:\\/~]*$");
   gvm_validator_add (validator, "resources_action", "^(|add|set|remove)$");
-  gvm_validator_add (
-    validator, "optional_resource_type",
-    "^(alert|asset|cert_bund_adv|config|cpe|credential|cve|dfn_cert_adv|"
-    "filter|group|host|info|nvt|note|os|ovaldef|override|permission|port_list|"
-    "report|report_config|report_format|result|role|scanner|schedule|tag|"
-    "target|task|ticket|"
-    "tls_certificate|user|vuln|)?$");
+  gvm_validator_add (validator, "optional_resource_type", "(?s)^.*$");
   gvm_validator_add (validator, "select:value", "^.*$");
   gvm_validator_add (validator, "ssl_cert", "^.*$");
   gvm_validator_add (validator, "method_data:name", "^.*$");
