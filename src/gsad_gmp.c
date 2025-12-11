@@ -3079,7 +3079,6 @@ save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   task_id = params_value (params, "task_id");
   cs_allow_failed_retrieval =
     params_value (params, "cs_allow_failed_retrieval");
-  CHECK_VARIABLE_INVALID (cs_allow_failed_retrieval, "Save Task");
 
   if (scanner_type != NULL)
     {
@@ -3105,12 +3104,14 @@ save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   CHECK_VARIABLE_INVALID (hosts_ordering, "Save Task");
   CHECK_VARIABLE_INVALID (config_id, "Save Task");
   CHECK_VARIABLE_INVALID (schedule_id, "Save Task");
+
   if (params_given (params, "schedule_periods"))
     {
       CHECK_VARIABLE_INVALID (schedule_periods, "Save Task");
     }
   else
     schedule_periods = "0";
+
   CHECK_VARIABLE_INVALID (scanner_id, "Save Task");
   CHECK_VARIABLE_INVALID (task_id, "Save Task");
   CHECK_VARIABLE_INVALID (max_checks, "Save Task");
@@ -3118,6 +3119,9 @@ save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   CHECK_VARIABLE_INVALID (auto_delete_data, "Save Task");
   CHECK_VARIABLE_INVALID (max_hosts, "Save Task");
   CHECK_VARIABLE_INVALID (in_assets, "Save Task");
+
+  if (params_given (params, "cs_allow_failed_retrieval"))
+    CHECK_VARIABLE_INVALID (cs_allow_failed_retrieval, "Save Task");
 
   if (!strcmp (in_assets, "1"))
     {
