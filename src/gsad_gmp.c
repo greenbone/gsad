@@ -2155,7 +2155,7 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
 {
   entity_t entity;
   int ret;
-  gchar *schedule_element, *command;
+  GString *command;
   gchar *response, *html;
   const char *name, *comment, *config_id, *target_id, *scanner_type;
   const char *scanner_id, *schedule_id, *schedule_periods;
@@ -2164,9 +2164,7 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *add_tag, *tag_id, *auto_delete, *auto_delete_data;
   const char *apply_overrides, *min_qod, *usage_type;
   const char *cs_allow_failed_retrieval;
-  gchar *name_escaped, *comment_escaped;
   params_t *alerts;
-  GString *alert_element;
 
   add_tag = params_value (params, "add_tag");
   alterable = params_value (params, "alterable");
@@ -2261,12 +2259,11 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
       CHECK_VARIABLE_INVALID (tag_id, "Create Task");
     }
 
-  if (schedule_id == NULL || strcmp (schedule_id, "0") == 0)
-    schedule_element = g_strdup ("");
-  else
-    schedule_element = g_strdup_printf ("<schedule id=\"%s\"/>", schedule_id);
+  command = g_string_new ("<create_task>");
 
-  alert_element = g_string_new ("");
+  if (schedule_id && strcmp (schedule_id, "0"))
+    xml_string_append (command, "<schedule id=\"%s\"/>", schedule_id);
+
   if (params_given (params, "alert_id_optional:"))
     alerts = params_values (params, "alert_id_optional:");
   else
@@ -2281,18 +2278,14 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
       params_iterator_init (&iter, alerts);
       while (params_iterator_next (&iter, &name, &param))
         if (param->value && strcmp (param->value, "0"))
-          g_string_append_printf (alert_element, "<alert id=\"%s\"/>",
-                                  param->value ? param->value : "");
+          xml_string_append (command, "<alert id=\"%s\"/>",
+                             param->value ? param->value : "");
     }
 
-  name_escaped = name ? g_markup_escape_text (name, -1) : NULL;
-  comment_escaped = comment ? g_markup_escape_text (comment, -1) : NULL;
-
-  command = g_strdup_printf (
-    "<create_task>"
+  xml_string_append (
+    command,
     "<config id=\"%s\"/>"
     "<schedule_periods>%s</schedule_periods>"
-    "%s%s"
     "<target id=\"%s\"/>"
     "<scanner id=\"%s\"/>"
     "<hosts_ordering>%s</hosts_ordering>"
@@ -2337,23 +2330,16 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
     "<alterable>%i</alterable>"
     "<usage_type>%s</usage_type>"
     "</create_task>",
-    config_id, schedule_periods, schedule_element, alert_element->str,
-    target_id, scanner_id, hosts_ordering, name_escaped, comment_escaped,
-    max_checks, max_hosts, strcmp (in_assets, "0") ? "yes" : "no",
+    config_id, schedule_periods, target_id, scanner_id, hosts_ordering, name,
+    comment, max_checks, max_hosts, strcmp (in_assets, "0") ? "yes" : "no",
     strcmp (apply_overrides, "0") ? "yes" : "no", min_qod, auto_delete,
     auto_delete_data,
     cs_allow_failed_retrieval ? strcmp (cs_allow_failed_retrieval, "0") : 0,
     alterable ? strcmp (alterable, "0") : 0, usage_type);
 
-  g_free (name_escaped);
-  g_free (comment_escaped);
-
-  ret =
-    gmp (connection, credentials, &response, &entity, response_data, command);
-  g_free (command);
-
-  g_free (schedule_element);
-  g_string_free (alert_element, TRUE);
+  ret = gmp (connection, credentials, &response, &entity, response_data,
+             command->str);
+  g_string_free (command, TRUE);
 
   switch (ret)
     {
