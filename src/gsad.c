@@ -1896,7 +1896,7 @@ my_gnutls_log_func (int level, const char *text)
 int
 gsad_init ()
 {
-  g_debug ("Initializing the Greenbone Security Assistant...\n");
+  g_debug ("Initializing the Greenbone Security Assistant Deamon...\n");
 
   /* Init user ssessions. */
   session_init ();
@@ -2479,7 +2479,7 @@ main (int argc, char **argv)
 
   if (print_version)
     {
-      printf ("Greenbone Security Assistant %s\n", GSAD_VERSION);
+      printf ("Greenbone Security Assistant Deamon %s\n", GSAD_VERSION);
       if (debug_tls)
         {
           printf ("gnutls %s\n", gnutls_check_version (NULL));
