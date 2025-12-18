@@ -5104,7 +5104,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
       if (params_given (params, "privacy_host_identifier"))
         CHECK_VARIABLE_INVALID (privacy_host_identifier, "Save Credential");
     }
-  else if (str_equal (type, "up") | str_equal (type, "pw"))
+  else if (str_equal (type, "up") || str_equal (type, "pw"))
     {
       if (params_given (params, "password"))
         CHECK_VARIABLE_INVALID (password, "Save Credential");
@@ -5114,7 +5114,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
       if (params_given (params, "certificate"))
         CHECK_VARIABLE_INVALID (certificate, "Save Credential");
     }
-  else if (str_equal (type, "smime"))
+  else if (str_equal (type, "smime") || str_equal (type, "pgp"))
     {
       if (params_given (params, "public_key"))
         CHECK_VARIABLE_INVALID (public_key, "Save Credential");
@@ -5248,7 +5248,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           xml_string_append (command, "</key>");
         }
     }
-  else if (str_equal (type, "up") | str_equal (type, "pw"))
+  else if (str_equal (type, "up") || str_equal (type, "pw"))
     {
       if (password)
         xml_string_append (command, "<password>%s</password>", password);
