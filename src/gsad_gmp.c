@@ -5195,12 +5195,12 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
         }
       else
         {
-          if (kdc && strcmp (kdc, "") != 0)
+          if (kdc)
             {
               xml_string_append (command, "<kdc>%s</kdc>", kdc);
             }
         }
-      if (realm && strcmp (realm, ""))
+      if (realm)
         {
           xml_string_append (command, "<realm>%s</realm>", realm);
         }
