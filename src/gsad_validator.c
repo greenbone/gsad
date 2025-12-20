@@ -576,6 +576,7 @@ init_validator ()
   gvm_validator_alias (validator, "esxi_credential_id", "id");
   gvm_validator_alias (validator, "filter_id", "id");
   gvm_validator_alias (validator, "format_id", "id");
+  gvm_validator_alias (validator, "group_id", "id");
   gvm_validator_alias (validator, "inheritor_id", "id");
   gvm_validator_alias (validator, "krb5_credential_id", "id");
   gvm_validator_alias (validator, "note_id", "id");
