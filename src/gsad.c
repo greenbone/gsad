@@ -1135,7 +1135,8 @@ watch_client_connection (void *data)
 /**
  * @brief Check whether may compress response.
  *
- * @param[in]  con  HTTP Connection
+ * @param[in]  con       HTTP Connection
+ * @param[in]  encoding  Desired encoding.
  *
  * @return 1 if may, else 0.
  */

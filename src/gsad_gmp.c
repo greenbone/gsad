@@ -11933,7 +11933,7 @@ buffer_report_config_params (GString *string, GHashTable *config_params,
  *
  * @param[in]  connection        Connection to manager.
  * @param[in]  credentials       Username and password for authentication.
- * @param[in]  request_params    Request parameters.
+ * @param[in]  params            Request parameters.
  * @param[out] response_data     Extra data return for the HTTP response.
  *
  * @return Enveloped XML object.
@@ -12914,7 +12914,6 @@ get_trash_notes_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @param[in]  connection     Connection to manager.
  * @param[in]  credentials    Username and password for authentication.
  * @param[in]  params         Request parameters.
- * @param[in]  extra_xml      Extra XML to insert inside page element.
  * @param[out] response_data  Extra data return for the HTTP response.
  *
  * @return Enveloped XML object.
@@ -13192,9 +13191,8 @@ get_trash_tags_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @brief Setup trash page XML, envelope the result.
  *
  * @param[in]  connection     Connection to manager.
- * @param[in]  credentials  Username and password for authentication.
- * @param[in]  params       Request parameters.
- * @param[in]  extra_xml    Extra XML to insert inside page element.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
  * @param[out] response_data  Extra data return for the HTTP response.
  *
  * @return Enveloped XML object.
