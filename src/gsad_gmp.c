@@ -4500,20 +4500,24 @@ download_credential_gmp (gvm_connection_t *connection,
         package_entity = entity_child (credential_entity, "package");
       if (package_entity != NULL)
         {
+          gsize len;
           char *package_encoded = entity_text (package_entity);
           if (strlen (package_encoded))
             {
-              gsize len;
               data = (gchar *) g_base64_decode (package_encoded, &len);
               if (data == NULL)
                 {
                   data = g_strdup ("");
+                  len = 0;
                 }
             }
           else
             {
               data = g_strdup ("");
+              len = 0;
             }
+
+          cmd_response_data_set_content_length (response_data, len);
         }
       else
         {
@@ -4561,6 +4565,8 @@ download_credential_gmp (gvm_connection_t *connection,
             login = g_strdup (entity_text (login_entity));
           else
             login = NULL;
+
+          cmd_response_data_set_content_length (response_data, strlen (data));
         }
       else
         {
@@ -4592,7 +4598,6 @@ download_credential_gmp (gvm_connection_t *connection,
                      (strcmp (format, "key") == 0 ? "pub" : format));
   content_type_from_format_string (&content_type, format);
 
-  cmd_response_data_set_content_length (response_data, strlen (data));
   cmd_response_data_set_content_disposition (response_data,
                                              content_disposition);
   cmd_response_data_set_content_type (response_data, content_type);
