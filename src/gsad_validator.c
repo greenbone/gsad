@@ -436,7 +436,7 @@ init_validator ()
   /* Number is special cased in params_mhd_validate to remove the space. */
   gvm_validator_add (validator, "number", "^ *[0-9]+ *$");
   gvm_validator_add (validator, "image_references",
-                     "^[-_[:alnum:],: \\./\\[\\]]+$");
+                     "^[-_@[:alnum:],: \\./\\[\\]]+$");
   gvm_validator_add (validator, "optional_number", "^[0-9]*$");
   gvm_validator_add (validator, "oid", "^([0-9.]{1,80}|CVE-[-0-9]{1,14})$");
   gvm_validator_add (validator, "page", "^[_[:alnum:] ]+$");
