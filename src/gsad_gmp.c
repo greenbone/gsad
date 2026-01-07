@@ -2729,9 +2729,8 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
   gchar *response, *html;
   const char *name, *comment, *oci_image_target_id;
   const char *schedule_id, *schedule_periods;
-  const char *in_assets, *alterable;
-  const char *add_tag, *tag_id, *auto_delete, *auto_delete_data;
-  const char *apply_overrides, *min_qod, *scanner_id;
+  const char *alterable, *add_tag, *tag_id, *scanner_id;
+  const char *auto_delete, *auto_delete_data;
   const char *accept_invalid_certs, *registry_allow_insecure;
   gchar *name_escaped, *comment_escaped;
   params_t *alerts;
@@ -2739,12 +2738,9 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
 
   add_tag = params_value (params, "add_tag");
   alterable = params_value (params, "alterable");
-  apply_overrides = params_value (params, "apply_overrides");
   auto_delete = params_value (params, "auto_delete");
   auto_delete_data = params_value (params, "auto_delete_data");
   comment = params_value (params, "comment");
-  in_assets = params_value (params, "in_assets");
-  min_qod = params_value (params, "min_qod");
   name = params_value (params, "name");
   schedule_id = params_value (params, "schedule_id");
   schedule_periods = params_value (params, "schedule_periods");
@@ -2776,24 +2772,6 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
     }
   else
     schedule_periods = "0";
-
-  CHECK_VARIABLE_INVALID (in_assets, "Create OCI Image Task");
-
-  if (!strcmp (in_assets, "1"))
-    {
-      CHECK_VARIABLE_INVALID (apply_overrides, "Create OCI Image Task");
-      CHECK_VARIABLE_INVALID (min_qod, "Create Task");
-    }
-  else
-    {
-      if (!params_given (params, "apply_overrides")
-          || !params_valid (params, "apply_overrides"))
-        apply_overrides = "";
-
-      if (!params_given (params, "min_qod")
-          || !params_valid (params, "min_qod"))
-        min_qod = "";
-    }
 
   CHECK_VARIABLE_INVALID (auto_delete, "Create Task");
   CHECK_VARIABLE_INVALID (auto_delete_data, "Create Task");
