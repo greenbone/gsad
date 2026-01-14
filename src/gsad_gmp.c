@@ -20169,6 +20169,7 @@ create_oci_image_target_gmp (gvm_connection_t *connection,
   gchar *xml, *response;
   const char *name, *image_references, *comment;
   const char *credential, *target_source, *file;
+  const char *exclude_images, *target_exclude_source, *exclude_file;
   gchar *credential_element;
   gchar *comment_element = NULL;
   entity_t entity;
@@ -20176,19 +20177,33 @@ create_oci_image_target_gmp (gvm_connection_t *connection,
 
   name = params_value (params, "name");
   image_references = params_value (params, "image_references");
+  exclude_images = params_value (params, "exclude_images");
   comment = params_value (params, "comment");
   credential = params_value (params, "credential_id");
   target_source = params_value (params, "target_source");
+  target_exclude_source = params_value (params, "target_exclude_source");
   file = params_value (params, "file");
+  exclude_file = params_value (params, "exclude_file");
 
   CHECK_VARIABLE_INVALID (name, "Create OCI Image Target");
-  CHECK_VARIABLE_INVALID (target_source, "Create OCI Image Target")
+  CHECK_VARIABLE_INVALID (target_source, "Create OCI Image Target");
 
   if (strcmp (target_source, "manual") == 0)
     CHECK_VARIABLE_INVALID (image_references, "Create OCI Image Target");
 
   if (strcmp (target_source, "file") == 0)
-    CHECK_VARIABLE_INVALID (file, "Create OCI Image Target")
+    CHECK_VARIABLE_INVALID (file, "Create OCI Image Target");
+
+  if (params_given (params, "target_exclude_source"))
+    {
+      CHECK_VARIABLE_INVALID (target_exclude_source, "Create Target");
+      if (str_equal (target_exclude_source, "manual")
+          && params_given (params, "exclude_images"))
+        CHECK_VARIABLE_INVALID (exclude_images, "Create Target");
+      if (str_equal (target_exclude_source, "file")
+          && params_given (params, "exclude_file"))
+        CHECK_VARIABLE_INVALID (exclude_file, "Create Target");
+    }
 
   if (params_given (params, "comment"))
     CHECK_VARIABLE_INVALID (comment, "Create OCI Image Target");
@@ -20214,8 +20229,14 @@ create_oci_image_target_gmp (gvm_connection_t *connection,
     command,
     "<create_oci_image_target>"
     "<name>%s</name>"
-    "<image_references>%s</image_references>",
-    name, strcmp (target_source, "file") == 0 ? file : image_references);
+    "<image_references>%s</image_references>"
+    "<exclude_images>%s</exclude_images>",
+    name, str_equal (target_source, "file") ? file : image_references,
+    target_exclude_source 
+      ? (str_equal (target_exclude_source, "file")
+         ? exclude_file ?: ""
+         : exclude_images ?: "")
+      : "");
 
   g_string_append_printf (command,
                           "%s%s"
@@ -20308,8 +20329,9 @@ save_oci_image_target_gmp (gvm_connection_t *connection,
                            cmd_response_data_t *response_data)
 {
   entity_t entity;
-  const char *name, *comment, *image_references;
+  const char *name, *comment, *image_references, *exclude_images;
   const char *credential, *target_source, *file;
+  const char *target_exclude_source, *exclude_file;
   const char *oci_image_target_id, *in_use;
   gchar *xml, *response;
   GString *command;
@@ -20397,6 +20419,25 @@ save_oci_image_target_gmp (gvm_connection_t *connection,
   if (strcmp (target_source, "file") == 0)
     CHECK_VARIABLE_INVALID (file, "Create OCI Image Target")
 
+  if (params_given (params, "target_exclude_source"))
+    {
+      target_exclude_source = params_value (params, "target_exclude_source");
+      CHECK_VARIABLE_INVALID (target_exclude_source, "Save Target");
+      exclude_images = params_value (params, "exclude_images");
+      exclude_file = params_value (params, "exclude_file");
+
+      if (str_equal (target_exclude_source, "manual")
+          && params_given (params, "exclude_images"))
+        {
+          CHECK_VARIABLE_INVALID (exclude_images, "Save Target");
+        }
+      else if (str_equal (target_exclude_source, "file")
+               && params_given (params, "exclude_file"))
+        {
+          CHECK_VARIABLE_INVALID (exclude_file, "Save Target");
+        }
+    }
+
   if (params_given (params, "credential_id"))
     CHECK_VARIABLE_INVALID (credential, "Save OCI Image Target");
 
@@ -20406,14 +20447,19 @@ save_oci_image_target_gmp (gvm_connection_t *connection,
       g_strdup_printf ("<credential id=\"%s\"/>", credential);
 
   command = g_string_new ("");
-  xml_string_append (command,
-                     "<modify_oci_image_target oci_image_target_id=\"%s\">"
-                     "<name>%s</name>"
-                     "<comment>%s</comment>"
-                     "<image_references>%s</image_references>",
-                     oci_image_target_id, name, comment,
-                     (strcmp (target_source, "file") == 0) ? file
-                                                           : image_references);
+  xml_string_append (
+    command,
+    "<modify_oci_image_target oci_image_target_id=\"%s\">"
+    "<name>%s</name>"
+    "<comment>%s</comment>"
+    "<image_references>%s</image_references>"
+    "<exclude_images>%s</exclude_images>",
+    oci_image_target_id, name, comment,
+    (strcmp (target_source, "file") == 0) ? file : image_references,
+    target_exclude_source
+      ? (strcmp (target_exclude_source, "file") == 0 ? exclude_file ?: ""
+                                                     : (exclude_images ?: ""))
+      : "");
 
   g_string_append_printf (command,
                           "%s"
