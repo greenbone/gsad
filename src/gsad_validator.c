@@ -691,6 +691,7 @@ init_validator ()
   gvm_validator_alias (validator, "hosts_manual", "hosts");
   gvm_validator_alias (validator, "hosts_filter", "filter");
   gvm_validator_alias (validator, "exclude_hosts", "hosts_opt");
+  gvm_validator_alias (validator, "exclude_images", "image_references");
   gvm_validator_alias (validator, "in_assets", "boolean");
   gvm_validator_alias (validator, "in_use", "boolean");
   gvm_validator_alias (validator, "include_related", "number");
