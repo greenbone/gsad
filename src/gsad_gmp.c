@@ -19329,7 +19329,7 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
   gchar *xml, *response, *format;
   const char *authorized, *attempts, *delay_in_seconds, *bulk_size;
   const char *max_jitter_in_seconds, *bulk_throttle_time_in_ms,
-    *indexer_dir_depth;
+    *indexer_dir_depth, *update_to_latest;
   const char *interval_in_seconds, *miss_until_inactive, *comment;
   params_t *scheduler_cron_times;
   int ret;
@@ -19339,6 +19339,7 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   agent_ids = params_values (params, "agent_ids:");
   authorized = params_value (params, "authorized");
+  update_to_latest = params_value (params, "update_to_latest");
   attempts = params_value (params, "attempts");
   delay_in_seconds = params_value (params, "delay_in_seconds");
   bulk_size = params_value (params, "bulk_size");
@@ -19365,6 +19366,7 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
   if (has_config)
     {
       CHECK_VARIABLE_INVALID (authorized, "Save Agent List");
+      CHECK_VARIABLE_INVALID (update_to_latest, "Save Agent List");
       CHECK_VARIABLE_INVALID (attempts, "Save Agent List");
       CHECK_VARIABLE_INVALID (delay_in_seconds, "Save Agent List");
       CHECK_VARIABLE_INVALID (bulk_size, "Save Agent List");
@@ -19423,6 +19425,7 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
         "<modify_agent>"
         "%s" /* agents */
         "<authorized>%d</authorized>"
+        "<update_to_latest>%d</update_to_latest>"
         "<config>"
         "<agent_control>"
         "<retry>"
@@ -19447,7 +19450,7 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
         "<comment>%%s</comment>"
         "</modify_agent>",
         agents_element->str, authorized ? strcmp (authorized, "0") : 0,
-        items_xml->str);
+        update_to_latest ? strcmp (update_to_latest, "0") : 0, items_xml->str);
 
       response = NULL;
       entity = NULL;
