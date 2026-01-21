@@ -2312,8 +2312,8 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
     "<alterable>%i</alterable>"
     "<usage_type>%s</usage_type>"
     "</create_task>",
-    config_id, schedule_periods, target_id, scanner_id, name,
-    comment, max_checks, max_hosts, strcmp (in_assets, "0") ? "yes" : "no",
+    config_id, schedule_periods, target_id, scanner_id, name, comment,
+    max_checks, max_hosts, strcmp (in_assets, "0") ? "yes" : "no",
     strcmp (apply_overrides, "0") ? "yes" : "no", min_qod, auto_delete,
     auto_delete_data,
     cs_allow_failed_retrieval ? strcmp (cs_allow_failed_retrieval, "0") : 0,
