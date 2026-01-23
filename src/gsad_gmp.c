@@ -19316,7 +19316,7 @@ char *
 modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *xml, *response, *format;
+  gchar *xml, *response, *format, *update_to_latest_tag;
   const char *authorized, *attempts, *delay_in_seconds, *bulk_size;
   const char *max_jitter_in_seconds, *bulk_throttle_time_in_ms,
     *indexer_dir_depth, *update_to_latest;
@@ -19356,7 +19356,6 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
   if (has_config)
     {
       CHECK_VARIABLE_INVALID (authorized, "Save Agent List");
-      CHECK_VARIABLE_INVALID (update_to_latest, "Save Agent List");
       CHECK_VARIABLE_INVALID (attempts, "Save Agent List");
       CHECK_VARIABLE_INVALID (delay_in_seconds, "Save Agent List");
       CHECK_VARIABLE_INVALID (bulk_size, "Save Agent List");
@@ -19379,6 +19378,16 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
                            "The 'agent_ids' parameter is required.",
                            response_data);
     }
+
+  if (params_given (params, "update_to_latest"))
+    {
+      CHECK_VARIABLE_INVALID (update_to_latest, "Save Agent List");
+      update_to_latest_tag =
+        g_strdup_printf ("<update_to_latest>%d</update_to_latest>",
+                         update_to_latest ? strcmp (update_to_latest, "0") : 0);
+    }
+  else
+    update_to_latest_tag = g_strdup ("");
 
   agents_element = g_string_new ("<agents>");
 
@@ -19415,7 +19424,7 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
         "<modify_agent>"
         "%s" /* agents */
         "<authorized>%d</authorized>"
-        "<update_to_latest>%d</update_to_latest>"
+        "%s" /* update_to_latest_tag */
         "<config>"
         "<agent_control>"
         "<retry>"
@@ -19440,7 +19449,7 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
         "<comment>%%s</comment>"
         "</modify_agent>",
         agents_element->str, authorized ? strcmp (authorized, "0") : 0,
-        update_to_latest ? strcmp (update_to_latest, "0") : 0, items_xml->str);
+        update_to_latest_tag, items_xml->str);
 
       response = NULL;
       entity = NULL;
@@ -19456,10 +19465,12 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
       format = g_strdup_printf ("<modify_agent>"
                                 "%s" /* agents */
                                 "<authorized>%d</authorized>"
+                                "%s" /* update_to_latest*/
                                 "<comment>%%s</comment>"
                                 "</modify_agent>",
                                 agents_element->str,
-                                authorized ? strcmp (authorized, "0") : 0);
+                                authorized ? strcmp (authorized, "0") : 0,
+                                update_to_latest_tag);
 
       response = NULL;
       entity = NULL;
@@ -19469,6 +19480,7 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
     }
 
   g_free (format);
+  g_free (update_to_latest_tag);
   g_string_free (items_xml, TRUE);
   g_string_free (agents_element, TRUE);
 
