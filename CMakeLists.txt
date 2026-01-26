@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.10)
 
 message("-- Configuring gsad")
 
-project(gsad VERSION 24.14.1 LANGUAGES C)
+project(gsad VERSION 24.14.2 LANGUAGES C)
 
 if(NOT DEFINED PROJECT_VERSION_STRING)
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
