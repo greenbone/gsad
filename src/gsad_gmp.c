@@ -8525,7 +8525,7 @@ get_config_family (gvm_connection_t *connection, credentials_t *credentials,
         " family=\"%s\" timeout=\"1\" preference_count=\"1\""
         " skip_cert_refs=\"1\" skip_tags=\"1\" lean=\"1\""
         " sort_field=\"%s\" sort_order=\"%s\"/>",
-        config_id, family, sort_field ? sort_field : "nvts.name",
+        config_id, family, sort_field ? sort_field : "name",
         sort_order ? sort_order : "ascending")
       == -1)
     {
@@ -8643,8 +8643,7 @@ edit_config_family_all_gmp (gvm_connection_t *connection,
                             " lean=\"1\""
                             " sort_field=\"%s\""
                             " sort_order=\"%s\"/>",
-                            family, config_id,
-                            sort_field ? sort_field : "nvts.name",
+                            family, config_id, sort_field ? sort_field : "name",
                             sort_order ? sort_order : "ascending")
       == -1)
     {
@@ -8804,8 +8803,7 @@ get_config_nvt_gmp (gvm_connection_t *connection, credentials_t *credentials,
                             " config_id=\"%s\" nvt_oid=\"%s\""
                             " details=\"1\" preferences=\"1\""
                             " sort_field=\"%s\" sort_order=\"%s\"/>",
-                            config_id, nvt,
-                            sort_field ? sort_field : "nvts.name",
+                            config_id, nvt, sort_field ? sort_field : "name",
                             sort_order ? sort_order : "ascending")
       == -1)
     {
