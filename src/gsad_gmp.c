@@ -8503,6 +8503,7 @@ get_config_family (gvm_connection_t *connection, credentials_t *credentials,
 {
   GString *xml;
   const char *config_id, *family, *sort_field, *sort_order;
+  entity_t entity;
 
   config_id = params_value (params, "config_id");
   family = params_value (params, "family");
@@ -8539,7 +8540,7 @@ get_config_family (gvm_connection_t *connection, credentials_t *credentials,
         response_data);
     }
 
-  if (read_string_c (connection, &xml))
+  if (read_entity_and_string_c (connection, &entity, &xml))
     {
       g_string_free (xml, TRUE);
       cmd_response_data_set_status_code (response_data,
@@ -8551,8 +8552,14 @@ get_config_family (gvm_connection_t *connection, credentials_t *credentials,
         "Diagnostics: Failure to receive response from manager daemon.",
         response_data);
     }
-
   g_string_append (xml, "</get_config_family_response>");
+
+  if (gmp_success (entity) != 1)
+    {
+      set_http_status_from_entity (entity, response_data);
+    }
+  free_entity (entity);
+
   return envelope_gmp (connection, credentials, params,
                        g_string_free (xml, FALSE), response_data);
 }
@@ -8609,6 +8616,7 @@ edit_config_family_all_gmp (gvm_connection_t *connection,
 {
   GString *xml;
   const char *config_id, *family, *sort_field, *sort_order;
+  entity_t entity;
 
   config_id = params_value (params, "config_id");
   family = params_value (params, "family");
@@ -8651,7 +8659,7 @@ edit_config_family_all_gmp (gvm_connection_t *connection,
         response_data);
     }
 
-  if (read_string_c (connection, &xml))
+  if (read_entity_and_string_c (connection, &entity, &xml))
     {
       g_string_free (xml, TRUE);
       cmd_response_data_set_status_code (response_data,
@@ -8663,8 +8671,15 @@ edit_config_family_all_gmp (gvm_connection_t *connection,
         "Diagnostics: Failure to receive response from manager daemon.",
         response_data);
     }
-
   g_string_append (xml, "</get_config_family_response>");
+
+  if (gmp_success (entity) != 1)
+    {
+      set_http_status_from_entity (entity, response_data);
+    }
+
+  free_entity (entity);
+
   return envelope_gmp (connection, credentials, params,
                        g_string_free (xml, FALSE), response_data);
 }
@@ -8772,6 +8787,7 @@ get_config_nvt_gmp (gvm_connection_t *connection, credentials_t *credentials,
 {
   GString *xml;
   const char *config_id, *sort_field, *sort_order, *nvt;
+  entity_t entity;
 
   config_id = params_value (params, "config_id");
   nvt = params_value (params, "oid");
@@ -8804,7 +8820,7 @@ get_config_nvt_gmp (gvm_connection_t *connection, credentials_t *credentials,
         response_data);
     }
 
-  if (read_string_c (connection, &xml))
+  if (read_entity_and_string_c (connection, &entity, &xml))
     {
       g_string_free (xml, TRUE);
       cmd_response_data_set_status_code (response_data,
@@ -8816,8 +8832,13 @@ get_config_nvt_gmp (gvm_connection_t *connection, credentials_t *credentials,
         "Diagnostics: Failure to receive response from manager daemon.",
         response_data);
     }
-
   g_string_append (xml, "</get_config_nvt_response>");
+
+  if (gmp_success (entity) != 1)
+    {
+      set_http_status_from_entity (entity, response_data);
+    }
+  free_entity (entity);
 
   return envelope_gmp (connection, credentials, params,
                        g_string_free (xml, FALSE), response_data);
