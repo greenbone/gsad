@@ -63,7 +63,7 @@ Prerequisites:
 - libgvm_base, libgvm_util, libgvm_gmp >= 20.8.2
 - gnutls >= 3.2.15
 - libgcrypt
-- cmake >= 3.10
+- cmake >= 3.18
 - glib-2.0 >= 2.42
 - libxml
 - libmicrohttpd >= 0.9.0
@@ -274,6 +274,6 @@ gersemi -i cmake .
 
 ## License
 
-Copyright (C) 2009-2025 [Greenbone AG](https://www.greenbone.net/)
+Copyright (C) 2009-2026 [Greenbone AG](https://www.greenbone.net/)
 
 Licensed under the [GNU Affero General Public License v3.0 or later](LICENSE).
