@@ -2126,6 +2126,8 @@ start_unix_http_daemon (const char *unix_socket_path,
       return NULL;
     }
 
+  g_info ("Starting UNIX socket HTTP server on %s\n", unix_socket_path);
+
   return MHD_start_daemon (
     MHD_USE_THREAD_PER_CONNECTION | MHD_USE_INTERNAL_POLLING_THREAD
       | MHD_USE_DEBUG,
@@ -2152,22 +2154,34 @@ start_http_daemon (int port,
 {
   unsigned int flags;
   int ipv6_flag;
+  char *ip_address = NULL;
 
   if (address->ss_family == AF_INET6)
+    {
 /* LibmicroHTTPD 0.9.28 and higher. */
 #if MHD_VERSION >= 0x00092800
-    ipv6_flag = MHD_USE_DUAL_STACK;
+      ipv6_flag = MHD_USE_DUAL_STACK;
 #else
-    ipv6_flag = MHD_USE_IPv6;
+      ipv6_flag = MHD_USE_IPv6;
 #endif
+      struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *) address;
+      ip_address = malloc (INET6_ADDRSTRLEN);
+      inet_ntop (AF_INET6, &addr6->sin6_addr, ip_address, INET6_ADDRSTRLEN);
+    }
   else
-    ipv6_flag = MHD_NO_FLAG;
-
+    {
+      ipv6_flag = MHD_NO_FLAG;
+      struct sockaddr_in *addr = (struct sockaddr_in *) address;
+      ip_address = malloc (INET_ADDRSTRLEN);
+      inet_ntop (AF_INET, &addr->sin_addr, ip_address, INET_ADDRSTRLEN);
+    }
   flags =
     MHD_USE_THREAD_PER_CONNECTION | MHD_USE_INTERNAL_POLLING_THREAD | ipv6_flag;
 #ifndef NDEBUG
   flags = flags | MHD_USE_DEBUG;
 #endif
+
+  g_info ("Starting HTTP server on %s and port %d\n", ip_address, port);
 
   return MHD_start_daemon (
     flags, port, NULL, NULL, handler, http_handlers, MHD_OPTION_EXTERNAL_LOGGER,
@@ -2184,22 +2198,35 @@ start_https_daemon (int port, const char *key, const char *cert,
 {
   unsigned int flags;
   int ipv6_flag;
+  char *ip_address = NULL;
 
   if (address->ss_family == AF_INET6)
+    {
 /* LibmicroHTTPD 0.9.28 and higher. */
 #if MHD_VERSION >= 0x00092800
-    ipv6_flag = MHD_USE_DUAL_STACK;
+      ipv6_flag = MHD_USE_DUAL_STACK;
 #else
-    ipv6_flag = MHD_USE_IPv6;
+      ipv6_flag = MHD_USE_IPv6;
 #endif
+      struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *) address;
+      ip_address = malloc (INET6_ADDRSTRLEN);
+      inet_ntop (AF_INET6, &addr6->sin6_addr, ip_address, INET6_ADDRSTRLEN);
+    }
   else
-    ipv6_flag = MHD_NO_FLAG;
+    {
+      ipv6_flag = MHD_NO_FLAG;
+      struct sockaddr_in *addr = (struct sockaddr_in *) address;
+      ip_address = malloc (INET_ADDRSTRLEN);
+      inet_ntop (AF_INET, &addr->sin_addr, ip_address, INET_ADDRSTRLEN);
+    }
 
   flags = MHD_USE_THREAD_PER_CONNECTION | MHD_USE_INTERNAL_POLLING_THREAD
           | MHD_USE_SSL | ipv6_flag;
 #ifndef NDEBUG
   flags = flags | MHD_USE_DEBUG;
 #endif
+
+  g_info ("Starting HTTPS server on %s and port %d\n", ip_address, port);
 
   return MHD_start_daemon (
     flags, port, NULL, NULL, &handle_request, http_handlers,
@@ -2690,8 +2717,7 @@ main (int argc, char **argv)
         }
       else
         {
-          g_debug ("GSAD started successfully and is redirecting on port %d.\n",
-                   gsad_redirect_port);
+          g_debug ("GSAD started successfully");
         }
     }
   else if (unix_socket_path && !unix_pid)
@@ -2712,9 +2738,7 @@ main (int argc, char **argv)
         }
       else
         {
-          g_debug ("GSAD started successfully and is listening on unix"
-                   " socket %s.\n",
-                   unix_socket_path);
+          g_debug ("GSAD started successfully");
         }
     }
   else
@@ -2809,8 +2833,7 @@ main (int argc, char **argv)
         }
       else
         {
-          g_debug ("GSAD started successfully and is listening on port %d.\n",
-                   gsad_port);
+          g_debug ("GSAD started successfully");
         }
     }
 
