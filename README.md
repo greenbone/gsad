@@ -77,6 +77,10 @@ Prerequisites for building documentation:
 - Doxygen
 - xmltoman (optional, for building man page)
 
+Prerequisites for building tests:
+
+* Cgreen (optional, for building tests)
+
 Install prerequisites on Debian GNU/Linux:
 
 ```bash
