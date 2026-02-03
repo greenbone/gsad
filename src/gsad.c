@@ -169,7 +169,7 @@
 #define DEFAULT_GSAD_PER_IP_CONNECTION_LIMIT 30
 
 #define COPYRIGHT                                                        \
-  "Copyright (C) 2010 - 2025 Greenbone AG\n"                             \
+  "Copyright (C) 2010 - 2026 Greenbone AG\n"                             \
   "License: AGPL-3.0-or-later\n"                                         \
   "This is free software: you are free to change and redistribute it.\n" \
   "There is NO WARRANTY, to the extent permitted by law.\n\n"
