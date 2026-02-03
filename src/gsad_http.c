@@ -806,12 +806,15 @@ add_security_headers (http_response_t *response)
   const gchar *http_strict_transport_security =
     get_http_strict_transport_security ();
 
-  if (strcmp (http_x_frame_options, ""))
+  if (http_x_frame_options && strlen (http_x_frame_options) > 0)
     MHD_add_response_header (response, "X-Frame-Options", http_x_frame_options);
-  if (strcmp (http_content_security_policy, ""))
+
+  if (http_content_security_policy && strlen (http_content_security_policy) > 0)
     MHD_add_response_header (response, "Content-Security-Policy",
                              http_content_security_policy);
-  if (http_strict_transport_security)
+
+  if (http_strict_transport_security
+      && strlen (http_strict_transport_security) > 0)
     MHD_add_response_header (response, "Strict-Transport-Security",
                              http_strict_transport_security);
 }
@@ -822,20 +825,26 @@ add_security_headers (http_response_t *response)
 void
 add_guest_chart_content_security_headers (http_response_t *response)
 {
-  if (strcmp (get_http_x_frame_options (), ""))
+  const char *http_guest_chart_x_frame_options =
+    get_http_guest_chart_x_frame_options ();
+  if (http_guest_chart_x_frame_options
+      && strlen (http_guest_chart_x_frame_options) > 0)
     MHD_add_response_header (response, "X-Frame-Options",
-                             get_http_guest_chart_x_frame_options ());
-  if (strcmp (get_http_content_security_policy (), ""))
+                             http_guest_chart_x_frame_options);
+
+  const char *http_guest_chart_content_security_policy =
+    get_http_guest_chart_content_security_policy ();
+  if (http_guest_chart_content_security_policy
+      && strlen (http_guest_chart_content_security_policy) > 0)
     MHD_add_response_header (response, "Content-Security-Policy",
-                             get_http_guest_chart_content_security_policy ());
+                             http_guest_chart_content_security_policy);
 }
 
 void
 add_cors_headers (http_response_t *response)
 {
   const gchar *http_cors_origin = get_http_cors_origin ();
-
-  if (strcmp (http_cors_origin, ""))
+  if (http_cors_origin && strlen (http_cors_origin) > 0)
     {
       MHD_add_response_header (response, "Access-Control-Allow-Origin",
                                http_cors_origin);
