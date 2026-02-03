@@ -10,6 +10,12 @@
 
 #include "gsad_settings.h"
 
+#undef G_LOG_DOMAIN
+/**
+ * @brief GLib log domain.
+ */
+#define G_LOG_DOMAIN "gsad settings"
+
 /**
  * @brief Version from vendor, or NULL.
  */
@@ -161,6 +167,7 @@ is_use_secure_cookie ()
 void
 set_http_content_security_policy (const gchar *policy)
 {
+  g_debug ("Setting HTTP Content-Security-Policy to: %s", policy);
   http_content_security_policy = policy;
 }
 
@@ -173,6 +180,7 @@ get_http_content_security_policy ()
 void
 set_http_x_frame_options (const gchar *options)
 {
+  g_debug ("Setting HTTP X-Frame-Options to: %s", options);
   http_x_frame_options = options;
 }
 
@@ -185,6 +193,7 @@ get_http_x_frame_options ()
 void
 set_http_cors_origin (const gchar *origin)
 {
+  g_debug ("Setting HTTP CORS origin to: %s", origin);
   http_cors_origin = origin;
 }
 
@@ -197,6 +206,7 @@ get_http_cors_origin ()
 void
 set_http_guest_chart_x_frame_options (const gchar *options)
 {
+  g_debug ("Setting HTTP Guest Chart X-Frame-Options to: %s", options);
   http_guest_chart_x_frame_options = options;
 }
 
@@ -209,6 +219,7 @@ get_http_guest_chart_x_frame_options ()
 void
 set_http_guest_chart_content_security_policy (const gchar *policy)
 {
+  g_debug ("Setting HTTP Guest Chart Content-Security-Policy to: %s", policy);
   http_guest_chart_content_security_policy = policy;
 }
 
@@ -221,6 +232,7 @@ get_http_guest_chart_content_security_policy ()
 void
 set_http_strict_transport_security (const gchar *policy)
 {
+  g_debug ("Setting HTTP Strict-Transport-Security to: %s", policy);
   http_strict_transport_security = policy;
 }
 
