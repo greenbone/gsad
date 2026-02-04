@@ -83,6 +83,7 @@ find_package(Threads)
 add_executable(
   gsad
   gsad.c
+  gsad_args.c
   gsad_base.c
   gsad_cmd.c
   gsad_credentials.c
@@ -203,7 +204,8 @@ if(BUILD_TESTING)
 
   add_unit_test(utils "")
   add_unit_test(gsad-validator validator.c)
-  add_custom_target(tests DEPENDS gsad-validator-test utils-test)
+  add_unit_test(gsad-args gsad_args.c)
+  add_custom_target(tests DEPENDS gsad-validator-test utils-test gsad-args-test)
 endif(BUILD_TESTING)
 
 if(ENABLE_COVERAGE)
