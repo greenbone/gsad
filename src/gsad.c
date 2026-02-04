@@ -2165,14 +2165,14 @@ start_http_daemon (int port,
       ipv6_flag = MHD_USE_IPv6;
 #endif
       struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *) address;
-      ip_address = malloc (INET6_ADDRSTRLEN);
+      ip_address = g_malloc (INET6_ADDRSTRLEN);
       inet_ntop (AF_INET6, &addr6->sin6_addr, ip_address, INET6_ADDRSTRLEN);
     }
   else
     {
       ipv6_flag = MHD_NO_FLAG;
       struct sockaddr_in *addr = (struct sockaddr_in *) address;
-      ip_address = malloc (INET_ADDRSTRLEN);
+      ip_address = g_malloc (INET_ADDRSTRLEN);
       inet_ntop (AF_INET, &addr->sin_addr, ip_address, INET_ADDRSTRLEN);
     }
   flags =
@@ -2182,6 +2182,7 @@ start_http_daemon (int port,
 #endif
 
   g_info ("Starting HTTP server on %s and port %d\n", ip_address, port);
+  g_free (ip_address);
 
   return MHD_start_daemon (
     flags, port, NULL, NULL, handler, http_handlers, MHD_OPTION_EXTERNAL_LOGGER,
@@ -2209,14 +2210,14 @@ start_https_daemon (int port, const char *key, const char *cert,
       ipv6_flag = MHD_USE_IPv6;
 #endif
       struct sockaddr_in6 *addr6 = (struct sockaddr_in6 *) address;
-      ip_address = malloc (INET6_ADDRSTRLEN);
+      ip_address = g_malloc (INET6_ADDRSTRLEN);
       inet_ntop (AF_INET6, &addr6->sin6_addr, ip_address, INET6_ADDRSTRLEN);
     }
   else
     {
       ipv6_flag = MHD_NO_FLAG;
       struct sockaddr_in *addr = (struct sockaddr_in *) address;
-      ip_address = malloc (INET_ADDRSTRLEN);
+      ip_address = g_malloc (INET_ADDRSTRLEN);
       inet_ntop (AF_INET, &addr->sin_addr, ip_address, INET_ADDRSTRLEN);
     }
 
@@ -2227,6 +2228,7 @@ start_https_daemon (int port, const char *key, const char *cert,
 #endif
 
   g_info ("Starting HTTPS server on %s and port %d\n", ip_address, port);
+  g_free (ip_address);
 
   return MHD_start_daemon (
     flags, port, NULL, NULL, &handle_request, http_handlers,
