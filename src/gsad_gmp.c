@@ -20256,7 +20256,7 @@ create_oci_image_target_gmp (gvm_connection_t *connection,
     "<image_references>%s</image_references>"
     "<exclude_images>%s</exclude_images>",
     name, str_equal (target_source, "file") ? file : image_references,
-    target_exclude_source 
+    target_exclude_source
       ? (str_equal (target_exclude_source, "file")
          ? exclude_file ?: ""
          : exclude_images ?: "")
@@ -20353,9 +20353,9 @@ save_oci_image_target_gmp (gvm_connection_t *connection,
                            cmd_response_data_t *response_data)
 {
   entity_t entity;
-  const char *name, *comment, *image_references, *exclude_images;
+  const char *name, *comment, *image_references, *exclude_images = NULL;
   const char *credential, *target_source, *file;
-  const char *target_exclude_source, *exclude_file;
+  const char *target_exclude_source = NULL, *exclude_file = NULL;
   const char *oci_image_target_id, *in_use;
   gchar *xml, *response;
   GString *command;
