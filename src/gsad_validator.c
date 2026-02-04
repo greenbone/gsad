@@ -14,7 +14,7 @@ static validator_t validator;
  * @brief Initialise the parameter validator.
  */
 void
-init_validator ()
+gsad_init_validator ()
 {
   validator = gvm_validator_new ();
 
@@ -771,13 +771,13 @@ init_validator ()
 }
 
 validator_t
-get_validator ()
+gsad_get_validator ()
 {
   return validator;
 }
 
 void
-reset_validator ()
+gsad_reset_validator ()
 {
   validator = NULL;
 }

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-#include "utils.c"
+#include "utils.h"
 
 #include <cgreen/cgreen.h>
 

@@ -3,13 +3,21 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+#ifndef _GSAD_VALIDATOR_H
+#define _GSAD_VALIDATOR_H
+
 #include "validator.h"
 
 /**
  * @brief Initialise the parameter validator.
  */
 void
-init_validator ();
+gsad_init_validator ();
 
 validator_t
-get_validator ();
+gsad_get_validator ();
+
+void
+gsad_reset_validator ();
+
+#endif /* not _GSAD_VALIDATOR_H */
