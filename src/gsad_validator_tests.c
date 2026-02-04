@@ -3,23 +3,24 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
-#include "gsad_validator.c"
+#include "gsad_validator.h"
 
 #include <cgreen/cgreen.h>
 
 Describe (gsad_validator);
 BeforeEach (gsad_validator)
 {
-  init_validator ();
+  gsad_init_validator ();
 }
+
 AfterEach (gsad_validator)
 {
-  reset_validator ();
+  gsad_reset_validator ();
 }
 
 Ensure (gsad_validator, validate_name)
 {
-  validator_t validator = get_validator ();
+  validator_t validator = gsad_get_validator ();
   assert_that (gvm_validate (validator, "name", "foo"), is_equal_to (0));
   assert_that (gvm_validate (validator, "name", "12345"), is_equal_to (0));
   assert_that (gvm_validate (validator, "name", "äüöÄÜÖß"), is_equal_to (0));
@@ -41,7 +42,7 @@ Ensure (gsad_validator, validate_name)
 
 Ensure (gsad_validator, validate_comment)
 {
-  validator_t validator = get_validator ();
+  validator_t validator = gsad_get_validator ();
   assert_that (gvm_validate (validator, "comment", "foo"), is_equal_to (0));
   assert_that (gvm_validate (validator, "comment", "12345"), is_equal_to (0));
   assert_that (gvm_validate (validator, "comment", "äüöÄÜÖß"), is_equal_to (0));
@@ -65,7 +66,7 @@ Ensure (gsad_validator, validate_comment)
 
 Ensure (gsad_validator, validate_agent_installer_id)
 {
-  validator_t validator = get_validator ();
+  validator_t validator = gsad_get_validator ();
   assert_that (gvm_validate (validator, "agent_installer_id", "a1b2c3d4"),
                is_equal_to (0));
   assert_that (gvm_validate (validator, "agent_installer_id",
@@ -80,7 +81,7 @@ Ensure (gsad_validator, validate_agent_installer_id)
 
 Ensure (gsad_validator, validate_agent_list_ids)
 {
-  validator_t validator = get_validator ();
+  validator_t validator = gsad_get_validator ();
   assert_that (gvm_validate (validator, "agent_ids:value", "a1b2c3d4"),
                is_equal_to (0));
   assert_that (gvm_validate (validator, "agent_ids:value",
@@ -95,7 +96,7 @@ Ensure (gsad_validator, validate_agent_list_ids)
 
 Ensure (gsad_validator, validate_kdcs_name_and_value)
 {
-  validator_t validator = get_validator ();
+  validator_t validator = gsad_get_validator ();
 
   // valid KDC values (allowing anything, as per regex "(?s)^.*$")
   assert_that (gvm_validate (validator, "kdcs:value", "127.0.0.1"),
@@ -116,7 +117,7 @@ Ensure (gsad_validator, validate_kdcs_name_and_value)
 
 Ensure (gsad_validator, validate_oci_image_references)
 {
-  validator_t validator = get_validator ();
+  validator_t validator = gsad_get_validator ();
 
   assert_that (gvm_validate (validator, "image_references",
                              "oci://myregistry.com/myrepo/myrepo2/myimage:tag"),
@@ -136,7 +137,7 @@ Ensure (gsad_validator, validate_oci_image_references)
 
 Ensure (gsad_validator, validate_ca_pub)
 {
-  validator_t validator = get_validator ();
+  validator_t validator = gsad_get_validator ();
 
   assert_that (gvm_validate (validator, "ca_pub", ""), is_equal_to (0));
   assert_that (gvm_validate (validator, "ca_pub", "foobar"), is_equal_to (0));
@@ -145,7 +146,7 @@ Ensure (gsad_validator, validate_ca_pub)
 
 Ensure (gsad_validator, alias_boolean_accept_invalid_certs)
 {
-  validator_t validator = get_validator ();
+  validator_t validator = gsad_get_validator ();
   assert_that (gvm_validate (validator, "accept_invalid_certs", "0"),
                is_equal_to (0));
   assert_that (gvm_validate (validator, "accept_invalid_certs", "1"),
@@ -160,7 +161,7 @@ Ensure (gsad_validator, alias_boolean_accept_invalid_certs)
 
 Ensure (gsad_validator, alias_number_agent_ids_name)
 {
-  validator_t validator = get_validator ();
+  validator_t validator = gsad_get_validator ();
   assert_that (gvm_validate (validator, "agent_ids:name", "0"),
                is_equal_to (0));
   assert_that (gvm_validate (validator, "agent_ids:name", "42"),
@@ -174,7 +175,7 @@ Ensure (gsad_validator, alias_number_agent_ids_name)
 
 Ensure (gsad_validator, alias_id_optional_alert_id_optional_value)
 {
-  validator_t validator = get_validator ();
+  validator_t validator = gsad_get_validator ();
   assert_that (gvm_validate (validator, "alert_id_optional:value", "--"),
                is_equal_to (0));
   assert_that (gvm_validate (validator, "alert_id_optional:value", "abc-123"),
@@ -187,7 +188,7 @@ Ensure (gsad_validator, alias_id_optional_alert_id_optional_value)
 
 Ensure (gsad_validator, alias_id_report_format_ids_value)
 {
-  validator_t validator = get_validator ();
+  validator_t validator = gsad_get_validator ();
   assert_that (gvm_validate (validator, "report_format_ids:value", "id-1"),
                is_equal_to (0));
   assert_that (gvm_validate (validator, "report_format_ids:value",
@@ -203,7 +204,7 @@ Ensure (gsad_validator, alias_id_report_format_ids_value)
 
 Ensure (gsad_validator, alias_uuid_nvt_value)
 {
-  validator_t validator = get_validator ();
+  validator_t validator = gsad_get_validator ();
   assert_that (gvm_validate (validator, "nvt:value",
                              "123e4567-e89b-12d3-a456-426614174000"),
                is_equal_to (0));
@@ -216,7 +217,7 @@ Ensure (gsad_validator, alias_uuid_nvt_value)
 
 Ensure (gsad_validator, alias_email_list_method_data_to_address)
 {
-  validator_t validator = get_validator ();
+  validator_t validator = gsad_get_validator ();
   assert_that (gvm_validate (validator, "method_data:to_address:", "a@b.com"),
                is_equal_to (0));
   assert_that (
@@ -231,7 +232,7 @@ Ensure (gsad_validator, alias_email_list_method_data_to_address)
 
 Ensure (gsad_validator, alias_hosts_hosts_manual)
 {
-  validator_t validator = get_validator ();
+  validator_t validator = gsad_get_validator ();
   assert_that (
     gvm_validate (validator, "hosts_manual", "192.168.0.1,example.com"),
     is_equal_to (0));
@@ -242,7 +243,7 @@ Ensure (gsad_validator, alias_hosts_hosts_manual)
 
 Ensure (gsad_validator, alias_hostpath_scanner_host)
 {
-  validator_t validator = get_validator ();
+  validator_t validator = gsad_get_validator ();
   assert_that (gvm_validate (validator, "scanner_host", "192.168.1.10:3000"),
                is_equal_to (0));
   assert_that (

@@ -199,22 +199,10 @@ add_dependencies(tags etags ctags)
 if(BUILD_TESTING)
   find_package(cgreen REQUIRED)
 
-  add_executable(utils-test EXCLUDE_FROM_ALL utils_test.c)
+  include(${CMAKE_SOURCE_DIR}/cmake/add_unit_test.cmake)
 
-  add_executable(
-    gsad-validator-test
-    EXCLUDE_FROM_ALL
-    gsad_validator_test.c
-    validator.c
-  )
-
-  target_link_libraries(gsad-validator-test ${CGREEN_LIBRARIES} ${GLIB_LDFLAGS})
-  target_link_libraries(utils-test ${CGREEN_LIBRARIES} ${GLIB_LDFLAGS})
-
-  target_link_libraries(gsad-validator-test ${CGREEN_LIBRARIES} ${GLIB_LDFLAGS})
-  add_test(gsad-validator-test gsad-validator-test)
-  add_test(utils-test utils-test)
-
+  add_unit_test(utils "")
+  add_unit_test(gsad-validator validator.c)
   add_custom_target(tests DEPENDS gsad-validator-test utils-test)
 endif(BUILD_TESTING)
 

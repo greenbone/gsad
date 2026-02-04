@@ -432,7 +432,7 @@ params_mhd_validate_values (const char *parent_name, void *params)
 
   name_name = g_strdup_printf ("%sname", parent_name);
   value_name = g_strdup_printf ("%svalue", parent_name);
-  validator_t validator = get_validator ();
+  validator_t validator = gsad_get_validator ();
 
   params_iterator_init (&iter, params);
 
@@ -521,7 +521,7 @@ params_mhd_validate (void *params)
   GHashTableIter iter;
   gpointer name, value;
 
-  validator_t validator = get_validator ();
+  validator_t validator = gsad_get_validator ();
 
   g_hash_table_iter_init (&iter, params);
   while (g_hash_table_iter_next (&iter, &name, &value))
@@ -1293,7 +1293,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   validator_t validator;
   gchar *encoding;
 
-  validator = get_validator ();
+  validator = gsad_get_validator ();
   response_data = cmd_response_data_new ();
 
   cmd = params_value (params, "cmd");
@@ -1945,7 +1945,7 @@ gsad_init ()
     }
 
   /* Init the validator. */
-  init_validator ();
+  gsad_init_validator ();
 
   g_debug ("Initialization of GSA successful.\n");
   return MHD_YES;
