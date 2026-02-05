@@ -1,6 +1,6 @@
 # Copyright (C) 2026 Greenbone AG
 #
-# SPDX-License-Identifier: GPL-2.0-or-later
+# SPDX-License-Identifier: AGPL-2.0-or-later
 
 macro(add_unit_test _baseName _objects)
   string(REPLACE "-" "_" _testSource "${_baseName}")
