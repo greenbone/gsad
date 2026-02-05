@@ -1,6 +1,6 @@
 # Copyright (C) 2020-2021 Greenbone AG
 #
-# SPDX-License-Identifier: GPL-2.0-or-later
+# SPDX-License-Identifier: AGPL-2.0-or-later
 
 ## Retrieve git revision (at configure time)
 
