@@ -164,10 +164,17 @@ is_use_secure_cookie ()
   return use_secure_cookie;
 }
 
+const gchar *
+null_or_value (const gchar *value)
+{
+  return value ? value : "NULL";
+}
+
 void
 set_http_content_security_policy (const gchar *policy)
 {
-  g_debug ("Setting HTTP Content-Security-Policy to: %s", policy);
+  g_debug ("Setting HTTP Content-Security-Policy to: %s",
+           null_or_value (policy));
   http_content_security_policy = policy;
 }
 
@@ -180,7 +187,7 @@ get_http_content_security_policy ()
 void
 set_http_x_frame_options (const gchar *options)
 {
-  g_debug ("Setting HTTP X-Frame-Options to: %s", options);
+  g_debug ("Setting HTTP X-Frame-Options to: %s", null_or_value (options));
   http_x_frame_options = options;
 }
 
@@ -193,7 +200,7 @@ get_http_x_frame_options ()
 void
 set_http_cors_origin (const gchar *origin)
 {
-  g_debug ("Setting HTTP CORS origin to: %s", origin);
+  g_debug ("Setting HTTP CORS origin to: %s", null_or_value (origin));
   http_cors_origin = origin;
 }
 
@@ -206,7 +213,8 @@ get_http_cors_origin ()
 void
 set_http_guest_chart_x_frame_options (const gchar *options)
 {
-  g_debug ("Setting HTTP Guest Chart X-Frame-Options to: %s", options);
+  g_debug ("Setting HTTP Guest Chart X-Frame-Options to: %s",
+           null_or_value (options));
   http_guest_chart_x_frame_options = options;
 }
 
@@ -219,7 +227,8 @@ get_http_guest_chart_x_frame_options ()
 void
 set_http_guest_chart_content_security_policy (const gchar *policy)
 {
-  g_debug ("Setting HTTP Guest Chart Content-Security-Policy to: %s", policy);
+  g_debug ("Setting HTTP Guest Chart Content-Security-Policy to: %s",
+           null_or_value (policy));
   http_guest_chart_content_security_policy = policy;
 }
 
@@ -232,7 +241,8 @@ get_http_guest_chart_content_security_policy ()
 void
 set_http_strict_transport_security (const gchar *policy)
 {
-  g_debug ("Setting HTTP Strict-Transport-Security to: %s", policy);
+  g_debug ("Setting HTTP Strict-Transport-Security to: %s",
+           null_or_value (policy));
   http_strict_transport_security = policy;
 }
 
@@ -285,9 +295,15 @@ void
 set_user_session_limit (int new_limit)
 {
   if (new_limit >= 0)
-    user_session_limit = new_limit;
+    {
+      g_debug ("Setting user session limit to: %d", new_limit);
+      user_session_limit = new_limit;
+    }
   else
-    user_session_limit = 0;
+    {
+      g_debug ("Setting user session limit to unlimited");
+      user_session_limit = 0;
+    }
 }
 
 int
