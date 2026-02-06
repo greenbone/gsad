@@ -16,99 +16,100 @@
 typedef struct gsad_settings gsad_settings_t;
 
 void
-vendor_version_set (const gchar *);
+gsad_settings_set_vendor_version (const gchar *);
 
 const gchar *
-vendor_version_get ();
+gsad_settings_get_vendor_version ();
 
 int
-label_name_set (const gchar *);
+gsad_settings_set_label_name (const gchar *);
 
 void
-set_session_timeout (int timeout);
+gsad_settings_set_session_timeout (int timeout);
 
 int
-get_session_timeout ();
+gsad_settings_get_session_timeout ();
 
 void
-set_use_secure_cookie (int use);
+gsad_settings_set_use_secure_cookie (int use);
 
 gboolean
-is_use_secure_cookie ();
+gsad_settings_enable_secure_cookie ();
 
 void
-set_http_content_security_policy (const gchar *policy);
+gsad_settings_set_http_content_security_policy (const gchar *policy);
 
 const gchar *
-get_http_content_security_policy ();
+gsad_settings_get_http_content_security_policy ();
 
 void
-set_http_x_frame_options (const gchar *options);
+gsad_settings_set_http_x_frame_options (const gchar *options);
 
 const gchar *
-get_http_x_frame_options ();
+gsad_settings_get_http_x_frame_options ();
 
 void
-set_http_cors_origin (const gchar *origin);
+gsad_settings_set_http_cors_origin (const gchar *origin);
 
 const gchar *
-get_http_cors_origin ();
+gsad_settings_get_http_cors_origin ();
 
 void
-set_http_guest_chart_x_frame_options (const gchar *options);
+gsad_settings_set_http_guest_chart_x_frame_options (const gchar *options);
 
 const gchar *
-get_http_guest_chart_x_frame_options ();
+gsad_settings_get_http_guest_chart_x_frame_options ();
 
 void
-set_http_guest_chart_content_security_policy (const gchar *policy);
+gsad_settings_set_http_guest_chart_content_security_policy (
+  const gchar *policy);
 
 const gchar *
-get_http_guest_chart_content_security_policy ();
+gsad_settings_get_http_guest_chart_content_security_policy ();
 
 void
-set_http_strict_transport_security (const gchar *policy);
+gsad_settings_set_http_strict_transport_security (const gchar *policy);
 
 const gchar *
-get_http_strict_transport_security ();
+gsad_settings_get_http_strict_transport_security ();
 
 void
-set_ignore_http_x_real_ip (gboolean ignore);
+gsad_settings_set_ignore_http_x_real_ip (gboolean ignore);
 
 gboolean
-get_ignore_http_x_real_ip ();
+gsad_settings_get_ignore_http_x_real_ip ();
 
 void
-set_per_ip_connection_limit (int limit);
+gsad_settings_set_per_ip_connection_limit (int limit);
 
 int
-get_per_ip_connection_limit ();
+gsad_settings_get_per_ip_connection_limit ();
 
 void
-set_unix_socket (int socket);
+gsad_settings_set_unix_socket (int socket);
 
 gboolean
-is_unix_socket ();
+gsad_setings_enable_unix_socket ();
 
 void
-set_guest_username (const gchar *);
+gsad_settings_set_guest_username (const gchar *);
 
 const gchar *
-get_guest_username ();
+gsad_settings_get_guest_username ();
 
 void
-set_guest_password (const gchar *);
+gsad_settings_set_guest_password (const gchar *);
 
 const gchar *
-get_guest_password ();
+gsad_settings_get_guest_password ();
 
 gboolean
-is_ignore_http_x_real_ip ();
+gsad_settings_enable_ignore_http_x_real_ip ();
 
 void
-set_user_session_limit (int);
+gsad_settings_set_user_session_limit (int);
 
 int
-get_user_session_limit ();
+gsad_settings_get_user_session_limit ();
 
 #endif /* _GSAD_SETTINGS_H */

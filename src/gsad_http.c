@@ -507,7 +507,7 @@ remove_sid (http_response_t *response)
 
   value = g_strdup_printf (
     SID_COOKIE_NAME "=0; expires=%s; path=/; %sHTTPonly; SameSite=strict",
-    expires, (is_use_secure_cookie () ? "secure; " : ""));
+    expires, (gsad_settings_enable_secure_cookie () ? "secure; " : ""));
   ret = MHD_add_response_header (response, "Set-Cookie", value);
   g_free (value);
   return ret;
@@ -547,7 +547,7 @@ attach_sid (http_response_t *response, const char *sid)
   locale = g_strdup (setlocale (LC_ALL, NULL));
   setlocale (LC_ALL, "C");
 
-  timeout = get_session_timeout () * 60 + 30;
+  timeout = gsad_settings_get_session_timeout () * 60 + 30;
 
   now = time (NULL);
   expire_time = now + timeout;
@@ -583,7 +583,7 @@ attach_sid (http_response_t *response, const char *sid)
   value = g_strdup_printf (
     SID_COOKIE_NAME
     "=%s; expires=%s; max-age=%d; path=/; %sHTTPonly; SameSite=strict",
-    sid, expires, timeout, (is_use_secure_cookie () ? "secure; " : ""));
+    sid, expires, timeout, (gsad_settings_enable_secure_cookie () ? "secure; " : ""));
   ret = MHD_add_response_header (response, "Set-Cookie", value);
   g_free (value);
   return ret;
@@ -800,11 +800,11 @@ reconstruct_url (http_connection_t *connection, const char *url)
 void
 add_security_headers (http_response_t *response)
 {
-  const gchar *http_x_frame_options = get_http_x_frame_options ();
+  const gchar *http_x_frame_options = gsad_settings_get_http_x_frame_options ();
   const gchar *http_content_security_policy =
-    get_http_content_security_policy ();
+    gsad_settings_get_http_content_security_policy ();
   const gchar *http_strict_transport_security =
-    get_http_strict_transport_security ();
+    gsad_settings_get_http_strict_transport_security ();
 
   if (http_x_frame_options && strlen (http_x_frame_options) > 0)
     MHD_add_response_header (response, "X-Frame-Options", http_x_frame_options);
@@ -826,14 +826,14 @@ void
 add_guest_chart_content_security_headers (http_response_t *response)
 {
   const char *http_guest_chart_x_frame_options =
-    get_http_guest_chart_x_frame_options ();
+    gsad_settings_get_http_guest_chart_x_frame_options ();
   if (http_guest_chart_x_frame_options
       && strlen (http_guest_chart_x_frame_options) > 0)
     MHD_add_response_header (response, "X-Frame-Options",
                              http_guest_chart_x_frame_options);
 
   const char *http_guest_chart_content_security_policy =
-    get_http_guest_chart_content_security_policy ();
+    gsad_settings_get_http_guest_chart_content_security_policy ();
   if (http_guest_chart_content_security_policy
       && strlen (http_guest_chart_content_security_policy) > 0)
     MHD_add_response_header (response, "Content-Security-Policy",
@@ -843,7 +843,7 @@ add_guest_chart_content_security_headers (http_response_t *response)
 void
 add_cors_headers (http_response_t *response)
 {
-  const gchar *http_cors_origin = get_http_cors_origin ();
+  const gchar *http_cors_origin = gsad_settings_get_http_cors_origin ();
   if (http_cors_origin && strlen (http_cors_origin) > 0)
     {
       MHD_add_response_header (response, "Access-Control-Allow-Origin",
@@ -885,12 +885,12 @@ get_client_address (http_connection_t *conn, char *client_address)
 
   x_real_ip = MHD_lookup_connection_value (conn, MHD_HEADER_KIND, "X-Real-IP");
 
-  if (!is_ignore_http_x_real_ip () && x_real_ip
+  if (!gsad_settings_enable_ignore_http_x_real_ip () && x_real_ip
       && g_utf8_validate (x_real_ip, -1, NULL) == FALSE)
     return 1;
-  else if (!is_ignore_http_x_real_ip () && x_real_ip != NULL)
+  else if (!gsad_settings_enable_ignore_http_x_real_ip () && x_real_ip != NULL)
     strncpy (client_address, x_real_ip, INET6_ADDRSTRLEN);
-  else if (is_unix_socket ())
+  else if (gsad_setings_enable_unix_socket ())
     strncpy (client_address, "unix_socket", INET6_ADDRSTRLEN);
   else
     {
@@ -997,7 +997,7 @@ gsad_message (credentials_t *credentials, const char *title,
         "<role>%s</role>"
         "<i18n>%s</i18n>"
         "<client_address>%s</client_address>",
-        GSAD_VERSION, vendor_version_get (), user_get_token (user), ctime_now,
+        GSAD_VERSION, gsad_settings_get_vendor_version (), user_get_token (user), ctime_now,
         user_get_username (user), user_get_role (user),
         credentials_get_language (credentials), user_get_client_address (user));
 
@@ -1024,7 +1024,7 @@ gsad_message (credentials_t *credentials, const char *title,
                              "<token></token>"
                              "</gsad_response>"
                              "</envelope>",
-                             GSAD_VERSION, vendor_version_get (), xmltitle,
+                             GSAD_VERSION, gsad_settings_get_vendor_version (), xmltitle,
                              msg ? msg : "");
     }
 
