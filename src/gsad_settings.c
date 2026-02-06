@@ -39,32 +39,20 @@ struct gsad_settings
   int user_session_limit;
 };
 
-gsad_settings_t settings = {
-  .http_content_security_policy = NULL,
-  .http_cors_origin = NULL,
-  .http_guest_chart_content_security_policy = NULL,
-  .http_guest_chart_x_frame_options = NULL,
-  .http_strict_transport_security = NULL,
-  .http_x_frame_options = NULL,
-  .ignore_http_x_real_ip = FALSE,
-  .per_ip_connection_limit = 0,
-  .session_timeout = 0,
-  .unix_socket = 0,
-  .use_secure_cookie = FALSE,
-  .user_session_limit = 0,
-  .vendor_version = NULL,
-};
+static gsad_settings_t *settings = NULL;
 
 /**
  * @brief Get the global settings instance.
  *
  * @return A pointer to the global gsad_settings_t instance. The caller should
- * not free this instance.
+ * free this instance.
  */
 gsad_settings_t *
 gsad_settings_get_global_settings ()
 {
-  return &settings;
+  if (!settings)
+    settings = gsad_settings_new ();
+  return settings;
 }
 
 /**
