@@ -21,8 +21,6 @@ gsad_settings_set_vendor_version (const gchar *);
 const gchar *
 gsad_settings_get_vendor_version ();
 
-int
-gsad_settings_set_label_name (const gchar *);
 
 void
 gsad_settings_set_session_timeout (int timeout);
