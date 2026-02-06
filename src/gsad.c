@@ -2664,8 +2664,10 @@ main (int argc, char **argv)
     }
 success:
   gsad_args_free (gsad_args);
+  gsad_settings_free (gsad_settings);
   return EXIT_SUCCESS;
 error:
   gsad_args_free (gsad_args);
+  gsad_settings_free (gsad_settings);
   return EXIT_FAILURE;
 }
