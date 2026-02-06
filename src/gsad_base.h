@@ -26,9 +26,6 @@ gsad_base_cleanup ();
 void
 set_chroot_state (int);
 
-void
-set_http_only (int);
-
 char *
 ctime_r_strip_newline (time_t *, char *);
 

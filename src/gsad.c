@@ -2332,7 +2332,6 @@ main (int argc, char **argv)
   set_http_content_security_policy (gsad_args->http_csp);
   set_http_cors_origin (gsad_args->http_cors);
 
-  set_http_only (gsad_args->http_only);
   if (gsad_args_enable_http_strict_transport_security (gsad_args))
     {
       set_http_strict_transport_security (g_strdup_printf (
