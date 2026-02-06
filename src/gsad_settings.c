@@ -16,6 +16,12 @@
  */
 #define G_LOG_DOMAIN "gsad settings"
 
+static const gchar *
+null_or_value (const gchar *value)
+{
+  return value ? value : "NULL";
+}
+
 struct gsad_settings
 {
   gboolean ignore_http_x_real_ip;
@@ -49,6 +55,12 @@ gsad_settings_t settings = {
   .vendor_version = NULL,
 };
 
+/**
+ * @brief Get the global settings instance.
+ *
+ * @return A pointer to the global gsad_settings_t instance. The caller should
+ * not free this instance.
+ */
 gsad_settings_t *
 gsad_settings_get_global_settings ()
 {
@@ -56,22 +68,76 @@ gsad_settings_get_global_settings ()
 }
 
 /**
+ * @brief Create a new gsad_settings_t instance with default values.
+ *
+ * @return A new gsad_settings_t instance. The caller is responsible for freeing
+ * this instance using gsad_settings_free().
+ */
+gsad_settings_t *
+gsad_settings_new ()
+{
+  gsad_settings_t *settings = g_malloc0 (sizeof (gsad_settings_t));
+  settings->ignore_http_x_real_ip = FALSE;
+  settings->use_secure_cookie = FALSE;
+  settings->http_content_security_policy = NULL;
+  settings->http_cors_origin = NULL;
+  settings->http_guest_chart_content_security_policy = NULL;
+  settings->http_guest_chart_x_frame_options = NULL;
+  settings->http_strict_transport_security = NULL;
+  settings->http_x_frame_options = NULL;
+  settings->vendor_version = NULL;
+  settings->per_ip_connection_limit = 0;
+  settings->session_timeout = 0;
+  settings->unix_socket = 0;
+  settings->user_session_limit = 0;
+  return settings;
+}
+
+/**
+ * @brief Free a gsad_settings_t instance and its associated resources.
+ *
+ * @param[in]  settings  The settings instance to free.
+ */
+void
+gsad_settings_free (gsad_settings_t *settings)
+{
+  if (settings)
+    {
+      g_free (settings->http_content_security_policy);
+      g_free (settings->http_cors_origin);
+      g_free (settings->http_guest_chart_content_security_policy);
+      g_free (settings->http_guest_chart_x_frame_options);
+      g_free (settings->http_strict_transport_security);
+      g_free (settings->http_x_frame_options);
+      g_free (settings->vendor_version);
+      g_free (settings);
+    }
+}
+
+/**
  * @brief Set the vendor version.
  *
- * @param[in]  version  Vendor version.
+ * @param[in]  settings  The settings instance to modify.
+ * @param[in]  version   Vendor version.
  */
 void
 gsad_settings_set_vendor_version (gsad_settings_t *settings,
                                   const gchar *version)
 {
+  g_debug ("Setting vendor version to: %s", null_or_value (version));
+
   g_free (settings->vendor_version);
+
   settings->vendor_version = g_strdup (version);
 }
 
 /**
  * @brief Get the vendor version.
  *
- * @return Vendor version.
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return Vendor version. The value is owned by the settings and should not be
+ * modified or freed by the caller.
  */
 const gchar *
 gsad_settings_get_vendor_version (const gsad_settings_t *settings)
@@ -79,127 +145,65 @@ gsad_settings_get_vendor_version (const gsad_settings_t *settings)
   return settings->vendor_version ? settings->vendor_version : "";
 }
 
+/**
+ * @brief Set the per-IP connection limit.
+ *
+ * @param[in]  settings  The settings instance to modify.
+ * @param[in]  timeout   Session timeout in minutes.
+ */
 void
 gsad_settings_set_session_timeout (gsad_settings_t *settings, int timeout)
 {
   settings->session_timeout = timeout;
 }
 
+/**
+ * @brief Get the session timeout.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return Session timeout in minutes.
+ */
 int
 gsad_settings_get_session_timeout (const gsad_settings_t *settings)
 {
   return settings->session_timeout;
 }
 
+/**
+ * @brief Enable or disable the use of secure cookies.
+ *
+ * secure cookies MUST only be enabled if gsad is served over HTTPS, otherwise
+ * users may not be able to log in.
+ *
+ * @param[in]  settings  The settings instance to modify.
+ * @param[in]  secure    Whether to use secure cookies.
+ */
 void
 gsad_settings_set_use_secure_cookie (gsad_settings_t *settings, gboolean secure)
 {
   settings->use_secure_cookie = secure;
 }
 
+/**
+ * @brief Check if secure cookies are enabled.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return TRUE if secure cookies are enabled, FALSE otherwise.
+ */
 gboolean
 gsad_settings_enable_secure_cookie (const gsad_settings_t *settings)
 {
   return settings->use_secure_cookie;
 }
 
-static const gchar *
-null_or_value (const gchar *value)
-{
-  return value ? value : "NULL";
-}
-
-void
-gsad_settings_set_http_content_security_policy (gsad_settings_t *settings,
-                                                const gchar *policy)
-{
-  g_debug ("Setting HTTP Content-Security-Policy to: %s",
-           null_or_value (policy));
-  settings->http_content_security_policy = g_strdup (policy);
-}
-
-const gchar *
-gsad_settings_get_http_content_security_policy (const gsad_settings_t *settings)
-{
-  return settings->http_content_security_policy;
-}
-
-void
-gsad_settings_set_http_x_frame_options (gsad_settings_t *settings,
-                                        const gchar *options)
-{
-  g_debug ("Setting HTTP X-Frame-Options to: %s", null_or_value (options));
-  settings->http_x_frame_options = g_strdup (options);
-}
-
-const gchar *
-gsad_settings_get_http_x_frame_options (const gsad_settings_t *settings)
-{
-  return settings->http_x_frame_options;
-}
-
-void
-gsad_settings_set_http_cors_origin (gsad_settings_t *settings,
-                                    const gchar *origin)
-{
-  g_debug ("Setting HTTP CORS origin to: %s", null_or_value (origin));
-  settings->http_cors_origin = g_strdup (origin);
-}
-
-const gchar *
-gsad_settings_get_http_cors_origin (const gsad_settings_t *settings)
-{
-  return settings->http_cors_origin;
-}
-
-void
-gsad_settings_set_http_guest_chart_x_frame_options (gsad_settings_t *settings,
-                                                    const gchar *options)
-{
-  g_debug ("Setting HTTP Guest Chart X-Frame-Options to: %s",
-           null_or_value (options));
-  settings->http_guest_chart_x_frame_options = g_strdup (options);
-}
-
-const gchar *
-gsad_settings_get_http_guest_chart_x_frame_options (
-  const gsad_settings_t *settings)
-{
-  return settings->http_guest_chart_x_frame_options;
-}
-
-void
-gsad_settings_set_http_guest_chart_content_security_policy (
-  gsad_settings_t *settings, const gchar *policy)
-{
-  g_debug ("Setting HTTP Guest Chart Content-Security-Policy to: %s",
-           null_or_value (policy));
-  settings->http_guest_chart_content_security_policy = g_strdup (policy);
-}
-
-const gchar *
-gsad_settings_get_http_guest_chart_content_security_policy (
-  const gsad_settings_t *settings)
-{
-  return settings->http_guest_chart_content_security_policy;
-}
-
-void
-gsad_settings_set_http_strict_transport_security (gsad_settings_t *settings,
-                                                  const gchar *policy)
-{
-  g_debug ("Setting HTTP Strict-Transport-Security to: %s",
-           null_or_value (policy));
-  settings->http_strict_transport_security = g_strdup (policy);
-}
-
-const gchar *
-gsad_settings_get_http_strict_transport_security (
-  const gsad_settings_t *settings)
-{
-  return settings->http_strict_transport_security;
-}
-
+/**
+ * @brief Set whether to ignore the X-Real-IP header.
+ *
+ * @param[in]  settings  The settings instance to modify.
+ * @param[in]  ignore    Whether to ignore the X-Real-IP header.
+ */
 void
 gsad_settings_set_ignore_http_x_real_ip (gsad_settings_t *settings,
                                          gboolean ignore)
@@ -207,39 +211,292 @@ gsad_settings_set_ignore_http_x_real_ip (gsad_settings_t *settings,
   settings->ignore_http_x_real_ip = ignore;
 }
 
+/**
+ * @brief Check if ignoring the X-Real-IP header is enabled.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return TRUE if ignoring the X-Real-IP header is enabled, FALSE otherwise.
+ */
 gboolean
 gsad_settings_enable_ignore_http_x_real_ip (const gsad_settings_t *settings)
 {
   return settings->ignore_http_x_real_ip;
 }
 
-void
-gsad_settings_set_per_ip_connection_limit (gsad_settings_t *settings, int limit)
-{
-  if (limit >= 0)
-    settings->per_ip_connection_limit = limit;
-  else
-    settings->per_ip_connection_limit = 0;
-}
-
-int
-gsad_settings_get_per_ip_connection_limit (const gsad_settings_t *settings)
-{
-  return settings->per_ip_connection_limit;
-}
-
+/**
+ * @brief Set the Unix socket for using communication of unix domain sockets.
+ *
+ * @param[in]  settings  The settings instance to modify.
+ * @param[in]  socket    Unix socket fd.
+ */
 void
 gsad_settings_set_unix_socket (gsad_settings_t *settings, int socket)
 {
   settings->unix_socket = socket;
 }
 
+/**
+ * @brief Check if using a Unix socket communication is enabled.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return TRUE if using a Unix socket communication is enabled, FALSE
+ * otherwise.
+ */
 gboolean
 gsad_settings_enable_unix_socket (const gsad_settings_t *settings)
 {
   return settings->unix_socket > 0;
 }
 
+/**
+ * @brief Set the HTTP Content-Security-Policy header value.
+ *
+ * @param[in]  settings  The settings instance to modify.
+ * @param[in]  policy    The value to set for the HTTP Content-Security-Policy
+ * header, or NULL to disable the header.
+ */
+void
+gsad_settings_set_http_content_security_policy (gsad_settings_t *settings,
+                                                const gchar *policy)
+{
+  g_debug ("Setting HTTP Content-Security-Policy to: %s",
+           null_or_value (policy));
+
+  g_free (settings->http_content_security_policy);
+
+  settings->http_content_security_policy = g_strdup (policy);
+}
+
+/**
+ * @brief Get the HTTP Content-Security-Policy header value.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return The value set for the HTTP Content-Security-Policy header, or NULL
+ * if the header is disabled. The value is owned by the settings and should not
+ * be modified or freed by the caller.
+ */
+const gchar *
+gsad_settings_get_http_content_security_policy (const gsad_settings_t *settings)
+{
+  return settings->http_content_security_policy;
+}
+
+/**
+ * @brief Set the HTTP X-Frame-Options header value.
+ *
+ * @param[in]  settings  The settings instance to modify.
+ * @param[in]  options   The value to set for the HTTP X-Frame-Options header,
+ * or NULL to disable the header.
+ */
+void
+gsad_settings_set_http_x_frame_options (gsad_settings_t *settings,
+                                        const gchar *options)
+{
+  g_debug ("Setting HTTP X-Frame-Options to: %s", null_or_value (options));
+
+  g_free (settings->http_x_frame_options);
+
+  settings->http_x_frame_options = g_strdup (options);
+}
+
+/**
+ * @brief Get the HTTP X-Frame-Options header value.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return The value set for the HTTP X-Frame-Options header, or NULL if the
+ * header is disabled. The value is owned by the settings and should not be
+ * modified or freed by the caller.
+ */
+const gchar *
+gsad_settings_get_http_x_frame_options (const gsad_settings_t *settings)
+{
+  return settings->http_x_frame_options;
+}
+
+/**
+ * @brief Set the HTTP CORS Origin header value.
+ *
+ * @param[in]  settings The settings instance to modify.
+ * @param[in]  origin   The value to set for the HTTP CORS Origin header, or
+ * NULL to disable the header.
+ */
+void
+gsad_settings_set_http_cors_origin (gsad_settings_t *settings,
+                                    const gchar *origin)
+{
+  g_debug ("Setting HTTP CORS origin to: %s", null_or_value (origin));
+
+  g_free (settings->http_cors_origin);
+
+  settings->http_cors_origin = g_strdup (origin);
+}
+
+/**
+ * @brief Get the HTTP CORS Origin header value.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return The value set for the HTTP CORS Origin header, or NULL if the
+ * header is disabled. The value is owned by the settings and should not be
+ * modified or freed by the caller.
+ */
+const gchar *
+gsad_settings_get_http_cors_origin (const gsad_settings_t *settings)
+{
+  return settings->http_cors_origin;
+}
+
+/**
+ * @brief Set the HTTP X-Frame-Options header value for the guest charts.
+ *
+ * @param[in]  settings  The settings instance to modify.
+ * @param[in]  options   The value to set for the HTTP X-Frame-Options header
+ * for the guest charts, or NULL to disable the header.
+ */
+void
+gsad_settings_set_http_guest_chart_x_frame_options (gsad_settings_t *settings,
+                                                    const gchar *options)
+{
+  g_debug ("Setting HTTP Guest Chart X-Frame-Options to: %s",
+           null_or_value (options));
+
+  g_free (settings->http_guest_chart_x_frame_options);
+
+  settings->http_guest_chart_x_frame_options = g_strdup (options);
+}
+
+/**
+ * @brief Get the HTTP X-Frame-Options header value for the guest charts.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return The value set for the HTTP X-Frame-Options header for the guest
+ * charts, or NULL if the header is disabled. The value is owned by the settings
+ * and should not be modified or freed by the caller.
+ */
+const gchar *
+gsad_settings_get_http_guest_chart_x_frame_options (
+  const gsad_settings_t *settings)
+{
+  return settings->http_guest_chart_x_frame_options;
+}
+
+/**
+ * @brief Set the HTTP Content-Security-Policy header value for the guest
+ * charts.
+ *
+ * @param[in]  settings  The settings instance to modify.
+ * @param[in]  policy    The value to set for the HTTP Content-Security-Policy
+ * header for the guest charts, or NULL to disable the header.
+ */
+void
+gsad_settings_set_http_guest_chart_content_security_policy (
+  gsad_settings_t *settings, const gchar *policy)
+{
+  g_debug ("Setting HTTP Guest Chart Content-Security-Policy to: %s",
+           null_or_value (policy));
+
+  g_free (settings->http_guest_chart_content_security_policy);
+
+  settings->http_guest_chart_content_security_policy = g_strdup (policy);
+}
+
+/**
+ * @brief Get the HTTP Content-Security-Policy header value for the guest
+ * charts.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return The value set for the HTTP Content-Security-Policy header for the
+ * guest charts, or NULL if the header is disabled. The value is owned by the
+ * settings and should not be modified or freed by the caller.
+ */
+const gchar *
+gsad_settings_get_http_guest_chart_content_security_policy (
+  const gsad_settings_t *settings)
+{
+  return settings->http_guest_chart_content_security_policy;
+}
+
+/**
+ * @brief Set the HTTP Strict-Transport-Security header value.
+ *
+ * @param[in]  settings  The settings instance to modify.
+ * @param[in]  policy    The value to set for the HTTP Strict-Transport-Security
+ * header, or NULL to disable the header.
+ */
+void
+gsad_settings_set_http_strict_transport_security (gsad_settings_t *settings,
+                                                  const gchar *policy)
+{
+  g_debug ("Setting HTTP Strict-Transport-Security to: %s",
+           null_or_value (policy));
+
+  g_free (settings->http_strict_transport_security);
+
+  settings->http_strict_transport_security = g_strdup (policy);
+}
+
+/**
+ * @brief Get the HTTP Strict-Transport-Security header value.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return The value set for the HTTP Strict-Transport-Security header, or NULL
+ * if the header is disabled. The value is owned by the settings and should not
+ * be modified or freed by the caller.
+ */
+const gchar *
+gsad_settings_get_http_strict_transport_security (
+  const gsad_settings_t *settings)
+{
+  return settings->http_strict_transport_security;
+}
+
+/**
+ * @brief Set the connection limit per IP address.
+ *
+ * @param[in]  settings  The settings instance to modify.
+ * @param[in]  limit     The connection limit per IP address. A value of 0 means
+ * no limit.
+ */
+void
+gsad_settings_set_per_ip_connection_limit (gsad_settings_t *settings, int limit)
+{
+  if (limit >= 0)
+    {
+      g_debug ("Setting per-IP connection limit to: %d", limit);
+      settings->per_ip_connection_limit = limit;
+    }
+  else
+    {
+      g_debug ("Setting per-IP connection limit to unlimited");
+      settings->per_ip_connection_limit = 0;
+    }
+}
+
+/**
+ * @brief Get the connection limit per IP address.
+ *
+ * @return The connection limit per IP address. A value of 0 means no limit.
+ */
+int
+gsad_settings_get_per_ip_connection_limit (const gsad_settings_t *settings)
+{
+  return settings->per_ip_connection_limit;
+}
+
+/**
+ * @brief Set the user session limit.
+ *
+ * @param[in]  settings  The settings instance to modify.
+ * @param[in]  new_limit The user session limit. A value of 0 or less means no
+ * limit.
+ */
 void
 gsad_settings_set_user_session_limit (gsad_settings_t *settings, int new_limit)
 {
@@ -255,6 +512,11 @@ gsad_settings_set_user_session_limit (gsad_settings_t *settings, int new_limit)
     }
 }
 
+/**
+ * @brief Get the user session limit.
+ *
+ * @return The user session limit. A value of 0 means no limit.
+ */
 int
 gsad_settings_get_user_session_limit (const gsad_settings_t *settings)
 {
