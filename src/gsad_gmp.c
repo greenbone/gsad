@@ -20080,8 +20080,7 @@ renew_session_gmp (gvm_connection_t *connection, credentials_t *credentials,
   gchar *message;
   user_t *user = credentials_get_user (credentials);
 
-  user_renew_session (user);
-  session_add_user (user_get_token (user), user);
+  session_renew_user (user_get_token (user));
 
   message = g_strdup_printf ("%ld", user_get_session_timeout (user));
 

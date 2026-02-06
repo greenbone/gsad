@@ -199,3 +199,22 @@ session_remove_other_sessions (const gchar *keep_id, const gchar *username)
 
   g_mutex_unlock (mutex);
 }
+
+/**
+ * @brief Update timestamp of given user to now
+ *
+ * @param[in] id  ID of the session
+ */
+void
+session_renew_user (const gchar *id)
+{
+  g_mutex_lock (mutex);
+
+  user_t *user = session_get_user_by_id_internal (id);
+  if (user)
+    {
+      user_renew_session (user);
+    }
+
+  g_mutex_unlock (mutex);
+}

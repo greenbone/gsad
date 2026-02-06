@@ -678,8 +678,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
     }
 
   /* always renew session for http post */
-  user_renew_session (user);
-  session_add_user (user_get_token (user), user);
+  session_renew_user (user_get_token (user));
 
   /* Handle the usual commands. */
   if (0)
