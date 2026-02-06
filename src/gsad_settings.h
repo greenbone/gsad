@@ -91,18 +91,6 @@ gsad_settings_set_unix_socket (int socket);
 gboolean
 gsad_setings_enable_unix_socket ();
 
-void
-gsad_settings_set_guest_username (const gchar *);
-
-const gchar *
-gsad_settings_get_guest_username ();
-
-void
-gsad_settings_set_guest_password (const gchar *);
-
-const gchar *
-gsad_settings_get_guest_password ();
-
 gboolean
 gsad_settings_enable_ignore_http_x_real_ip ();
 

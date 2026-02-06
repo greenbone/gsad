@@ -20,8 +20,6 @@ struct gsad_settings
 {
   gboolean ignore_http_x_real_ip;
   gboolean use_secure_cookie;
-  gchar *guest_password;
-  gchar *guest_username;
   gchar *http_content_security_policy;
   gchar *http_cors_origin;
   gchar *http_guest_chart_content_security_policy;
@@ -36,8 +34,6 @@ struct gsad_settings
 };
 
 gsad_settings_t settings = {
-  .guest_password = NULL,
-  .guest_username = NULL,
   .http_content_security_policy = NULL,
   .http_cors_origin = NULL,
   .http_guest_chart_content_security_policy = NULL,
@@ -74,30 +70,6 @@ const gchar *
 gsad_settings_get_vendor_version ()
 {
   return settings.vendor_version ? settings.vendor_version : "";
-}
-
-void
-gsad_settings_set_guest_username (const gchar *username)
-{
-  settings.guest_username = g_strdup (username);
-}
-
-const gchar *
-gsad_settings_get_guest_username ()
-{
-  return settings.guest_username;
-}
-
-void
-gsad_settings_set_guest_password (const gchar *password)
-{
-  settings.guest_password = g_strdup (password);
-}
-
-const gchar *
-gsad_settings_get_guest_password ()
-{
-  return settings.guest_password;
 }
 
 void
