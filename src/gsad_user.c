@@ -128,7 +128,8 @@ user_copy (user_t *user)
 gboolean
 user_session_expired (user_t *user)
 {
-  return (time (NULL) - user->time) > (get_session_timeout () * 60);
+  return (time (NULL) - user->time)
+         > (gsad_settings_get_session_timeout () * 60);
 }
 
 const gchar *
@@ -194,7 +195,7 @@ user_get_password (user_t *user)
 const time_t
 user_get_session_timeout (user_t *user)
 {
-  return user->time + (get_session_timeout () * 60);
+  return user->time + (gsad_settings_get_session_timeout () * 60);
 }
 
 /**
@@ -333,7 +334,7 @@ user_add (const gchar *username, const gchar *password, const gchar *timezone,
     }
   g_list_free (user_list);
 
-  int session_limit = get_user_session_limit ();
+  int session_limit = gsad_settings_get_user_session_limit ();
   if (session_limit && (session_count >= session_limit))
 
     return NULL;
