@@ -2285,37 +2285,37 @@ main (int argc, char **argv)
   if (gsad_args_validate_session_timeout (gsad_args))
 
     {
-      g_critical ("Invalid session timeout value: %d.", gsad_args->timeout);
+      g_error ("Invalid session timeout value: %d.", gsad_args->timeout);
       goto error;
     }
   if (gsad_args_validate_port (gsad_args))
     {
-      g_critical ("Invalid GSAD port value: %d.", gsad_args->gsad_port);
+      g_error ("Invalid GSAD port value: %d.", gsad_args->gsad_port);
       goto error;
     }
   if (gsad_args_validate_manager_port (gsad_args))
     {
-      g_critical ("Invalid gvmd port value: %d.", gsad_args->gsad_manager_port);
+      g_error ("Invalid gvmd port value: %d.", gsad_args->gsad_manager_port);
       goto error;
     }
   if (gsad_args_validate_redirect_port (gsad_args))
     {
-      g_critical ("Invalid redirect port value: %d.",
-                  gsad_args->gsad_redirect_port);
+      g_error ("Invalid redirect port value: %d.",
+               gsad_args->gsad_redirect_port);
       goto error;
     }
   if (gsad_args_enable_https (gsad_args))
     {
       if (gsad_args_validate_tls_private_key (gsad_args))
         {
-          g_critical ("Invalid TLS private key file: %s.",
-                      gsad_args->ssl_private_key_filename);
+          g_error ("Invalid TLS private key file: %s.",
+                   gsad_args->ssl_private_key_filename);
           goto error;
         }
       if (gsad_args_validate_tls_certificate (gsad_args))
         {
-          g_critical ("Invalid TLS certificate file: %s.",
-                      gsad_args->ssl_certificate_filename);
+          g_error ("Invalid TLS certificate file: %s.",
+                   gsad_args->ssl_certificate_filename);
           goto error;
         }
     }
@@ -2324,7 +2324,7 @@ main (int argc, char **argv)
 
   if (gsad_init () == MHD_NO)
     {
-      g_critical ("Initialization failed!\nExiting...\n");
+      g_error ("Initialization failed! Exiting...");
       goto error;
     }
 
@@ -2349,7 +2349,7 @@ main (int argc, char **argv)
 
   if (register_signal_handlers ())
     {
-      g_critical ("Failed to register signal handlers!\n");
+      g_error ("Failed to register signal handlers!");
       goto error;
     }
 
@@ -2361,8 +2361,7 @@ main (int argc, char **argv)
 
   if (gsad_base_init ())
     {
-      g_critical ("%s: libxml must be compiled with thread support\n",
-                  __func__);
+      g_error ("libxml must be compiled with thread support");
       goto error;
     }
 
@@ -2373,12 +2372,12 @@ main (int argc, char **argv)
 
   if (setenv ("TZ", "utc 0", 1) == -1)
     {
-      g_critical ("%s: failed to set timezone\n", __func__);
+      g_error ("Failed to set timezone.");
       goto error;
     }
   tzset ();
 
-  g_message ("Starting GSAD version %s\n", GSAD_VERSION);
+  g_info ("Starting GSAD version %s", GSAD_VERSION);
 
   /* Finish processing the command line options. */
 
@@ -2391,7 +2390,7 @@ main (int argc, char **argv)
   if (!gsad_args_enable_run_in_foreground (gsad_args))
     {
       /* Fork into the background. */
-      g_debug ("Forking...\n");
+      g_debug ("Forking...");
       pid_t pid = fork ();
       switch (pid)
         {
@@ -2400,7 +2399,7 @@ main (int argc, char **argv)
           break;
         case -1:
           /* Parent when error. */
-          g_critical ("%s: Failed to fork!\n", __func__);
+          g_error ("Failed to fork!");
           goto error;
           break;
         default:
@@ -2415,7 +2414,7 @@ main (int argc, char **argv)
   if (should_redirect)
     {
       /* Fork for the redirect server. */
-      g_debug ("Forking for redirect...\n");
+      g_debug ("Forking for redirect...");
       pid_t pid = fork ();
       switch (pid)
         {
@@ -2423,17 +2422,17 @@ main (int argc, char **argv)
           /* Child. */
 #if __linux
           if (prctl (PR_SET_PDEATHSIG, SIGKILL))
-            g_warning ("%s: Failed to change parent death signal;"
+            g_warning ("Failed to change parent death signal;"
                        " redirect process will remain if parent is killed:"
                        " %s\n",
-                       __func__, strerror (errno));
+                       strerror (errno));
 #endif
           redirect_location =
             g_strdup_printf ("https://%%s:%i/", redirect_port);
           break;
         case -1:
           /* Parent when error. */
-          g_critical ("%s: Failed to fork for redirect!\n", __func__);
+          g_error ("Failed to fork for redirect!");
           goto error;
           break;
         default:
@@ -2450,7 +2449,7 @@ main (int argc, char **argv)
 
   if (atexit (&gsad_cleanup))
     {
-      g_critical ("%s: Failed to register cleanup function!\n", __func__);
+      g_error ("Failed to register cleanup function!");
       goto error;
     }
 
@@ -2458,7 +2457,7 @@ main (int argc, char **argv)
 
   if (pidfile_create (GSAD_PID_PATH))
     {
-      g_critical ("%s: Could not write PID file.\n", __func__);
+      g_error ("Could not write PID file.");
       goto error;
     }
 
@@ -2481,7 +2480,7 @@ main (int argc, char **argv)
       GSList *list = address_list;
       /* Start the HTTP to HTTPS redirect server. */
 
-      g_debug ("Starting redirect server on port %d\n", redirect_port);
+      g_debug ("Starting redirect server on port %d", redirect_port);
       while (list)
         {
           gsad_address_set_port (list->data, redirect_port);
@@ -2492,12 +2491,12 @@ main (int argc, char **argv)
 
       if (gsad_daemon == NULL)
         {
-          g_warning ("%s: start_http_daemon redirect failed !", __func__);
+          g_error ("Starting gsad redirect daemon failed!");
           goto error;
         }
       else
         {
-          g_debug ("GSAD started successfully");
+          g_info ("GSAD started successfully");
         }
     }
   else if (gsad_args_enable_unix_socket (gsad_args) && !unix_pid)
@@ -2515,12 +2514,12 @@ main (int argc, char **argv)
 
       if (gsad_daemon == NULL)
         {
-          g_warning ("%s: start_unix_http_daemon failed !", __func__);
+          g_error ("Starting gsad unix daemon failed!");
           goto error;
         }
       else
         {
-          g_debug ("GSAD started successfully");
+          g_info ("GSAD started successfully");
         }
     }
   else
@@ -2560,9 +2559,8 @@ main (int argc, char **argv)
           if (!g_file_get_contents (gsad_args->ssl_private_key_filename,
                                     &ssl_private_key, NULL, &error))
             {
-              g_critical ("%s: Could not load private SSL key from %s: %s\n",
-                          __func__, gsad_args->ssl_private_key_filename,
-                          error->message);
+              g_error ("Could not load private SSL key from %s: %s",
+                       gsad_args->ssl_private_key_filename, error->message);
               g_error_free (error);
               goto error;
             }
@@ -2570,9 +2568,8 @@ main (int argc, char **argv)
           if (!g_file_get_contents (gsad_args->ssl_certificate_filename,
                                     &ssl_certificate, NULL, &error))
             {
-              g_critical ("%s: Could not load SSL certificate from %s: %s\n",
-                          __func__, gsad_args->ssl_certificate_filename,
-                          error->message);
+              g_error ("Could not load SSL certificate from %s: %s",
+                       gsad_args->ssl_certificate_filename, error->message);
               g_error_free (error);
               goto error;
             }
@@ -2581,9 +2578,8 @@ main (int argc, char **argv)
               && !g_file_get_contents (gsad_args->dh_params_filename,
                                        &dh_params, NULL, &error))
             {
-              g_critical ("%s: Could not load SSL certificate from %s: %s\n",
-                          __func__, gsad_args->dh_params_filename,
-                          error->message);
+              g_error ("Could not load SSL certificate from %s: %s",
+                       gsad_args->dh_params_filename, error->message);
               g_error_free (error);
               goto error;
             }
@@ -2604,12 +2600,12 @@ main (int argc, char **argv)
 
       if (gsad_daemon == NULL)
         {
-          g_critical ("%s: start_https_daemon failed!\n", __func__);
+          g_error ("Starting gsad http(s) daemon failed!");
           goto error;
         }
       else
         {
-          g_debug ("GSAD started successfully");
+          g_info ("GSAD started successfully");
         }
     }
 
