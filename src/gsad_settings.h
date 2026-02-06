@@ -13,6 +13,8 @@
 
 #include <glib.h>
 
+typedef struct gsad_settings gsad_settings_t;
+
 void
 vendor_version_set (const gchar *);
 
