@@ -344,6 +344,7 @@ envelope_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   assert (credentials);
 
+  gsad_settings_t *gsad_settings = gsad_settings_get_global_settings ();
   user_t *user = credentials_get_user (credentials);
   const gchar *timezone = user_get_timezone (user);
   const gchar *pw_warning = user_get_password_warning (user);
@@ -367,11 +368,11 @@ envelope_gmp (gvm_connection_t *connection, credentials_t *credentials,
     "<i18n>%s</i18n>"
     "<client_address>%s</client_address>"
     "<backend_operation>%.2f</backend_operation>",
-    GSAD_VERSION, gsad_settings_get_vendor_version (), user_get_token (user),
-    ctime_now, timezone ? timezone : "", user_get_username (user),
-    user_get_session_timeout (user), user_get_role (user),
-    credentials_get_language (credentials), user_get_client_address (user),
-    credentials_get_cmd_duration (credentials));
+    GSAD_VERSION, gsad_settings_get_vendor_version (gsad_settings),
+    user_get_token (user), ctime_now, timezone ? timezone : "",
+    user_get_username (user), user_get_session_timeout (user),
+    user_get_role (user), credentials_get_language (credentials),
+    user_get_client_address (user), credentials_get_cmd_duration (credentials));
 
   g_string_append (string, res);
   g_free (res);
