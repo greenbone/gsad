@@ -204,8 +204,12 @@ if(BUILD_TESTING)
 
   add_unit_test(utils "")
   add_unit_test(gsad-validator validator.c)
-  add_unit_test(gsad-args gsad_args.c)
-  add_custom_target(tests DEPENDS gsad-validator-test utils-test gsad-args-test)
+  add_unit_test(gsad-args "")
+  add_unit_test(gsad-settings "")
+  add_custom_target(
+    tests
+    DEPENDS gsad-validator-test utils-test gsad-args-test gsad-settings-test
+  )
 endif(BUILD_TESTING)
 
 if(ENABLE_COVERAGE)

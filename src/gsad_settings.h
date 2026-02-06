@@ -18,6 +18,12 @@ typedef struct gsad_settings gsad_settings_t;
 gsad_settings_t *
 gsad_settings_get_global_settings ();
 
+gsad_settings_t *
+gsad_settings_new ();
+
+void
+gsad_settings_free (gsad_settings_t *settings);
+
 void
 gsad_settings_set_vendor_version (gsad_settings_t *, const gchar *);
 
