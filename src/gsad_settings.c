@@ -26,6 +26,7 @@ struct gsad_settings
 {
   gboolean ignore_http_x_real_ip;
   gboolean use_secure_cookie;
+  gchar *log_config_filename;
   gchar *http_content_security_policy;
   gchar *http_cors_origin;
   gchar *http_guest_chart_content_security_policy;
@@ -74,6 +75,7 @@ gsad_settings_new ()
   settings->http_guest_chart_x_frame_options = NULL;
   settings->http_strict_transport_security = NULL;
   settings->http_x_frame_options = NULL;
+  settings->log_config_filename = NULL;
   settings->vendor_version = NULL;
   settings->client_watch_interval = DEFAULT_CLIENT_WATCH_INTERVAL;
   settings->per_ip_connection_limit = DEFAULT_PER_IP_CONNECTION_LIMIT;
@@ -93,6 +95,7 @@ gsad_settings_free (gsad_settings_t *settings)
 {
   if (settings)
     {
+      g_free (settings->log_config_filename);
       g_free (settings->http_content_security_policy);
       g_free (settings->http_cors_origin);
       g_free (settings->http_guest_chart_content_security_policy);
@@ -545,4 +548,39 @@ int
 gsad_settings_get_client_watch_interval (const gsad_settings_t *settings)
 {
   return settings->client_watch_interval;
+}
+
+/**
+ * @brief Set the configuration filename.
+ *
+ * @param[in]  settings        The settings instance to modify.
+ * @param[in]  config_filename The configuration filename to set. The caller is
+ * responsible for freeing the passed string if it is dynamically allocated. The
+ * settings will copy the string and free it when the settings instance is
+ * freed.
+ */
+void
+gsad_settings_set_log_config_filename (gsad_settings_t *settings,
+                                       const gchar *log_config_filename)
+{
+  g_debug ("Setting config filename to: %s",
+           null_or_value (log_config_filename));
+
+  g_free (settings->log_config_filename);
+
+  settings->log_config_filename = g_strdup (log_config_filename);
+}
+
+/**
+ * @brief Get the configuration filename.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return The configuration filename. The value is owned by the settings and
+ * should not be modified or freed by the caller.
+ */
+const char *
+gsad_settings_get_log_config_filename (const gsad_settings_t *settings)
+{
+  return settings->log_config_filename;
 }

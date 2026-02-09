@@ -2233,13 +2233,17 @@ gsad_address_init (const char *address_str, int port)
 }
 
 void
-gsad_init_logging ()
+gsad_init_logging (gsad_settings_t *gsad_settings)
 {
   /* Setup logging. */
-  char *rc_name = g_build_filename (GSAD_CONFIG_DIR, "gsad_log.conf", NULL);
+  const char *rc_name = gsad_settings_get_log_config_filename (gsad_settings);
   if (gvm_file_is_readable (rc_name))
-    log_config = load_log_configuration (rc_name);
-  g_free (rc_name);
+    log_config = load_log_configuration ((char *) rc_name);
+  else
+    g_debug (
+      "Log configuration file %s not found or not readable, using defaults.",
+      rc_name);
+
   setup_log_handlers (log_config);
   /* Set to ensure that recursion is left out, in case two threads log
    * concurrently. */
@@ -2288,7 +2292,10 @@ main (int argc, char **argv)
       goto success;
     }
 
-  gsad_init_logging ();
+  gsad_settings_set_log_config_filename (
+    gsad_global_settings, gsad_args_get_log_config_filename (gsad_args));
+
+  gsad_init_logging (gsad_global_settings);
 
   /* Validate command line options. */
   if (gsad_args_validate_session_timeout (gsad_args))
@@ -2476,7 +2483,7 @@ main (int argc, char **argv)
 
   if (pidfile_create (GSAD_PID_PATH))
     {
-      g_critical ("Could not write PID file.");
+      g_critical ("Could not write PID file at %s.", GSAD_PID_PATH);
       goto error;
     }
 

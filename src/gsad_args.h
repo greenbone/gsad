@@ -95,6 +95,7 @@ typedef struct gsad_args
   gchar *dh_params_filename;
   gchar *drop;
   gchar *gnutls_priorities;
+  gchar *gsad_log_config_filename;
   gchar *gsad_manager_address_string;
   gchar *gsad_manager_unix_socket_path;
   gchar *gsad_vendor_version_string;
@@ -181,5 +182,8 @@ gsad_args_get_per_ip_connection_limit (const gsad_args_t *);
 
 int
 gsad_args_get_client_watch_interval (const gsad_args_t *);
+
+const char *
+gsad_args_get_log_config_filename (gsad_args_t *);
 
 #endif /* _GSAD_ARGS_H */

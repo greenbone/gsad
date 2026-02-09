@@ -117,6 +117,11 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
      "Set maximum number of active sessions per user. 0 for unlimited. "
      "Defaults to 0.",
      "<max-sessions>"},
+    {"log-config", '\0', 0, G_OPTION_ARG_FILENAME,
+     &args->gsad_log_config_filename,
+     "Path to logging configuration file. Defaults to " GSAD_CONFIG_DIR
+     "gsad_log.conf",
+     "<file>"},
     {NULL}};
 
   option_context =
@@ -156,6 +161,8 @@ gsad_args_new ()
   args->foreground = FALSE;
   args->gnutls_priorities = NULL;
   args->gsad_address_string = NULL;
+  args->gsad_log_config_filename =
+    g_build_filename (GSAD_CONFIG_DIR, "gsad_log.conf", NULL);
   args->gsad_manager_address_string = NULL;
   args->gsad_manager_port = PORT_NOT_SET;
   args->gsad_manager_unix_socket_path = NULL;
@@ -200,6 +207,7 @@ gsad_args_free (gsad_args_t *args)
       g_free (args->gnutls_priorities);
       if (args->gsad_address_string)
         g_strfreev (args->gsad_address_string);
+      g_free (args->gsad_log_config_filename);
       g_free (args->gsad_manager_address_string);
       g_free (args->gsad_manager_unix_socket_path);
       g_free (args->gsad_vendor_version_string);
@@ -443,6 +451,22 @@ int
 gsad_args_get_client_watch_interval (const gsad_args_t *args)
 {
   return args->client_watch_interval < 0 ? 0 : args->client_watch_interval;
+}
+
+/**
+ * @brief Get the configuration filename from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The configuration filename specified in the command-line arguments,
+ * or the default configuration filename if not specified. The returned string
+ * is owned by the gsad args structure and should not be modified or freed
+ * by the caller.
+ */
+const char *
+gsad_args_get_log_config_filename (gsad_args_t *args)
+{
+  return args->gsad_log_config_filename;
 }
 
 /**
