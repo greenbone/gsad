@@ -9,11 +9,6 @@
 #include <glib.h>
 
 /**
- * @brief Max number of minutes between activity in a session.
- */
-#define SESSION_TIMEOUT 15
-
-/**
  * @brief Value indicating that no port has been set.
  */
 #define PORT_NOT_SET -1
@@ -24,11 +19,6 @@
 #define GSAD_MAX_SESSION_TIMEOUT 40320
 
 /**
- * @brief Default value for client_watch_interval
- */
-#define DEFAULT_CLIENT_WATCH_INTERVAL 1
-
-/**
  * @brief Default value for HTTP header "X-Frame-Options"
  */
 #define DEFAULT_GSAD_X_FRAME_OPTIONS "SAMEORIGIN"
@@ -37,11 +27,6 @@
  * @brief Default "max-age" for HTTP header "Strict-Transport-Security"
  */
 #define DEFAULT_GSAD_HSTS_MAX_AGE 31536000
-
-/**
- * @brief Default value for the maximum number of connection per IP address.
- */
-#define DEFAULT_GSAD_PER_IP_CONNECTION_LIMIT 30
 
 /**
  * @brief Default value for HTTP header "Content-Security-Policy"

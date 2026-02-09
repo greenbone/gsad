@@ -4,6 +4,7 @@
  */
 
 #include "gsad_args.h"
+#include "gsad_settings.h"
 
 #include <cgreen/cgreen.h>
 #include <stdlib.h> // for mkstemp
@@ -61,14 +62,14 @@ Ensure (gsad_args, gsad_args_new)
   assert_that (args->ignore_x_real_ip, is_false);
   assert_that (args->no_redirect, is_false);
   assert_that (args->per_ip_connection_limit,
-               is_equal_to (DEFAULT_GSAD_PER_IP_CONNECTION_LIMIT));
+               is_equal_to (DEFAULT_PER_IP_CONNECTION_LIMIT));
   assert_that (args->print_version, is_false);
   assert_that (args->secure_cookie, is_false);
   assert_that (args->ssl_certificate_filename,
                is_equal_to_string (DEFAULT_GSAD_TLS_CERTIFICATE));
   assert_that (args->ssl_private_key_filename,
                is_equal_to_string (DEFAULT_GSAD_TLS_PRIVATE_KEY));
-  assert_that (args->timeout, is_equal_to (SESSION_TIMEOUT));
+  assert_that (args->timeout, is_equal_to (DEFAULT_SESSION_TIMEOUT));
   assert_that (args->unix_socket_group, is_null);
   assert_that (args->unix_socket_mode, is_null);
   assert_that (args->unix_socket_owner, is_null);
@@ -575,7 +576,7 @@ Ensure (gsad_args, should_parse_per_ip_connection_limit_default)
   gsad_args_parse (1, argv, args);
 
   assert_that (args->per_ip_connection_limit,
-               is_equal_to (DEFAULT_GSAD_PER_IP_CONNECTION_LIMIT));
+               is_equal_to (DEFAULT_PER_IP_CONNECTION_LIMIT));
   gsad_args_free (args);
 }
 
@@ -679,7 +680,7 @@ Ensure (gsad_args, should_parse_timeout_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->timeout, is_equal_to (SESSION_TIMEOUT));
+  assert_that (args->timeout, is_equal_to (DEFAULT_SESSION_TIMEOUT));
   gsad_args_free (args);
 }
 
@@ -950,7 +951,7 @@ Ensure (gsad_args, should_get_per_ip_connection_limit)
 {
   gsad_args_t *args = gsad_args_new ();
   assert_that (gsad_args_get_per_ip_connection_limit (args),
-               is_equal_to (DEFAULT_GSAD_PER_IP_CONNECTION_LIMIT));
+               is_equal_to (DEFAULT_PER_IP_CONNECTION_LIMIT));
 
   args->per_ip_connection_limit = 50;
   assert_that (gsad_args_get_per_ip_connection_limit (args), is_equal_to (50));
@@ -960,7 +961,7 @@ Ensure (gsad_args, should_get_per_ip_connection_limit)
 
   args->per_ip_connection_limit = -1;
   assert_that (gsad_args_get_per_ip_connection_limit (args),
-               is_equal_to (DEFAULT_GSAD_PER_IP_CONNECTION_LIMIT));
+               is_equal_to (DEFAULT_PER_IP_CONNECTION_LIMIT));
 
   gsad_args_free (args);
 }

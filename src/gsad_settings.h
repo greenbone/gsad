@@ -13,6 +13,29 @@
 
 #include <glib.h>
 
+/**
+ * @brief Default value for client_watch_interval.  A value of 0 means disabled.
+ */
+#define DEFAULT_CLIENT_WATCH_INTERVAL 1
+
+/**
+ * @brief Default number of minutes between activity in a session. A value of 0
+ * means no timeout.
+ */
+#define DEFAULT_SESSION_TIMEOUT 15
+
+/**
+ * @brief Default value for the maximum number of connection per IP address. A
+ * value of 0 means no limit.
+ */
+#define DEFAULT_PER_IP_CONNECTION_LIMIT 30
+
+/**
+ * @brief Default limit for number of concurrent user sessions. A value of 0
+ * means no limit.
+ */
+#define DEFAULT_USER_SESSION_LIMIT 0
+
 typedef struct gsad_settings gsad_settings_t;
 
 gsad_settings_t *

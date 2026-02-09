@@ -5,6 +5,8 @@
 
 #include "gsad_args.h"
 
+#include "gsad_settings.h" // for defaults
+
 #include <gvm/util/fileutils.h>
 
 #define COPYRIGHT                                                        \
@@ -169,12 +171,12 @@ gsad_args_new ()
   args->http_only = FALSE;
   args->ignore_x_real_ip = FALSE;
   args->no_redirect = FALSE;
-  args->per_ip_connection_limit = DEFAULT_GSAD_PER_IP_CONNECTION_LIMIT;
+  args->per_ip_connection_limit = DEFAULT_PER_IP_CONNECTION_LIMIT;
   args->print_version = FALSE;
   args->secure_cookie = FALSE;
   args->ssl_certificate_filename = g_strdup (DEFAULT_GSAD_TLS_CERTIFICATE);
   args->ssl_private_key_filename = g_strdup (DEFAULT_GSAD_TLS_PRIVATE_KEY);
-  args->timeout = SESSION_TIMEOUT;
+  args->timeout = DEFAULT_SESSION_TIMEOUT;
   args->unix_socket_group = NULL;
   args->unix_socket_mode = NULL;
   args->unix_socket_owner = NULL;
@@ -440,9 +442,8 @@ gsad_args_get_http_strict_transport_security_max_age (const gsad_args_t *args)
 int
 gsad_args_get_per_ip_connection_limit (const gsad_args_t *args)
 {
-  return args->per_ip_connection_limit >= 0
-           ? args->per_ip_connection_limit
-           : DEFAULT_GSAD_PER_IP_CONNECTION_LIMIT;
+  return args->per_ip_connection_limit >= 0 ? args->per_ip_connection_limit
+                                            : DEFAULT_PER_IP_CONNECTION_LIMIT;
 }
 
 /**

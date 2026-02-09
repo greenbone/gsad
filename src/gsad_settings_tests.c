@@ -22,11 +22,12 @@ Ensure (gsad_settings, should_use_defaults)
 
   assert_that (gsad_settings_is_http_x_real_ip_enabled (settings), is_true);
   assert_that (gsad_settings_get_per_ip_connection_limit (settings),
-               is_equal_to (0));
+               is_equal_to (DEFAULT_PER_IP_CONNECTION_LIMIT));
   assert_that (gsad_settings_is_unix_socket_enabled (settings), is_false);
   assert_that (gsad_settings_get_user_session_limit (settings),
-               is_equal_to (0));
-  assert_that (gsad_settings_get_session_timeout (settings), is_equal_to (0));
+               is_equal_to (DEFAULT_USER_SESSION_LIMIT));
+  assert_that (gsad_settings_get_session_timeout (settings),
+               is_equal_to (DEFAULT_SESSION_TIMEOUT));
   assert_that (gsad_settings_enable_secure_cookie (settings), is_false);
   assert_that (gsad_settings_get_http_content_security_policy (settings),
                is_null);
@@ -36,6 +37,8 @@ Ensure (gsad_settings, should_use_defaults)
                is_null);
   assert_that (gsad_settings_get_vendor_version (settings),
                is_equal_to_string (""));
+  assert_that (gsad_settings_get_client_watch_interval (settings),
+               is_equal_to (DEFAULT_CLIENT_WATCH_INTERVAL));
 
   gsad_settings_free (settings);
 }
@@ -44,7 +47,8 @@ Ensure (gsad_settings, should_set_session_timeout)
 {
   gsad_settings_t *settings = gsad_settings_new ();
 
-  assert_that (gsad_settings_get_session_timeout (settings), is_equal_to (0));
+  assert_that (gsad_settings_get_session_timeout (settings),
+               is_equal_to (DEFAULT_SESSION_TIMEOUT));
 
   gsad_settings_set_session_timeout (settings, 30);
   assert_that (gsad_settings_get_session_timeout (settings), is_equal_to (30));
@@ -234,7 +238,7 @@ Ensure (gsad_settings, should_set_per_ip_connection_limit)
   gsad_settings_t *settings = gsad_settings_new ();
 
   assert_that (gsad_settings_get_per_ip_connection_limit (settings),
-               is_equal_to (0));
+               is_equal_to (DEFAULT_PER_IP_CONNECTION_LIMIT));
 
   gsad_settings_set_per_ip_connection_limit (settings, 10);
   assert_that (gsad_settings_get_per_ip_connection_limit (settings),
@@ -285,7 +289,7 @@ Ensure (gsad_settings, should_set_client_watch_interval)
   gsad_settings_t *settings = gsad_settings_new ();
 
   assert_that (gsad_settings_get_client_watch_interval (settings),
-               is_equal_to (0));
+               is_equal_to (DEFAULT_CLIENT_WATCH_INTERVAL));
 
   gsad_settings_set_client_watch_interval (settings, 30);
   assert_that (gsad_settings_get_client_watch_interval (settings),

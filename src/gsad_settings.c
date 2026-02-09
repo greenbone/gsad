@@ -75,11 +75,11 @@ gsad_settings_new ()
   settings->http_strict_transport_security = NULL;
   settings->http_x_frame_options = NULL;
   settings->vendor_version = NULL;
-  settings->client_watch_interval = 1;
-  settings->per_ip_connection_limit = 0;
-  settings->session_timeout = 0;
+  settings->client_watch_interval = DEFAULT_CLIENT_WATCH_INTERVAL;
+  settings->per_ip_connection_limit = DEFAULT_PER_IP_CONNECTION_LIMIT;
+  settings->session_timeout = DEFAULT_SESSION_TIMEOUT;
   settings->unix_socket = 0;
-  settings->user_session_limit = 0;
+  settings->user_session_limit = DEFAULT_USER_SESSION_LIMIT;
   return settings;
 }
 
