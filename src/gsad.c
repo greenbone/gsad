@@ -1724,9 +1724,9 @@ chroot_drop_privileges (gboolean do_chroot, gchar *drop, const gchar *subdir)
       user_pw = getpwnam (drop);
       if (user_pw == NULL)
         {
-          g_critical ("%s: Failed to drop privileges."
-                      "  Could not determine UID and GID for user \"%s\"!\n",
-                      __func__, drop);
+          g_critical ("Failed to drop privileges. Could not determine UID and "
+                      "GID for user \"%s\".",
+                      drop);
           return 1;
         }
     }
@@ -1739,8 +1739,8 @@ chroot_drop_privileges (gboolean do_chroot, gchar *drop, const gchar *subdir)
 
       if (chroot (GSAD_DATA_DIR))
         {
-          g_critical ("%s: Failed to chroot to \"%s\": %s\n", __func__,
-                      GSAD_DATA_DIR, strerror (errno));
+          g_critical ("Failed to chroot to \"%s\": %s", GSAD_DATA_DIR,
+                      strerror (errno));
           return 1;
         }
       set_chroot_state (1);
@@ -1748,7 +1748,7 @@ chroot_drop_privileges (gboolean do_chroot, gchar *drop, const gchar *subdir)
 
   if (user_pw && (drop_privileges (user_pw) == FALSE))
     {
-      g_critical ("%s: Failed to drop privileges\n", __func__);
+      g_critical ("Failed to drop privileges");
       return 1;
     }
 
@@ -1757,8 +1757,8 @@ chroot_drop_privileges (gboolean do_chroot, gchar *drop, const gchar *subdir)
       gchar *root_dir = g_build_filename ("/", subdir, NULL);
       if (chdir (root_dir))
         {
-          g_critical ("%s: failed change to chroot root directory (%s): %s\n",
-                      __func__, root_dir, strerror (errno));
+          g_critical ("failed change to chroot root directory (%s): %s",
+                      root_dir, strerror (errno));
           g_free (root_dir);
           return 1;
         }
@@ -1769,8 +1769,8 @@ chroot_drop_privileges (gboolean do_chroot, gchar *drop, const gchar *subdir)
       gchar *data_dir = g_build_filename (GSAD_DATA_DIR, subdir, NULL);
       if (chdir (data_dir))
         {
-          g_critical ("%s: failed to change to \"%s\": %s\n", __func__,
-                      data_dir, strerror (errno));
+          g_critical ("failed to change to \"%s\": %s", data_dir,
+                      strerror (errno));
           g_free (data_dir);
           return 1;
         }
@@ -2527,10 +2527,6 @@ main (int argc, char **argv)
           g_critical ("Starting gsad redirect daemon failed!");
           goto error;
         }
-      else
-        {
-          g_info ("GSAD started successfully");
-        }
     }
   else if (gsad_args_enable_unix_socket (gsad_args) && !unix_pid)
     {
@@ -2549,10 +2545,6 @@ main (int argc, char **argv)
         {
           g_critical ("Starting gsad unix daemon failed!");
           goto error;
-        }
-      else
-        {
-          g_info ("GSAD started successfully");
         }
     }
   else
@@ -2636,10 +2628,6 @@ main (int argc, char **argv)
           g_critical ("Starting gsad http(s) daemon failed!");
           goto error;
         }
-      else
-        {
-          g_info ("GSAD started successfully");
-        }
     }
 
   /* Chroot and drop privileges, if requested. */
@@ -2647,28 +2635,30 @@ main (int argc, char **argv)
   if (chroot_drop_privileges (gsad_args->do_chroot, gsad_args->drop,
                               DEFAULT_WEB_DIRECTORY))
     {
-      g_critical ("%s: Cannot use drop privileges for directory \"%s\"!\n",
-                  __func__, DEFAULT_WEB_DIRECTORY);
+      g_critical ("Cannot use drop privileges for directory \"%s\".",
+                  DEFAULT_WEB_DIRECTORY);
       goto error;
     }
+
+  g_info ("gsad started successfully");
 
   /* Wait forever for input or interrupts. */
 
   if (sigfillset (&sigmask_all))
     {
-      g_critical ("%s: Error filling signal set\n", __func__);
+      g_critical ("Error filling signal set");
       goto error;
     }
   if (pthread_sigmask (SIG_BLOCK, &sigmask_all, &sigmask_current))
     {
-      g_critical ("%s: Error setting signal mask\n", __func__);
+      g_critical ("Error setting signal mask");
       goto error;
     }
   while (1)
     {
       if (termination_signal)
         {
-          g_debug ("Received %s signal.\n", strsignal (termination_signal));
+          g_debug ("Received %s signal.", strsignal (termination_signal));
           gsad_cleanup ();
           /* Raise signal again, to exit with the correct return value. */
           signal (termination_signal, SIG_DFL);
