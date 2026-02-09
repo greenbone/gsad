@@ -39,6 +39,7 @@ Ensure (gsad_settings, should_use_defaults)
                is_equal_to_string (""));
   assert_that (gsad_settings_get_client_watch_interval (settings),
                is_equal_to (DEFAULT_CLIENT_WATCH_INTERVAL));
+  assert_that (gsad_settings_get_log_config_filename (settings), is_null);
 
   gsad_settings_free (settings);
 }
@@ -302,6 +303,22 @@ Ensure (gsad_settings, should_set_client_watch_interval)
   gsad_settings_free (settings);
 }
 
+Ensure (gsad_settings, should_set_log_config_filename)
+{
+  gsad_settings_t *settings = gsad_settings_new ();
+
+  assert_that (gsad_settings_get_log_config_filename (settings), is_null);
+
+  gsad_settings_set_log_config_filename (settings, "/etc/gsad.conf");
+  assert_that (gsad_settings_get_log_config_filename (settings),
+               is_equal_to_string ("/etc/gsad.conf"));
+
+  gsad_settings_set_log_config_filename (settings, NULL);
+  assert_that (gsad_settings_get_log_config_filename (settings), is_null);
+
+  gsad_settings_free (settings);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -330,6 +347,7 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_settings, should_set_unix_socket);
   add_test_with_context (suite, gsad_settings,
                          should_set_client_watch_interval);
+  add_test_with_context (suite, gsad_settings, should_set_log_config_filename);
 
   int ret = run_test_suite (suite, create_text_reporter ());
 

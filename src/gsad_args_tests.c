@@ -44,6 +44,8 @@ Ensure (gsad_args, gsad_args_new)
   assert_that (args->foreground, is_false);
   assert_that (args->gnutls_priorities, is_null);
   assert_that (args->gsad_address_string, is_null);
+  assert_that (args->gsad_log_config_filename,
+               is_equal_to_string (GSAD_CONFIG_DIR "gsad_log.conf"));
   assert_that (args->gsad_manager_address_string, is_null);
   assert_that (args->gsad_manager_port, is_equal_to (PORT_NOT_SET));
   assert_that (args->gsad_manager_unix_socket_path, is_null);
@@ -785,6 +787,28 @@ Ensure (gsad_args, should_parse_verbose_default)
   gsad_args_free (args);
 }
 
+Ensure (gsad_args, should_parse_config_filename)
+{
+  gsad_args_t *args = gsad_args_new ();
+  char *argv[] = {"gsad", "--log-config", "/path/to/config.conf"};
+  gsad_args_parse (3, argv, args);
+
+  assert_that (gsad_args_get_log_config_filename (args),
+               is_equal_to_string ("/path/to/config.conf"));
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_parse_config_filename_default)
+{
+  gsad_args_t *args = gsad_args_new ();
+  char *argv[] = {"gsad"};
+  gsad_args_parse (1, argv, args);
+
+  assert_that (gsad_args_get_log_config_filename (args),
+               is_equal_to_string (GSAD_CONFIG_DIR "gsad_log.conf"));
+  gsad_args_free (args);
+}
+
 Ensure (gsad_args, should_enable_redirect)
 {
   gsad_args_t *args = gsad_args_new ();
@@ -1202,6 +1226,9 @@ main (int argc, char **argv)
                          should_parse_unix_socket_path_default);
   add_test_with_context (suite, gsad_args, should_parse_verbose);
   add_test_with_context (suite, gsad_args, should_parse_verbose_default);
+  add_test_with_context (suite, gsad_args, should_parse_config_filename);
+  add_test_with_context (suite, gsad_args,
+                         should_parse_config_filename_default);
 
   add_test_with_context (suite, gsad_args, should_enable_redirect);
   add_test_with_context (suite, gsad_args, should_enable_unix_socket);

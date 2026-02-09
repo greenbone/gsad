@@ -139,4 +139,10 @@ gsad_settings_is_unix_socket_enabled (const gsad_settings_t *);
 gboolean
 gsad_settings_is_http_x_real_ip_enabled (const gsad_settings_t *);
 
+void
+gsad_settings_set_log_config_filename (gsad_settings_t *, const gchar *);
+
+const char *
+gsad_settings_get_log_config_filename (const gsad_settings_t *);
+
 #endif /* _GSAD_SETTINGS_H */
