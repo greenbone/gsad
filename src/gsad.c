@@ -1887,19 +1887,32 @@ gsad_cleanup ()
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
 
   if (redirect_pid)
-    kill (redirect_pid, SIGTERM);
+    {
+      g_debug ("Stopping redirect daemon with PID %d", redirect_pid);
+      kill (redirect_pid, SIGTERM);
+    }
   if (unix_pid)
-    kill (unix_pid, SIGTERM);
+    {
+      g_debug ("Stopping UNIX socket HTTP daemon with PID %d", unix_pid);
+      kill (unix_pid, SIGTERM);
+    }
 
+  g_debug ("Stopping HTTP server...");
   MHD_stop_daemon (gsad_daemon);
 
   cleanup_http_handlers ();
 
   if (log_config)
-    free_log_configuration (log_config);
+    {
+      g_debug ("Cleaning up log configuration...");
+      free_log_configuration (log_config);
+    }
 
+  g_debug ("Cleaning up base...");
   gsad_base_cleanup ();
 
+  g_debug ("Removing pidfile... %s",
+           gsad_settings_get_pid_filename (gsad_global_settings));
   pidfile_remove (
     (char *) gsad_settings_get_pid_filename (gsad_global_settings));
 }
