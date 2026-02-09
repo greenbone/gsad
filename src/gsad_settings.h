@@ -104,6 +104,12 @@ gsad_settings_set_user_session_limit (gsad_settings_t *, int);
 int
 gsad_settings_get_user_session_limit (const gsad_settings_t *);
 
+void
+gsad_settings_set_client_watch_interval (gsad_settings_t *, int);
+
+int
+gsad_settings_get_client_watch_interval (const gsad_settings_t *);
+
 gboolean
 gsad_settings_is_unix_socket_enabled (const gsad_settings_t *);
 
