@@ -895,13 +895,13 @@ get_client_address (http_connection_t *conn, char *client_address)
 
   x_real_ip = MHD_lookup_connection_value (conn, MHD_HEADER_KIND, "X-Real-IP");
 
-  if (!gsad_settings_enable_ignore_http_x_real_ip (gsad_settings) && x_real_ip
+  if (gsad_settings_is_http_x_real_ip_enabled (gsad_settings) && x_real_ip
       && g_utf8_validate (x_real_ip, -1, NULL) == FALSE)
     return 1;
-  else if (!gsad_settings_enable_ignore_http_x_real_ip (gsad_settings)
+  else if (gsad_settings_is_http_x_real_ip_enabled (gsad_settings)
            && x_real_ip != NULL)
     strncpy (client_address, x_real_ip, INET6_ADDRSTRLEN);
-  else if (gsad_settings_enable_unix_socket (gsad_settings))
+  else if (gsad_settings_is_unix_socket_enabled (gsad_settings))
     strncpy (client_address, "unix_socket", INET6_ADDRSTRLEN);
   else
     {

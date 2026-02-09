@@ -105,9 +105,9 @@ int
 gsad_settings_get_user_session_limit (const gsad_settings_t *);
 
 gboolean
-gsad_settings_enable_unix_socket (const gsad_settings_t *);
+gsad_settings_is_unix_socket_enabled (const gsad_settings_t *);
 
 gboolean
-gsad_settings_enable_ignore_http_x_real_ip (const gsad_settings_t *);
+gsad_settings_is_http_x_real_ip_enabled (const gsad_settings_t *);
 
 #endif /* _GSAD_SETTINGS_H */

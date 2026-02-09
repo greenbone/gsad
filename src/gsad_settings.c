@@ -207,9 +207,9 @@ gsad_settings_set_ignore_http_x_real_ip (gsad_settings_t *settings,
  * @return TRUE if ignoring the X-Real-IP header is enabled, FALSE otherwise.
  */
 gboolean
-gsad_settings_enable_ignore_http_x_real_ip (const gsad_settings_t *settings)
+gsad_settings_is_http_x_real_ip_enabled (const gsad_settings_t *settings)
 {
-  return settings->ignore_http_x_real_ip;
+  return !settings->ignore_http_x_real_ip;
 }
 
 /**
@@ -233,7 +233,7 @@ gsad_settings_set_unix_socket (gsad_settings_t *settings, int socket)
  * otherwise.
  */
 gboolean
-gsad_settings_enable_unix_socket (const gsad_settings_t *settings)
+gsad_settings_is_unix_socket_enabled (const gsad_settings_t *settings)
 {
   return settings->unix_socket > 0;
 }
