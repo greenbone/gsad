@@ -20,10 +20,10 @@ Ensure (gsad_settings, should_use_defaults)
 {
   gsad_settings_t *settings = gsad_settings_new ();
 
-  assert_that (gsad_settings_enable_ignore_http_x_real_ip (settings), is_false);
+  assert_that (gsad_settings_is_http_x_real_ip_enabled (settings), is_true);
   assert_that (gsad_settings_get_per_ip_connection_limit (settings),
                is_equal_to (0));
-  assert_that (gsad_settings_enable_unix_socket (settings), is_false);
+  assert_that (gsad_settings_is_unix_socket_enabled (settings), is_false);
   assert_that (gsad_settings_get_user_session_limit (settings),
                is_equal_to (0));
   assert_that (gsad_settings_get_session_timeout (settings), is_equal_to (0));
@@ -70,32 +70,32 @@ Ensure (gsad_settings, should_enable_secure_cookie)
   gsad_settings_free (settings);
 }
 
-Ensure (gsad_settings, should_enable_ignore_x_real_ip)
+Ensure (gsad_settings, should_ignore_x_real_ip_be_enabled)
 {
   gsad_settings_t *settings = gsad_settings_new ();
 
-  assert_that (gsad_settings_enable_ignore_http_x_real_ip (settings), is_false);
+  assert_that (gsad_settings_is_http_x_real_ip_enabled (settings), is_true);
 
   gsad_settings_set_ignore_http_x_real_ip (settings, TRUE);
-  assert_that (gsad_settings_enable_ignore_http_x_real_ip (settings), is_true);
+  assert_that (gsad_settings_is_http_x_real_ip_enabled (settings), is_false);
 
   gsad_settings_set_ignore_http_x_real_ip (settings, FALSE);
-  assert_that (gsad_settings_enable_ignore_http_x_real_ip (settings), is_false);
+  assert_that (gsad_settings_is_http_x_real_ip_enabled (settings), is_true);
 
   gsad_settings_free (settings);
 }
 
-Ensure (gsad_settings, should_enable_unix_socket)
+Ensure (gsad_settings, should_unix_socket_be_enabled)
 {
   gsad_settings_t *settings = gsad_settings_new ();
 
-  assert_that (gsad_settings_enable_unix_socket (settings), is_false);
+  assert_that (gsad_settings_is_unix_socket_enabled (settings), is_false);
 
   gsad_settings_set_unix_socket (settings, 5);
-  assert_that (gsad_settings_enable_unix_socket (settings), is_true);
+  assert_that (gsad_settings_is_unix_socket_enabled (settings), is_true);
 
   gsad_settings_set_unix_socket (settings, -1);
-  assert_that (gsad_settings_enable_unix_socket (settings), is_false);
+  assert_that (gsad_settings_is_unix_socket_enabled (settings), is_false);
 
   gsad_settings_free (settings);
 }
@@ -251,13 +251,13 @@ Ensure (gsad_settings, should_set_unix_socket)
 {
   gsad_settings_t *settings = gsad_settings_new ();
 
-  assert_that (gsad_settings_enable_unix_socket (settings), is_false);
+  assert_that (gsad_settings_is_unix_socket_enabled (settings), is_false);
 
   gsad_settings_set_unix_socket (settings, 5);
-  assert_that (gsad_settings_enable_unix_socket (settings), is_true);
+  assert_that (gsad_settings_is_unix_socket_enabled (settings), is_true);
 
   gsad_settings_set_unix_socket (settings, -1);
-  assert_that (gsad_settings_enable_unix_socket (settings), is_false);
+  assert_that (gsad_settings_is_unix_socket_enabled (settings), is_false);
 
   gsad_settings_free (settings);
 }
@@ -288,8 +288,9 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_settings, should_use_defaults);
   add_test_with_context (suite, gsad_settings, should_set_session_timeout);
   add_test_with_context (suite, gsad_settings, should_enable_secure_cookie);
-  add_test_with_context (suite, gsad_settings, should_enable_ignore_x_real_ip);
-  add_test_with_context (suite, gsad_settings, should_enable_unix_socket);
+  add_test_with_context (suite, gsad_settings,
+                         should_ignore_x_real_ip_be_enabled);
+  add_test_with_context (suite, gsad_settings, should_unix_socket_be_enabled);
   add_test_with_context (suite, gsad_settings,
                          should_set_http_content_security_policy);
   add_test_with_context (suite, gsad_settings, should_set_http_x_frame_options);
