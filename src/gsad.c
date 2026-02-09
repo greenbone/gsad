@@ -1915,6 +1915,8 @@ gsad_cleanup ()
            gsad_settings_get_pid_filename (gsad_global_settings));
   pidfile_remove (
     (char *) gsad_settings_get_pid_filename (gsad_global_settings));
+
+  gsad_settings_free (gsad_global_settings);
 }
 
 /**
@@ -2294,7 +2296,7 @@ main (int argc, char **argv)
 
   if (gsad_args_parse (argc, argv, gsad_args) != 0)
     {
-      goto error;
+      goto error_with_settings_cleanup;
     }
 
   if (gsad_args->print_version)
@@ -2318,23 +2320,23 @@ main (int argc, char **argv)
 
     {
       g_critical ("Invalid session timeout value: %d.", gsad_args->timeout);
-      goto error;
+      goto error_with_settings_cleanup;
     }
   if (gsad_args_validate_port (gsad_args))
     {
       g_critical ("Invalid GSAD port value: %d.", gsad_args->gsad_port);
-      goto error;
+      goto error_with_settings_cleanup;
     }
   if (gsad_args_validate_manager_port (gsad_args))
     {
       g_critical ("Invalid gvmd port value: %d.", gsad_args->gsad_manager_port);
-      goto error;
+      goto error_with_settings_cleanup;
     }
   if (gsad_args_validate_redirect_port (gsad_args))
     {
       g_critical ("Invalid redirect port value: %d.",
                   gsad_args->gsad_redirect_port);
-      goto error;
+      goto error_with_settings_cleanup;
     }
   if (gsad_args_enable_https (gsad_args))
     {
@@ -2342,13 +2344,13 @@ main (int argc, char **argv)
         {
           g_critical ("Invalid TLS private key file: %s.",
                       gsad_args->ssl_private_key_filename);
-          goto error;
+          goto error_with_settings_cleanup;
         }
       if (gsad_args_validate_tls_certificate (gsad_args))
         {
           g_critical ("Invalid TLS certificate file: %s.",
                       gsad_args->ssl_certificate_filename);
-          goto error;
+          goto error_with_settings_cleanup;
         }
     }
 
@@ -2357,7 +2359,7 @@ main (int argc, char **argv)
   if (gsad_init () == MHD_NO)
     {
       g_critical ("Initialization failed! Exiting...");
-      goto error;
+      goto error_with_settings_cleanup;
     }
 
   gsad_settings_set_http_x_frame_options (gsad_global_settings,
@@ -2388,7 +2390,7 @@ main (int argc, char **argv)
   if (register_signal_handlers ())
     {
       g_critical ("Failed to register signal handlers!");
-      goto error;
+      goto error_with_settings_cleanup;
     }
 
   if (gsad_args->debug_tls)
@@ -2400,7 +2402,7 @@ main (int argc, char **argv)
   if (gsad_base_init ())
     {
       g_critical ("libxml must be compiled with thread support");
-      goto error;
+      goto error_with_settings_cleanup;
     }
 
   if (gsad_args->gsad_vendor_version_string)
@@ -2412,7 +2414,7 @@ main (int argc, char **argv)
   if (setenv ("TZ", "utc 0", 1) == -1)
     {
       g_critical ("Failed to set timezone.");
-      goto error;
+      goto error_with_settings_cleanup;
     }
   tzset ();
 
@@ -2443,7 +2445,7 @@ main (int argc, char **argv)
         case -1:
           /* Parent when error. */
           g_critical ("Failed to fork!");
-          goto error;
+          goto error_with_settings_cleanup;
           break;
         default:
           /* Parent. */
@@ -2476,7 +2478,7 @@ main (int argc, char **argv)
         case -1:
           /* Parent when error. */
           g_critical ("Failed to fork for redirect!");
-          goto error;
+          goto error_with_settings_cleanup;
           break;
         default:
           /* Parent. */
@@ -2494,7 +2496,7 @@ main (int argc, char **argv)
   if (atexit (&gsad_cleanup))
     {
       g_critical ("Failed to register cleanup function!");
-      goto error;
+      goto error_with_settings_cleanup;
     }
 
   /* Write pidfile. */
@@ -2688,10 +2690,12 @@ main (int argc, char **argv)
     }
 success:
   gsad_args_free (gsad_args);
-  gsad_settings_free (gsad_global_settings);
+  g_debug ("Exiting...");
   return EXIT_SUCCESS;
+error_with_settings_cleanup:
+  gsad_settings_free (gsad_global_settings);
 error:
   gsad_args_free (gsad_args);
-  gsad_settings_free (gsad_global_settings);
+  g_debug ("Exiting with failure...");
   return EXIT_FAILURE;
 }
