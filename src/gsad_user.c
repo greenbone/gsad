@@ -128,9 +128,9 @@ user_copy (user_t *user)
 gboolean
 user_session_expired (user_t *user)
 {
-  gsad_settings_t *gsad_settings = gsad_settings_get_global_settings ();
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
   return (time (NULL) - user->time)
-         > (gsad_settings_get_session_timeout (gsad_settings) * 60);
+         > (gsad_settings_get_session_timeout (gsad_global_settings) * 60);
 }
 
 const gchar *
@@ -196,8 +196,9 @@ user_get_password (user_t *user)
 const time_t
 user_get_session_timeout (user_t *user)
 {
-  gsad_settings_t *gsad_settings = gsad_settings_get_global_settings ();
-  return user->time + (gsad_settings_get_session_timeout (gsad_settings) * 60);
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
+  return user->time
+         + (gsad_settings_get_session_timeout (gsad_global_settings) * 60);
 }
 
 /**
@@ -336,8 +337,9 @@ user_add (const gchar *username, const gchar *password, const gchar *timezone,
     }
   g_list_free (user_list);
 
-  gsad_settings_t *gsad_settings = gsad_settings_get_global_settings ();
-  int session_limit = gsad_settings_get_user_session_limit (gsad_settings);
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
+  int session_limit =
+    gsad_settings_get_user_session_limit (gsad_global_settings);
   if (session_limit && (session_count >= session_limit))
 
     return NULL;

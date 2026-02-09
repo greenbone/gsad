@@ -1205,7 +1205,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   const char *cmd = NULL;
   const int CMD_MAX_SIZE = 27; /* delete_trash_lsc_credential */
   params_t *params = con_info->params;
-  gsad_settings_t *gsad_settings = gsad_settings_get_global_settings ();
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
   gvm_connection_t connection;
   char *res = NULL, *comp = NULL;
   gsize res_len = 0;
@@ -1308,14 +1308,14 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
 
   credentials_start_cmd (credentials);
 
-  if (gsad_settings_get_client_watch_interval (gsad_settings))
+  if (gsad_settings_get_client_watch_interval (gsad_global_settings))
     {
       const union MHD_ConnectionInfo *mhd_con_info;
       mhd_con_info =
         MHD_get_connection_info (con, MHD_CONNECTION_INFO_CONNECTION_FD);
 
       watcher_data = connection_watcher_data_new (
-        &connection, mhd_con_info->connect_fd, gsad_settings);
+        &connection, mhd_con_info->connect_fd, gsad_global_settings);
 
       pthread_create (&watch_thread, NULL, watch_client_connection,
                       watcher_data);
@@ -1962,11 +1962,11 @@ start_unix_http_daemon (const char *unix_socket_path,
   struct stat ustat;
   mode_t oldmask = 0;
   mode_t omode = 0;
-  gsad_settings_t *gsad_settings = gsad_settings_get_global_settings ();
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
 
   int unix_socket = socket (AF_UNIX, SOCK_STREAM, 0);
 
-  gsad_settings_set_unix_socket (gsad_settings, unix_socket);
+  gsad_settings_set_unix_socket (gsad_global_settings, unix_socket);
 
   if (unix_socket == -1)
     {
@@ -2058,7 +2058,8 @@ start_unix_http_daemon (const char *unix_socket_path,
     0, NULL, NULL, handler, http_handlers, MHD_OPTION_EXTERNAL_LOGGER,
     mhd_logger, NULL, MHD_OPTION_NOTIFY_COMPLETED, free_resources, NULL,
     MHD_OPTION_LISTEN_SOCKET, unix_socket, MHD_OPTION_PER_IP_CONNECTION_LIMIT,
-    gsad_settings_get_per_ip_connection_limit (gsad_settings), MHD_OPTION_END);
+    gsad_settings_get_per_ip_connection_limit (gsad_global_settings),
+    MHD_OPTION_END);
 }
 
 static struct MHD_Daemon *
@@ -2079,7 +2080,7 @@ start_http_daemon (int port,
   unsigned int flags;
   int ipv6_flag;
   char *ip_address = NULL;
-  gsad_settings_t *gsad_settings = gsad_settings_get_global_settings ();
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
 
   if (address->ss_family == AF_INET6)
     {
@@ -2113,7 +2114,8 @@ start_http_daemon (int port,
     flags, port, NULL, NULL, handler, http_handlers, MHD_OPTION_EXTERNAL_LOGGER,
     mhd_logger, NULL, MHD_OPTION_NOTIFY_COMPLETED, free_resources, NULL,
     MHD_OPTION_SOCK_ADDR, address, MHD_OPTION_PER_IP_CONNECTION_LIMIT,
-    gsad_settings_get_per_ip_connection_limit (gsad_settings), MHD_OPTION_END);
+    gsad_settings_get_per_ip_connection_limit (gsad_global_settings),
+    MHD_OPTION_END);
 }
 
 static struct MHD_Daemon *
@@ -2125,7 +2127,7 @@ start_https_daemon (int port, const char *key, const char *cert,
   unsigned int flags;
   int ipv6_flag;
   char *ip_address = NULL;
-  gsad_settings_t *gsad_settings = gsad_settings_get_global_settings ();
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
 
   if (address->ss_family == AF_INET6)
     {
@@ -2162,7 +2164,7 @@ start_https_daemon (int port, const char *key, const char *cert,
     MHD_OPTION_HTTPS_MEM_CERT, cert, MHD_OPTION_NOTIFY_COMPLETED,
     free_resources, NULL, MHD_OPTION_SOCK_ADDR, address,
     MHD_OPTION_PER_IP_CONNECTION_LIMIT,
-    gsad_settings_get_per_ip_connection_limit (gsad_settings),
+    gsad_settings_get_per_ip_connection_limit (gsad_global_settings),
     MHD_OPTION_HTTPS_PRIORITIES, priorities,
 /* LibmicroHTTPD 0.9.35 and higher. */
 #if MHD_VERSION >= 0x00093500
@@ -2267,7 +2269,7 @@ main (int argc, char **argv)
 
   /* Process command line options. */
   gsad_args_t *gsad_args = gsad_args_new ();
-  gsad_settings_t *gsad_settings = gsad_settings_get_global_settings ();
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
 
   if (gsad_args_parse (argc, argv, gsad_args) != 0)
     {
@@ -2334,28 +2336,30 @@ main (int argc, char **argv)
       goto error;
     }
 
-  gsad_settings_set_http_x_frame_options (gsad_settings,
+  gsad_settings_set_http_x_frame_options (gsad_global_settings,
                                           gsad_args->http_frame_opts);
-  gsad_settings_set_http_content_security_policy (gsad_settings,
+  gsad_settings_set_http_content_security_policy (gsad_global_settings,
                                                   gsad_args->http_csp);
-  gsad_settings_set_http_cors_origin (gsad_settings, gsad_args->http_cors);
+  gsad_settings_set_http_cors_origin (gsad_global_settings,
+                                      gsad_args->http_cors);
 
   if (gsad_args_enable_http_strict_transport_security (gsad_args))
     {
       gsad_settings_set_http_strict_transport_security (
-        gsad_settings,
+        gsad_global_settings,
         g_strdup_printf (
           "max-age=%d",
           gsad_args_get_http_strict_transport_security_max_age (gsad_args)));
     }
   else
-    gsad_settings_set_http_strict_transport_security (gsad_settings, NULL);
+    gsad_settings_set_http_strict_transport_security (gsad_global_settings,
+                                                      NULL);
 
-  gsad_settings_set_ignore_http_x_real_ip (gsad_settings,
+  gsad_settings_set_ignore_http_x_real_ip (gsad_global_settings,
                                            gsad_args->ignore_x_real_ip);
 
   gsad_settings_set_per_ip_connection_limit (
-    gsad_settings, gsad_args_get_per_ip_connection_limit (gsad_args));
+    gsad_global_settings, gsad_args_get_per_ip_connection_limit (gsad_args));
 
   if (register_signal_handlers ())
     {
@@ -2376,7 +2380,7 @@ main (int argc, char **argv)
     }
 
   if (gsad_args->gsad_vendor_version_string)
-    gsad_settings_set_vendor_version (gsad_settings,
+    gsad_settings_set_vendor_version (gsad_global_settings,
                                       gsad_args->gsad_vendor_version_string);
 
   /* Switch to UTC for scheduling. */
@@ -2392,12 +2396,13 @@ main (int argc, char **argv)
 
   /* Finish processing the command line options. */
 
-  gsad_settings_set_use_secure_cookie (gsad_settings, gsad_args->secure_cookie);
+  gsad_settings_set_use_secure_cookie (gsad_global_settings,
+                                       gsad_args->secure_cookie);
 
-  gsad_settings_set_session_timeout (gsad_settings, gsad_args->timeout);
+  gsad_settings_set_session_timeout (gsad_global_settings, gsad_args->timeout);
 
   gsad_settings_set_client_watch_interval (
-    gsad_settings, gsad_args_get_client_watch_interval (gsad_args));
+    gsad_global_settings, gsad_args_get_client_watch_interval (gsad_args));
 
   if (!gsad_args_enable_run_in_foreground (gsad_args))
     {
@@ -2455,7 +2460,7 @@ main (int argc, char **argv)
         }
     }
 
-  gsad_settings_set_user_session_limit (gsad_settings,
+  gsad_settings_set_user_session_limit (gsad_global_settings,
                                         gsad_args->gsad_user_session_limit);
 
   /* Register the cleanup function. */
@@ -2567,7 +2572,7 @@ main (int argc, char **argv)
           GSList *list = address_list;
           GError *error = NULL;
 
-          gsad_settings_set_use_secure_cookie (gsad_settings, TRUE);
+          gsad_settings_set_use_secure_cookie (gsad_global_settings, TRUE);
 
           if (!g_file_get_contents (gsad_args->ssl_private_key_filename,
                                     &ssl_private_key, NULL, &error))
@@ -2665,10 +2670,10 @@ main (int argc, char **argv)
     }
 success:
   gsad_args_free (gsad_args);
-  gsad_settings_free (gsad_settings);
+  gsad_settings_free (gsad_global_settings);
   return EXIT_SUCCESS;
 error:
   gsad_args_free (gsad_args);
-  gsad_settings_free (gsad_settings);
+  gsad_settings_free (gsad_global_settings);
   return EXIT_FAILURE;
 }
