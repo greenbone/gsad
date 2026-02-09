@@ -809,6 +809,28 @@ Ensure (gsad_args, should_parse_config_filename_default)
   gsad_args_free (args);
 }
 
+Ensure (gsad_args, should_parse_pid_filename)
+{
+  gsad_args_t *args = gsad_args_new ();
+  char *argv[] = {"gsad", "--pid-file", "/var/run/gsad.pid"};
+  gsad_args_parse (3, argv, args);
+
+  assert_that (gsad_args_get_pid_filename (args),
+               is_equal_to_string ("/var/run/gsad.pid"));
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_parse_pid_filename_default)
+{
+  gsad_args_t *args = gsad_args_new ();
+  char *argv[] = {"gsad"};
+  gsad_args_parse (1, argv, args);
+
+  assert_that (gsad_args_get_pid_filename (args),
+               is_equal_to_string (DEFAULT_GSAD_PID_FILE));
+  gsad_args_free (args);
+}
+
 Ensure (gsad_args, should_enable_redirect)
 {
   gsad_args_t *args = gsad_args_new ();
@@ -1229,6 +1251,8 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_args, should_parse_config_filename);
   add_test_with_context (suite, gsad_args,
                          should_parse_config_filename_default);
+  add_test_with_context (suite, gsad_args, should_parse_pid_filename);
+  add_test_with_context (suite, gsad_args, should_parse_pid_filename_default);
 
   add_test_with_context (suite, gsad_args, should_enable_redirect);
   add_test_with_context (suite, gsad_args, should_enable_unix_socket);

@@ -319,6 +319,22 @@ Ensure (gsad_settings, should_set_log_config_filename)
   gsad_settings_free (settings);
 }
 
+Ensure (gsad_settings, should_set_pid_filename)
+{
+  gsad_settings_t *settings = gsad_settings_new ();
+
+  assert_that (gsad_settings_get_pid_filename (settings), is_null);
+
+  gsad_settings_set_pid_filename (settings, "/var/run/gsad.pid");
+  assert_that (gsad_settings_get_pid_filename (settings),
+               is_equal_to_string ("/var/run/gsad.pid"));
+
+  gsad_settings_set_pid_filename (settings, NULL);
+  assert_that (gsad_settings_get_pid_filename (settings), is_null);
+
+  gsad_settings_free (settings);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -348,6 +364,7 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_settings,
                          should_set_client_watch_interval);
   add_test_with_context (suite, gsad_settings, should_set_log_config_filename);
+  add_test_with_context (suite, gsad_settings, should_set_pid_filename);
 
   int ret = run_test_suite (suite, create_text_reporter ());
 
