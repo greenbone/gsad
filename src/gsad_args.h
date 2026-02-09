@@ -78,6 +78,8 @@
  */
 #define DEFAULT_GSAD_PID_FILE GSAD_CONFIG_DIR "gsad.pid"
 
+#define DEFAULT_GSAD_STATIC_CONTENT_DIRECTORY GSAD_STATIC_CONTENT_DIR
+
 /**
  * @brief Structure to hold the parsed command-line arguments for gsad.
  *
@@ -103,6 +105,7 @@ typedef struct gsad_args
   gchar *gsad_log_config_filename;
   gchar *gsad_manager_address_string;
   gchar *gsad_manager_unix_socket_path;
+  gchar *gsad_static_content_directory;
   gchar *gsad_pid_filename;
   gchar *gsad_vendor_version_string;
   gchar *http_cors;
@@ -194,5 +197,8 @@ gsad_args_get_log_config_filename (gsad_args_t *);
 
 const char *
 gsad_args_get_pid_filename (gsad_args_t *);
+
+const char *
+gsad_args_get_static_content_directory (gsad_args_t *);
 
 #endif /* _GSAD_ARGS_H */

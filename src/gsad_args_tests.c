@@ -831,6 +831,28 @@ Ensure (gsad_args, should_parse_pid_filename_default)
   gsad_args_free (args);
 }
 
+Ensure (gsad_args, should_parse_static_content_directory)
+{
+  gsad_args_t *args = gsad_args_new ();
+  char *argv[] = {"gsad", "--static-content", "/path/to/static"};
+  gsad_args_parse (3, argv, args);
+
+  assert_that (gsad_args_get_static_content_directory (args),
+               is_equal_to_string ("/path/to/static"));
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_parse_static_content_directory_default)
+{
+  gsad_args_t *args = gsad_args_new ();
+  char *argv[] = {"gsad"};
+  gsad_args_parse (1, argv, args);
+
+  assert_that (gsad_args_get_static_content_directory (args),
+               is_equal_to_string (DEFAULT_GSAD_STATIC_CONTENT_DIRECTORY));
+  gsad_args_free (args);
+}
+
 Ensure (gsad_args, should_enable_redirect)
 {
   gsad_args_t *args = gsad_args_new ();
@@ -1253,6 +1275,10 @@ main (int argc, char **argv)
                          should_parse_config_filename_default);
   add_test_with_context (suite, gsad_args, should_parse_pid_filename);
   add_test_with_context (suite, gsad_args, should_parse_pid_filename_default);
+  add_test_with_context (suite, gsad_args,
+                         should_parse_static_content_directory);
+  add_test_with_context (suite, gsad_args,
+                         should_parse_static_content_directory_default);
 
   add_test_with_context (suite, gsad_args, should_enable_redirect);
   add_test_with_context (suite, gsad_args, should_enable_unix_socket);
