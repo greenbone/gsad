@@ -195,38 +195,23 @@ gsad_args_free (gsad_args_t *args)
 {
   if (args)
     {
-      if (args->dh_params_filename)
-        g_free (args->dh_params_filename);
-      if (args->drop)
-        g_free (args->drop);
-      if (args->gnutls_priorities)
-        g_free (args->gnutls_priorities);
+      g_free (args->dh_params_filename);
+      g_free (args->drop);
+      g_free (args->gnutls_priorities);
       if (args->gsad_address_string)
         g_strfreev (args->gsad_address_string);
-      if (args->gsad_manager_address_string)
-        g_free (args->gsad_manager_address_string);
-      if (args->gsad_manager_unix_socket_path)
-        g_free (args->gsad_manager_unix_socket_path);
-      if (args->gsad_vendor_version_string)
-        g_free (args->gsad_vendor_version_string);
-      if (args->http_cors)
-        g_free (args->http_cors);
-      if (args->http_csp)
-        g_free (args->http_csp);
-      if (args->http_frame_opts)
-        g_free (args->http_frame_opts);
-      if (args->ssl_certificate_filename)
-        g_free (args->ssl_certificate_filename);
-      if (args->ssl_private_key_filename)
-        g_free (args->ssl_private_key_filename);
-      if (args->unix_socket_group)
-        g_free (args->unix_socket_group);
-      if (args->unix_socket_mode)
-        g_free (args->unix_socket_mode);
-      if (args->unix_socket_owner)
-        g_free (args->unix_socket_owner);
-      if (args->unix_socket_path)
-        g_free (args->unix_socket_path);
+      g_free (args->gsad_manager_address_string);
+      g_free (args->gsad_manager_unix_socket_path);
+      g_free (args->gsad_vendor_version_string);
+      g_free (args->http_cors);
+      g_free (args->http_csp);
+      g_free (args->http_frame_opts);
+      g_free (args->ssl_certificate_filename);
+      g_free (args->ssl_private_key_filename);
+      g_free (args->unix_socket_group);
+      g_free (args->unix_socket_mode);
+      g_free (args->unix_socket_owner);
+      g_free (args->unix_socket_path);
 
       g_free (args);
     }
