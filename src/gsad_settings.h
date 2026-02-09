@@ -16,7 +16,7 @@
 /**
  * @brief Default value for client_watch_interval.  A value of 0 means disabled.
  */
-#define DEFAULT_CLIENT_WATCH_INTERVAL 1
+#define DEFAULT_CLIENT_WATCH_INTERVAL 0
 
 /**
  * @brief Default number of minutes between activity in a session. A value of 0

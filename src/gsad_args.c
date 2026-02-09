@@ -70,7 +70,7 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
      &args->client_watch_interval,
      "Check if client connection was closed every <number> seconds."
      " 0 to disable. Defaults to " G_STRINGIFY (
-       DEFAULT_CLIENT_WATCH_INTERVAL) " seconds.",
+       DEFAULT_CLIENT_WATCH_INTERVAL) ".",
      "<number>"},
     {"debug-tls", 0, 0, G_OPTION_ARG_INT, &args->debug_tls,
      "Enable TLS debugging at <level>", "<level>"},
