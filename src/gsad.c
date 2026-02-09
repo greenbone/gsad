@@ -1813,9 +1813,10 @@ gsad_init ()
   session_init ();
 
   /* Check for required files. */
-  if (gvm_file_check_is_dir (GSAD_DATA_DIR) < 1)
+  if (!gvm_file_exists (GSAD_DATA_DIR)
+      || gvm_file_check_is_dir (GSAD_DATA_DIR) != 1)
     {
-      g_critical ("%s: Could not access %s!\n", __func__, GSAD_DATA_DIR);
+      g_critical ("Could not access data directory %s", GSAD_DATA_DIR);
       return MHD_NO;
     }
 
@@ -1833,7 +1834,7 @@ gsad_init ()
        * mismatch test. */
       if (!gcry_check_version (NULL))
         {
-          g_critical ("%s: libgcrypt version check failed\n", __func__);
+          g_critical ("libgcrypt version check failed");
           return MHD_NO;
         }
 
@@ -1863,14 +1864,14 @@ gsad_init ()
   int ret = gnutls_global_init ();
   if (ret < 0)
     {
-      g_critical ("%s: Failed to initialize GNUTLS.\n", __func__);
+      g_critical ("Failed to initialize GNUTLS.");
       return MHD_NO;
     }
 
   /* Init the validator. */
   gsad_init_validator ();
 
-  g_debug ("Initialization of GSA successful.\n");
+  g_debug ("Initialization of GSA successful.");
   return MHD_YES;
 }
 
@@ -2293,37 +2294,37 @@ main (int argc, char **argv)
   if (gsad_args_validate_session_timeout (gsad_args))
 
     {
-      g_error ("Invalid session timeout value: %d.", gsad_args->timeout);
+      g_critical ("Invalid session timeout value: %d.", gsad_args->timeout);
       goto error;
     }
   if (gsad_args_validate_port (gsad_args))
     {
-      g_error ("Invalid GSAD port value: %d.", gsad_args->gsad_port);
+      g_critical ("Invalid GSAD port value: %d.", gsad_args->gsad_port);
       goto error;
     }
   if (gsad_args_validate_manager_port (gsad_args))
     {
-      g_error ("Invalid gvmd port value: %d.", gsad_args->gsad_manager_port);
+      g_critical ("Invalid gvmd port value: %d.", gsad_args->gsad_manager_port);
       goto error;
     }
   if (gsad_args_validate_redirect_port (gsad_args))
     {
-      g_error ("Invalid redirect port value: %d.",
-               gsad_args->gsad_redirect_port);
+      g_critical ("Invalid redirect port value: %d.",
+                  gsad_args->gsad_redirect_port);
       goto error;
     }
   if (gsad_args_enable_https (gsad_args))
     {
       if (gsad_args_validate_tls_private_key (gsad_args))
         {
-          g_error ("Invalid TLS private key file: %s.",
-                   gsad_args->ssl_private_key_filename);
+          g_critical ("Invalid TLS private key file: %s.",
+                      gsad_args->ssl_private_key_filename);
           goto error;
         }
       if (gsad_args_validate_tls_certificate (gsad_args))
         {
-          g_error ("Invalid TLS certificate file: %s.",
-                   gsad_args->ssl_certificate_filename);
+          g_critical ("Invalid TLS certificate file: %s.",
+                      gsad_args->ssl_certificate_filename);
           goto error;
         }
     }
@@ -2332,7 +2333,7 @@ main (int argc, char **argv)
 
   if (gsad_init () == MHD_NO)
     {
-      g_error ("Initialization failed! Exiting...");
+      g_critical ("Initialization failed! Exiting...");
       goto error;
     }
 
@@ -2363,7 +2364,7 @@ main (int argc, char **argv)
 
   if (register_signal_handlers ())
     {
-      g_error ("Failed to register signal handlers!");
+      g_critical ("Failed to register signal handlers!");
       goto error;
     }
 
@@ -2375,7 +2376,7 @@ main (int argc, char **argv)
 
   if (gsad_base_init ())
     {
-      g_error ("libxml must be compiled with thread support");
+      g_critical ("libxml must be compiled with thread support");
       goto error;
     }
 
@@ -2387,7 +2388,7 @@ main (int argc, char **argv)
 
   if (setenv ("TZ", "utc 0", 1) == -1)
     {
-      g_error ("Failed to set timezone.");
+      g_critical ("Failed to set timezone.");
       goto error;
     }
   tzset ();
@@ -2416,7 +2417,7 @@ main (int argc, char **argv)
           break;
         case -1:
           /* Parent when error. */
-          g_error ("Failed to fork!");
+          g_critical ("Failed to fork!");
           goto error;
           break;
         default:
@@ -2449,7 +2450,7 @@ main (int argc, char **argv)
           break;
         case -1:
           /* Parent when error. */
-          g_error ("Failed to fork for redirect!");
+          g_critical ("Failed to fork for redirect!");
           goto error;
           break;
         default:
@@ -2467,7 +2468,7 @@ main (int argc, char **argv)
 
   if (atexit (&gsad_cleanup))
     {
-      g_error ("Failed to register cleanup function!");
+      g_critical ("Failed to register cleanup function!");
       goto error;
     }
 
@@ -2475,7 +2476,7 @@ main (int argc, char **argv)
 
   if (pidfile_create (GSAD_PID_PATH))
     {
-      g_error ("Could not write PID file.");
+      g_critical ("Could not write PID file.");
       goto error;
     }
 
@@ -2509,7 +2510,7 @@ main (int argc, char **argv)
 
       if (gsad_daemon == NULL)
         {
-          g_error ("Starting gsad redirect daemon failed!");
+          g_critical ("Starting gsad redirect daemon failed!");
           goto error;
         }
       else
@@ -2532,7 +2533,7 @@ main (int argc, char **argv)
 
       if (gsad_daemon == NULL)
         {
-          g_error ("Starting gsad unix daemon failed!");
+          g_critical ("Starting gsad unix daemon failed!");
           goto error;
         }
       else
@@ -2558,7 +2559,7 @@ main (int argc, char **argv)
                                                handlers, list->data);
               if (gsad_daemon == NULL)
                 {
-                  g_error ("Binding to port %d failed", gsad_port);
+                  g_critical ("Binding to port %d failed", gsad_port);
                   goto error;
                 }
               list = list->next;
@@ -2577,8 +2578,8 @@ main (int argc, char **argv)
           if (!g_file_get_contents (gsad_args->ssl_private_key_filename,
                                     &ssl_private_key, NULL, &error))
             {
-              g_error ("Could not load private SSL key from %s: %s",
-                       gsad_args->ssl_private_key_filename, error->message);
+              g_critical ("Could not load private SSL key from %s: %s",
+                          gsad_args->ssl_private_key_filename, error->message);
               g_error_free (error);
               goto error;
             }
@@ -2586,8 +2587,8 @@ main (int argc, char **argv)
           if (!g_file_get_contents (gsad_args->ssl_certificate_filename,
                                     &ssl_certificate, NULL, &error))
             {
-              g_error ("Could not load SSL certificate from %s: %s",
-                       gsad_args->ssl_certificate_filename, error->message);
+              g_critical ("Could not load SSL certificate from %s: %s",
+                          gsad_args->ssl_certificate_filename, error->message);
               g_error_free (error);
               goto error;
             }
@@ -2596,8 +2597,8 @@ main (int argc, char **argv)
               && !g_file_get_contents (gsad_args->dh_params_filename,
                                        &dh_params, NULL, &error))
             {
-              g_error ("Could not load SSL certificate from %s: %s",
-                       gsad_args->dh_params_filename, error->message);
+              g_critical ("Could not load SSL certificate from %s: %s",
+                          gsad_args->dh_params_filename, error->message);
               g_error_free (error);
               goto error;
             }
@@ -2609,7 +2610,7 @@ main (int argc, char **argv)
                 gsad_args->gnutls_priorities, dh_params, handlers, list->data);
               if (gsad_daemon == NULL)
                 {
-                  g_error ("Binding to port %d failed.", gsad_port);
+                  g_critical ("Binding to port %d failed.", gsad_port);
                   goto error;
                 }
               list = list->next;
@@ -2618,7 +2619,7 @@ main (int argc, char **argv)
 
       if (gsad_daemon == NULL)
         {
-          g_error ("Starting gsad http(s) daemon failed!");
+          g_critical ("Starting gsad http(s) daemon failed!");
           goto error;
         }
       else
