@@ -280,6 +280,24 @@ Ensure (gsad_settings, should_set_vendor_version)
   gsad_settings_free (settings);
 }
 
+Ensure (gsad_settings, should_set_client_watch_interval)
+{
+  gsad_settings_t *settings = gsad_settings_new ();
+
+  assert_that (gsad_settings_get_client_watch_interval (settings),
+               is_equal_to (0));
+
+  gsad_settings_set_client_watch_interval (settings, 30);
+  assert_that (gsad_settings_get_client_watch_interval (settings),
+               is_equal_to (30));
+
+  gsad_settings_set_client_watch_interval (settings, -1);
+  assert_that (gsad_settings_get_client_watch_interval (settings),
+               is_equal_to (0));
+
+  gsad_settings_free (settings);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -306,6 +324,8 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_settings,
                          should_set_per_ip_connection_limit);
   add_test_with_context (suite, gsad_settings, should_set_unix_socket);
+  add_test_with_context (suite, gsad_settings,
+                         should_set_client_watch_interval);
 
   int ret = run_test_suite (suite, create_text_reporter ());
 

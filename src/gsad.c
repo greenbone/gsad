@@ -147,11 +147,6 @@ GSList *log_config = NULL;
 int chroot_state = 0;
 
 /**
- * @brief Interval in seconds to check whether client connection was closed.
- */
-int client_watch_interval = DEFAULT_CLIENT_WATCH_INTERVAL;
-
-/**
  * @brief Free resources.
  *
  * Used as free callback for HTTP daemon.
@@ -955,6 +950,7 @@ typedef struct
   gvm_connection_t *gvm_connection;
   int connection_closed;
   pthread_mutex_t mutex;
+  gsad_settings_t *gsad_settings;
 } connection_watcher_data_t;
 
 /**
@@ -967,14 +963,16 @@ typedef struct
  */
 static connection_watcher_data_t *
 connection_watcher_data_new (gvm_connection_t *gvm_connection,
-                             int client_socket_fd)
+                             int client_socket_fd,
+                             gsad_settings_t *gsad_settings)
 {
-  connection_watcher_data_t *watcher_data;
-  watcher_data = g_malloc (sizeof (connection_watcher_data_t));
+  connection_watcher_data_t *watcher_data =
+    g_malloc (sizeof (connection_watcher_data_t));
 
   watcher_data->gvm_connection = gvm_connection;
   watcher_data->client_socket_fd = client_socket_fd;
   watcher_data->connection_closed = 0;
+  watcher_data->gsad_settings = gsad_settings;
   pthread_mutex_init (&(watcher_data->mutex), NULL);
 
   return watcher_data;
@@ -1003,7 +1001,8 @@ watch_client_connection (void *data)
   while (active)
     {
       pthread_setcancelstate (PTHREAD_CANCEL_ENABLE, NULL);
-      sleep (client_watch_interval);
+      sleep (
+        gsad_settings_get_client_watch_interval (watcher_data->gsad_settings));
       pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, NULL);
 
       pthread_mutex_lock (&(watcher_data->mutex));
@@ -1206,6 +1205,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   const char *cmd = NULL;
   const int CMD_MAX_SIZE = 27; /* delete_trash_lsc_credential */
   params_t *params = con_info->params;
+  gsad_settings_t *gsad_settings = gsad_settings_get_global_settings ();
   gvm_connection_t connection;
   char *res = NULL, *comp = NULL;
   gsize res_len = 0;
@@ -1308,14 +1308,14 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
 
   credentials_start_cmd (credentials);
 
-  if (client_watch_interval)
+  if (gsad_settings_get_client_watch_interval (gsad_settings))
     {
       const union MHD_ConnectionInfo *mhd_con_info;
       mhd_con_info =
         MHD_get_connection_info (con, MHD_CONNECTION_INFO_CONNECTION_FD);
 
-      watcher_data =
-        connection_watcher_data_new (&connection, mhd_con_info->connect_fd);
+      watcher_data = connection_watcher_data_new (
+        &connection, mhd_con_info->connect_fd, gsad_settings);
 
       pthread_create (&watch_thread, NULL, watch_client_connection,
                       watcher_data);
@@ -2396,7 +2396,8 @@ main (int argc, char **argv)
 
   gsad_settings_set_session_timeout (gsad_settings, gsad_args->timeout);
 
-  client_watch_interval = gsad_args_get_client_watch_interval (gsad_args);
+  gsad_settings_set_client_watch_interval (
+    gsad_settings, gsad_args_get_client_watch_interval (gsad_args));
 
   if (!gsad_args_enable_run_in_foreground (gsad_args))
     {

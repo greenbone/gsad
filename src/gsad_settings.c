@@ -33,6 +33,7 @@ struct gsad_settings
   gchar *http_strict_transport_security;
   gchar *http_x_frame_options;
   gchar *vendor_version;
+  int client_watch_interval;
   int per_ip_connection_limit;
   int session_timeout;
   int unix_socket;
@@ -74,6 +75,7 @@ gsad_settings_new ()
   settings->http_strict_transport_security = NULL;
   settings->http_x_frame_options = NULL;
   settings->vendor_version = NULL;
+  settings->client_watch_interval = 1;
   settings->per_ip_connection_limit = 0;
   settings->session_timeout = 0;
   settings->unix_socket = 0;
@@ -509,4 +511,38 @@ int
 gsad_settings_get_user_session_limit (const gsad_settings_t *settings)
 {
   return settings->user_session_limit;
+}
+
+/**
+ * @brief Set the client watch interval.
+ *
+ * @param[in]  settings  The settings instance to modify.
+ * @param[in]  interval  The client watch interval in seconds. A value of 0
+ * or less means disabled.
+ */
+void
+gsad_settings_set_client_watch_interval (gsad_settings_t *settings,
+                                         int interval)
+{
+  if (interval > 0)
+    {
+      g_debug ("Setting client watch interval to: %d", interval);
+      settings->client_watch_interval = interval;
+    }
+  else
+    {
+      g_debug ("Setting client watch interval to disabled");
+      settings->client_watch_interval = 0;
+    }
+}
+
+/**
+ * @brief Get the client watch interval.
+ *
+ * @return The client watch interval in seconds. A value of 0 means disabled.
+ */
+int
+gsad_settings_get_client_watch_interval (const gsad_settings_t *settings)
+{
+  return settings->client_watch_interval;
 }
