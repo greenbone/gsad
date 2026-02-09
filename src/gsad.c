@@ -93,11 +93,6 @@
 #endif
 
 /**
- * @brief Default directory for web content.
- */
-#define DEFAULT_WEB_DIRECTORY "web"
-
-/**
  * @brief Flag for signal handler.
  */
 volatile int termination_signal = 0;
@@ -1710,12 +1705,12 @@ drop_privileges (struct passwd *user_pw)
  *
  * @param[in]  do_chroot  Whether to chroot.
  * @param[in]  drop       Username to drop privileges to.  Null for no dropping.
- * @param[in]  subdir     Subdirectory of GSAD_DATA_DIR to chroot or chdir to.
+ * @param[in]  dir        Directory to chroot or chdir to.
  *
  * @return 0 success, 1 failed (will g_critical in fail case).
  */
 static int
-chroot_drop_privileges (gboolean do_chroot, gchar *drop, const gchar *subdir)
+chroot_drop_privileges (gboolean do_chroot, gchar *drop, const gchar *dir)
 {
   struct passwd *user_pw;
 
@@ -1737,44 +1732,37 @@ chroot_drop_privileges (gboolean do_chroot, gchar *drop, const gchar *subdir)
     {
       /* Chroot into state dir. */
 
-      if (chroot (GSAD_DATA_DIR))
+      if (chroot (dir))
         {
-          g_critical ("Failed to chroot to \"%s\": %s", GSAD_DATA_DIR,
-                      strerror (errno));
+          g_critical ("Failed to chroot to \"%s\": %s", dir, strerror (errno));
           return 1;
         }
       set_chroot_state (1);
+      g_info ("Chrooted to \"%s\"", dir);
     }
 
-  if (user_pw && (drop_privileges (user_pw) == FALSE))
+  if (user_pw)
     {
-      g_critical ("Failed to drop privileges");
-      return 1;
+      if (drop_privileges (user_pw) == FALSE)
+        {
+          g_critical ("Failed to drop privileges");
+          return 1;
+        }
+      else
+        g_info ("Dropped privileges to user \"%s\" (uid: %d, gid: %d)", drop,
+                user_pw->pw_uid, user_pw->pw_gid);
     }
 
-  if (do_chroot)
+  if (!do_chroot)
     {
-      gchar *root_dir = g_build_filename ("/", subdir, NULL);
-      if (chdir (root_dir))
+      if (chdir (dir))
         {
-          g_critical ("failed change to chroot root directory (%s): %s",
-                      root_dir, strerror (errno));
-          g_free (root_dir);
+          g_critical ("failed to change to \"%s\": %s", dir, strerror (errno));
           return 1;
         }
-      g_free (root_dir);
-    }
-  else
-    {
-      gchar *data_dir = g_build_filename (GSAD_DATA_DIR, subdir, NULL);
-      if (chdir (data_dir))
-        {
-          g_critical ("failed to change to \"%s\": %s", data_dir,
-                      strerror (errno));
-          g_free (data_dir);
-          return 1;
-        }
-      g_free (data_dir);
+      g_info ("Serving from directory  %s"
+              "",
+              dir);
     }
 
   return 0;
@@ -1805,7 +1793,7 @@ my_gnutls_log_func (int level, const char *text)
  * @return MHD_NO in case of problems. MHD_YES if all is OK.
  */
 int
-gsad_init ()
+gsad_init (const char *static_content_directory)
 {
   g_debug ("Initializing the Greenbone Security Assistant Deamon...\n");
 
@@ -1813,10 +1801,11 @@ gsad_init ()
   session_init ();
 
   /* Check for required files. */
-  if (!gvm_file_exists (GSAD_DATA_DIR)
-      || gvm_file_check_is_dir (GSAD_DATA_DIR) != 1)
+  if (!gvm_file_exists (static_content_directory)
+      || gvm_file_check_is_dir (static_content_directory) != 1)
     {
-      g_critical ("Could not access data directory %s", GSAD_DATA_DIR);
+      g_critical ("Could not access static content directory %s",
+                  static_content_directory);
       return MHD_NO;
     }
 
@@ -2356,7 +2345,7 @@ main (int argc, char **argv)
 
   /* Initialise. */
 
-  if (gsad_init () == MHD_NO)
+  if (gsad_init (gsad_args_get_static_content_directory (gsad_args)) == MHD_NO)
     {
       g_critical ("Initialization failed! Exiting...");
       goto error_with_settings_cleanup;
@@ -2647,11 +2636,12 @@ main (int argc, char **argv)
 
   /* Chroot and drop privileges, if requested. */
 
-  if (chroot_drop_privileges (gsad_args->do_chroot, gsad_args->drop,
-                              DEFAULT_WEB_DIRECTORY))
+  if (chroot_drop_privileges (
+        gsad_args->do_chroot, gsad_args->drop,
+        gsad_args_get_static_content_directory (gsad_args)))
     {
       g_critical ("Cannot use drop privileges for directory \"%s\".",
-                  DEFAULT_WEB_DIRECTORY);
+                  gsad_args_get_static_content_directory (gsad_args));
       goto error;
     }
 
