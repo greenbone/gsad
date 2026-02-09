@@ -122,6 +122,8 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
      "Path to logging configuration file. Defaults to " GSAD_CONFIG_DIR
      "gsad_log.conf",
      "<file>"},
+    {"pid-file", '\0', 0, G_OPTION_ARG_FILENAME, &args->gsad_pid_filename,
+     "Path to PID file. Defaults to " GSAD_CONFIG_DIR "gsad.pid", "<file>"},
     {NULL}};
 
   option_context =
@@ -166,6 +168,8 @@ gsad_args_new ()
   args->gsad_manager_address_string = NULL;
   args->gsad_manager_port = PORT_NOT_SET;
   args->gsad_manager_unix_socket_path = NULL;
+  args->gsad_pid_filename =
+    g_build_filename (GSAD_CONFIG_DIR, "gsad.pid", NULL);
   args->gsad_port = PORT_NOT_SET;
   args->gsad_redirect_port = PORT_NOT_SET;
   args->gsad_user_session_limit = 0;
@@ -210,6 +214,7 @@ gsad_args_free (gsad_args_t *args)
       g_free (args->gsad_log_config_filename);
       g_free (args->gsad_manager_address_string);
       g_free (args->gsad_manager_unix_socket_path);
+      g_free (args->gsad_pid_filename);
       g_free (args->gsad_vendor_version_string);
       g_free (args->http_cors);
       g_free (args->http_csp);
@@ -467,6 +472,21 @@ const char *
 gsad_args_get_log_config_filename (gsad_args_t *args)
 {
   return args->gsad_log_config_filename;
+}
+
+/**
+ * @brief Get the PID filename from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The PID filename specified in the command-line arguments, or the
+ * default PID filename if not specified. The returned string is owned by the
+ * gsad args structure and should not be modified or freed by the caller.
+ */
+const char *
+gsad_args_get_pid_filename (gsad_args_t *args)
+{
+  return args->gsad_pid_filename;
 }
 
 /**

@@ -33,6 +33,7 @@ struct gsad_settings
   gchar *http_guest_chart_x_frame_options;
   gchar *http_strict_transport_security;
   gchar *http_x_frame_options;
+  gchar *pid_filename;
   gchar *vendor_version;
   int client_watch_interval;
   int per_ip_connection_limit;
@@ -76,6 +77,7 @@ gsad_settings_new ()
   settings->http_strict_transport_security = NULL;
   settings->http_x_frame_options = NULL;
   settings->log_config_filename = NULL;
+  settings->pid_filename = NULL;
   settings->vendor_version = NULL;
   settings->client_watch_interval = DEFAULT_CLIENT_WATCH_INTERVAL;
   settings->per_ip_connection_limit = DEFAULT_PER_IP_CONNECTION_LIMIT;
@@ -102,6 +104,7 @@ gsad_settings_free (gsad_settings_t *settings)
       g_free (settings->http_guest_chart_x_frame_options);
       g_free (settings->http_strict_transport_security);
       g_free (settings->http_x_frame_options);
+      g_free (settings->pid_filename);
       g_free (settings->vendor_version);
       g_free (settings);
     }
@@ -583,4 +586,37 @@ const char *
 gsad_settings_get_log_config_filename (const gsad_settings_t *settings)
 {
   return settings->log_config_filename;
+}
+
+/**
+ * @brief Set the PID filename.
+ *
+ * @param[in]  settings      The settings instance to modify.
+ * @param[in]  pid_filename  The PID filename to set. The caller is responsible
+ * for freeing the passed string if it is dynamically allocated. The settings
+ * will copy the string and free it when the settings instance is freed.
+ */
+void
+gsad_settings_set_pid_filename (gsad_settings_t *settings,
+                                const gchar *pid_filename)
+{
+  g_debug ("Setting PID filename to: %s", null_or_value (pid_filename));
+
+  g_free (settings->pid_filename);
+
+  settings->pid_filename = g_strdup (pid_filename);
+}
+
+/**
+ * @brief Get the PID filename.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return The PID filename. The value is owned by the settings and should not
+ * be modified or freed by the caller.
+ */
+const char *
+gsad_settings_get_pid_filename (const gsad_settings_t *settings)
+{
+  return settings->pid_filename;
 }

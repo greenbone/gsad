@@ -1884,6 +1884,8 @@ gsad_init ()
 void
 gsad_cleanup ()
 {
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
+
   if (redirect_pid)
     kill (redirect_pid, SIGTERM);
   if (unix_pid)
@@ -1898,7 +1900,8 @@ gsad_cleanup ()
 
   gsad_base_cleanup ();
 
-  pidfile_remove (GSAD_PID_PATH);
+  pidfile_remove (
+    (char *) gsad_settings_get_pid_filename (gsad_global_settings));
 }
 
 /**
@@ -2408,6 +2411,8 @@ main (int argc, char **argv)
                                        gsad_args->secure_cookie);
 
   gsad_settings_set_session_timeout (gsad_global_settings, gsad_args->timeout);
+  gsad_settings_set_pid_filename (gsad_global_settings,
+                                  gsad_args_get_pid_filename (gsad_args));
 
   gsad_settings_set_client_watch_interval (
     gsad_global_settings, gsad_args_get_client_watch_interval (gsad_args));
@@ -2481,9 +2486,11 @@ main (int argc, char **argv)
 
   /* Write pidfile. */
 
-  if (pidfile_create (GSAD_PID_PATH))
+  if (pidfile_create (
+        (char *) gsad_settings_get_pid_filename (gsad_global_settings)))
     {
-      g_critical ("Could not write PID file at %s.", GSAD_PID_PATH);
+      g_critical ("Could not write PID file at %s.",
+                  gsad_settings_get_pid_filename (gsad_global_settings));
       goto error;
     }
 

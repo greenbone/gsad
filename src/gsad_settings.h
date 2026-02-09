@@ -145,4 +145,10 @@ gsad_settings_set_log_config_filename (gsad_settings_t *, const gchar *);
 const char *
 gsad_settings_get_log_config_filename (const gsad_settings_t *);
 
+void
+gsad_settings_set_pid_filename (gsad_settings_t *, const gchar *);
+
+const char *
+gsad_settings_get_pid_filename (const gsad_settings_t *);
+
 #endif /* _GSAD_SETTINGS_H */
