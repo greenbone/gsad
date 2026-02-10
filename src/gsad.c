@@ -1891,12 +1891,6 @@ gsad_cleanup ()
 
   cleanup_http_handlers ();
 
-  if (log_config)
-    {
-      g_debug ("Cleaning up log configuration...");
-      free_log_configuration (log_config);
-    }
-
   g_debug ("Cleaning up base...");
   gsad_base_cleanup ();
 
@@ -1904,6 +1898,12 @@ gsad_cleanup ()
            gsad_settings_get_pid_filename (gsad_global_settings));
   pidfile_remove (
     (char *) gsad_settings_get_pid_filename (gsad_global_settings));
+
+  if (log_config)
+    {
+      g_debug ("Cleaning up log configuration...");
+      free_log_configuration (log_config);
+    }
 
   gsad_settings_free (gsad_global_settings);
 }
