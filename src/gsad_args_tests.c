@@ -4,6 +4,7 @@
  */
 
 #include "gsad_args.h"
+#include "gsad_args_internal.h"
 #include "gsad_settings.h"
 
 #include <cgreen/cgreen.h>
@@ -48,10 +49,10 @@ Ensure (gsad_args, gsad_args_new)
                is_equal_to_string (GSAD_CONFIG_DIR "gsad_log.conf"));
   assert_that (args->gsad_manager_address_string, is_null);
   assert_that (args->gsad_manager_port, is_equal_to (PORT_NOT_SET));
-  assert_that (args->gsad_manager_unix_socket_path, is_null);
+  assert_that (args->manager_unix_socket_path, is_null);
   assert_that (args->gsad_port, is_equal_to (PORT_NOT_SET));
   assert_that (args->gsad_redirect_port, is_equal_to (PORT_NOT_SET));
-  assert_that (args->gsad_user_session_limit, is_equal_to (0));
+  assert_that (args->user_session_limit, is_equal_to (0));
   assert_that (args->gsad_vendor_version_string, is_null);
   assert_that (args->hsts_enabled, is_false);
   assert_that (args->hsts_max_age, is_equal_to (DEFAULT_GSAD_HSTS_MAX_AGE));
@@ -71,7 +72,7 @@ Ensure (gsad_args, gsad_args_new)
                is_equal_to_string (DEFAULT_GSAD_TLS_CERTIFICATE));
   assert_that (args->ssl_private_key_filename,
                is_equal_to_string (DEFAULT_GSAD_TLS_PRIVATE_KEY));
-  assert_that (args->timeout, is_equal_to (DEFAULT_SESSION_TIMEOUT));
+  assert_that (args->session_timeout, is_equal_to (DEFAULT_SESSION_TIMEOUT));
   assert_that (args->unix_socket_group, is_null);
   assert_that (args->unix_socket_mode, is_null);
   assert_that (args->unix_socket_owner, is_null);
@@ -87,7 +88,7 @@ Ensure (gsad_args, should_parse_client_watch_interval)
   char *argv[] = {"gsad", "--client-watch-interval", "10"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->client_watch_interval, is_equal_to (10));
+  assert_that (gsad_args_get_client_watch_interval (args), is_equal_to (10));
   gsad_args_free (args);
 }
 
@@ -97,7 +98,7 @@ Ensure (gsad_args, should_parse_client_watch_interval_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->client_watch_interval,
+  assert_that (gsad_args_get_client_watch_interval (args),
                is_equal_to (DEFAULT_CLIENT_WATCH_INTERVAL));
   gsad_args_free (args);
 }
@@ -108,7 +109,8 @@ Ensure (gsad_args, should_parse_debug_tls)
   char *argv[] = {"gsad", "--debug-tls", "3"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->debug_tls, is_equal_to (3));
+  assert_that (gsad_args_is_debug_tls_enabled (args), is_true);
+  assert_that (gsad_args_get_tls_debug_level (args), is_equal_to (3));
   gsad_args_free (args);
 }
 
@@ -118,7 +120,8 @@ Ensure (gsad_args, should_parse_debug_tls_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->debug_tls, is_equal_to (0));
+  assert_that (gsad_args_is_debug_tls_enabled (args), is_false);
+  assert_that (gsad_args_get_tls_debug_level (args), is_equal_to (0));
   gsad_args_free (args);
 }
 
@@ -128,7 +131,7 @@ Ensure (gsad_args, should_parse_dh_params_filename)
   char *argv[] = {"gsad", "--dh-params", "/path/to/dhparams.pem"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->dh_params_filename,
+  assert_that (gsad_args_get_dh_params_filename (args),
                is_equal_to_string ("/path/to/dhparams.pem"));
   gsad_args_free (args);
 }
@@ -139,7 +142,7 @@ Ensure (gsad_args, should_parse_dh_params_filename_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->dh_params_filename, is_null);
+  assert_that (gsad_args_get_dh_params_filename (args), is_null);
   gsad_args_free (args);
 }
 
@@ -149,7 +152,7 @@ Ensure (gsad_args, should_parse_do_chroot)
   char *argv[] = {"gsad", "--do-chroot"};
   gsad_args_parse (2, argv, args);
 
-  assert_that (args->do_chroot, is_true);
+  assert_that (gsad_args_is_chroot_enabled (args), is_true);
   gsad_args_free (args);
 }
 
@@ -159,7 +162,7 @@ Ensure (gsad_args, should_parse_do_chroot_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->do_chroot, is_false);
+  assert_that (gsad_args_is_chroot_enabled (args), is_false);
   gsad_args_free (args);
 }
 
@@ -169,7 +172,8 @@ Ensure (gsad_args, should_parse_drop)
   char *argv[] = {"gsad", "--drop-privileges", "nobody"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->drop, is_equal_to_string ("nobody"));
+  assert_that (gsad_args_get_drop_privileges (args),
+               is_equal_to_string ("nobody"));
   gsad_args_free (args);
 }
 
@@ -179,7 +183,7 @@ Ensure (gsad_args, should_parse_drop_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->drop, is_null);
+  assert_that (gsad_args_get_drop_privileges (args), is_null);
   gsad_args_free (args);
 }
 
@@ -189,7 +193,7 @@ Ensure (gsad_args, should_parse_foreground)
   char *argv[] = {"gsad", "--foreground"};
   gsad_args_parse (2, argv, args);
 
-  assert_that (args->foreground, is_true);
+  assert_that (gsad_args_is_run_in_foreground_enabled (args), is_true);
   gsad_args_free (args);
 }
 
@@ -199,7 +203,7 @@ Ensure (gsad_args, should_parse_foreground_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->foreground, is_false);
+  assert_that (gsad_args_is_run_in_foreground_enabled (args), is_false);
   gsad_args_free (args);
 }
 
@@ -209,7 +213,7 @@ Ensure (gsad_args, should_parse_gnu_tls_priorities)
   char *argv[] = {"gsad", "--gnutls-priorities", "NORMAL:-VERS-ALL"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->gnutls_priorities,
+  assert_that (gsad_args_get_gnutls_priorities (args),
                is_equal_to_string ("NORMAL:-VERS-ALL"));
   gsad_args_free (args);
 }
@@ -220,39 +224,41 @@ Ensure (gsad_args, should_parse_gnutls_priorities_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->gnutls_priorities, is_null);
+  assert_that (gsad_args_get_gnutls_priorities (args), is_null);
   gsad_args_free (args);
 }
 
-Ensure (gsad_args, should_parse_gsad_address_string)
+Ensure (gsad_args, should_parse_gsad_address_strings)
 {
   gsad_args_t *args = gsad_args_new ();
   char *argv[] = {"gsad", "--listen", "127.0.0.1"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->gsad_address_string[0], is_equal_to_string ("127.0.0.1"));
+  char **listen_addresses = gsad_args_get_listen_addresses (args);
+  assert_that (listen_addresses[0], is_equal_to_string ("127.0.0.1"));
   gsad_args_free (args);
 }
 
-Ensure (gsad_args, should_parse_gsad_address_string_default)
+Ensure (gsad_args, should_parse_gsad_address_strings_default)
 {
   gsad_args_t *args = gsad_args_new ();
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->gsad_address_string, is_null);
+  char **listen_addresses = gsad_args_get_listen_addresses (args);
+  assert_that (listen_addresses, is_null);
   gsad_args_free (args);
 }
 
-Ensure (gsad_args, should_parse_gsad_address_string_multiple)
+Ensure (gsad_args, should_parse_gsad_address_strings_multiple)
 {
   gsad_args_t *args = gsad_args_new ();
   char *argv[] = {"gsad", "--listen", "127.0.0.1", "--listen", "192.168.1.1"};
   gsad_args_parse (5, argv, args);
 
-  assert_that (args->gsad_address_string[0], is_equal_to_string ("127.0.0.1"));
-  assert_that (args->gsad_address_string[1],
-               is_equal_to_string ("192.168.1.1"));
+  char **listen_addresses = gsad_args_get_listen_addresses (args);
+  assert_that (listen_addresses[0], is_equal_to_string ("127.0.0.1"));
+  assert_that (listen_addresses[1], is_equal_to_string ("192.168.1.1"));
   gsad_args_free (args);
 }
 
@@ -262,7 +268,7 @@ Ensure (gsad_args, should_parse_gsad_manager_address_string)
   char *argv[] = {"gsad", "--mlisten", "127.0.0.1"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->gsad_manager_address_string,
+  assert_that (gsad_args_get_manager_address (args),
                is_equal_to_string ("127.0.0.1"));
   gsad_args_free (args);
 }
@@ -273,7 +279,7 @@ Ensure (gsad_args, should_parse_gsad_manager_address_string_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->gsad_manager_address_string, is_null);
+  assert_that (gsad_args_get_manager_address (args), is_null);
   gsad_args_free (args);
 }
 
@@ -283,7 +289,7 @@ Ensure (gsad_args, should_parse_gsad_manager_port)
   char *argv[] = {"gsad", "--mport", "9390"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->gsad_manager_port, is_equal_to (9390));
+  assert_that (gsad_args_get_manager_port (args), is_equal_to (9390));
   gsad_args_free (args);
 }
 
@@ -293,7 +299,7 @@ Ensure (gsad_args, should_parse_gsad_manager_port_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->gsad_manager_port, is_equal_to (PORT_NOT_SET));
+  assert_that (gsad_args_get_manager_port (args), is_equal_to (PORT_NOT_SET));
   gsad_args_free (args);
 }
 
@@ -303,7 +309,7 @@ Ensure (gsad_args, should_parse_gsad_manager_unix_socket_path)
   char *argv[] = {"gsad", "--munix-socket", "/var/run/gsad.sock"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->gsad_manager_unix_socket_path,
+  assert_that (gsad_args_get_manager_unix_socket_path (args),
                is_equal_to_string ("/var/run/gsad.sock"));
   gsad_args_free (args);
 }
@@ -314,7 +320,7 @@ Ensure (gsad_args, should_parse_gsad_manager_unix_socket_path_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->gsad_manager_unix_socket_path, is_null);
+  assert_that (gsad_args_get_manager_unix_socket_path (args), is_null);
   gsad_args_free (args);
 }
 
@@ -324,7 +330,7 @@ Ensure (gsad_args, should_parse_gsad_port)
   char *argv[] = {"gsad", "--port", "8080"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->gsad_port, is_equal_to (8080));
+  assert_that (gsad_args_get_port (args), is_equal_to (8080));
   gsad_args_free (args);
 }
 
@@ -334,7 +340,8 @@ Ensure (gsad_args, should_parse_gsad_port_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->gsad_port, is_equal_to (PORT_NOT_SET));
+  assert_that (gsad_args_get_port (args),
+               is_equal_to (DEFAULT_GSAD_HTTPS_PORT));
   gsad_args_free (args);
 }
 
@@ -344,7 +351,7 @@ Ensure (gsad_args, should_parse_gsad_redirect_port)
   char *argv[] = {"gsad", "--rport", "8443"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->gsad_redirect_port, is_equal_to (8443));
+  assert_that (gsad_args_get_redirect_port (args), is_equal_to (8443));
   gsad_args_free (args);
 }
 
@@ -354,7 +361,8 @@ Ensure (gsad_args, should_parse_gsad_redirect_port_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->gsad_redirect_port, is_equal_to (PORT_NOT_SET));
+  assert_that (gsad_args_get_redirect_port (args),
+               is_equal_to (DEFAULT_GSAD_HTTP_PORT));
   gsad_args_free (args);
 }
 
@@ -364,7 +372,7 @@ Ensure (gsad_args, should_parse_gsad_user_session_limit)
   char *argv[] = {"gsad", "--user-session-limit", "5"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->gsad_user_session_limit, is_equal_to (5));
+  assert_that (gsad_args_get_user_session_limit (args), is_equal_to (5));
   gsad_args_free (args);
 }
 
@@ -374,28 +382,28 @@ Ensure (gsad_args, should_parse_gsad_user_session_limit_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->gsad_user_session_limit, is_equal_to (0));
+  assert_that (gsad_args_get_user_session_limit (args), is_equal_to (0));
   gsad_args_free (args);
 }
 
-Ensure (gsad_args, should_parse_gsad_vendor_version_string)
+Ensure (gsad_args, should_parse_gsad_vendor_version)
 {
   gsad_args_t *args = gsad_args_new ();
   char *argv[] = {"gsad", "--vendor-version", "MyCustomVersion"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->gsad_vendor_version_string,
+  assert_that (gsad_args_get_vendor_version (args),
                is_equal_to_string ("MyCustomVersion"));
   gsad_args_free (args);
 }
 
-Ensure (gsad_args, should_parse_gsad_vendor_version_string_default)
+Ensure (gsad_args, should_parse_gsad_vendor_version_default)
 {
   gsad_args_t *args = gsad_args_new ();
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->gsad_vendor_version_string, is_null);
+  assert_that (gsad_args_get_vendor_version (args), is_null);
   gsad_args_free (args);
 }
 
@@ -405,7 +413,8 @@ Ensure (gsad_args, should_parse_hsts_enabled)
   char *argv[] = {"gsad", "--http-sts"};
   gsad_args_parse (2, argv, args);
 
-  assert_that (args->hsts_enabled, is_true);
+  assert_that (gsad_args_is_http_strict_transport_security_enabled (args),
+               is_true);
   gsad_args_free (args);
 }
 
@@ -415,7 +424,8 @@ Ensure (gsad_args, should_parse_hsts_enabled_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->hsts_enabled, is_false);
+  assert_that (gsad_args_is_http_strict_transport_security_enabled (args),
+               is_false);
   gsad_args_free (args);
 }
 
@@ -425,7 +435,8 @@ Ensure (gsad_args, should_parse_hsts_max_age)
   char *argv[] = {"gsad", "--http-sts-max-age", "600"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->hsts_max_age, is_equal_to (600));
+  assert_that (gsad_args_get_http_strict_transport_security_max_age (args),
+               is_equal_to (600));
   gsad_args_free (args);
 }
 
@@ -435,7 +446,8 @@ Ensure (gsad_args, should_parse_hsts_max_age_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->hsts_max_age, is_equal_to (DEFAULT_GSAD_HSTS_MAX_AGE));
+  assert_that (gsad_args_get_http_strict_transport_security_max_age (args),
+               is_equal_to (DEFAULT_GSAD_HSTS_MAX_AGE));
   gsad_args_free (args);
 }
 
@@ -445,7 +457,8 @@ Ensure (gsad_args, should_parse_http_cors)
   char *argv[] = {"gsad", "--http-cors", "https://example.com"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->http_cors, is_equal_to_string ("https://example.com"));
+  assert_that (gsad_args_get_http_cors_origin (args),
+               is_equal_to_string ("https://example.com"));
   gsad_args_free (args);
 }
 
@@ -455,7 +468,7 @@ Ensure (gsad_args, should_parse_http_cors_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->http_cors, is_null);
+  assert_that (gsad_args_get_http_cors_origin (args), is_null);
   gsad_args_free (args);
 }
 
@@ -465,7 +478,8 @@ Ensure (gsad_args, should_parse_http_csp)
   char *argv[] = {"gsad", "--http-csp", "default-src 'self'"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->http_csp, is_equal_to_string ("default-src 'self'"));
+  assert_that (gsad_args_get_http_content_security_policy (args),
+               is_equal_to_string ("default-src 'self'"));
   gsad_args_free (args);
 }
 
@@ -475,7 +489,7 @@ Ensure (gsad_args, should_parse_http_csp_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->http_csp,
+  assert_that (gsad_args_get_http_content_security_policy (args),
                is_equal_to_string (DEFAULT_GSAD_CONTENT_SECURITY_POLICY));
   gsad_args_free (args);
 }
@@ -486,7 +500,8 @@ Ensure (gsad_args, should_parse_frame_opts)
   char *argv[] = {"gsad", "--http-frame-opts", "DENY"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->http_frame_opts, is_equal_to_string ("DENY"));
+  assert_that (gsad_args_get_http_x_frame_options (args),
+               is_equal_to_string ("DENY"));
   gsad_args_free (args);
 }
 
@@ -496,7 +511,7 @@ Ensure (gsad_args, should_parse_frame_opts_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->http_frame_opts,
+  assert_that (gsad_args_get_http_x_frame_options (args),
                is_equal_to_string (DEFAULT_GSAD_X_FRAME_OPTIONS));
   gsad_args_free (args);
 }
@@ -507,7 +522,7 @@ Ensure (gsad_args, should_parse_http_only)
   char *argv[] = {"gsad", "--http-only"};
   gsad_args_parse (2, argv, args);
 
-  assert_that (args->http_only, is_true);
+  assert_that (gsad_args_is_https_enabled (args), is_false);
   gsad_args_free (args);
 }
 
@@ -517,7 +532,7 @@ Ensure (gsad_args, should_parse_http_only_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->http_only, is_false);
+  assert_that (gsad_args_is_https_enabled (args), is_true);
   gsad_args_free (args);
 }
 
@@ -527,7 +542,7 @@ Ensure (gsad_args, should_parse_ignore_x_real_ip)
   char *argv[] = {"gsad", "--ignore-x-real-ip"};
   gsad_args_parse (2, argv, args);
 
-  assert_that (args->ignore_x_real_ip, is_true);
+  assert_that (gsad_args_is_ignore_x_real_ip_enabled (args), is_true);
   gsad_args_free (args);
 }
 
@@ -537,7 +552,7 @@ Ensure (gsad_args, should_parse_ignore_x_real_ip_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->ignore_x_real_ip, is_false);
+  assert_that (gsad_args_is_ignore_x_real_ip_enabled (args), is_false);
   gsad_args_free (args);
 }
 
@@ -547,7 +562,7 @@ Ensure (gsad_args, should_parse_no_redirect)
   char *argv[] = {"gsad", "--no-redirect"};
   gsad_args_parse (2, argv, args);
 
-  assert_that (args->no_redirect, is_true);
+  assert_that (gsad_args_is_redirect_enabled (args), is_false);
   gsad_args_free (args);
 }
 
@@ -557,7 +572,7 @@ Ensure (gsad_args, should_parse_no_redirect_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->no_redirect, is_false);
+  assert_that (gsad_args_is_redirect_enabled (args), is_true);
   gsad_args_free (args);
 }
 
@@ -588,7 +603,7 @@ Ensure (gsad_args, should_parse_print_version)
   char *argv[] = {"gsad", "--version"};
   gsad_args_parse (2, argv, args);
 
-  assert_that (args->print_version, is_true);
+  assert_that (gsad_args_is_print_version_enabled (args), is_true);
   gsad_args_free (args);
 }
 
@@ -598,7 +613,7 @@ Ensure (gsad_args, should_parse_print_version_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->print_version, is_false);
+  assert_that (gsad_args_is_print_version_enabled (args), is_false);
   gsad_args_free (args);
 }
 
@@ -622,46 +637,46 @@ Ensure (gsad_args, should_parse_secure_cookie_default)
   gsad_args_free (args);
 }
 
-Ensure (gsad_args, should_parse_ssl_certificate_filename)
+Ensure (gsad_args, should_parse_tls_certificate_filename)
 {
   gsad_args_t *args = gsad_args_new ();
   char *argv[] = {"gsad", "--ssl-certificate", "/path/to/cert.pem"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->ssl_certificate_filename,
+  assert_that (gsad_args_get_tls_certificate_filename (args),
                is_equal_to_string ("/path/to/cert.pem"));
   gsad_args_free (args);
 }
 
-Ensure (gsad_args, should_parse_ssl_certificate_filename_default)
+Ensure (gsad_args, should_parse_tls_certificate_filename_default)
 {
   gsad_args_t *args = gsad_args_new ();
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->ssl_certificate_filename,
+  assert_that (gsad_args_get_tls_certificate_filename (args),
                is_equal_to_string (DEFAULT_GSAD_TLS_CERTIFICATE));
   gsad_args_free (args);
 }
 
-Ensure (gsad_args, should_parse_ssl_private_key_filename)
+Ensure (gsad_args, should_parse_tls_private_key_filename)
 {
   gsad_args_t *args = gsad_args_new ();
   char *argv[] = {"gsad", "--ssl-private-key", "/path/to/key.pem"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->ssl_private_key_filename,
+  assert_that (gsad_args_get_tls_private_key_filename (args),
                is_equal_to_string ("/path/to/key.pem"));
   gsad_args_free (args);
 }
 
-Ensure (gsad_args, should_parse_ssl_private_key_filename_default)
+Ensure (gsad_args, should_parse_tls_private_key_filename_default)
 {
   gsad_args_t *args = gsad_args_new ();
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->ssl_private_key_filename,
+  assert_that (gsad_args_get_tls_private_key_filename (args),
                is_equal_to_string (DEFAULT_GSAD_TLS_PRIVATE_KEY));
   gsad_args_free (args);
 }
@@ -672,7 +687,7 @@ Ensure (gsad_args, should_parse_timeout)
   char *argv[] = {"gsad", "--timeout", "120"};
   gsad_args_parse (3, argv, args);
 
-  assert_that (args->timeout, is_equal_to (120));
+  assert_that (gsad_args_get_session_timeout (args), is_equal_to (120));
   gsad_args_free (args);
 }
 
@@ -682,7 +697,8 @@ Ensure (gsad_args, should_parse_timeout_default)
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (args->timeout, is_equal_to (DEFAULT_SESSION_TIMEOUT));
+  assert_that (gsad_args_get_session_timeout (args),
+               is_equal_to (DEFAULT_SESSION_TIMEOUT));
   gsad_args_free (args);
 }
 
@@ -874,13 +890,13 @@ Ensure (gsad_args, should_is_redirect_enabled)
 Ensure (gsad_args, should_validate_session_timout)
 {
   gsad_args_t *args = gsad_args_new ();
-  args->timeout = 0;
+  args->session_timeout = 0;
   assert_that (gsad_args_validate_session_timeout (args), is_equal_to (0));
 
-  args->timeout = -1;
+  args->session_timeout = -1;
   assert_that (gsad_args_validate_session_timeout (args), is_equal_to (1));
 
-  args->timeout = GSAD_MAX_SESSION_TIMEOUT + 1;
+  args->session_timeout = GSAD_MAX_SESSION_TIMEOUT + 1;
   assert_that (gsad_args_validate_session_timeout (args), is_equal_to (1));
   gsad_args_free (args);
 }
@@ -994,6 +1010,19 @@ Ensure (gsad_args, should_get_redirect_port)
   gsad_args_free (args);
 }
 
+Ensure (gsad_args, should_get_manager_port)
+{
+  gsad_args_t *args = gsad_args_new ();
+
+  args->gsad_manager_port = 1234;
+  assert_that (gsad_args_get_manager_port (args), is_equal_to (1234));
+
+  args->gsad_manager_port = PORT_NOT_SET;
+  assert_that (gsad_args_get_manager_port (args), is_equal_to (PORT_NOT_SET));
+
+  gsad_args_free (args);
+}
+
 Ensure (gsad_args, should_get_http_strict_transport_security_max_age)
 {
   gsad_args_t *args = gsad_args_new ();
@@ -1048,6 +1077,288 @@ Ensure (gsad_args, should_get_client_watch_interval)
 
   args->client_watch_interval = -1;
   assert_that (gsad_args_get_client_watch_interval (args), is_equal_to (0));
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_session_timeout)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_session_timeout (args),
+               is_equal_to (DEFAULT_SESSION_TIMEOUT));
+
+  args->session_timeout = 120;
+  assert_that (gsad_args_get_session_timeout (args), is_equal_to (120));
+
+  args->session_timeout = 0;
+  assert_that (gsad_args_get_session_timeout (args), is_equal_to (0));
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_tls_certificate_filename)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_tls_certificate_filename (args),
+               is_equal_to_string (DEFAULT_GSAD_TLS_CERTIFICATE));
+
+  args->ssl_certificate_filename = "/path/to/cert.pem";
+  assert_that (gsad_args_get_tls_certificate_filename (args),
+               is_equal_to_string ("/path/to/cert.pem"));
+
+  args->ssl_certificate_filename = NULL;
+  assert_that (gsad_args_get_tls_certificate_filename (args), is_null);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_tls_private_key_filename)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_tls_private_key_filename (args),
+               is_equal_to_string (DEFAULT_GSAD_TLS_PRIVATE_KEY));
+
+  args->ssl_private_key_filename = "/path/to/key.pem";
+  assert_that (gsad_args_get_tls_private_key_filename (args),
+               is_equal_to_string ("/path/to/key.pem"));
+
+  args->ssl_private_key_filename = NULL;
+  assert_that (gsad_args_get_tls_private_key_filename (args), is_null);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_http_x_frame_options)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_http_x_frame_options (args),
+               is_equal_to_string (DEFAULT_GSAD_X_FRAME_OPTIONS));
+
+  args->http_frame_opts = "DENY";
+  assert_that (gsad_args_get_http_x_frame_options (args),
+               is_equal_to_string ("DENY"));
+
+  args->http_frame_opts = NULL;
+  assert_that (gsad_args_get_http_x_frame_options (args), is_null);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_http_content_security_policy)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_http_content_security_policy (args),
+               is_equal_to_string (DEFAULT_GSAD_CONTENT_SECURITY_POLICY));
+
+  args->http_csp = "default-src 'self'";
+  assert_that (gsad_args_get_http_content_security_policy (args),
+               is_equal_to_string ("default-src 'self'"));
+
+  args->http_csp = NULL;
+  assert_that (gsad_args_get_http_content_security_policy (args), is_null);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_http_cors_origin)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_http_cors_origin (args), is_null);
+
+  args->http_cors = "https://example.com";
+  assert_that (gsad_args_get_http_cors_origin (args),
+               is_equal_to_string ("https://example.com"));
+
+  args->http_cors = NULL;
+  assert_that (gsad_args_get_http_cors_origin (args), is_null);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_tls_debug_level)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_tls_debug_level (args), is_equal_to (0));
+
+  args->debug_tls = 3;
+  assert_that (gsad_args_get_tls_debug_level (args), is_equal_to (3));
+
+  args->debug_tls = 0;
+  assert_that (gsad_args_get_tls_debug_level (args), is_equal_to (0));
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_vendor_version)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_vendor_version (args), is_null);
+
+  args->gsad_vendor_version_string = "MyCustomVersion";
+  assert_that (gsad_args_get_vendor_version (args),
+               is_equal_to_string ("MyCustomVersion"));
+
+  args->gsad_vendor_version_string = NULL;
+  assert_that (gsad_args_get_vendor_version (args), is_null);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_user_session_limit)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_user_session_limit (args),
+               is_equal_to (DEFAULT_USER_SESSION_LIMIT));
+
+  args->user_session_limit = 5;
+  assert_that (gsad_args_get_user_session_limit (args), is_equal_to (5));
+
+  args->user_session_limit = 0;
+  assert_that (gsad_args_get_user_session_limit (args), is_equal_to (0));
+
+  args->user_session_limit = -1;
+  assert_that (gsad_args_get_user_session_limit (args),
+               is_equal_to (DEFAULT_USER_SESSION_LIMIT));
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_listen_addresses)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_listen_addresses (args), is_null);
+
+  args->gsad_address_string = (char *[]){"127.0.0.1", "::1"};
+  char **listen_addresses = gsad_args_get_listen_addresses (args);
+  assert_that (listen_addresses, is_not_null);
+  assert_that (listen_addresses[0], is_equal_to_string ("127.0.0.1"));
+  assert_that (listen_addresses[1], is_equal_to_string ("::1"));
+}
+
+Ensure (gsad_args, should_get_manager_address)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_manager_address (args), is_null);
+
+  args->gsad_manager_address_string = "127.0.0.1";
+  assert_that (gsad_args_get_manager_address (args),
+               is_equal_to_string ("127.0.0.1"));
+  args->gsad_manager_address_string = NULL;
+  assert_that (gsad_args_get_manager_address (args), is_null);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_manager_unix_socket_path)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_manager_unix_socket_path (args), is_null);
+
+  args->manager_unix_socket_path = "/var/run/gsad_manager.sock";
+  assert_that (gsad_args_get_manager_unix_socket_path (args),
+               is_equal_to_string ("/var/run/gsad_manager.sock"));
+  args->manager_unix_socket_path = NULL;
+  assert_that (gsad_args_get_manager_unix_socket_path (args), is_null);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_unix_socket_path)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_unix_socket_path (args), is_null);
+
+  args->unix_socket_path = "/var/run/gsad.sock";
+  assert_that (gsad_args_get_unix_socket_path (args),
+               is_equal_to_string ("/var/run/gsad.sock"));
+  args->unix_socket_path = NULL;
+  assert_that (gsad_args_get_unix_socket_path (args), is_null);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_unix_socket_owner)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_unix_socket_owner (args), is_null);
+
+  args->unix_socket_owner = "gsaduser";
+  assert_that (gsad_args_get_unix_socket_owner (args),
+               is_equal_to_string ("gsaduser"));
+  args->unix_socket_owner = NULL;
+  assert_that (gsad_args_get_unix_socket_owner (args), is_null);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_unix_socket_group)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_unix_socket_group (args), is_null);
+
+  args->unix_socket_group = "gsadgroup";
+  assert_that (gsad_args_get_unix_socket_group (args),
+               is_equal_to_string ("gsadgroup"));
+  args->unix_socket_group = NULL;
+  assert_that (gsad_args_get_unix_socket_group (args), is_null);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_unix_socket_mode)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_unix_socket_mode (args), is_null);
+
+  args->unix_socket_mode = "0660";
+  assert_that (gsad_args_get_unix_socket_mode (args),
+               is_equal_to_string ("0660"));
+  args->unix_socket_mode = NULL;
+  assert_that (gsad_args_get_unix_socket_mode (args), is_null);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_dh_params_filename)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_dh_params_filename (args), is_null);
+
+  args->dh_params_filename = "/path/to/dhparams.pem";
+  assert_that (gsad_args_get_dh_params_filename (args),
+               is_equal_to_string ("/path/to/dhparams.pem"));
+
+  args->dh_params_filename = NULL;
+  assert_that (gsad_args_get_dh_params_filename (args), is_null);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_gnutls_priorities)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_gnutls_priorities (args), is_null);
+
+  args->gnutls_priorities = "NORMAL:-VERS-ALL:+VERS-TLS1.3";
+  assert_that (gsad_args_get_gnutls_priorities (args),
+               is_equal_to_string ("NORMAL:-VERS-ALL:+VERS-TLS1.3"));
+
+  args->gnutls_priorities = NULL;
+  assert_that (gsad_args_get_gnutls_priorities (args), is_null);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_drop_privileges)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_drop_privileges (args), is_null);
+
+  args->drop = "someuser";
+  assert_that (gsad_args_get_drop_privileges (args),
+               is_equal_to_string ("someuser"));
+  args->drop = NULL;
+  assert_that (gsad_args_get_drop_privileges (args), is_null);
 
   gsad_args_free (args);
 }
@@ -1110,6 +1421,86 @@ Ensure (gsad_args, should_is_run_in_foreground_enabled)
 
   args->foreground = FALSE;
   assert_that (gsad_args_is_run_in_foreground_enabled (args), is_false);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_is_print_version_enabled)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_is_print_version_enabled (args), is_false);
+
+  args->print_version = TRUE;
+  assert_that (gsad_args_is_print_version_enabled (args), is_true);
+
+  args->print_version = FALSE;
+  assert_that (gsad_args_is_print_version_enabled (args), is_false);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_is_debug_tls_enabled)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_is_debug_tls_enabled (args), is_false);
+
+  args->debug_tls = TRUE;
+  assert_that (gsad_args_is_debug_tls_enabled (args), is_true);
+
+  args->debug_tls = FALSE;
+  assert_that (gsad_args_is_debug_tls_enabled (args), is_false);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_is_ignore_x_real_ip_enabled)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_is_ignore_x_real_ip_enabled (args), is_false);
+
+  args->ignore_x_real_ip = TRUE;
+  assert_that (gsad_args_is_ignore_x_real_ip_enabled (args), is_true);
+
+  args->ignore_x_real_ip = FALSE;
+  assert_that (gsad_args_is_ignore_x_real_ip_enabled (args), is_false);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_is_secure_cookie_enabled)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_is_secure_cookie_enabled (args), is_true);
+
+  args->http_only = TRUE;
+  args->secure_cookie = TRUE;
+  assert_that (gsad_args_is_secure_cookie_enabled (args), is_true);
+
+  args->http_only = TRUE;
+  args->secure_cookie = FALSE;
+  assert_that (gsad_args_is_secure_cookie_enabled (args), is_false);
+
+  args->secure_cookie = FALSE;
+  args->http_only = FALSE;
+  assert_that (gsad_args_is_secure_cookie_enabled (args), is_true);
+
+  args->secure_cookie = FALSE;
+  args->http_only = TRUE;
+  assert_that (gsad_args_is_secure_cookie_enabled (args), is_false);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_is_chroot_enabled)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_is_chroot_enabled (args), is_false);
+
+  args->do_chroot = TRUE;
+  assert_that (gsad_args_is_chroot_enabled (args), is_true);
+
+  args->do_chroot = FALSE;
+  assert_that (gsad_args_is_chroot_enabled (args), is_false);
 
   gsad_args_free (args);
 }
@@ -1193,11 +1584,11 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_args, should_parse_gnu_tls_priorities);
   add_test_with_context (suite, gsad_args,
                          should_parse_gnutls_priorities_default);
-  add_test_with_context (suite, gsad_args, should_parse_gsad_address_string);
+  add_test_with_context (suite, gsad_args, should_parse_gsad_address_strings);
   add_test_with_context (suite, gsad_args,
-                         should_parse_gsad_address_string_default);
+                         should_parse_gsad_address_strings_default);
   add_test_with_context (suite, gsad_args,
-                         should_parse_gsad_address_string_multiple);
+                         should_parse_gsad_address_strings_multiple);
   add_test_with_context (suite, gsad_args,
                          should_parse_gsad_manager_address_string);
   add_test_with_context (suite, gsad_args,
@@ -1218,10 +1609,9 @@ main (int argc, char **argv)
                          should_parse_gsad_user_session_limit);
   add_test_with_context (suite, gsad_args,
                          should_parse_gsad_user_session_limit_default);
+  add_test_with_context (suite, gsad_args, should_parse_gsad_vendor_version);
   add_test_with_context (suite, gsad_args,
-                         should_parse_gsad_vendor_version_string);
-  add_test_with_context (suite, gsad_args,
-                         should_parse_gsad_vendor_version_string_default);
+                         should_parse_gsad_vendor_version_default);
   add_test_with_context (suite, gsad_args, should_parse_hsts_enabled);
   add_test_with_context (suite, gsad_args, should_parse_hsts_enabled_default);
   add_test_with_context (suite, gsad_args, should_parse_hsts_max_age);
@@ -1248,13 +1638,13 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_args, should_parse_secure_cookie);
   add_test_with_context (suite, gsad_args, should_parse_secure_cookie_default);
   add_test_with_context (suite, gsad_args,
-                         should_parse_ssl_certificate_filename);
+                         should_parse_tls_certificate_filename);
   add_test_with_context (suite, gsad_args,
-                         should_parse_ssl_certificate_filename_default);
+                         should_parse_tls_certificate_filename_default);
   add_test_with_context (suite, gsad_args,
-                         should_parse_ssl_private_key_filename);
+                         should_parse_tls_private_key_filename);
   add_test_with_context (suite, gsad_args,
-                         should_parse_ssl_private_key_filename_default);
+                         should_parse_tls_private_key_filename_default);
   add_test_with_context (suite, gsad_args, should_parse_timeout);
   add_test_with_context (suite, gsad_args, should_parse_timeout_default);
   add_test_with_context (suite, gsad_args, should_parse_unix_socket_group);
@@ -1287,6 +1677,11 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_args,
                          should_is_http_strict_transport_security_enabled);
   add_test_with_context (suite, gsad_args, should_is_run_in_foreground_enabled);
+  add_test_with_context (suite, gsad_args, should_is_print_version_enabled);
+  add_test_with_context (suite, gsad_args, should_is_debug_tls_enabled);
+  add_test_with_context (suite, gsad_args, should_is_ignore_x_real_ip_enabled);
+  add_test_with_context (suite, gsad_args, should_is_secure_cookie_enabled);
+  add_test_with_context (suite, gsad_args, should_is_chroot_enabled);
 
   add_test_with_context (suite, gsad_args, should_validate_session_timout);
   add_test_with_context (suite, gsad_args, should_validate_port);
@@ -1297,10 +1692,31 @@ main (int argc, char **argv)
 
   add_test_with_context (suite, gsad_args, should_get_port);
   add_test_with_context (suite, gsad_args, should_get_redirect_port);
+  add_test_with_context (suite, gsad_args, should_get_manager_port);
   add_test_with_context (suite, gsad_args,
                          should_get_http_strict_transport_security_max_age);
   add_test_with_context (suite, gsad_args, should_get_per_ip_connection_limit);
   add_test_with_context (suite, gsad_args, should_get_client_watch_interval);
+  add_test_with_context (suite, gsad_args, should_get_session_timeout);
+  add_test_with_context (suite, gsad_args, should_get_tls_certificate_filename);
+  add_test_with_context (suite, gsad_args, should_get_tls_private_key_filename);
+  add_test_with_context (suite, gsad_args, should_get_http_x_frame_options);
+  add_test_with_context (suite, gsad_args,
+                         should_get_http_content_security_policy);
+  add_test_with_context (suite, gsad_args, should_get_http_cors_origin);
+  add_test_with_context (suite, gsad_args, should_get_tls_debug_level);
+  add_test_with_context (suite, gsad_args, should_get_vendor_version);
+  add_test_with_context (suite, gsad_args, should_get_user_session_limit);
+  add_test_with_context (suite, gsad_args, should_get_listen_addresses);
+  add_test_with_context (suite, gsad_args, should_get_manager_address);
+  add_test_with_context (suite, gsad_args, should_get_manager_unix_socket_path);
+  add_test_with_context (suite, gsad_args, should_get_unix_socket_path);
+  add_test_with_context (suite, gsad_args, should_get_unix_socket_owner);
+  add_test_with_context (suite, gsad_args, should_get_unix_socket_group);
+  add_test_with_context (suite, gsad_args, should_get_unix_socket_mode);
+  add_test_with_context (suite, gsad_args, should_get_dh_params_filename);
+  add_test_with_context (suite, gsad_args, should_get_gnutls_priorities);
+  add_test_with_context (suite, gsad_args, should_get_drop_privileges);
 
   add_test_with_context (suite, gsad_args, should_free_gsad_args);
 

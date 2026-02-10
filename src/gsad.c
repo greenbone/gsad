@@ -1705,7 +1705,7 @@ drop_privileges (struct passwd *user_pw)
  * @return 0 success, 1 failed (will g_critical in fail case).
  */
 static int
-chroot_drop_privileges (gboolean do_chroot, gchar *drop, const gchar *dir)
+chroot_drop_privileges (gboolean do_chroot, const char *drop, const gchar *dir)
 {
   struct passwd *user_pw;
 
@@ -2278,10 +2278,10 @@ main (int argc, char **argv)
       goto error_with_settings_cleanup;
     }
 
-  if (gsad_args->print_version)
+  if (gsad_args_is_print_version_enabled (gsad_args))
     {
       printf ("Greenbone Security Assistant Deamon %s\n", GSAD_VERSION);
-      if (gsad_args->debug_tls)
+      if (gsad_args_is_debug_tls_enabled (gsad_args))
         {
           printf ("gnutls %s\n", gnutls_check_version (NULL));
           printf ("libmicrohttpd %s\n", MHD_get_version ());
@@ -2298,23 +2298,26 @@ main (int argc, char **argv)
   if (gsad_args_validate_session_timeout (gsad_args))
 
     {
-      g_critical ("Invalid session timeout value: %d.", gsad_args->timeout);
+      g_critical ("Invalid session timeout value: %d.",
+                  gsad_args_get_session_timeout (gsad_args));
       goto error_with_settings_cleanup;
     }
   if (gsad_args_validate_port (gsad_args))
     {
-      g_critical ("Invalid GSAD port value: %d.", gsad_args->gsad_port);
+      g_critical ("Invalid GSAD port value: %d.",
+                  gsad_args_get_port (gsad_args));
       goto error_with_settings_cleanup;
     }
   if (gsad_args_validate_manager_port (gsad_args))
     {
-      g_critical ("Invalid gvmd port value: %d.", gsad_args->gsad_manager_port);
+      g_critical ("Invalid gvmd port value: %d.",
+                  gsad_args_get_manager_port (gsad_args));
       goto error_with_settings_cleanup;
     }
   if (gsad_args_validate_redirect_port (gsad_args))
     {
       g_critical ("Invalid redirect port value: %d.",
-                  gsad_args->gsad_redirect_port);
+                  gsad_args_get_redirect_port (gsad_args));
       goto error_with_settings_cleanup;
     }
   if (gsad_args_is_https_enabled (gsad_args))
@@ -2322,13 +2325,13 @@ main (int argc, char **argv)
       if (gsad_args_validate_tls_private_key (gsad_args))
         {
           g_critical ("Invalid TLS private key file: %s.",
-                      gsad_args->ssl_private_key_filename);
+                      gsad_args_get_tls_private_key_filename (gsad_args));
           goto error_with_settings_cleanup;
         }
       if (gsad_args_validate_tls_certificate (gsad_args))
         {
           g_critical ("Invalid TLS certificate file: %s.",
-                      gsad_args->ssl_certificate_filename);
+                      gsad_args_get_tls_certificate_filename (gsad_args));
           goto error_with_settings_cleanup;
         }
     }
@@ -2341,12 +2344,13 @@ main (int argc, char **argv)
       goto error_with_settings_cleanup;
     }
 
-  gsad_settings_set_http_x_frame_options (gsad_global_settings,
-                                          gsad_args->http_frame_opts);
-  gsad_settings_set_http_content_security_policy (gsad_global_settings,
-                                                  gsad_args->http_csp);
-  gsad_settings_set_http_cors_origin (gsad_global_settings,
-                                      gsad_args->http_cors);
+  gsad_settings_set_http_x_frame_options (
+    gsad_global_settings, gsad_args_get_http_x_frame_options (gsad_args));
+  gsad_settings_set_http_content_security_policy (
+    gsad_global_settings,
+    gsad_args_get_http_content_security_policy (gsad_args));
+  gsad_settings_set_http_cors_origin (
+    gsad_global_settings, gsad_args_get_http_cors_origin (gsad_args));
 
   if (gsad_args_is_http_strict_transport_security_enabled (gsad_args))
     {
@@ -2360,8 +2364,8 @@ main (int argc, char **argv)
     gsad_settings_set_http_strict_transport_security (gsad_global_settings,
                                                       NULL);
 
-  gsad_settings_set_ignore_http_x_real_ip (gsad_global_settings,
-                                           gsad_args->ignore_x_real_ip);
+  gsad_settings_set_ignore_http_x_real_ip (
+    gsad_global_settings, gsad_args_is_ignore_x_real_ip_enabled (gsad_args));
 
   gsad_settings_set_per_ip_connection_limit (
     gsad_global_settings, gsad_args_get_per_ip_connection_limit (gsad_args));
@@ -2372,10 +2376,10 @@ main (int argc, char **argv)
       goto error_with_settings_cleanup;
     }
 
-  if (gsad_args->debug_tls)
+  if (gsad_args_is_debug_tls_enabled (gsad_args))
     {
       gnutls_global_set_log_function (my_gnutls_log_func);
-      gnutls_global_set_log_level (gsad_args->debug_tls);
+      gnutls_global_set_log_level (gsad_args_get_tls_debug_level (gsad_args));
     }
 
   if (gsad_base_init ())
@@ -2384,9 +2388,9 @@ main (int argc, char **argv)
       goto error_with_settings_cleanup;
     }
 
-  if (gsad_args->gsad_vendor_version_string)
+  if (gsad_args_get_vendor_version (gsad_args))
     gsad_settings_set_vendor_version (gsad_global_settings,
-                                      gsad_args->gsad_vendor_version_string);
+                                      gsad_args_get_vendor_version (gsad_args));
 
   /* Switch to UTC for scheduling. */
 
@@ -2401,10 +2405,11 @@ main (int argc, char **argv)
 
   /* Finish processing the command line options. */
 
-  gsad_settings_set_use_secure_cookie (gsad_global_settings,
-                                       gsad_args->secure_cookie);
+  gsad_settings_set_use_secure_cookie (
+    gsad_global_settings, gsad_args_is_secure_cookie_enabled (gsad_args));
 
-  gsad_settings_set_session_timeout (gsad_global_settings, gsad_args->timeout);
+  gsad_settings_set_session_timeout (gsad_global_settings,
+                                     gsad_args_get_session_timeout (gsad_args));
   gsad_settings_set_pid_filename (gsad_global_settings,
                                   gsad_args_get_pid_filename (gsad_args));
 
@@ -2467,8 +2472,8 @@ main (int argc, char **argv)
         }
     }
 
-  gsad_settings_set_user_session_limit (gsad_global_settings,
-                                        gsad_args->gsad_user_session_limit);
+  gsad_settings_set_user_session_limit (
+    gsad_global_settings, gsad_args_get_user_session_limit (gsad_args));
 
   /* Register the cleanup function. */
 
@@ -2490,12 +2495,13 @@ main (int argc, char **argv)
 
   int gsad_port = gsad_args_get_port (gsad_args);
 
-  if (gsad_args->gsad_address_string)
-    while (*gsad_args->gsad_address_string)
+  gchar **gsad_addresses = gsad_args_get_listen_addresses (gsad_args);
+  if (gsad_addresses)
+    while (*gsad_addresses)
       {
-        if (gsad_address_init (*gsad_args->gsad_address_string, gsad_port))
+        if (gsad_address_init (*gsad_addresses, gsad_port))
           goto error;
-        gsad_args->gsad_address_string++;
+        gsad_addresses++;
       }
   else if (gsad_address_init (NULL, gsad_port))
     goto error;
@@ -2526,14 +2532,15 @@ main (int argc, char **argv)
     {
       /* Start the unix socket server. */
 
-      gmp_init (gsad_args->gsad_manager_unix_socket_path,
-                gsad_args->gsad_manager_address_string,
-                gsad_args->gsad_manager_port);
+      gmp_init (gsad_args_get_manager_unix_socket_path (gsad_args),
+                gsad_args_get_manager_address (gsad_args),
+                gsad_args_get_manager_port (gsad_args));
 
       gsad_daemon = start_unix_http_daemon (
-        gsad_args->unix_socket_path, gsad_args->unix_socket_owner,
-        gsad_args->unix_socket_group, gsad_args->unix_socket_mode,
-        handle_request, handlers);
+        gsad_args_get_manager_unix_socket_path (gsad_args),
+        gsad_args_get_unix_socket_owner (gsad_args),
+        gsad_args_get_unix_socket_group (gsad_args),
+        gsad_args_get_unix_socket_mode (gsad_args), handle_request, handlers);
 
       if (gsad_daemon == NULL)
         {
@@ -2545,11 +2552,11 @@ main (int argc, char **argv)
     {
       /* Start the real server. */
 
-      gmp_init (gsad_args->gsad_manager_unix_socket_path,
-                gsad_args->gsad_manager_address_string,
-                gsad_args->gsad_manager_port);
+      gmp_init (gsad_args_get_manager_unix_socket_path (gsad_args),
+                gsad_args_get_manager_address (gsad_args),
+                gsad_args_get_manager_port (gsad_args));
 
-      if (gsad_args->http_only)
+      if (!gsad_args_is_https_enabled (gsad_args))
         {
           GSList *list = address_list;
 
@@ -2573,41 +2580,46 @@ main (int argc, char **argv)
           GSList *list = address_list;
           GError *error = NULL;
 
-          gsad_settings_set_use_secure_cookie (gsad_global_settings, TRUE);
-
-          if (!g_file_get_contents (gsad_args->ssl_private_key_filename,
-                                    &ssl_private_key, NULL, &error))
+          if (!g_file_get_contents (
+                gsad_args_get_tls_private_key_filename (gsad_args),
+                &ssl_private_key, NULL, &error))
             {
               g_critical ("Could not load private SSL key from %s: %s",
-                          gsad_args->ssl_private_key_filename, error->message);
+                          gsad_args_get_tls_private_key_filename (gsad_args),
+                          error->message);
               g_error_free (error);
               goto error;
             }
 
-          if (!g_file_get_contents (gsad_args->ssl_certificate_filename,
-                                    &ssl_certificate, NULL, &error))
+          if (!g_file_get_contents (
+                gsad_args_get_tls_certificate_filename (gsad_args),
+                &ssl_certificate, NULL, &error))
             {
               g_critical ("Could not load SSL certificate from %s: %s",
-                          gsad_args->ssl_certificate_filename, error->message);
+                          gsad_args_get_tls_certificate_filename (gsad_args),
+                          error->message);
               g_error_free (error);
               goto error;
             }
 
-          if (gsad_args->dh_params_filename
-              && !g_file_get_contents (gsad_args->dh_params_filename,
-                                       &dh_params, NULL, &error))
+          if (gsad_args_get_dh_params_filename (gsad_args)
+              && !g_file_get_contents (
+                gsad_args_get_dh_params_filename (gsad_args), &dh_params, NULL,
+                &error))
             {
               g_critical ("Could not load SSL certificate from %s: %s",
-                          gsad_args->dh_params_filename, error->message);
+                          gsad_args_get_dh_params_filename (gsad_args),
+                          error->message);
               g_error_free (error);
               goto error;
             }
 
           while (list)
             {
-              gsad_daemon = start_https_daemon (
-                gsad_port, ssl_private_key, ssl_certificate,
-                gsad_args->gnutls_priorities, dh_params, handlers, list->data);
+              gsad_daemon =
+                start_https_daemon (gsad_port, ssl_private_key, ssl_certificate,
+                                    gsad_args_get_gnutls_priorities (gsad_args),
+                                    dh_params, handlers, list->data);
               if (gsad_daemon == NULL)
                 {
                   g_critical ("Binding to port %d failed.", gsad_port);
@@ -2627,7 +2639,8 @@ main (int argc, char **argv)
   /* Chroot and drop privileges, if requested. */
 
   if (chroot_drop_privileges (
-        gsad_args->do_chroot, gsad_args->drop,
+        gsad_args_is_chroot_enabled (gsad_args),
+        gsad_args_get_drop_privileges (gsad_args),
         gsad_args_get_static_content_directory (gsad_args)))
     {
       g_critical ("Cannot use drop privileges for directory \"%s\".",
