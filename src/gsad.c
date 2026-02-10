@@ -2327,7 +2327,7 @@ main (int argc, char **argv)
                   gsad_args->gsad_redirect_port);
       goto error_with_settings_cleanup;
     }
-  if (gsad_args_enable_https (gsad_args))
+  if (gsad_args_is_https_enabled (gsad_args))
     {
       if (gsad_args_validate_tls_private_key (gsad_args))
         {
@@ -2358,7 +2358,7 @@ main (int argc, char **argv)
   gsad_settings_set_http_cors_origin (gsad_global_settings,
                                       gsad_args->http_cors);
 
-  if (gsad_args_enable_http_strict_transport_security (gsad_args))
+  if (gsad_args_is_http_strict_transport_security_enabled (gsad_args))
     {
       gsad_settings_set_http_strict_transport_security (
         gsad_global_settings,
@@ -2421,7 +2421,7 @@ main (int argc, char **argv)
   gsad_settings_set_client_watch_interval (
     gsad_global_settings, gsad_args_get_client_watch_interval (gsad_args));
 
-  if (!gsad_args_enable_run_in_foreground (gsad_args))
+  if (!gsad_args_is_run_in_foreground_enabled (gsad_args))
     {
       /* Fork into the background. */
       g_debug ("Forking...");
@@ -2443,7 +2443,7 @@ main (int argc, char **argv)
         }
     }
 
-  gboolean should_redirect = gsad_args_enable_redirect (gsad_args);
+  gboolean should_redirect = gsad_args_is_redirect_enabled (gsad_args);
   int redirect_port = gsad_args_get_redirect_port (gsad_args);
   if (should_redirect)
     {
@@ -2532,7 +2532,7 @@ main (int argc, char **argv)
           goto error;
         }
     }
-  else if (gsad_args_enable_unix_socket (gsad_args) && !unix_pid)
+  else if (gsad_args_is_unix_socket_enabled (gsad_args) && !unix_pid)
     {
       /* Start the unix socket server. */
 

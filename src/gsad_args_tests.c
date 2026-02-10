@@ -853,21 +853,21 @@ Ensure (gsad_args, should_parse_static_content_directory_default)
   gsad_args_free (args);
 }
 
-Ensure (gsad_args, should_enable_redirect)
+Ensure (gsad_args, should_is_redirect_enabled)
 {
   gsad_args_t *args = gsad_args_new ();
 
   args->no_redirect = FALSE;
   args->http_only = TRUE;
-  assert_that (gsad_args_enable_redirect (args), is_false);
+  assert_that (gsad_args_is_redirect_enabled (args), is_false);
 
   args->http_only = FALSE;
   args->no_redirect = TRUE;
-  assert_that (gsad_args_enable_redirect (args), is_false);
+  assert_that (gsad_args_is_redirect_enabled (args), is_false);
 
   args->http_only = FALSE;
   args->no_redirect = FALSE;
-  assert_that (gsad_args_enable_redirect (args), is_true);
+  assert_that (gsad_args_is_redirect_enabled (args), is_true);
   gsad_args_free (args);
 }
 
@@ -1052,63 +1052,64 @@ Ensure (gsad_args, should_get_client_watch_interval)
   gsad_args_free (args);
 }
 
-Ensure (gsad_args, should_enable_unix_socket)
+Ensure (gsad_args, should_is_unix_socket_enabled)
 {
   gsad_args_t *args = gsad_args_new ();
 
   args->unix_socket_path = "/var/run/gsad.sock";
-  assert_that (gsad_args_enable_unix_socket (args), is_true);
+  assert_that (gsad_args_is_unix_socket_enabled (args), is_true);
 
   args->unix_socket_path = NULL;
-  assert_that (gsad_args_enable_unix_socket (args), is_false);
+  assert_that (gsad_args_is_unix_socket_enabled (args), is_false);
 
   gsad_args_free (args);
 }
 
-Ensure (gsad_args, should_enable_https)
+Ensure (gsad_args, should_is_https_enabled)
 {
   gsad_args_t *args = gsad_args_new ();
 
   args->http_only = FALSE;
-  assert_that (gsad_args_enable_https (args), is_true);
+  assert_that (gsad_args_is_https_enabled (args), is_true);
 
   args->http_only = TRUE;
-  assert_that (gsad_args_enable_https (args), is_false);
+  assert_that (gsad_args_is_https_enabled (args), is_false);
 
   gsad_args_free (args);
 }
 
-Ensure (gsad_args, should_enable_http_strict_transport_security)
+Ensure (gsad_args, should_is_http_strict_transport_security_enabled)
 {
   gsad_args_t *args = gsad_args_new ();
 
   args->http_only = FALSE;
   args->hsts_enabled = TRUE;
-  assert_that (gsad_args_enable_http_strict_transport_security (args), is_true);
+  assert_that (gsad_args_is_http_strict_transport_security_enabled (args),
+               is_true);
 
   args->http_only = FALSE;
   args->hsts_enabled = FALSE;
-  assert_that (gsad_args_enable_http_strict_transport_security (args),
+  assert_that (gsad_args_is_http_strict_transport_security_enabled (args),
                is_false);
 
   args->http_only = TRUE;
   args->hsts_enabled = TRUE;
-  assert_that (gsad_args_enable_http_strict_transport_security (args),
+  assert_that (gsad_args_is_http_strict_transport_security_enabled (args),
                is_false);
 
   gsad_args_free (args);
 }
 
-Ensure (gsad_args, should_enable_run_in_foreground)
+Ensure (gsad_args, should_is_run_in_foreground_enabled)
 {
   gsad_args_t *args = gsad_args_new ();
-  assert_that (gsad_args_enable_run_in_foreground (args), is_false);
+  assert_that (gsad_args_is_run_in_foreground_enabled (args), is_false);
 
   args->foreground = TRUE;
-  assert_that (gsad_args_enable_run_in_foreground (args), is_true);
+  assert_that (gsad_args_is_run_in_foreground_enabled (args), is_true);
 
   args->foreground = FALSE;
-  assert_that (gsad_args_enable_run_in_foreground (args), is_false);
+  assert_that (gsad_args_is_run_in_foreground_enabled (args), is_false);
 
   gsad_args_free (args);
 }
@@ -1280,12 +1281,12 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_args,
                          should_parse_static_content_directory_default);
 
-  add_test_with_context (suite, gsad_args, should_enable_redirect);
-  add_test_with_context (suite, gsad_args, should_enable_unix_socket);
-  add_test_with_context (suite, gsad_args, should_enable_https);
+  add_test_with_context (suite, gsad_args, should_is_redirect_enabled);
+  add_test_with_context (suite, gsad_args, should_is_unix_socket_enabled);
+  add_test_with_context (suite, gsad_args, should_is_https_enabled);
   add_test_with_context (suite, gsad_args,
-                         should_enable_http_strict_transport_security);
-  add_test_with_context (suite, gsad_args, should_enable_run_in_foreground);
+                         should_is_http_strict_transport_security_enabled);
+  add_test_with_context (suite, gsad_args, should_is_run_in_foreground_enabled);
 
   add_test_with_context (suite, gsad_args, should_validate_session_timout);
   add_test_with_context (suite, gsad_args, should_validate_port);

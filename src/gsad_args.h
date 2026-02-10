@@ -145,19 +145,19 @@ int
 gsad_args_parse (int, char **, gsad_args_t *);
 
 gboolean
-gsad_args_enable_redirect (const gsad_args_t *);
+gsad_args_is_redirect_enabled (const gsad_args_t *);
 
 gboolean
-gsad_args_enable_unix_socket (const gsad_args_t *);
+gsad_args_is_unix_socket_enabled (const gsad_args_t *);
 
 gboolean
-gsad_args_enable_https (const gsad_args_t *);
+gsad_args_is_https_enabled (const gsad_args_t *);
 
 gboolean
-gsad_args_enable_http_strict_transport_security (const gsad_args_t *);
+gsad_args_is_http_strict_transport_security_enabled (const gsad_args_t *);
 
 gboolean
-gsad_args_enable_run_in_foreground (const gsad_args_t *);
+gsad_args_is_run_in_foreground_enabled (const gsad_args_t *);
 
 int
 gsad_args_validate_session_timeout (const gsad_args_t *);
