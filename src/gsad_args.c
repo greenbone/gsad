@@ -506,7 +506,7 @@ gsad_args_get_pid_filename (const gsad_args_t *args)
  * is owned by the gsad args structure and should not be modified or freed
  * by the caller.
  */
-const char *
+const gchar *
 gsad_args_get_static_content_directory (const gsad_args_t *args)
 {
   return args->gsad_static_content_directory;
@@ -645,7 +645,7 @@ gsad_args_get_manager_port (const gsad_args_t *args)
  * is owned by the gsad args structure and should not be modified or freed
  * by the caller.
  */
-const char *
+const gchar *
 gsad_args_get_tls_private_key_filename (const gsad_args_t *args)
 {
   return args->ssl_private_key_filename;
@@ -661,7 +661,7 @@ gsad_args_get_tls_private_key_filename (const gsad_args_t *args)
  * is owned by the gsad args structure and should not be modified or freed
  * by the caller.
  */
-const char *
+const gchar *
 gsad_args_get_tls_certificate_filename (const gsad_args_t *args)
 {
   return args->ssl_certificate_filename;
@@ -678,7 +678,7 @@ gsad_args_get_tls_certificate_filename (const gsad_args_t *args)
  * owned by the gsad args structure and should not be modified or freed by the
  * caller.
  */
-const char *
+const gchar *
 gsad_args_get_http_x_frame_options (const gsad_args_t *args)
 {
   return args->http_frame_opts;
@@ -695,7 +695,7 @@ gsad_args_get_http_x_frame_options (const gsad_args_t *args)
  * string is owned by the gsad args structure and should not be modified or
  * freed by the caller.
  */
-const char *
+const gchar *
 gsad_args_get_http_content_security_policy (const gsad_args_t *args)
 {
   return args->http_csp;
@@ -711,7 +711,7 @@ gsad_args_get_http_content_security_policy (const gsad_args_t *args)
  * arguments, or NULL if not specified. The returned string is owned by the
  * gsad args structure and should not be modified or freed by the caller.
  */
-const char *
+const gchar *
 gsad_args_get_http_cors_origin (const gsad_args_t *args)
 {
   return args->http_cors;
@@ -740,7 +740,7 @@ gsad_args_get_tls_debug_level (const gsad_args_t *args)
  * NULL if not specified. The returned string is owned by the gsad args
  * structure and should not be modified or freed by the caller.
  */
-const char *
+const gchar *
 gsad_args_get_vendor_version (const gsad_args_t *args)
 {
   return args->gsad_vendor_version_string;
@@ -813,7 +813,7 @@ gsad_args_get_user_session_limit (const gsad_args_t *args)
  * the caller.
  *
  */
-char **
+gchar **
 gsad_args_get_listen_addresses (const gsad_args_t *args)
 {
   return args->gsad_address_string;
@@ -830,7 +830,7 @@ gsad_args_get_listen_addresses (const gsad_args_t *args)
  * or NULL if not specified. The returned string is owned by the gsad args
  * structure and should not be modified or freed by the caller.
  */
-const char *
+const gchar *
 gsad_args_get_manager_address (const gsad_args_t *args)
 {
   return args->gsad_manager_address_string;
@@ -847,7 +847,7 @@ gsad_args_get_manager_address (const gsad_args_t *args)
  * or NULL if not specified. The returned string is owned by the gsad args
  * structure and should not be modified or freed by the caller.
  */
-const char *
+const gchar *
 gsad_args_get_manager_unix_socket_path (const gsad_args_t *args)
 {
   return args->manager_unix_socket_path;
@@ -864,7 +864,7 @@ gsad_args_get_manager_unix_socket_path (const gsad_args_t *args)
  * if not specified. The returned string is owned by the gsad args structure and
  * should not be modified or freed by the caller.
  */
-const char *
+const gchar *
 gsad_args_get_unix_socket_path (const gsad_args_t *args)
 {
   return args->unix_socket_path;
@@ -881,7 +881,7 @@ gsad_args_get_unix_socket_path (const gsad_args_t *args)
  * NULL if not specified. The returned string is owned by the gsad args
  * structure and should not be modified or freed by the caller.
  */
-const char *
+const gchar *
 gsad_args_get_unix_socket_owner (const gsad_args_t *args)
 {
   return args->unix_socket_owner;
@@ -898,7 +898,7 @@ gsad_args_get_unix_socket_owner (const gsad_args_t *args)
  * NULL if not specified. The returned string is owned by the gsad args
  * structure and should not be modified or freed by the caller.
  */
-const char *
+const gchar *
 gsad_args_get_unix_socket_group (const gsad_args_t *args)
 {
   return args->unix_socket_group;
@@ -915,7 +915,7 @@ gsad_args_get_unix_socket_group (const gsad_args_t *args)
  * if not specified. The returned string is owned by the gsad args structure and
  * should not be modified or freed by the caller.
  */
-const char *
+const gchar *
 gsad_args_get_unix_socket_mode (const gsad_args_t *args)
 {
   return args->unix_socket_mode;
@@ -931,7 +931,7 @@ gsad_args_get_unix_socket_mode (const gsad_args_t *args)
  * arguments, or NULL if not specified. The returned string is owned by the gsad
  * args structure and should not be modified or freed by the caller.
  */
-const char *
+const gchar *
 gsad_args_get_dh_params_filename (const gsad_args_t *args)
 {
   return args->dh_params_filename;
@@ -946,7 +946,7 @@ gsad_args_get_dh_params_filename (const gsad_args_t *args)
  * or NULL if not specified. The returned string is owned by the gsad args
  * structure and should not be modified or freed by the caller.
  */
-const char *
+const gchar *
 gsad_args_get_gnutls_priorities (const gsad_args_t *args)
 {
   return args->gnutls_priorities;
@@ -961,7 +961,7 @@ gsad_args_get_gnutls_priorities (const gsad_args_t *args)
  * NULL if not specified. The returned string is owned by the gsad args
  * structure and should not be modified or freed by the caller.
  */
-const char *
+const gchar *
 gsad_args_get_drop_privileges (const gsad_args_t *args)
 {
   return args->drop;

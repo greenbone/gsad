@@ -189,8 +189,8 @@ free_resources (void *cls, struct MHD_Connection *connection, void **con_cls,
  * @return MHD_YES on success, MHD_NO on error.
  */
 int
-params_append_mhd (params_t *params, const char *name, const char *filename,
-                   const char *chunk_data, int chunk_size, int chunk_offset)
+params_append_mhd (params_t *params, const gchar *name, const gchar *filename,
+                   const gchar *chunk_data, int chunk_size, int chunk_offset)
 {
   if ((strncmp (name, "bulk_selected:", strlen ("bulk_selected:")) == 0)
       || (strncmp (name, "chart_gen:", strlen ("chart_gen:")) == 0)
@@ -232,7 +232,7 @@ params_append_mhd (params_t *params, const char *name, const char *filename,
       || (strncmp (name, "z_fields:", strlen ("z_fields:")) == 0))
     {
       param_t *param;
-      const char *colon;
+      const gchar *colon;
       gchar *prefix;
 
       colon = strchr (name, ':');
@@ -332,7 +332,7 @@ params_append_mhd (params_t *params, const char *name, const char *filename,
  * @param[in]  params       Values.
  */
 void
-params_mhd_validate_values (const char *parent_name, void *params)
+params_mhd_validate_values (const gchar *parent_name, void *params)
 {
   params_iterator_t iter;
   param_t *param;
@@ -489,7 +489,7 @@ params_mhd_validate (void *params)
  */
 int
 exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
-               const char *client_address)
+               const gchar *client_address)
 {
   int ret;
   user_t *user;
@@ -820,8 +820,8 @@ int
 #else
 enum MHD_Result
 #endif
-params_mhd_add (void *params, enum MHD_ValueKind kind, const char *name,
-                const char *value)
+params_mhd_add (void *params, enum MHD_ValueKind kind, const gchar *name,
+                const gchar *value)
 {
   if ((strncmp (name, "bulk_selected:", strlen ("bulk_selected:")) == 0)
       || (strncmp (name, "chart_gen:", strlen ("chart_gen:")) == 0)
@@ -859,7 +859,7 @@ params_mhd_add (void *params, enum MHD_ValueKind kind, const char *name,
       || (strncmp (name, "z_fields:", strlen ("z_fields:")) == 0))
     {
       param_t *param;
-      const char *colon;
+      const gchar *colon;
       gchar *prefix;
 
       /* Hashtable param, like for radios. */
@@ -1004,7 +1004,7 @@ watch_client_connection (void *data)
           continue;
         }
       int ret;
-      char buf[1];
+      gchar buf[1];
       errno = 0;
       ret = recv (watcher_data->client_socket_fd, buf, 1, MSG_PEEK);
 
@@ -1053,9 +1053,9 @@ watch_client_connection (void *data)
  * @return 1 if may, else 0.
  */
 static int
-may_compress (http_connection_t *con, const char *encoding)
+may_compress (http_connection_t *con, const gchar *encoding)
 {
-  const char *all, *one;
+  const gchar *all, *one;
 
   all = MHD_lookup_connection_value (con, MHD_HEADER_KIND,
                                      MHD_HTTP_HEADER_ACCEPT_ENCODING);
@@ -1115,8 +1115,8 @@ may_brotli (http_connection_t *con)
  * @return 1 on success, else 0.
  */
 static int
-compress_response_deflate (const size_t res_len, const char *res,
-                           size_t *comp_len, char **comp)
+compress_response_deflate (const size_t res_len, const gchar *res,
+                           size_t *comp_len, gchar **comp)
 {
   Bytef *cbuf;
   uLongf cbuf_size;
@@ -1150,8 +1150,8 @@ compress_response_deflate (const size_t res_len, const char *res,
  * @return 1 on success, else 0.
  */
 static int
-compress_response_brotli (const size_t res_len, const char *res,
-                          size_t *comp_len, char **comp)
+compress_response_brotli (const size_t res_len, const gchar *res,
+                          size_t *comp_len, gchar **comp)
 {
   size_t cbuf_size;
   uint8_t *cbuf;
@@ -1192,12 +1192,12 @@ int
 exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
               credentials_t *credentials)
 {
-  const char *cmd = NULL;
+  const gchar *cmd = NULL;
   const int CMD_MAX_SIZE = 27; /* delete_trash_lsc_credential */
   params_t *params = con_info->params;
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
   gvm_connection_t connection;
-  char *res = NULL, *comp = NULL;
+  gchar *res = NULL, *comp = NULL;
   gsize res_len = 0;
   http_response_t *response;
   cmd_response_data_t *response_data;
@@ -1595,14 +1595,14 @@ static int
 #else
 static enum MHD_Result
 #endif
-redirect_handler (void *cls, struct MHD_Connection *connection, const char *url,
-                  const char *method, const char *version,
-                  const char *upload_data, size_t *upload_data_size,
+redirect_handler (void *cls, struct MHD_Connection *connection,
+                  const gchar *url, const gchar *method, const gchar *version,
+                  const gchar *upload_data, size_t *upload_data_size,
                   void **con_cls)
 {
   gchar *location;
-  const char *host;
-  char name[MAX_HOST_LEN + 1];
+  const gchar *host;
+  gchar name[MAX_HOST_LEN + 1];
 
   /* Never respond on first call of a GET. */
   if ((!strcmp (method, "GET")) && *con_cls == NULL)
@@ -1646,7 +1646,7 @@ redirect_handler (void *cls, struct MHD_Connection *connection, const char *url,
   if (sscanf (host, "[%" G_STRINGIFY (MAX_HOST_LEN) "[0-9a-f:.]]:%*i", name)
       == 1)
     {
-      char *name6 = g_strdup_printf ("[%s]", name);
+      gchar *name6 = g_strdup_printf ("[%s]", name);
       location = g_strdup_printf (redirect_location, name6);
       g_free (name6);
     }
@@ -1705,7 +1705,7 @@ drop_privileges (struct passwd *user_pw)
  * @return 0 success, 1 failed (will g_critical in fail case).
  */
 static int
-chroot_drop_privileges (gboolean do_chroot, const char *drop, const gchar *dir)
+chroot_drop_privileges (gboolean do_chroot, const gchar *drop, const gchar *dir)
 {
   struct passwd *user_pw;
 
@@ -1772,7 +1772,7 @@ chroot_drop_privileges (gboolean do_chroot, const char *drop, const gchar *dir)
  * but the order of initialization in gsad is a bit strange.
  */
 static void
-my_gnutls_log_func (int level, const char *text)
+my_gnutls_log_func (int level, const gchar *text)
 {
   fprintf (stderr, "[%d] (%d) %s", getpid (), level, text);
   if (*text && text[strlen (text) - 1] != '\n')
@@ -1788,7 +1788,7 @@ my_gnutls_log_func (int level, const char *text)
  * @return MHD_NO in case of problems. MHD_YES if all is OK.
  */
 int
-gsad_init (const char *static_content_directory)
+gsad_init (const gchar *static_content_directory)
 {
   g_debug ("Initializing the Greenbone Security Assistant Deamon...\n");
 
@@ -1887,7 +1887,7 @@ gsad_cleanup ()
   g_debug ("Removing pidfile... %s",
            gsad_settings_get_pid_filename (gsad_global_settings));
   pidfile_remove (
-    (char *) gsad_settings_get_pid_filename (gsad_global_settings));
+    (gchar *) gsad_settings_get_pid_filename (gsad_global_settings));
 
   if (log_config)
     {
@@ -1929,9 +1929,9 @@ register_signal_handlers ()
 }
 
 static void
-mhd_logger (void *arg, const char *fmt, va_list ap)
+mhd_logger (void *arg, const gchar *fmt, va_list ap)
 {
-  char buf[1024];
+  gchar buf[1024];
 
   vsnprintf (buf, sizeof (buf), fmt, ap);
   va_end (ap);
@@ -1939,22 +1939,18 @@ mhd_logger (void *arg, const char *fmt, va_list ap)
 }
 
 static struct MHD_Daemon *
-start_unix_http_daemon (const char *unix_socket_path,
-                        const char *unix_socket_owner,
-                        const char *unix_socket_group,
-                        const char *unix_socket_mode,
+start_unix_http_daemon (
+  const gchar *unix_socket_path, const gchar *unix_socket_owner,
+  const gchar *unix_socket_group, const gchar *unix_socket_mode,
 #if MHD_VERSION < 0x00097002
-                        int handler (void *, struct MHD_Connection *,
-                                     const char *, const char *, const char *,
-                                     const char *, size_t *, void **),
+  int handler (void *, struct MHD_Connection *, const gchar *, const gchar *,
+               const gchar *, const gchar *, size_t *, void **),
 #else
-                        enum MHD_Result handler (void *,
-                                                 struct MHD_Connection *,
-                                                 const char *, const char *,
-                                                 const char *, const char *,
-                                                 size_t *, void **),
+  enum MHD_Result handler (void *, struct MHD_Connection *, const gchar *,
+                           const gchar *, const gchar *, const gchar *,
+                           size_t *, void **),
 #endif
-                        http_handler_t *http_handlers)
+  http_handler_t *http_handlers)
 {
   struct sockaddr_un addr;
   struct stat ustat;
@@ -2063,13 +2059,13 @@ start_unix_http_daemon (const char *unix_socket_path,
 static struct MHD_Daemon *
 start_http_daemon (int port,
 #if MHD_VERSION < 0x00097002
-                   int handler (void *, struct MHD_Connection *, const char *,
-                                const char *, const char *, const char *,
+                   int handler (void *, struct MHD_Connection *, const gchar *,
+                                const gchar *, const gchar *, const gchar *,
                                 size_t *, void **),
 #else
                    enum MHD_Result handler (void *, struct MHD_Connection *,
-                                            const char *, const char *,
-                                            const char *, const char *,
+                                            const gchar *, const gchar *,
+                                            const gchar *, const gchar *,
                                             size_t *, void **),
 #endif
                    http_handler_t *http_handlers,
@@ -2077,7 +2073,7 @@ start_http_daemon (int port,
 {
   unsigned int flags;
   int ipv6_flag;
-  char *ip_address = NULL;
+  gchar *ip_address = NULL;
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
 
   if (address->ss_family == AF_INET6)
@@ -2117,14 +2113,14 @@ start_http_daemon (int port,
 }
 
 static struct MHD_Daemon *
-start_https_daemon (int port, const char *key, const char *cert,
-                    const char *priorities, const char *dh_params,
+start_https_daemon (int port, const gchar *key, const gchar *cert,
+                    const gchar *priorities, const gchar *dh_params,
                     http_handler_t *http_handlers,
                     struct sockaddr_storage *address)
 {
   unsigned int flags;
   int ipv6_flag;
-  char *ip_address = NULL;
+  gchar *ip_address = NULL;
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
 
   if (address->ss_family == AF_INET6)
@@ -2196,7 +2192,7 @@ gsad_address_set_port (struct sockaddr_storage *address, int port)
  * @return 0 on success, 1 on failure.
  */
 static int
-gsad_address_init (const char *address_str, int port)
+gsad_address_init (const gchar *address_str, int port)
 {
   struct sockaddr_storage *address = g_malloc0 (sizeof (*address));
   struct sockaddr_in *gsad_address = (struct sockaddr_in *) address;
@@ -2233,9 +2229,9 @@ void
 gsad_init_logging (gsad_settings_t *gsad_settings)
 {
   /* Setup logging. */
-  const char *rc_name = gsad_settings_get_log_config_filename (gsad_settings);
+  const gchar *rc_name = gsad_settings_get_log_config_filename (gsad_settings);
   if (gvm_file_is_readable (rc_name))
-    log_config = load_log_configuration ((char *) rc_name);
+    log_config = load_log_configuration ((gchar *) rc_name);
   else
     g_debug (
       "Log configuration file %s not found or not readable, using defaults.",
@@ -2247,7 +2243,7 @@ gsad_init_logging (gsad_settings_t *gsad_settings)
   g_log_set_always_fatal (G_LOG_FATAL_MASK);
   /* Enable GNUTLS debugging if requested via env variable.  */
   {
-    const char *s;
+    const gchar *s;
     if ((s = getenv ("GVM_GNUTLS_DEBUG")))
       {
         gnutls_global_set_log_function (log_func_for_gnutls);
@@ -2486,7 +2482,7 @@ main (int argc, char **argv)
   /* Write pidfile. */
 
   if (pidfile_create (
-        (char *) gsad_settings_get_pid_filename (gsad_global_settings)))
+        (gchar *) gsad_settings_get_pid_filename (gsad_global_settings)))
     {
       g_critical ("Could not write PID file at %s.",
                   gsad_settings_get_pid_filename (gsad_global_settings));
