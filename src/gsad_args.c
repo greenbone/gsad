@@ -246,7 +246,7 @@ gsad_args_free (gsad_args_t *args)
  * @return TRUE if HTTP to HTTPS redirection should be enabled, FALSE otherwise.
  */
 gboolean
-gsad_args_enable_redirect (const gsad_args_t *args)
+gsad_args_is_redirect_enabled (const gsad_args_t *args)
 {
   return !args->http_only && !args->no_redirect;
 }
@@ -261,7 +261,7 @@ gsad_args_enable_redirect (const gsad_args_t *args)
  * otherwise.
  */
 gboolean
-gsad_args_enable_unix_socket (const gsad_args_t *args)
+gsad_args_is_unix_socket_enabled (const gsad_args_t *args)
 {
   return args->unix_socket_path != NULL;
 }
@@ -274,7 +274,7 @@ gsad_args_enable_unix_socket (const gsad_args_t *args)
  * @return TRUE if HTTPS should be enabled, FALSE otherwise.
  */
 gboolean
-gsad_args_enable_https (const gsad_args_t *args)
+gsad_args_is_https_enabled (const gsad_args_t *args)
 {
   return !args->http_only;
 }
@@ -288,7 +288,7 @@ gsad_args_enable_https (const gsad_args_t *args)
  * @return TRUE if HTTP Strict-Transport-Security should be enabled, FALSE
  */
 gboolean
-gsad_args_enable_http_strict_transport_security (const gsad_args_t *args)
+gsad_args_is_http_strict_transport_security_enabled (const gsad_args_t *args)
 {
   return !args->http_only && args->hsts_enabled;
 }
@@ -302,7 +302,7 @@ gsad_args_enable_http_strict_transport_security (const gsad_args_t *args)
  * @return TRUE if the server should run in the foreground, FALSE otherwise.
  */
 gboolean
-gsad_args_enable_run_in_foreground (const gsad_args_t *args)
+gsad_args_is_run_in_foreground_enabled (const gsad_args_t *args)
 {
   return args->foreground;
 }
@@ -414,7 +414,7 @@ gsad_args_get_port (const gsad_args_t *args)
 int
 gsad_args_get_redirect_port (const gsad_args_t *args)
 {
-  if (gsad_args_enable_redirect (args) == FALSE)
+  if (gsad_args_is_redirect_enabled (args) == FALSE)
     return PORT_NOT_SET;
 
   return args->gsad_redirect_port == PORT_NOT_SET ? DEFAULT_GSAD_HTTP_PORT
