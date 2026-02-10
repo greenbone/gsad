@@ -124,11 +124,6 @@ gchar *redirect_location = NULL;
  */
 pid_t redirect_pid = 0;
 
-/**
- * @brief PID of unix socket child in parent, 0 in child.
- */
-pid_t unix_pid = 0;
-
 /** @todo Ensure the accesses to these are thread safe. */
 
 /**
@@ -1880,11 +1875,6 @@ gsad_cleanup ()
       g_debug ("Stopping redirect daemon with PID %d", redirect_pid);
       kill (redirect_pid, SIGTERM);
     }
-  if (unix_pid)
-    {
-      g_debug ("Stopping UNIX socket HTTP daemon with PID %d", unix_pid);
-      kill (unix_pid, SIGTERM);
-    }
 
   g_debug ("Stopping HTTP server...");
   MHD_stop_daemon (gsad_daemon);
@@ -2532,7 +2522,7 @@ main (int argc, char **argv)
           goto error;
         }
     }
-  else if (gsad_args_is_unix_socket_enabled (gsad_args) && !unix_pid)
+  else if (gsad_args_is_unix_socket_enabled (gsad_args))
     {
       /* Start the unix socket server. */
 
