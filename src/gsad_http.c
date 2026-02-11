@@ -782,33 +782,6 @@ append_param (void *string, enum MHD_ValueKind kind, const char *key,
 }
 
 /**
- * @brief Reconstruct the URL for a connection.
- *
- * @param[in]  connection  Connection.
- * @param[in]  url         Base part of URL.
- *
- * @return URL.
- */
-gchar *
-reconstruct_url (http_connection_t *connection, const char *url)
-{
-  GString *full_url;
-
-  full_url = g_string_new (url);
-  /* To simplify appending the token later, ensure there is at least
-   * one param. */
-  g_string_append (full_url, "?r=1&");
-
-  MHD_get_connection_values (connection, MHD_GET_ARGUMENT_KIND, append_param,
-                             full_url);
-
-  if (full_url->str[strlen (full_url->str) - 1] == '&')
-    full_url->str[strlen (full_url->str) - 1] = '\0';
-
-  return g_string_free (full_url, FALSE);
-}
-
-/**
  * @brief Add security headers to a MHD response.
  */
 void
