@@ -113,9 +113,6 @@ typedef enum MHD_Result http_result_t;
 content_type_t
 guess_content_type (const gchar *path);
 
-void
-gsad_add_content_type_header (http_response_t *response, content_type_t *ct);
-
 http_result_t
 handler_create_response (http_connection_t *connection, gchar *data,
                          cmd_response_data_t *response_data, const gchar *sid);
@@ -127,7 +124,7 @@ handler_send_response (http_connection_t *connection, http_response_t *response,
 /**
  * @brief Content types.
  */
-enum authentication_reason
+typedef enum authentication_reason
 {
   LOGIN_FAILED,
   LOGIN_ERROR,
@@ -139,9 +136,7 @@ enum authentication_reason
   BAD_MISSING_TOKEN,
   TOO_MANY_USER_SESSIONS,
   UNKOWN_ERROR,
-};
-
-typedef enum authentication_reason authentication_reason_t;
+} authentication_reason_t;
 
 http_result_t
 handler_send_reauthentication (http_connection_t *connection,
@@ -158,16 +153,19 @@ send_redirect_to_uri (http_connection_t *connection, const char *uri,
                       const gchar *sid);
 
 void
-add_security_headers (http_response_t *response);
+gsad_http_add_security_headers (http_response_t *);
 
 void
-add_guest_chart_content_security_headers (http_response_t *response);
+gsad_http_add_guest_chart_content_security_headers (http_response_t *);
 
 void
-add_cors_headers (http_response_t *response);
+gsad_http_add_cors_headers (http_response_t *);
 
 void
-add_forbid_caching_headers (http_response_t *response);
+gsad_http_add_forbid_caching_headers (http_response_t *);
+
+void
+gsad_http_add_content_type_header (http_response_t *, content_type_t *);
 
 /* helper functions required in gsad_http */
 http_response_t *
