@@ -18,6 +18,7 @@
 
 #include <assert.h>              /* for asset */
 #include <gvm/base/networking.h> /* for sockaddr_as_str */
+#include <gvm/util/fileutils.h>  /* for gvm_file_exists */
 #include <gvm/util/xmlutils.h>   /* for xml_string_append */
 #include <locale.h>              /* for setlocale */
 #include <stdlib.h>              /* for abort */
@@ -688,7 +689,7 @@ gsad_http_create_file_content_response (http_connection_t *connection,
 
   cmd_response_data_set_status_code (response_data, MHD_HTTP_OK);
 
-  if (!g_file_test (path, (G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)))
+  if (!str_equal (path, "index.html") && !gvm_file_exists (path))
     {
       /* path does not exists or is not a file */
       /* return index.html to show page not found via js */
