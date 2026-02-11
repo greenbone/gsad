@@ -204,10 +204,6 @@ http_result_t
 exec_gmp_post (http_connection_t *connection, gsad_connection_info_t *con_info,
                const gchar *client_address);
 
-http_result_t
-params_append_mhd (params_t *params, const gchar *name, const gchar *filename,
-                   const gchar *chunk_data, int chunk_size, int chunk_offset);
-
 gchar *
 gsad_message (credentials_t *, const gchar *, const gchar *, int, const gchar *,
               cmd_response_data_t *);
