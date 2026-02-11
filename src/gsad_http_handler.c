@@ -678,9 +678,9 @@ handle_index (http_connection_t *connection, gsad_connection_info_t *con_info,
   response_data = cmd_response_data_new ();
   cmd_response_data_set_allow_caching (response_data, FALSE);
 
-  response =
-    file_content_response (connection, gsad_connection_info_get_url (con_info),
-                           "index.html", response_data);
+  response = gsad_http_create_file_content_response (
+    connection, gsad_connection_info_get_url (con_info), "index.html",
+    response_data);
   return gsad_http_send_response (connection, response, response_data, NULL);
 }
 
@@ -715,7 +715,8 @@ handle_static_file (http_connection_t *connection,
   response_data = cmd_response_data_new ();
   cmd_response_data_set_allow_caching (response_data, TRUE);
 
-  response = file_content_response (connection, url, path, response_data);
+  response = gsad_http_create_file_content_response (connection, url, path,
+                                                     response_data);
 
   g_free (path);
 
@@ -775,7 +776,8 @@ handle_static_content (http_connection_t *connection,
   response_data = cmd_response_data_new ();
   cmd_response_data_set_allow_caching (response_data, TRUE);
 
-  response = file_content_response (connection, url, path, response_data);
+  response = gsad_http_create_file_content_response (connection, url, path,
+                                                     response_data);
 
   g_free (path);
 
@@ -809,7 +811,8 @@ handle_static_config (http_connection_t *connection,
 
   if (g_file_test (path, G_FILE_TEST_EXISTS))
     {
-      response = file_content_response (connection, url, path, response_data);
+      response = gsad_http_create_file_content_response (connection, url, path,
+                                                         response_data);
       g_free (path);
       return gsad_http_send_response (connection, response, response_data,
                                       NULL);
