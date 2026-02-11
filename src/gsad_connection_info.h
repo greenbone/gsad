@@ -11,10 +11,21 @@
 #include <glib.h>
 #include <microhttpd.h>
 
+/**
+ * @brief Connection information for GSA HTTP requests.
+ *
+ * This file defines the gsad_connection_info_t structure and related functions
+ * to manage connection information during HTTP request handling in GSA.
+ */
+
+/**
+ * @brief Method type for HTTP requests.
+ */
 enum method_type
 {
-  METHOD_TYPE_POST = 1,
-  METHOD_TYPE_GET = 2
+  METHOD_TYPE_POST = 1, ///< POST method.
+  METHOD_TYPE_GET = 2   ///< GET method.
+  /* other method types are not used currently */
 };
 
 /**
@@ -33,6 +44,9 @@ gsad_connection_info_new ();
 
 void
 gsad_connection_info_free (gsad_connection_info_t *);
+
+enum method_type
+gsad_connection_info_get_method_type (const gsad_connection_info_t *);
 
 params_t *
 gsad_connection_info_get_params (const gsad_connection_info_t *);

@@ -212,13 +212,19 @@ if(BUILD_TESTING)
 
   include(${CMAKE_SOURCE_DIR}/cmake/add_unit_test.cmake)
 
-  add_unit_test(utils "")
+  add_unit_test(utils)
   add_unit_test(gsad-validator validator.c)
-  add_unit_test(gsad-args "")
-  add_unit_test(gsad-settings "")
+  add_unit_test(gsad-args)
+  add_unit_test(gsad-settings)
+  add_unit_test(gsad-connection-info gsad_params.c)
   add_custom_target(
     tests
-    DEPENDS gsad-validator-test utils-test gsad-args-test gsad-settings-test
+    DEPENDS
+      gsad-validator-test
+      utils-test
+      gsad-args-test
+      gsad-settings-test
+      gsad-connection-info-test
   )
 endif(BUILD_TESTING)
 
