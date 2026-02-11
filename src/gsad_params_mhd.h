@@ -18,7 +18,7 @@ void
 params_mhd_validate (void *);
 
 http_result_t
-params_append_mhd (params_t *, const gchar *, const gchar *, const gchar *, int,
+params_mhd_append (params_t *, const gchar *, const gchar *, const gchar *, int,
                    int);
 
 #endif /* _GSAD_PARAMS_MHD_H */

@@ -18,7 +18,7 @@
  * @param[out]  chunk_offset  Offset into all data.
  */
 http_result_t
-params_append_mhd (params_t *params, const gchar *name, const gchar *filename,
+params_mhd_append (params_t *params, const gchar *name, const gchar *filename,
                    const gchar *chunk_data, int chunk_size, int chunk_offset)
 {
   if ((strncmp (name, "bulk_selected:", strlen ("bulk_selected:")) == 0)

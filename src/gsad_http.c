@@ -12,7 +12,7 @@
 
 #include "gsad_base.h"       /* for ctime_r_strip_newline */
 #include "gsad_i18n.h"       /* for accept_language_to_env_fmt */
-#include "gsad_params_mhd.h" /* for params_append_mhd */
+#include "gsad_params_mhd.h" /* for params_mhd_append */
 #include "gsad_settings.h"
 #include "utils.h" /* for str_equal */
 
@@ -946,7 +946,7 @@ serve_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,
 
   if (NULL != key)
     {
-      params_append_mhd (gsad_connection_info_get_params (con_info), key,
+      params_mhd_append (gsad_connection_info_get_params (con_info), key,
                          filename, data, size, off);
       return MHD_YES;
     }
