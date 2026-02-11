@@ -10,8 +10,9 @@
 
 #include "gsad_http.h"
 
-#include "gsad_base.h" /* for ctime_r_strip_newline */
-#include "gsad_i18n.h" /* for accept_language_to_env_fmt */
+#include "gsad_base.h"       /* for ctime_r_strip_newline */
+#include "gsad_i18n.h"       /* for accept_language_to_env_fmt */
+#include "gsad_params_mhd.h" /* for params_append_mhd */
 #include "gsad_settings.h"
 #include "utils.h" /* for str_equal */
 

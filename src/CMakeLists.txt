@@ -97,6 +97,8 @@ add_executable(
   gsad_http.c
   gsad_http_handler.c
   gsad_i18n.c
+  gsad_params.c
+  gsad_params_mhd.c
   gsad_session.c
   gsad_settings.c
   gsad_user.c

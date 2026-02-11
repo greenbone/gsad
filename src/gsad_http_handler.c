@@ -14,6 +14,7 @@
 #include "gsad_credentials.h" /* for credentials_t */
 #include "gsad_gmp.h"         /* for get_system_report_gmp_from_url */
 #include "gsad_i18n.h"        /* for accept_language_to_env_fmt */
+#include "gsad_params_mhd.h"  /* for params_mhd_add */
 #include "gsad_settings.h"    /* for get_guest_usernmae */
 #include "gsad_user.h"        /* for user_t */
 #include "utils.h"            /* for str_equal */
