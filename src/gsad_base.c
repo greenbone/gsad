@@ -230,22 +230,6 @@ params_original_value (params_t *params, const char *name)
 }
 
 /**
- * @brief Get filename of param.
- *
- * @param[in]  params  Params.
- * @param[in]  name    Name.
- *
- * @return Filename if param present and has a filename, else NULL.
- */
-const char *
-params_filename (params_t *params, const char *name)
-{
-  param_t *param;
-  param = g_hash_table_lookup (params, name);
-  return param ? param->filename : NULL;
-}
-
-/**
  * @brief Get values of param.
  *
  * @param[in]  params  Params.
