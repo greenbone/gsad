@@ -73,7 +73,8 @@ guess_content_type (const gchar *path)
  * @param[in]      ct        Content Type to set.
  */
 void
-gsad_add_content_type_header (http_response_t *response, content_type_t *ct)
+gsad_http_add_content_type_header (http_response_t *response,
+                                   content_type_t *ct)
 {
   if (!response)
     return;
@@ -205,9 +206,9 @@ send_redirect_to_uri (http_connection_t *connection, const char *uri,
       return MHD_NO;
     }
 
-  add_forbid_caching_headers (response);
-  add_security_headers (response);
-  add_cors_headers (response);
+  gsad_http_add_forbid_caching_headers (response);
+  gsad_http_add_security_headers (response);
+  gsad_http_add_cors_headers (response);
   ret = MHD_queue_response (connection, MHD_HTTP_SEE_OTHER, response);
   MHD_destroy_response (response);
   return ret;
@@ -246,7 +247,7 @@ send_response (http_connection_t *connection, const char *content,
   response = MHD_create_response_from_buffer (
     size, (void *) (content ? content : ""), MHD_RESPMEM_MUST_COPY);
 
-  gsad_add_content_type_header (response, &content_type);
+  gsad_http_add_content_type_header (response, &content_type);
 
   if (content_disposition)
     MHD_add_response_header (response, "Content-Disposition",
@@ -257,9 +258,9 @@ send_response (http_connection_t *connection, const char *content,
       return MHD_NO;
     }
 
-  add_forbid_caching_headers (response);
-  add_security_headers (response);
-  add_cors_headers (response);
+  gsad_http_add_forbid_caching_headers (response);
+  gsad_http_add_security_headers (response);
+  gsad_http_add_cors_headers (response);
   ret = MHD_queue_response (connection, status_code, response);
   MHD_destroy_response (response);
   return ret;
@@ -303,7 +304,7 @@ handler_send_response (http_connection_t *connection, http_response_t *response,
     }
   else
     {
-      gsad_add_content_type_header (response, &content_type);
+      gsad_http_add_content_type_header (response, &content_type);
     }
 
   content_disposition =
@@ -316,9 +317,9 @@ handler_send_response (http_connection_t *connection, http_response_t *response,
     }
 
   if (cmd_response_data_is_allow_caching (response_data) == FALSE)
-    add_forbid_caching_headers (response);
-  add_security_headers (response);
-  add_cors_headers (response);
+    gsad_http_add_forbid_caching_headers (response);
+  gsad_http_add_security_headers (response);
+  gsad_http_add_cors_headers (response);
 
   status_code = cmd_response_data_get_status_code (response_data);
 
@@ -801,7 +802,7 @@ reconstruct_url (http_connection_t *connection, const char *url)
  * @brief Add security headers to a MHD response.
  */
 void
-add_security_headers (http_response_t *response)
+gsad_http_add_security_headers (http_response_t *response)
 {
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
   const gchar *http_x_frame_options =
@@ -828,7 +829,7 @@ add_security_headers (http_response_t *response)
  * @brief Add guest chart content security headers to a MHD response.
  */
 void
-add_guest_chart_content_security_headers (http_response_t *response)
+gsad_http_add_guest_chart_content_security_headers (http_response_t *response)
 {
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
   const char *http_guest_chart_x_frame_options =
@@ -848,7 +849,7 @@ add_guest_chart_content_security_headers (http_response_t *response)
 }
 
 void
-add_cors_headers (http_response_t *response)
+gsad_http_add_cors_headers (http_response_t *response)
 {
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
   const gchar *http_cors_origin =
@@ -868,7 +869,7 @@ add_cors_headers (http_response_t *response)
  * @param[in]  response       The HTTP response to add the headers to.
  */
 void
-add_forbid_caching_headers (http_response_t *response)
+gsad_http_add_forbid_caching_headers (http_response_t *response)
 {
   MHD_add_response_header (response, MHD_HTTP_HEADER_EXPIRES, "-1");
   MHD_add_response_header (response, MHD_HTTP_HEADER_CACHE_CONTROL,
