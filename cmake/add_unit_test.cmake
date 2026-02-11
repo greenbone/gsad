@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-2.0-or-later
 
-macro(add_unit_test _baseName _objects)
+macro(add_unit_test _baseName ${ARGN})
   string(REPLACE "-" "_" _testSource "${_baseName}")
   # utils.c
   set(_source "${_testSource}.c")
@@ -18,7 +18,7 @@ macro(add_unit_test _baseName _objects)
     EXCLUDE_FROM_ALL
     ${_source}
     ${_testSource}
-    ${_objects}
+    ${ARGN}
   )
   target_compile_options(${_testName} PRIVATE "-fsanitize=address")
   target_link_options(${_testName} PRIVATE "-fsanitize=address")
