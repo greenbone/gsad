@@ -195,7 +195,7 @@ attach_sid (http_response_t *response, const char *sid);
 http_result_t
 attach_remove_sid (http_response_t *response, const gchar *sid);
 
-/* params_append_mhd, exec_gmp_... are still in gsad.c */
+/* exec_gmp functions are still in gsad.c */
 http_result_t
 exec_gmp_get (http_connection_t *connection, gsad_connection_info_t *con_info,
               credentials_t *credentials);
