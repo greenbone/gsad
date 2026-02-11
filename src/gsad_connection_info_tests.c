@@ -48,6 +48,27 @@ Ensure (gsad_connection_info, should_allow_to_create_connection_info_for_get)
   gsad_connection_info_free (con_info);
 }
 
+Ensure (gsad_connection_info, should_allow_to_free_null_connection_info)
+{
+  gsad_connection_info_free (NULL);
+}
+
+Ensure (gsad_connection_info, should_allow_to_create_connection_info_unknown)
+{
+  gsad_connection_info_t *con_info =
+    gsad_connection_info_new (METHOD_TYPE_UNKNOWN);
+
+  assert_that (con_info, is_not_null);
+  assert_that (gsad_connection_info_get_method_type (con_info),
+               is_equal_to (METHOD_TYPE_UNKNOWN));
+  assert_that (gsad_connection_info_get_params (con_info), is_not_null);
+  assert_that (gsad_connection_info_get_postprocessor (con_info), is_null);
+  assert_that (gsad_connection_info_get_cookie (con_info), is_null);
+  assert_that (gsad_connection_info_get_language (con_info), is_null);
+
+  gsad_connection_info_free (con_info);
+}
+
 Ensure (gsad_connection_info, should_set_and_get_postprocessor)
 {
   gsad_connection_info_t *con_info =
@@ -97,11 +118,15 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_connection_info,
                          should_allow_to_create_connection_info_for_get);
   add_test_with_context (suite, gsad_connection_info,
+                         should_allow_to_create_connection_info_unknown);
+  add_test_with_context (suite, gsad_connection_info,
                          should_set_and_get_postprocessor);
   add_test_with_context (suite, gsad_connection_info,
                          should_set_and_get_cookie);
   add_test_with_context (suite, gsad_connection_info,
                          should_set_and_get_language);
+  add_test_with_context (suite, gsad_connection_info,
+                         should_allow_to_free_null_connection_info);
 
   destroy_test_suite (suite);
   return ret;
