@@ -20897,7 +20897,7 @@ login (http_connection_t *con, params_t *params,
           g_warning ("Authentication failure for '%s' from %s. "
                      "Status was %d.",
                      login ?: "", client_address, ret);
-          return handler_send_reauthentication (con, status, auth_reason);
+          return gsad_http_send_reauthentication (con, status, auth_reason);
         }
       else
         {
@@ -20920,7 +20920,7 @@ login (http_connection_t *con, params_t *params,
               g_free (role);
               g_free (pw_warning);
 
-              return handler_send_reauthentication (con, status, auth_reason);
+              return gsad_http_send_reauthentication (con, status, auth_reason);
             }
 
           g_message ("Authentication success for '%s' from %s", login ?: "",
@@ -20931,8 +20931,8 @@ login (http_connection_t *con, params_t *params,
           gchar *data =
             envelope_gmp (NULL, credentials, params, NULL, response_data);
 
-          ret = handler_create_response (con, data, response_data,
-                                         user_get_cookie (user));
+          ret = gsad_http_create_response (con, data, response_data,
+                                           user_get_cookie (user));
 
           user_free (user);
 
@@ -20951,8 +20951,8 @@ login (http_connection_t *con, params_t *params,
     {
       g_warning ("Authentication failure for '%s' from %s", login ?: "",
                  client_address);
-      return handler_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
-                                            LOGIN_FAILED);
+      return gsad_http_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
+                                              LOGIN_FAILED);
     }
 }
 

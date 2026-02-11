@@ -291,24 +291,27 @@ handle_validate (http_connection_t *connection,
   /* If called with undefined URL, abort request handler. */
   if (&url[0] == NULL)
     {
-      send_response (connection, BAD_REQUEST_PAGE, MHD_HTTP_NOT_ACCEPTABLE,
-                     NULL, GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
+      gsad_http_send_response_for_content (
+        connection, BAD_REQUEST_PAGE, MHD_HTTP_NOT_ACCEPTABLE, NULL,
+        GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
       return MHD_YES;
     }
 
   /* Prevent guest link from leading to URL redirection. */
   if (url && (url[0] == '/') && (url[1] == '/'))
     {
-      send_response (connection, BAD_REQUEST_PAGE, MHD_HTTP_BAD_REQUEST, NULL,
-                     GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
+      gsad_http_send_response_for_content (
+        connection, BAD_REQUEST_PAGE, MHD_HTTP_BAD_REQUEST, NULL,
+        GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
       return MHD_YES;
     }
 
   /* Many Glib functions require valid UTF-8. */
   if (url && (g_utf8_validate (url, -1, NULL) == FALSE))
     {
-      send_response (connection, UTF8_ERROR_PAGE ("URL"), MHD_HTTP_BAD_REQUEST,
-                     NULL, GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
+      gsad_http_send_response_for_content (
+        connection, UTF8_ERROR_PAGE ("URL"), MHD_HTTP_BAD_REQUEST, NULL,
+        GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
       return MHD_YES;
     }
 
@@ -326,8 +329,9 @@ handle_invalid_method (http_connection_t *connection,
           && gsad_connection_info_get_method_type (con_info)
                != METHOD_TYPE_POST))
     {
-      send_response (connection, ERROR_PAGE, MHD_HTTP_NOT_ACCEPTABLE, NULL,
-                     GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
+      gsad_http_send_response_for_content (
+        connection, ERROR_PAGE, MHD_HTTP_NOT_ACCEPTABLE, NULL,
+        GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
       return MHD_YES;
     }
 
@@ -396,7 +400,7 @@ handle_setup_user (http_connection_t *connection,
 
   if (ret == USER_GMP_DOWN)
     {
-      return handler_send_reauthentication (
+      return gsad_http_send_reauthentication (
         connection, MHD_HTTP_SERVICE_UNAVAILABLE, GMP_SERVICE_DOWN);
     }
 
@@ -422,8 +426,8 @@ handle_setup_user (http_connection_t *connection,
           : ((ret == USER_BAD_MISSING_COOKIE) ? BAD_MISSING_COOKIE
                                               : BAD_MISSING_TOKEN);
 
-      return handler_send_reauthentication (connection, http_response_code,
-                                            auth_reason);
+      return gsad_http_send_reauthentication (connection, http_response_code,
+                                              auth_reason);
     }
 
   if (ret)
@@ -456,7 +460,7 @@ handle_setup_credentials (http_connection_t *connection,
       if (accept_language
           && g_utf8_validate (accept_language, -1, NULL) == FALSE)
         {
-          send_response (
+          gsad_http_send_response_for_content (
             connection, UTF8_ERROR_PAGE ("'Accept-Language' header"),
             MHD_HTTP_BAD_REQUEST, NULL, GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
           return MHD_YES;
@@ -489,8 +493,9 @@ handle_logout (http_connection_t *connection, gsad_connection_info_t *con_info,
 
       user_free (user);
     }
-  return send_response (connection, "", MHD_HTTP_OK, REMOVE_SID,
-                        GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
+  return gsad_http_send_response_for_content (
+    connection, "", MHD_HTTP_OK, REMOVE_SID, GSAD_CONTENT_TYPE_TEXT_HTML, NULL,
+    0);
 }
 
 http_result_t
@@ -526,9 +531,9 @@ handle_gmp_post (http_connection_t *connection,
                                                  "Accept-Language");
   if (accept_language && g_utf8_validate (accept_language, -1, NULL) == FALSE)
     {
-      send_response (connection, UTF8_ERROR_PAGE ("'Accept-Language' header"),
-                     MHD_HTTP_BAD_REQUEST, NULL, GSAD_CONTENT_TYPE_TEXT_HTML,
-                     NULL, 0);
+      gsad_http_send_response_for_content (
+        connection, UTF8_ERROR_PAGE ("'Accept-Language' header"),
+        MHD_HTTP_BAD_REQUEST, NULL, GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
       return MHD_YES;
     }
 
@@ -542,9 +547,9 @@ handle_gmp_post (http_connection_t *connection,
   int ret = get_client_address (connection, client_address);
   if (ret == 1)
     {
-      send_response (connection, UTF8_ERROR_PAGE ("'X-Real-IP' header"),
-                     MHD_HTTP_BAD_REQUEST, NULL, GSAD_CONTENT_TYPE_TEXT_HTML,
-                     NULL, 0);
+      gsad_http_send_response_for_content (
+        connection, UTF8_ERROR_PAGE ("'X-Real-IP' header"),
+        MHD_HTTP_BAD_REQUEST, NULL, GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
       return MHD_YES;
     }
 
@@ -616,8 +621,8 @@ handle_system_report (http_connection_t *connection,
     case 2: /* authentication failed */
       cmd_response_data_free (response_data);
       credentials_free (credentials);
-      return handler_send_reauthentication (connection, MHD_HTTP_UNAUTHORIZED,
-                                            LOGIN_FAILED);
+      return gsad_http_send_reauthentication (connection, MHD_HTTP_UNAUTHORIZED,
+                                              LOGIN_FAILED);
 
       break;
     case 3: /* timeout */
@@ -660,7 +665,7 @@ handle_system_report (http_connection_t *connection,
 
   credentials_free (credentials);
 
-  return handler_create_response (connection, res, response_data, NULL);
+  return gsad_http_create_response (connection, res, response_data, NULL);
 }
 
 http_result_t
@@ -676,7 +681,7 @@ handle_index (http_connection_t *connection, gsad_connection_info_t *con_info,
   response =
     file_content_response (connection, gsad_connection_info_get_url (con_info),
                            "index.html", response_data);
-  return handler_send_response (connection, response, response_data, NULL);
+  return gsad_http_send_response (connection, response, response_data, NULL);
 }
 
 http_result_t
@@ -714,7 +719,7 @@ handle_static_file (http_connection_t *connection,
 
   g_free (path);
 
-  return handler_send_response (connection, response, response_data, NULL);
+  return gsad_http_send_response (connection, response, response_data, NULL);
 }
 
 http_result_t
@@ -758,8 +763,8 @@ handle_static_content (http_connection_t *connection,
           cmd_response_data_set_status_code (response_data,
                                              MHD_HTTP_MOVED_PERMANENTLY);
           g_free (path);
-          return handler_send_response (connection, response, response_data,
-                                        NULL);
+          return gsad_http_send_response (connection, response, response_data,
+                                          NULL);
         }
 
       gchar *old_path = path;
@@ -774,7 +779,7 @@ handle_static_content (http_connection_t *connection,
 
   g_free (path);
 
-  return handler_send_response (connection, response, response_data, NULL);
+  return gsad_http_send_response (connection, response, response_data, NULL);
 }
 
 http_result_t
@@ -806,15 +811,16 @@ handle_static_config (http_connection_t *connection,
     {
       response = file_content_response (connection, url, path, response_data);
       g_free (path);
-      return handler_send_response (connection, response, response_data, NULL);
+      return gsad_http_send_response (connection, response, response_data,
+                                      NULL);
     }
 
   g_free (path);
 
   // send empty config
   cmd_response_data_set_status_code (response_data, MHD_HTTP_OK);
-  return handler_create_response (connection, g_strdup (""), response_data,
-                                  NULL);
+  return gsad_http_create_response (connection, g_strdup (""), response_data,
+                                    NULL);
 }
 
 static http_handler_t *
@@ -977,9 +983,9 @@ handle_request (void *cls, http_connection_t *connection, const char *url,
               /* Both bad request or running out of memory will lead here, but
                * we return the Bad Request page always, to prevent bad requests
                * from leading to "Internal application error" in the log. */
-              send_response (connection, BAD_REQUEST_PAGE,
-                             MHD_HTTP_NOT_ACCEPTABLE, NULL,
-                             GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
+              gsad_http_send_response_for_content (
+                connection, BAD_REQUEST_PAGE, MHD_HTTP_NOT_ACCEPTABLE, NULL,
+                GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
               gsad_connection_info_free (con_info);
               return MHD_YES;
             }

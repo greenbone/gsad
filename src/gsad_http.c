@@ -40,7 +40,7 @@
  * @return a content_type_t for the file
  */
 content_type_t
-guess_content_type (const gchar *path)
+gsad_http_guess_content_type (const gchar *path)
 {
   /* Guess content type. */
   if (g_str_has_suffix (path, ".png"))
@@ -168,8 +168,8 @@ gsad_http_add_content_type_header (http_response_t *response,
  * @return MHD_NO in case of a problem. Else MHD_YES.
  */
 http_result_t
-send_redirect_to_uri (http_connection_t *connection, const char *uri,
-                      const gchar *sid)
+gsad_http_send_redirect_to_uri (http_connection_t *connection, const char *uri,
+                                const gchar *sid)
 {
   int ret;
   http_response_t *response;
@@ -215,22 +215,28 @@ send_redirect_to_uri (http_connection_t *connection, const char *uri,
 }
 
 /**
- * @brief Sends a HTTP response.
+ * @brief Send response with given content.
  *
- * @param[in]  connection           The connection handle.
- * @param[in]  content              The content.
- * @param[in]  status_code          The HTTP status code.
- * @param[in]  sid                  Session ID, or NULL.
- * @param[in]  content_type         The content type.
- * @param[in]  content_disposition  The content disposition or NULL.
- * @param[in]  content_length       Content length, 0 for strlen (content).
+ * @param[in]  connection          Connection handle, e.g. used to send
+ * response.
+ * @param[in]  content             Content to send in response.
+ * @param[in]  status_code         HTTP status code to send.
+ * @param[in]  sid                 Session ID to attach, "0" to remove session,
+ * or NULL for no session header.
+ * @param[in]  content_type        Content type of content.
+ * @param[in]  content_disposition Content disposition to add, or NULL for none.
+ * @param[in]  content_length      Length of content, or 0 to calculate from
+ * content string.
  *
- * @return MHD_YES on success, MHD_NO on error.
+ * @return MHD_YES on success, else MHD_NO.
  */
 http_result_t
-send_response (http_connection_t *connection, const char *content,
-               int status_code, const gchar *sid, content_type_t content_type,
-               const char *content_disposition, size_t content_length)
+gsad_http_send_response_for_content (http_connection_t *connection,
+                                     const gchar *content, int status_code,
+                                     const gchar *sid,
+                                     content_type_t content_type,
+                                     const gchar *content_disposition,
+                                     size_t content_length)
 {
   http_response_t *response;
   size_t size;
@@ -267,7 +273,7 @@ send_response (http_connection_t *connection, const char *content,
 }
 
 /**
- * @brief Send response for handle_request.
+ * @brief Send response
  *
  * The passed response data will be freed and can't be used afterwards
  *
@@ -279,8 +285,9 @@ send_response (http_connection_t *connection, const char *content,
  * @return MHD_YES on success, else MHD_NO.
  */
 http_result_t
-handler_send_response (http_connection_t *connection, http_response_t *response,
-                       cmd_response_data_t *response_data, const gchar *sid)
+gsad_http_send_response (http_connection_t *connection,
+                         http_response_t *response,
+                         cmd_response_data_t *response_data, const gchar *sid)
 {
   int ret;
   const gchar *content_disposition;
@@ -330,8 +337,9 @@ handler_send_response (http_connection_t *connection, http_response_t *response,
     {
       /* Assume this was due to a bad request, to keep the MHD "Internal
        * application error" out of the log. */
-      send_response (connection, BAD_REQUEST_PAGE, MHD_HTTP_NOT_ACCEPTABLE,
-                     NULL, GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
+      gsad_http_send_response_for_content (
+        connection, BAD_REQUEST_PAGE, MHD_HTTP_NOT_ACCEPTABLE, NULL,
+        GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
       MHD_destroy_response (response);
       return MHD_YES;
     }
@@ -352,8 +360,8 @@ handler_send_response (http_connection_t *connection, http_response_t *response,
  * @return MHD_YES on success, else MHD_NO.
  */
 http_result_t
-handler_create_response (http_connection_t *connection, gchar *data,
-                         cmd_response_data_t *response_data, const gchar *sid)
+gsad_http_create_response (http_connection_t *connection, gchar *data,
+                           cmd_response_data_t *response_data, const gchar *sid)
 {
   http_response_t *response;
   gsize len = 0;
@@ -365,7 +373,7 @@ handler_create_response (http_connection_t *connection, gchar *data,
     }
 
   response = MHD_create_response_from_buffer (len, data, MHD_RESPMEM_MUST_FREE);
-  return handler_send_response (connection, response, response_data, sid);
+  return gsad_http_send_response (connection, response, response_data, sid);
 }
 
 /**
@@ -376,7 +384,7 @@ handler_create_response (http_connection_t *connection, gchar *data,
  * @return A http response
  */
 http_response_t *
-create_not_found_response (cmd_response_data_t *response_data)
+gsad_http_create_not_found_response (cmd_response_data_t *response_data)
 {
   http_response_t *response;
   int len;
@@ -419,9 +427,9 @@ create_not_found_response (cmd_response_data_t *response_data)
  * @return MHD_YES on success. MHD_NO on errors.
  */
 http_result_t
-handler_send_reauthentication (http_connection_t *connection,
-                               int http_status_code,
-                               authentication_reason_t reason)
+gsad_http_send_reauthentication (http_connection_t *connection,
+                                 int http_status_code,
+                                 authentication_reason_t reason)
 {
   const char *msg;
 
@@ -467,7 +475,7 @@ handler_send_reauthentication (http_connection_t *connection,
   gchar *xml = gsad_message (NULL, "Authentication required", __func__,
                              __LINE__, msg, response_data);
 
-  return handler_create_response (connection, xml, response_data, REMOVE_SID);
+  return gsad_http_create_response (connection, xml, response_data, REMOVE_SID);
 }
 
 /**
@@ -694,18 +702,19 @@ file_content_response (http_connection_t *connection, const char *url,
   if (file == NULL)
     {
       g_debug ("File %s failed, ", path);
-      return create_not_found_response (response_data);
+      return gsad_http_create_not_found_response (response_data);
     }
 
   /* Guess content type. */
-  cmd_response_data_set_content_type (response_data, guess_content_type (path));
+  cmd_response_data_set_content_type (response_data,
+                                      gsad_http_guess_content_type (path));
 
   if (stat (path, &buf))
     {
       /* File information could not be retrieved. */
       g_critical ("%s: file <%s> can not be stat'ed.\n", __func__, path);
       fclose (file);
-      return create_not_found_response (response_data);
+      return gsad_http_create_not_found_response (response_data);
     }
 
   /* Make sure the requested path really is a file. */
@@ -713,7 +722,7 @@ file_content_response (http_connection_t *connection, const char *url,
     {
       fclose (file);
       g_debug ("Path %s is not a file.", path);
-      return create_not_found_response (response_data);
+      return gsad_http_create_not_found_response (response_data);
     }
 
   response = MHD_create_response_from_callback (

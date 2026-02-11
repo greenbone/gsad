@@ -202,7 +202,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
                           "An internal error occurred inside GSA daemon. "
                           "Diagnostics: Invalid command.",
                           response_data);
-      return handler_create_response (con, res, response_data, new_sid);
+      return gsad_http_create_response (con, res, response_data, new_sid);
     }
 
   if (str_equal (cmd, "login"))
@@ -227,7 +227,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
                             "Diagnostics: Token bad.",
                             response_data);
 
-      return handler_create_response (con, res, response_data, NULL);
+      return gsad_http_create_response (con, res, response_data, NULL);
     }
 
   ret = user_find (gsad_connection_info_get_cookie (con_info),
@@ -239,7 +239,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
                           "An internal error occurred inside GSA daemon. "
                           "Diagnostics: Bad token.",
                           response_data);
-      return handler_create_response (con, res, response_data, NULL);
+      return gsad_http_create_response (con, res, response_data, NULL);
     }
 
   if (ret == USER_EXPIRED_TOKEN)
@@ -256,24 +256,24 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
 
       cmd_response_data_free (response_data);
 
-      return handler_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
-                                            SESSION_EXPIRED);
+      return gsad_http_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
+                                              SESSION_EXPIRED);
     }
 
   if (ret == USER_BAD_MISSING_COOKIE || ret == USER_IP_ADDRESS_MISSMATCH)
     {
       cmd_response_data_free (response_data);
 
-      return handler_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
-                                            BAD_MISSING_COOKIE);
+      return gsad_http_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
+                                              BAD_MISSING_COOKIE);
     }
 
   if (ret == USER_GMP_DOWN)
     {
       cmd_response_data_free (response_data);
 
-      return handler_send_reauthentication (con, MHD_HTTP_SERVICE_UNAVAILABLE,
-                                            GMP_SERVICE_DOWN);
+      return gsad_http_send_reauthentication (con, MHD_HTTP_SERVICE_UNAVAILABLE,
+                                              GMP_SERVICE_DOWN);
     }
 
   /* From here, the user is authenticated. */
@@ -318,8 +318,8 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
       break;
     case 2: /* auth failed */
       cmd_response_data_free (response_data);
-      return handler_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
-                                            LOGIN_FAILED);
+      return gsad_http_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
+                                              LOGIN_FAILED);
     case 3: /* timeout */
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
@@ -350,7 +350,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
 
   if (res)
     {
-      return handler_create_response (con, res, response_data, NULL);
+      return gsad_http_create_response (con, res, response_data, NULL);
     }
 
   /* always renew session for http post */
@@ -489,7 +489,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
                         response_data);
   }
 
-  ret = handler_create_response (con, res, response_data, new_sid);
+  ret = gsad_http_create_response (con, res, response_data, new_sid);
 
   user_free (user);
   credentials_free (credentials);
@@ -793,7 +793,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
                           "An internal error occurred inside GSA daemon. "
                           "Diagnostics: No valid command for gmp.",
                           response_data);
-      return handler_create_response (con, res, response_data, NULL);
+      return gsad_http_create_response (con, res, response_data, NULL);
     }
 
   /* Set the timezone. */
@@ -827,8 +827,8 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
       break;
     case 2: /* auth failed */
       cmd_response_data_free (response_data);
-      return handler_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
-                                            LOGIN_FAILED);
+      return gsad_http_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
+                                              LOGIN_FAILED);
     case 3: /* timeout */
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
@@ -859,7 +859,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
 
   if (res)
     {
-      return handler_create_response (con, res, response_data, NULL);
+      return gsad_http_create_response (con, res, response_data, NULL);
     }
 
   /* Set page display settings */
@@ -1136,8 +1136,8 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
       gvm_connection_close (&connection);
     }
 
-  return handler_send_response (con, response, response_data,
-                                user_get_cookie (user));
+  return gsad_http_send_response (con, response, response_data,
+                                  user_get_cookie (user));
 }
 
 /**
@@ -1186,8 +1186,9 @@ redirect_handler (void *cls, struct MHD_Connection *connection,
   /* Only accept GET and POST methods and send ERROR_PAGE in other cases. */
   if (strcmp (method, "GET") && strcmp (method, "POST"))
     {
-      send_response (connection, ERROR_PAGE, MHD_HTTP_NOT_ACCEPTABLE, NULL,
-                     GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
+      gsad_http_send_response_for_content (
+        connection, ERROR_PAGE, MHD_HTTP_NOT_ACCEPTABLE, NULL,
+        GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
       return MHD_YES;
     }
 
@@ -1195,9 +1196,9 @@ redirect_handler (void *cls, struct MHD_Connection *connection,
   host = MHD_lookup_connection_value (connection, MHD_HEADER_KIND, "Host");
   if (host && g_utf8_validate (host, -1, NULL) == FALSE)
     {
-      send_response (connection, UTF8_ERROR_PAGE ("'Host' header"),
-                     MHD_HTTP_BAD_REQUEST, NULL, GSAD_CONTENT_TYPE_TEXT_HTML,
-                     NULL, 0);
+      gsad_http_send_response_for_content (
+        connection, UTF8_ERROR_PAGE ("'Host' header"), MHD_HTTP_BAD_REQUEST,
+        NULL, GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
       return MHD_YES;
     }
   else if (host == NULL)
@@ -1216,7 +1217,7 @@ redirect_handler (void *cls, struct MHD_Connection *connection,
     location = g_strdup_printf (redirect_location, name);
   else
     location = g_strdup_printf (redirect_location, host);
-  if (send_redirect_to_uri (connection, location, NULL) == MHD_NO)
+  if (gsad_http_send_redirect_to_uri (connection, location, NULL) == MHD_NO)
     {
       g_free (location);
       return MHD_NO;
