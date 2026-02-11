@@ -12,7 +12,6 @@ struct gsad_connection_info
   char *cookie;                            ///< Value of SID cookie param.
   char *language;                          ///< Language code e.g. en
   enum method_type method_type;            ///< 1=POST, 2=GET.
-  gchar *redirect;                         ///< Redirect URL.
 };
 
 /**
@@ -30,7 +29,6 @@ gsad_connection_info_new (enum method_type method_type)
   con_info->cookie = NULL;
   con_info->language = NULL;
   con_info->method_type = method_type;
-  con_info->redirect = NULL;
   return con_info;
 }
 
@@ -51,7 +49,6 @@ gsad_connection_info_free (gsad_connection_info_t *con_info)
   params_free (con_info->params);
   g_free (con_info->cookie);
   g_free (con_info->language);
-  g_free (con_info->redirect);
   g_free (con_info);
 }
 
