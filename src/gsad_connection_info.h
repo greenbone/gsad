@@ -23,9 +23,9 @@
  */
 enum method_type
 {
-  METHOD_TYPE_POST = 1, ///< POST method.
-  METHOD_TYPE_GET = 2   ///< GET method.
-  /* other method types are not used currently */
+  METHOD_TYPE_UNKNOWN = 0, ///< Unknown method types.
+  METHOD_TYPE_POST = 1,    ///< POST method.
+  METHOD_TYPE_GET = 2      ///< GET method.
 };
 
 /**
