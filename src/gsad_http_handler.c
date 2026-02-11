@@ -97,7 +97,7 @@ http_handler_add (http_handler_t *handlers, http_handler_t *next)
   return handlers;
 }
 
-int
+http_result_t
 http_handler_start (http_connection_t *connection, const char *method,
                     const char *url, gsad_connection_info_t *con_info,
                     http_handler_t *handler, void *data)
@@ -109,7 +109,7 @@ http_handler_start (http_connection_t *connection, const char *method,
   return handler->handle (connection, method, url, con_info, handler, data);
 }
 
-int
+http_result_t
 http_handler_next (http_connection_t *connection, const char *method,
                    const char *url, gsad_connection_info_t *con_info,
                    http_handler_t *handler, void *data)
@@ -164,7 +164,7 @@ http_handler_free (http_handler_t *handler)
   handler->free (handler);
 }
 
-int
+http_result_t
 handle_get_post (http_connection_t *connection, const char *method,
                  const char *url, gsad_connection_info_t *con_info,
                  http_handler_t *handler, void *data)
@@ -223,7 +223,7 @@ method_router_set_post_handler (http_handler_t *router, http_handler_t *handler)
   method_router->post = handler;
 }
 
-int
+http_result_t
 handle_url (http_connection_t *connection, const char *method, const char *url,
             gsad_connection_info_t *con_info, http_handler_t *current,
             void *data)
@@ -281,7 +281,7 @@ url_handler_add_func (http_handler_t *handlers, const gchar *regexp,
   return http_handler_add (handlers, url_handler);
 }
 
-int
+http_result_t
 handle_validate (http_connection_t *connection, const char *method,
                  const char *url, gsad_connection_info_t *con_info,
                  http_handler_t *handler, void *data)
@@ -315,7 +315,7 @@ handle_validate (http_connection_t *connection, const char *method,
   return http_handler_next (connection, method, url, con_info, handler, data);
 }
 
-int
+http_result_t
 handle_invalid_method (http_connection_t *connection, const char *method,
                        const char *url, gsad_connection_info_t *con_info,
                        http_handler_t *handler, void *data)
@@ -368,7 +368,7 @@ get_user_from_connection (http_connection_t *connection, user_t **user)
   return user_find (cookie, token, client_address, user);
 }
 
-int
+http_result_t
 handle_get_user (http_connection_t *connection, const char *method,
                  const char *url, gsad_connection_info_t *con_info,
                  http_handler_t *handler, void *data)
@@ -378,7 +378,7 @@ handle_get_user (http_connection_t *connection, const char *method,
   return http_handler_next (connection, method, url, con_info, handler, user);
 }
 
-int
+http_result_t
 handle_setup_user (http_connection_t *connection, const char *method,
                    const char *url, gsad_connection_info_t *con_info,
                    http_handler_t *handler, void *data)
@@ -429,7 +429,7 @@ handle_setup_user (http_connection_t *connection, const char *method,
   return http_handler_next (connection, method, url, con_info, handler, user);
 }
 
-int
+http_result_t
 handle_setup_credentials (http_connection_t *connection, const char *method,
                           const char *url, gsad_connection_info_t *con_info,
                           http_handler_t *handler, void *data)
@@ -471,7 +471,7 @@ handle_setup_credentials (http_connection_t *connection, const char *method,
                             credentials);
 }
 
-int
+http_result_t
 handle_logout (http_connection_t *connection, const char *method,
                const char *url, gsad_connection_info_t *con_info,
                http_handler_t *handler, void *data)
@@ -490,7 +490,7 @@ handle_logout (http_connection_t *connection, const char *method,
                         GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
 }
 
-int
+http_result_t
 handle_gmp_get (http_connection_t *connection, const char *method,
                 const char *url, gsad_connection_info_t *con_info,
                 http_handler_t *handler, void *data)
@@ -505,7 +505,7 @@ handle_gmp_get (http_connection_t *connection, const char *method,
   return ret;
 }
 
-int
+http_result_t
 handle_gmp_post (http_connection_t *connection, const char *method,
                  const char *url, gsad_connection_info_t *con_info,
                  http_handler_t *handler, void *data)
@@ -518,9 +518,9 @@ handle_gmp_post (http_connection_t *connection, const char *method,
     MHD_lookup_connection_value (connection, MHD_COOKIE_KIND, SID_COOKIE_NAME);
 
   if (gvm_validate (http_validator, "token", sid))
-    con_info->cookie = NULL;
+    gsad_connection_info_set_cookie (con_info, NULL);
   else
-    con_info->cookie = g_strdup (sid);
+    gsad_connection_info_set_cookie (con_info, sid);
 
   accept_language = MHD_lookup_connection_value (connection, MHD_HEADER_KIND,
                                                  "Accept-Language");
@@ -531,7 +531,9 @@ handle_gmp_post (http_connection_t *connection, const char *method,
                      NULL, 0);
       return MHD_YES;
     }
-  con_info->language = accept_language_to_env_fmt (accept_language);
+
+  gsad_connection_info_set_language (
+    con_info, accept_language_to_env_fmt (accept_language));
 
   get_client_address (connection, client_address);
 
@@ -549,7 +551,7 @@ handle_gmp_post (http_connection_t *connection, const char *method,
   return exec_gmp_post (connection, con_info, client_address);
 }
 
-int
+http_result_t
 handle_system_report (http_connection_t *connection, const char *method,
                       const char *url, gsad_connection_info_t *con_info,
                       http_handler_t *handler, void *data)
@@ -660,7 +662,7 @@ handle_system_report (http_connection_t *connection, const char *method,
   return handler_create_response (connection, res, response_data, NULL);
 }
 
-int
+http_result_t
 handle_index (http_connection_t *connection, const char *method,
               const char *url, gsad_connection_info_t *con_info,
               http_handler_t *handler, void *data)
@@ -676,7 +678,7 @@ handle_index (http_connection_t *connection, const char *method,
   return handler_send_response (connection, response, response_data, NULL);
 }
 
-int
+http_result_t
 handle_static_file (http_connection_t *connection, const char *method,
                     const char *url, gsad_connection_info_t *con_info,
                     http_handler_t *handler, void *data)
@@ -713,7 +715,7 @@ handle_static_file (http_connection_t *connection, const char *method,
   return handler_send_response (connection, response, response_data, NULL);
 }
 
-int
+http_result_t
 handle_static_content (http_connection_t *connection, const char *method,
                        const char *url, gsad_connection_info_t *con_info,
                        http_handler_t *handler, void *data)
@@ -772,7 +774,7 @@ handle_static_content (http_connection_t *connection, const char *method,
   return handler_send_response (connection, response, response_data, NULL);
 }
 
-int
+http_result_t
 handle_static_config (http_connection_t *connection, const char *method,
                       const char *url, gsad_connection_info_t *con_info,
                       http_handler_t *handler, void *data)
@@ -920,24 +922,18 @@ cleanup_http_handlers ()
  *
  * @return MHD_NO in case of problems. MHD_YES if all is OK.
  */
-#if MHD_VERSION < 0x00097002
-int
-#else
-enum MHD_Result
-#endif
+http_result_t
 handle_request (void *cls, http_connection_t *connection, const char *url,
                 const char *method, const char *version,
                 const char *upload_data, size_t *upload_data_size,
                 void **con_cls)
 {
   gsad_connection_info_t *con_info;
-  http_handler_t *handlers;
-  char *full_url;
-  gboolean new_connection;
 
-  handlers = (http_handler_t *) cls;
   con_info = *con_cls;
-  new_connection = (*con_cls == NULL);
+
+  http_handler_t *handlers = (http_handler_t *) cls;
+  gboolean new_connection = (con_info == NULL);
 
   /* Never respond on first call of a GET. */
   if ((str_equal (method, "GET")) && new_connection)
@@ -945,14 +941,11 @@ handle_request (void *cls, http_connection_t *connection, const char *url,
       /* First call for this request, a GET. */
 
       /* Freed by MHD_OPTION_NOTIFY_COMPLETED callback, free_resources. */
-      con_info = g_malloc0 (sizeof (gsad_connection_info_t));
-      con_info->params = params_new ();
-      con_info->connectiontype = 2;
-
+      con_info = gsad_connection_info_new (METHOD_TYPE_GET);
+      params_t *params = gsad_connection_info_get_params (con_info);
       MHD_get_connection_values (connection, MHD_GET_ARGUMENT_KIND,
-                                 params_mhd_add, con_info->params);
-
-      params_mhd_validate (con_info->params);
+                                 params_mhd_add, params);
+      params_mhd_validate (params);
 
       *con_cls = (void *) con_info;
       return MHD_YES;
@@ -964,26 +957,25 @@ handle_request (void *cls, http_connection_t *connection, const char *url,
         {
           /* First call for this request, a POST. */
 
-          /* Freed by MHD_OPTION_NOTIFY_COMPLETED callback, free_resources. */
-          con_info = g_malloc0 (sizeof (gsad_connection_info_t));
+          con_info = gsad_connection_info_new (METHOD_TYPE_POST);
 
-          con_info->postprocessor = MHD_create_post_processor (
+          /* Freed by MHD_OPTION_NOTIFY_COMPLETED callback, free_resources. */
+          struct MHD_PostProcessor *postprocessor = MHD_create_post_processor (
             connection, POST_BUFFER_SIZE, serve_post, (void *) con_info);
 
-          if (con_info->postprocessor == NULL)
+          if (postprocessor == NULL)
             {
-              g_free (con_info);
               /* Both bad request or running out of memory will lead here, but
                * we return the Bad Request page always, to prevent bad requests
                * from leading to "Internal application error" in the log. */
               send_response (connection, BAD_REQUEST_PAGE,
                              MHD_HTTP_NOT_ACCEPTABLE, NULL,
                              GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
+              gsad_connection_info_free (con_info);
               return MHD_YES;
             }
 
-          con_info->params = params_new ();
-          con_info->connectiontype = 1;
+          gsad_connection_info_set_postprocessor (con_info, postprocessor);
 
           *con_cls = (void *) con_info;
           return MHD_YES;
@@ -993,16 +985,14 @@ handle_request (void *cls, http_connection_t *connection, const char *url,
 
       if (*upload_data_size != 0)
         {
-          MHD_post_process (con_info->postprocessor, upload_data,
-                            *upload_data_size);
+          MHD_post_process (gsad_connection_info_get_postprocessor (con_info),
+                            upload_data, *upload_data_size);
           *upload_data_size = 0;
           return MHD_YES;
         }
     }
 
-  full_url = reconstruct_url (connection, url);
-  g_debug ("============= url: %s\n", full_url);
-  g_free (full_url);
+  g_debug ("Handling request for %s", url);
 
   if (handlers != NULL)
     {

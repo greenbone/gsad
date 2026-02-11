@@ -11,10 +11,11 @@
 #ifndef _GSAD_HTTP_H
 #define _GSAD_HTTP_H
 
-#include "gsad_cmd.h"          /* for cmd_response_data_t */
-#include "gsad_content_type.h" /* for content_type_t */
-#include "gsad_credentials.h"  /* for credentials_t */
-#include "gsad_user.h"         /* for user_t */
+#include "gsad_cmd.h"             /* for cmd_response_data_t */
+#include "gsad_connection_info.h" /* for gsad_connection_info_t */
+#include "gsad_content_type.h"    /* for content_type_t */
+#include "gsad_credentials.h"     /* for credentials_t */
+#include "gsad_user.h"            /* for user_t */
 
 #include <glib.h>
 #include <microhttpd.h>
@@ -99,28 +100,15 @@
  */
 #define MAX_FILE_NAME_SIZE 128
 
-/**
- * @brief Connection information.
- *
- * These objects are used to hold connection information
- * during the multiple calls of the request handler that
- * refer to the same request.
- *
- * Once a request is finished, the object will be free'd.
- */
-typedef struct gsad_connection_info
-{
-  struct MHD_PostProcessor *postprocessor; ///< POST processor.
-  params_t *params;                        ///< Request parameters.
-  char *cookie;                            ///< Value of SID cookie param.
-  char *language;                          ///< Language code e.g. en
-  int connectiontype;                      ///< 1=POST, 2=GET.
-  gchar *redirect;                         ///< Redirect URL.
-} gsad_connection_info_t;
-
 typedef struct MHD_Connection http_connection_t;
 
 typedef struct MHD_Response http_response_t;
+
+#if MHD_VERSION < 0x00097002
+typedef int http_result_t;
+#else
+typedef enum MHD_Result http_result_t;
+#endif
 
 content_type_t
 guess_content_type (const gchar *path);
@@ -128,11 +116,11 @@ guess_content_type (const gchar *path);
 void
 gsad_add_content_type_header (http_response_t *response, content_type_t *ct);
 
-int
+http_result_t
 handler_create_response (http_connection_t *connection, gchar *data,
                          cmd_response_data_t *response_data, const gchar *sid);
 
-int
+http_result_t
 handler_send_response (http_connection_t *connection, http_response_t *response,
                        cmd_response_data_t *response_data, const gchar *sid);
 
@@ -155,17 +143,17 @@ enum authentication_reason
 
 typedef enum authentication_reason authentication_reason_t;
 
-int
+http_result_t
 handler_send_reauthentication (http_connection_t *connection,
                                int http_status_code,
                                authentication_reason_t reason);
 
-int
+http_result_t
 send_response (http_connection_t *connection, const char *content,
                int status_code, const gchar *sid, content_type_t content_type,
                const char *content_disposition, size_t content_length);
 
-int
+http_result_t
 send_redirect_to_uri (http_connection_t *connection, const char *uri,
                       const gchar *sid);
 
@@ -192,40 +180,36 @@ reconstruct_url (http_connection_t *connection, const char *url);
 int
 get_client_address (http_connection_t *conn, char *client_address);
 
-#if MHD_VERSION < 0x00097002
-int
-#else
-enum MHD_Result
-#endif
+http_result_t
 serve_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,
             const char *filename, const char *content_type,
             const char *transfer_encoding, const char *data, uint64_t off,
             size_t size);
 
-int
+http_result_t
 remove_sid (http_response_t *response);
 
-int
+http_result_t
 attach_sid (http_response_t *response, const char *sid);
 
-int
+http_result_t
 attach_remove_sid (http_response_t *response, const gchar *sid);
 
 /* params_append_mhd, exec_gmp_... are still in gsad.c */
-int
+http_result_t
 exec_gmp_get (http_connection_t *connection, gsad_connection_info_t *con_info,
               credentials_t *credentials);
 
-int
+http_result_t
 exec_gmp_post (http_connection_t *connection, gsad_connection_info_t *con_info,
-               const char *client_address);
+               const gchar *client_address);
 
-int
-params_append_mhd (params_t *params, const char *name, const char *filename,
-                   const char *chunk_data, int chunk_size, int chunk_offset);
+http_result_t
+params_append_mhd (params_t *params, const gchar *name, const gchar *filename,
+                   const gchar *chunk_data, int chunk_size, int chunk_offset);
 
-char *
-gsad_message (credentials_t *, const char *, const char *, int, const char *,
+gchar *
+gsad_message (credentials_t *, const gchar *, const gchar *, int, const gchar *,
               cmd_response_data_t *);
 
 #endif /* _GSAD_HTTP_H */

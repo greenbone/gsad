@@ -150,29 +150,8 @@ void
 free_resources (void *cls, struct MHD_Connection *connection, void **con_cls,
                 enum MHD_RequestTerminationCode toe)
 {
-  struct gsad_connection_info *con_info =
-    (struct gsad_connection_info *) *con_cls;
-
-  if (NULL == con_info)
-    {
-      g_debug ("con_info was NULL!\n");
-      return;
-    }
-
-  g_debug ("connectiontype=%d\n", con_info->connectiontype);
-
-  if (con_info->connectiontype == 1)
-    {
-      if (NULL != con_info->postprocessor)
-        {
-          MHD_destroy_post_processor (con_info->postprocessor);
-        }
-    }
-
-  params_free (con_info->params);
-  g_free (con_info->cookie);
-  g_free (con_info->language);
-  g_free (con_info);
+  gsad_connection_info_t *con_info = (gsad_connection_info_t *) *con_cls;
+  gsad_connection_info_free (con_info);
   *con_cls = NULL;
 }
 
@@ -188,7 +167,7 @@ free_resources (void *cls, struct MHD_Connection *connection, void **con_cls,
  *
  * @return MHD_YES on success, MHD_NO on error.
  */
-int
+http_result_t
 params_append_mhd (params_t *params, const gchar *name, const gchar *filename,
                    const gchar *chunk_data, int chunk_size, int chunk_offset)
 {
@@ -472,7 +451,8 @@ params_mhd_validate (void *params)
  */
 #define ELSE(name)                                  \
   else if (!strcmp (cmd, G_STRINGIFY (name))) res = \
-    name##_gmp (&connection, credentials, con_info->params, response_data);
+    name##_gmp (&connection, credentials,           \
+                gsad_connection_info_get_params (con_info), response_data);
 
 /**
  * @brief Handle a complete POST request.
@@ -487,7 +467,7 @@ params_mhd_validate (void *params)
  *
  * @return MHD_YES on success, MHD_NO on error.
  */
-int
+http_result_t
 exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
                const gchar *client_address)
 {
@@ -499,9 +479,10 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   gvm_connection_t connection;
   cmd_response_data_t *response_data = cmd_response_data_new ();
 
-  params_mhd_validate (con_info->params);
+  params_t *params = gsad_connection_info_get_params (con_info);
+  params_mhd_validate (params);
 
-  cmd = params_value (con_info->params, "cmd");
+  cmd = params_value (params, "cmd");
 
   if (!cmd)
     {
@@ -516,16 +497,16 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
 
   if (str_equal (cmd, "login"))
     {
-      return login (con, con_info->params, response_data, client_address);
+      return login (con, params, response_data, client_address);
     }
 
   /* Check the session. */
 
-  if (params_value (con_info->params, "token") == NULL)
+  if (params_value (params, "token") == NULL)
     {
       cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
 
-      if (params_given (con_info->params, "token") == 0)
+      if (params_given (params, "token") == 0)
         res = gsad_message (NULL, "Internal error", __func__, __LINE__,
                             "An internal error occurred inside GSA daemon. "
                             "Diagnostics: Token missing.",
@@ -539,8 +520,8 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
       return handler_create_response (con, res, response_data, NULL);
     }
 
-  ret = user_find (con_info->cookie, params_value (con_info->params, "token"),
-                   client_address, &user);
+  ret = user_find (gsad_connection_info_get_cookie (con_info),
+                   params_value (params, "token"), client_address, &user);
   if (ret == USER_BAD_TOKEN)
     {
       cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
@@ -553,7 +534,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
 
   if (ret == USER_EXPIRED_TOKEN)
     {
-      caller = params_value (con_info->params, "caller");
+      caller = params_value (params, "caller");
 
       if (caller && g_utf8_validate (caller, -1, NULL) == FALSE)
         {
@@ -590,7 +571,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   /* The caller of a POST is usually the caller of the page that the POST form
    * was on. */
   language =
-    user_get_language (user) ?: con_info->language ?: DEFAULT_GSAD_LANGUAGE;
+    user_get_language (user) ?: gsad_connection_info_get_language (con_info) ?: DEFAULT_GSAD_LANGUAGE;
 
   credentials = credentials_new (user, language);
 
@@ -757,8 +738,9 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (save_group)
   else if (!strcmp (cmd, "save_my_settings"))
   {
-    res = save_my_settings_gmp (&connection, credentials, con_info->params,
-                                con_info->language, response_data);
+    res = save_my_settings_gmp (
+      &connection, credentials, gsad_connection_info_get_params (con_info),
+      gsad_connection_info_get_language (con_info), response_data);
   }
   ELSE (save_license)
   ELSE (save_note)
@@ -1188,13 +1170,13 @@ compress_response_brotli (const size_t res_len, const gchar *res,
  *
  * @return MHD_YES on success, MHD_NO on error.
  */
-int
+http_result_t
 exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
               credentials_t *credentials)
 {
   const gchar *cmd = NULL;
   const int CMD_MAX_SIZE = 27; /* delete_trash_lsc_credential */
-  params_t *params = con_info->params;
+  params_t *params = gsad_connection_info_get_params (con_info);
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
   gvm_connection_t connection;
   gchar *res = NULL, *comp = NULL;
@@ -1590,11 +1572,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
  *
  * @return MHD_NO in case of problems. MHD_YES if all is OK.
  */
-#if MHD_VERSION < 0x00097002
-static int
-#else
-static enum MHD_Result
-#endif
+static http_result_t
 redirect_handler (void *cls, struct MHD_Connection *connection,
                   const gchar *url, const gchar *method, const gchar *version,
                   const gchar *upload_data, size_t *upload_data_size,
@@ -1607,13 +1585,10 @@ redirect_handler (void *cls, struct MHD_Connection *connection,
   /* Never respond on first call of a GET. */
   if ((!strcmp (method, "GET")) && *con_cls == NULL)
     {
-      struct gsad_connection_info *con_info;
+      gsad_connection_info_t *con_info;
 
       /* Freed by MHD_OPTION_NOTIFY_COMPLETED callback, free_resources. */
-      con_info = g_malloc0 (sizeof (struct gsad_connection_info));
-      con_info->params = params_new ();
-      con_info->connectiontype = 2;
-
+      con_info = gsad_connection_info_new (METHOD_TYPE_GET);
       *con_cls = (void *) con_info;
       return MHD_YES;
     }

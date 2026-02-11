@@ -89,6 +89,7 @@ add_executable(
   gsad_args.c
   gsad_base.c
   gsad_cmd.c
+  gsad_connection_info.c
   gsad_credentials.c
   gsad_gmp.c
   gsad_gmp_arguments.c

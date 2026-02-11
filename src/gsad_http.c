@@ -165,7 +165,7 @@ gsad_add_content_type_header (http_response_t *response, content_type_t *ct)
  *
  * @return MHD_NO in case of a problem. Else MHD_YES.
  */
-int
+http_result_t
 send_redirect_to_uri (http_connection_t *connection, const char *uri,
                       const gchar *sid)
 {
@@ -225,7 +225,7 @@ send_redirect_to_uri (http_connection_t *connection, const char *uri,
  *
  * @return MHD_YES on success, MHD_NO on error.
  */
-int
+http_result_t
 send_response (http_connection_t *connection, const char *content,
                int status_code, const gchar *sid, content_type_t content_type,
                const char *content_disposition, size_t content_length)
@@ -276,7 +276,7 @@ send_response (http_connection_t *connection, const char *content,
  *
  * @return MHD_YES on success, else MHD_NO.
  */
-int
+http_result_t
 handler_send_response (http_connection_t *connection, http_response_t *response,
                        cmd_response_data_t *response_data, const gchar *sid)
 {
@@ -349,7 +349,7 @@ handler_send_response (http_connection_t *connection, http_response_t *response,
  *
  * @return MHD_YES on success, else MHD_NO.
  */
-int
+http_result_t
 handler_create_response (http_connection_t *connection, gchar *data,
                          cmd_response_data_t *response_data, const gchar *sid)
 {
@@ -416,7 +416,7 @@ create_not_found_response (cmd_response_data_t *response_data)
  *
  * @return MHD_YES on success. MHD_NO on errors.
  */
-int
+http_result_t
 handler_send_reauthentication (http_connection_t *connection,
                                int http_status_code,
                                authentication_reason_t reason)
@@ -475,7 +475,7 @@ handler_send_reauthentication (http_connection_t *connection,
  *
  * @return MHD_NO in case of problems. MHD_YES if all is OK.
  */
-int
+http_result_t
 remove_sid (http_response_t *response)
 {
   int ret;
@@ -524,7 +524,7 @@ remove_sid (http_response_t *response)
  *
  * @return MHD_NO in case of problems. MHD_YES if all is OK.
  */
-int
+http_result_t
 attach_sid (http_response_t *response, const char *sid)
 {
   int ret, timeout;
@@ -606,7 +606,7 @@ attach_sid (http_response_t *response, const char *sid)
  *
  * @return MHD_YES on success, MHD_NO on failure
  */
-int
+http_result_t
 attach_remove_sid (http_response_t *response, const gchar *sid)
 {
   if (sid)
@@ -746,11 +746,7 @@ file_content_response (http_connection_t *connection, const char *url,
  *
  * @return MHD_YES.
  */
-#if MHD_VERSION < 0x00097002
-static int
-#else
-static enum MHD_Result
-#endif
+http_result_t
 append_param (void *string, enum MHD_ValueKind kind, const char *key,
               const char *value)
 {
@@ -939,11 +935,7 @@ get_client_address (http_connection_t *conn, char *client_address)
  *
  * @return MHD_YES to continue iterating over post data, MHD_NO to stop.
  */
-#if MHD_VERSION < 0x00097002
-int
-#else
-enum MHD_Result
-#endif
+http_result_t
 serve_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,
             const char *filename, const char *content_type,
             const char *transfer_encoding, const char *data, uint64_t off,
@@ -953,7 +945,8 @@ serve_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,
 
   if (NULL != key)
     {
-      params_append_mhd (con_info->params, key, filename, data, size, off);
+      params_append_mhd (gsad_connection_info_get_params (con_info), key,
+                         filename, data, size, off);
       return MHD_YES;
     }
   return MHD_NO;
@@ -973,7 +966,7 @@ serve_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,
  *
  * @return An XML document as a newly allocated string.
  */
-char *
+gchar *
 gsad_message (credentials_t *credentials, const char *title,
               const char *function, int line, const char *msg,
               cmd_response_data_t *response_data)
