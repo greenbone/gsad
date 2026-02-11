@@ -675,8 +675,9 @@ file_reader (void *cls, uint64_t pos, char *buf, int max)
  *         if file information could not be retrieved.
  */
 http_response_t *
-file_content_response (http_connection_t *connection, const char *url,
-                       const char *path, cmd_response_data_t *response_data)
+gsad_http_create_file_content_response (http_connection_t *connection,
+                                        const char *url, const char *path,
+                                        cmd_response_data_t *response_data)
 {
   char date_2822[DATE_2822_LEN];
   struct tm mtime;

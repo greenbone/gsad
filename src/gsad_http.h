@@ -166,11 +166,11 @@ gsad_http_add_forbid_caching_headers (http_response_t *);
 void
 gsad_http_add_content_type_header (http_response_t *, content_type_t *);
 
-/* helper functions required in gsad_http */
 http_response_t *
-file_content_response (http_connection_t *connection, const char *url,
-                       const char *path, cmd_response_data_t *response_data);
+gsad_http_create_file_content_response (http_connection_t *, const gchar *,
+                                        const gchar *, cmd_response_data_t *);
 
+/* helper functions required in gsad_http */
 gchar *
 reconstruct_url (http_connection_t *connection, const char *url);
 
