@@ -7,11 +7,12 @@
 
 struct gsad_connection_info
 {
-  struct MHD_PostProcessor *postprocessor; ///< POST processor.
-  params_t *params;                        ///< Request parameters.
-  char *cookie;                            ///< Value of SID cookie param.
-  char *language;                          ///< Language code e.g. en
   enum method_type method_type;            ///< 1=POST, 2=GET.
+  gchar *cookie;                           ///< Value of SID cookie param.
+  gchar *language;                         ///< Language code e.g. en
+  gchar *url;                              ///< Request URL.
+  params_t *params;                        ///< Request parameters.
+  struct MHD_PostProcessor *postprocessor; ///< POST processor.
 };
 
 /**
@@ -20,7 +21,7 @@ struct gsad_connection_info
  * @return A new gsad_connection_info_t object.
  */
 gsad_connection_info_t *
-gsad_connection_info_new (enum method_type method_type)
+gsad_connection_info_new (enum method_type method_type, const gchar *url)
 {
   gsad_connection_info_t *con_info =
     g_malloc0 (sizeof (gsad_connection_info_t));
@@ -29,6 +30,7 @@ gsad_connection_info_new (enum method_type method_type)
   con_info->cookie = NULL;
   con_info->language = NULL;
   con_info->method_type = method_type;
+  con_info->url = g_strdup (url);
   return con_info;
 }
 
@@ -49,6 +51,7 @@ gsad_connection_info_free (gsad_connection_info_t *con_info)
   params_free (con_info->params);
   g_free (con_info->cookie);
   g_free (con_info->language);
+  g_free (con_info->url);
   g_free (con_info);
 }
 
@@ -175,4 +178,18 @@ gsad_connection_info_set_language (gsad_connection_info_t *con_info,
 {
   g_free (con_info->language);
   con_info->language = g_strdup (language);
+}
+
+/**
+ * @brief Get the URL of a connection information object.
+ *
+ * @param[in] con_info Connection information.
+ *
+ * @return URL of the connection information. The URL is owned by the connection
+ * information and should not be freed by the caller.
+ */
+const gchar *
+gsad_connection_info_get_url (const gsad_connection_info_t *con_info)
+{
+  return con_info->url;
 }

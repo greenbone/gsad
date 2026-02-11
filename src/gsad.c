@@ -1169,12 +1169,12 @@ redirect_handler (void *cls, struct MHD_Connection *connection,
   gchar name[MAX_HOST_LEN + 1];
 
   /* Never respond on first call of a GET. */
-  if ((!strcmp (method, "GET")) && *con_cls == NULL)
+  if (str_equal (method, "GET") && *con_cls == NULL)
     {
       gsad_connection_info_t *con_info;
 
       /* Freed by MHD_OPTION_NOTIFY_COMPLETED callback, free_resources. */
-      con_info = gsad_connection_info_new (METHOD_TYPE_GET);
+      con_info = gsad_connection_info_new (METHOD_TYPE_GET, url);
       *con_cls = (void *) con_info;
       return MHD_YES;
     }

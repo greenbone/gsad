@@ -40,7 +40,7 @@ enum method_type
 typedef struct gsad_connection_info gsad_connection_info_t;
 
 gsad_connection_info_t *
-gsad_connection_info_new ();
+gsad_connection_info_new (enum method_type, const gchar *);
 
 void
 gsad_connection_info_free (gsad_connection_info_t *);
@@ -69,5 +69,8 @@ gsad_connection_info_get_language (const gsad_connection_info_t *);
 
 void
 gsad_connection_info_set_language (gsad_connection_info_t *, const gchar *);
+
+const gchar *
+gsad_connection_info_get_url (const gsad_connection_info_t *);
 
 #endif /* _GSAD_CONNECTION_INFO_H */

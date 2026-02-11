@@ -947,7 +947,7 @@ handle_request (void *cls, http_connection_t *connection, const char *url,
           /* First call for this request, a GET. */
 
           /* Freed by MHD_OPTION_NOTIFY_COMPLETED callback, free_resources. */
-          con_info = gsad_connection_info_new (METHOD_TYPE_GET);
+          con_info = gsad_connection_info_new (METHOD_TYPE_GET, url);
           params_t *params = gsad_connection_info_get_params (con_info);
           MHD_get_connection_values (connection, MHD_GET_ARGUMENT_KIND,
                                      params_mhd_add, params);
@@ -960,7 +960,7 @@ handle_request (void *cls, http_connection_t *connection, const char *url,
         {
           /* First call for this request, a POST. */
 
-          con_info = gsad_connection_info_new (METHOD_TYPE_POST);
+          con_info = gsad_connection_info_new (METHOD_TYPE_POST, url);
 
           /* Freed by MHD_OPTION_NOTIFY_COMPLETED callback, free_resources. */
           struct MHD_PostProcessor *postprocessor = MHD_create_post_processor (
@@ -984,7 +984,7 @@ handle_request (void *cls, http_connection_t *connection, const char *url,
           return MHD_YES;
         }
 
-      con_info = gsad_connection_info_new (METHOD_TYPE_UNKNOWN);
+      con_info = gsad_connection_info_new (METHOD_TYPE_UNKNOWN, url);
       *con_cls = (void *) con_info;
       return MHD_YES;
     }
