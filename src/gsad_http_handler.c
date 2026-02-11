@@ -99,7 +99,7 @@ http_handler_add (http_handler_t *handlers, http_handler_t *next)
 }
 
 http_result_t
-http_handler_start (http_connection_t *connection, const char *url,
+http_handler_start (http_connection_t *connection,
                     gsad_connection_info_t *con_info, http_handler_t *handler,
                     void *data)
 {
@@ -107,11 +107,11 @@ http_handler_start (http_connection_t *connection, const char *url,
     {
       return MHD_NO;
     }
-  return handler->handle (connection, url, con_info, handler, data);
+  return handler->handle (connection, con_info, handler, data);
 }
 
 http_result_t
-http_handler_next (http_connection_t *connection, const char *url,
+http_handler_next (http_connection_t *connection,
                    gsad_connection_info_t *con_info, http_handler_t *handler,
                    void *data)
 {
@@ -123,7 +123,7 @@ http_handler_next (http_connection_t *connection, const char *url,
     }
 
   next = handler->next;
-  return next->handle (connection, url, con_info, next, data);
+  return next->handle (connection, con_info, next, data);
 }
 
 http_handler_t *
@@ -166,7 +166,7 @@ http_handler_free (http_handler_t *handler)
 }
 
 http_result_t
-handle_get_post (http_connection_t *connection, const char *url,
+handle_get_post (http_connection_t *connection,
                  gsad_connection_info_t *con_info, http_handler_t *handler,
                  void *data)
 {
@@ -175,14 +175,14 @@ handle_get_post (http_connection_t *connection, const char *url,
   if (gsad_connection_info_get_method_type (con_info) == METHOD_TYPE_GET)
     {
       g_debug ("method router handling GET");
-      return http_handler_start (connection, url, con_info, routes->get, data);
+      return http_handler_start (connection, con_info, routes->get, data);
     }
   if (gsad_connection_info_get_method_type (con_info) == METHOD_TYPE_POST)
     {
       g_debug ("method router handling POST");
-      return http_handler_start (connection, url, con_info, routes->post, data);
+      return http_handler_start (connection, con_info, routes->post, data);
     }
-  return http_handler_next (connection, url, con_info, handler, data);
+  return http_handler_next (connection, con_info, handler, data);
 }
 
 void
@@ -223,11 +223,11 @@ method_router_set_post_handler (http_handler_t *router, http_handler_t *handler)
 }
 
 http_result_t
-handle_url (http_connection_t *connection, const char *url,
-            gsad_connection_info_t *con_info, http_handler_t *current,
-            void *data)
+handle_url (http_connection_t *connection, gsad_connection_info_t *con_info,
+            http_handler_t *current, void *data)
 {
   url_map_t *map = (url_map_t *) current->data;
+  const gchar *url = gsad_connection_info_get_url (con_info);
 
   g_debug ("checking url map for url %s against %s\n", url,
            g_regex_get_pattern (map->gregexp));
@@ -236,10 +236,10 @@ handle_url (http_connection_t *connection, const char *url,
     {
       g_debug ("Found url handler for url %s\n", url);
 
-      return http_handler_start (connection, url, con_info, map->handler, data);
+      return http_handler_start (connection, con_info, map->handler, data);
     }
 
-  return http_handler_next (connection, url, con_info, current, data);
+  return http_handler_next (connection, con_info, current, data);
 }
 
 url_map_t *
@@ -280,10 +280,12 @@ url_handler_add_func (http_handler_t *handlers, const gchar *regexp,
 }
 
 http_result_t
-handle_validate (http_connection_t *connection, const char *url,
+handle_validate (http_connection_t *connection,
                  gsad_connection_info_t *con_info, http_handler_t *handler,
                  void *data)
 {
+  const gchar *url = gsad_connection_info_get_url (con_info);
+
   g_debug ("Validating url %s", url);
 
   /* If called with undefined URL, abort request handler. */
@@ -310,11 +312,11 @@ handle_validate (http_connection_t *connection, const char *url,
       return MHD_YES;
     }
 
-  return http_handler_next (connection, url, con_info, handler, data);
+  return http_handler_next (connection, con_info, handler, data);
 }
 
 http_result_t
-handle_invalid_method (http_connection_t *connection, const char *url,
+handle_invalid_method (http_connection_t *connection,
                        gsad_connection_info_t *con_info,
                        http_handler_t *handler, void *data)
 {
@@ -329,7 +331,7 @@ handle_invalid_method (http_connection_t *connection, const char *url,
       return MHD_YES;
     }
 
-  return http_handler_next (connection, url, con_info, handler, data);
+  return http_handler_next (connection, con_info, handler, data);
 }
 
 int
@@ -370,17 +372,17 @@ get_user_from_connection (http_connection_t *connection, user_t **user)
 }
 
 http_result_t
-handle_get_user (http_connection_t *connection, const char *url,
+handle_get_user (http_connection_t *connection,
                  gsad_connection_info_t *con_info, http_handler_t *handler,
                  void *data)
 {
   user_t *user = NULL;
   get_user_from_connection (connection, &user);
-  return http_handler_next (connection, url, con_info, handler, user);
+  return http_handler_next (connection, con_info, handler, user);
 }
 
 http_result_t
-handle_setup_user (http_connection_t *connection, const char *url,
+handle_setup_user (http_connection_t *connection,
                    gsad_connection_info_t *con_info, http_handler_t *handler,
                    void *data)
 {
@@ -397,6 +399,8 @@ handle_setup_user (http_connection_t *connection, const char *url,
       return handler_send_reauthentication (
         connection, MHD_HTTP_SERVICE_UNAVAILABLE, GMP_SERVICE_DOWN);
     }
+
+  const gchar *url = gsad_connection_info_get_url (con_info);
 
   if ((ret == USER_EXPIRED_TOKEN) || (ret == USER_BAD_MISSING_COOKIE)
       || (ret == USER_BAD_MISSING_TOKEN) || (ret == USER_IP_ADDRESS_MISSMATCH))
@@ -427,11 +431,11 @@ handle_setup_user (http_connection_t *connection, const char *url,
 
   g_debug ("Found user %s\n", user_get_username (user));
 
-  return http_handler_next (connection, url, con_info, handler, user);
+  return http_handler_next (connection, con_info, handler, user);
 }
 
 http_result_t
-handle_setup_credentials (http_connection_t *connection, const char *url,
+handle_setup_credentials (http_connection_t *connection,
                           gsad_connection_info_t *con_info,
                           http_handler_t *handler, void *data)
 {
@@ -468,13 +472,12 @@ handle_setup_credentials (http_connection_t *connection, const char *url,
   user_free (user);
   g_free (language);
 
-  return http_handler_next (connection, url, con_info, handler, credentials);
+  return http_handler_next (connection, con_info, handler, credentials);
 }
 
 http_result_t
-handle_logout (http_connection_t *connection, const char *url,
-               gsad_connection_info_t *con_info, http_handler_t *handler,
-               void *data)
+handle_logout (http_connection_t *connection, gsad_connection_info_t *con_info,
+               http_handler_t *handler, void *data)
 {
   user_t *user = (user_t *) data;
 
@@ -491,9 +494,8 @@ handle_logout (http_connection_t *connection, const char *url,
 }
 
 http_result_t
-handle_gmp_get (http_connection_t *connection, const char *url,
-                gsad_connection_info_t *con_info, http_handler_t *handler,
-                void *data)
+handle_gmp_get (http_connection_t *connection, gsad_connection_info_t *con_info,
+                http_handler_t *handler, void *data)
 {
   /* URL requests to run GMP command. */
   credentials_t *credentials = (credentials_t *) data;
@@ -505,7 +507,7 @@ handle_gmp_get (http_connection_t *connection, const char *url,
 }
 
 http_result_t
-handle_gmp_post (http_connection_t *connection, const char *url,
+handle_gmp_post (http_connection_t *connection,
                  gsad_connection_info_t *con_info, http_handler_t *handler,
                  void *data)
 {
@@ -550,12 +552,13 @@ handle_gmp_post (http_connection_t *connection, const char *url,
 }
 
 http_result_t
-handle_system_report (http_connection_t *connection, const char *url,
+handle_system_report (http_connection_t *connection,
                       gsad_connection_info_t *con_info, http_handler_t *handler,
                       void *data)
 {
   params_t *params = params_new ();
   credentials_t *credentials = (credentials_t *) data;
+  const gchar *url = gsad_connection_info_get_url (con_info);
   const char *slave_id;
   gchar *res;
   gvm_connection_t con;
@@ -661,9 +664,8 @@ handle_system_report (http_connection_t *connection, const char *url,
 }
 
 http_result_t
-handle_index (http_connection_t *connection, const char *url,
-              gsad_connection_info_t *con_info, http_handler_t *handler,
-              void *data)
+handle_index (http_connection_t *connection, gsad_connection_info_t *con_info,
+              http_handler_t *handler, void *data)
 {
   http_response_t *response;
   cmd_response_data_t *response_data;
@@ -672,12 +674,13 @@ handle_index (http_connection_t *connection, const char *url,
   cmd_response_data_set_allow_caching (response_data, FALSE);
 
   response =
-    file_content_response (connection, url, "index.html", response_data);
+    file_content_response (connection, gsad_connection_info_get_url (con_info),
+                           "index.html", response_data);
   return handler_send_response (connection, response, response_data, NULL);
 }
 
 http_result_t
-handle_static_file (http_connection_t *connection, const char *url,
+handle_static_file (http_connection_t *connection,
                     gsad_connection_info_t *con_info, http_handler_t *handler,
                     void *data)
 {
@@ -685,6 +688,7 @@ handle_static_file (http_connection_t *connection, const char *url,
   http_response_t *response;
   char *default_file = "index.html";
   cmd_response_data_t *response_data;
+  const gchar *url = gsad_connection_info_get_url (con_info);
 
   /** @todo validation, URL length restriction (allows you to view ANY
    *       file that the user running the gsad might look at!) */
@@ -714,7 +718,7 @@ handle_static_file (http_connection_t *connection, const char *url,
 }
 
 http_result_t
-handle_static_content (http_connection_t *connection, const char *url,
+handle_static_content (http_connection_t *connection,
                        gsad_connection_info_t *con_info,
                        http_handler_t *handler, void *data)
 {
@@ -722,6 +726,7 @@ handle_static_content (http_connection_t *connection, const char *url,
   http_response_t *response;
   char *default_file = "index.html";
   cmd_response_data_t *response_data;
+  const gchar *url = gsad_connection_info_get_url (con_info);
 
   /** @todo validation, URL length restriction (allows you to view ANY
    *       file that the user running the gsad might look at!) */
@@ -773,13 +778,14 @@ handle_static_content (http_connection_t *connection, const char *url,
 }
 
 http_result_t
-handle_static_config (http_connection_t *connection, const char *url,
+handle_static_config (http_connection_t *connection,
                       gsad_connection_info_t *con_info, http_handler_t *handler,
                       void *data)
 {
   gchar *path;
   http_response_t *response;
   cmd_response_data_t *response_data;
+  const gchar *url = gsad_connection_info_get_url (con_info);
 
   /* Ensure that url is relative. */
   const char *relative_url = url;
@@ -1003,7 +1009,7 @@ handle_request (void *cls, http_connection_t *connection, const char *url,
 
   g_debug ("Handling %s request for %s", method, url);
 
-  return http_handler_start (connection, url, con_info, handlers, NULL);
+  return http_handler_start (connection, con_info, handlers, NULL);
 }
 
 /* vim: set ts=2 sw=2 tw=80:*/

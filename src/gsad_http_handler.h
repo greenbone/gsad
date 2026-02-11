@@ -18,7 +18,6 @@ typedef struct http_handler http_handler_t;
 typedef void (*http_handler_free_func_t) (http_handler_t *);
 
 typedef http_result_t (*http_handler_func_t) (http_connection_t *connection,
-                                              const gchar *url,
                                               gsad_connection_info_t *con_info,
                                               http_handler_t *handler,
                                               void *data);
@@ -27,12 +26,12 @@ http_handler_t *
 http_handler_add (http_handler_t *handlers, http_handler_t *handler);
 
 http_result_t
-http_handler_next (http_connection_t *connection, const gchar *url,
+http_handler_next (http_connection_t *connection,
                    gsad_connection_info_t *con_info, http_handler_t *handler,
                    void *data);
 
 http_result_t
-http_handler_start (http_connection_t *connection, const gchar *url,
+http_handler_start (http_connection_t *connection,
                     gsad_connection_info_t *con_info, http_handler_t *handler,
                     void *data);
 
