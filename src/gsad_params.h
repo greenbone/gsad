@@ -59,9 +59,6 @@ params_value_bool (params_t *, const char *);
 const char *
 params_original_value (params_t *, const char *);
 
-const char *
-params_filename (params_t *, const char *);
-
 params_t *
 params_values (params_t *, const char *);
 
