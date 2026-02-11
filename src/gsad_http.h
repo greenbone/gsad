@@ -111,15 +111,15 @@ typedef enum MHD_Result http_result_t;
 #endif
 
 content_type_t
-guess_content_type (const gchar *path);
+gsad_http_guess_content_type (const gchar *);
 
 http_result_t
-handler_create_response (http_connection_t *connection, gchar *data,
-                         cmd_response_data_t *response_data, const gchar *sid);
+gsad_http_create_response (http_connection_t *, gchar *, cmd_response_data_t *,
+                           const gchar *);
 
 http_result_t
-handler_send_response (http_connection_t *connection, http_response_t *response,
-                       cmd_response_data_t *response_data, const gchar *sid);
+gsad_http_send_response (http_connection_t *, http_response_t *,
+                         cmd_response_data_t *, const gchar *);
 
 /**
  * @brief Content types.
@@ -139,18 +139,17 @@ typedef enum authentication_reason
 } authentication_reason_t;
 
 http_result_t
-handler_send_reauthentication (http_connection_t *connection,
-                               int http_status_code,
-                               authentication_reason_t reason);
+gsad_http_send_reauthentication (http_connection_t *, int,
+                                 authentication_reason_t);
 
 http_result_t
-send_response (http_connection_t *connection, const char *content,
-               int status_code, const gchar *sid, content_type_t content_type,
-               const char *content_disposition, size_t content_length);
+gsad_http_send_response_for_content (http_connection_t *, const gchar *, int,
+                                     const gchar *, content_type_t,
+                                     const gchar *, size_t);
 
 http_result_t
-send_redirect_to_uri (http_connection_t *connection, const char *uri,
-                      const gchar *sid);
+gsad_http_send_redirect_to_uri (http_connection_t *, const gchar *,
+                                const gchar *);
 
 void
 gsad_http_add_security_headers (http_response_t *);
