@@ -135,7 +135,7 @@ typedef enum authentication_reason
   BAD_MISSING_COOKIE,
   BAD_MISSING_TOKEN,
   TOO_MANY_USER_SESSIONS,
-  UNKOWN_ERROR,
+  UNKNOWN_ERROR,
 } authentication_reason_t;
 
 http_result_t

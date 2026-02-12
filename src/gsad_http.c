@@ -463,7 +463,7 @@ gsad_http_send_reauthentication (http_connection_t *connection,
     case TOO_MANY_USER_SESSIONS:
       msg = "Login failed. Too many concurrent logins for user.";
       break;
-    case UNKOWN_ERROR:
+    case UNKNOWN_ERROR:
       msg = "Unknown error.";
       break;
     default:

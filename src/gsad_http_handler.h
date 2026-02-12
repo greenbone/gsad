@@ -15,41 +15,40 @@
 
 typedef struct http_handler http_handler_t;
 
-typedef void (*http_handler_free_func_t) (http_handler_t *);
+typedef void (*http_handler_free_func_t) (void *);
 
-typedef http_result_t (*http_handler_func_t) (http_handler_t *handler,
-                                              http_connection_t *connection,
-                                              gsad_connection_info_t *con_info,
-                                              void *data);
-
-http_handler_t *
-http_handler_add (http_handler_t *handlers, http_handler_t *handler);
-
-http_result_t
-http_handler_next (http_handler_t *handler, http_connection_t *connection,
-                   gsad_connection_info_t *con_info, void *data);
-
-http_result_t
-http_handler_start (http_handler_t *handler, http_connection_t *connection,
-                    gsad_connection_info_t *con_info, void *data);
+typedef http_result_t (*http_handler_func_t) (http_handler_t *,
+                                              http_connection_t *,
+                                              gsad_connection_info_t *, void *);
 
 http_handler_t *http_handler_new (http_handler_func_t);
 
+http_handler_t *
+http_handler_new_with_data (http_handler_func_t, http_handler_free_func_t,
+                            void *);
+
+http_handler_t *
+http_handler_add (http_handler_t *, http_handler_t *);
+
+http_handler_t *
+http_handler_set_next (http_handler_t *, http_handler_t *);
+
+http_result_t
+http_handler_next (http_handler_t *, http_connection_t *,
+                   gsad_connection_info_t *, void *);
+
+http_result_t
+http_handler_start (http_handler_t *, http_connection_t *,
+                    gsad_connection_info_t *, void *);
+
 void
-http_handler_free (http_handler_t *handler);
+http_handler_free (http_handler_t *);
 
 http_handler_t *
 init_http_handlers ();
 
 void
 cleanup_http_handlers ();
-
-http_handler_t *
-url_handler_new (const gchar *regexp, http_handler_t *handler);
-
-http_handler_t *
-url_handler_add_func (http_handler_t *handlers, const gchar *regexp,
-                      http_handler_func_t handle);
 
 http_handler_t *
 method_router_new ();
