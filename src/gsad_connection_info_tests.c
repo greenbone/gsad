@@ -76,6 +76,20 @@ Ensure (gsad_connection_info, should_allow_to_create_connection_info_unknown)
   gsad_connection_info_free (con_info);
 }
 
+Ensure (gsad_connection_info, should_allow_to_get_params)
+{
+  gsad_connection_info_t *con_info =
+    gsad_connection_info_new (METHOD_TYPE_GET, "/some-url");
+
+  assert_that (con_info, is_not_null);
+  assert_that (gsad_connection_info_get_params (con_info), is_not_null);
+
+  gsad_connection_info_free (con_info);
+
+  con_info = NULL;
+  assert_that (gsad_connection_info_get_params (con_info), is_null);
+}
+
 Ensure (gsad_connection_info, should_set_and_get_postprocessor)
 {
   gsad_connection_info_t *con_info =
@@ -88,6 +102,10 @@ Ensure (gsad_connection_info, should_set_and_get_postprocessor)
                is_equal_to (postprocessor));
 
   gsad_connection_info_free (con_info);
+
+  con_info = NULL;
+  gsad_connection_info_set_postprocessor (con_info, postprocessor);
+  assert_that (gsad_connection_info_get_postprocessor (con_info), is_null);
 }
 
 Ensure (gsad_connection_info, should_set_and_get_cookie)
@@ -100,6 +118,10 @@ Ensure (gsad_connection_info, should_set_and_get_cookie)
                is_equal_to_string ("test_cookie"));
 
   gsad_connection_info_free (con_info);
+
+  con_info = NULL;
+  gsad_connection_info_set_cookie (con_info, "test_cookie");
+  assert_that (gsad_connection_info_get_cookie (con_info), is_null);
 }
 
 Ensure (gsad_connection_info, should_set_and_get_language)
@@ -112,6 +134,10 @@ Ensure (gsad_connection_info, should_set_and_get_language)
                is_equal_to_string ("en-US"));
 
   gsad_connection_info_free (con_info);
+
+  con_info = NULL;
+  gsad_connection_info_set_language (con_info, "en-US");
+  assert_that (gsad_connection_info_get_language (con_info), is_null);
 }
 
 int
@@ -132,6 +158,8 @@ main (int argc, char **argv)
                          should_set_and_get_cookie);
   add_test_with_context (suite, gsad_connection_info,
                          should_set_and_get_language);
+  add_test_with_context (suite, gsad_connection_info,
+                         should_allow_to_get_params);
   add_test_with_context (suite, gsad_connection_info,
                          should_allow_to_free_null_connection_info);
 
