@@ -2533,7 +2533,7 @@ main (int argc, char **argv)
                 gsad_args_get_manager_port (gsad_args));
 
       gsad_daemon = start_unix_http_daemon (
-        gsad_args_get_manager_unix_socket_path (gsad_args),
+        gsad_args_get_unix_socket_path (gsad_args),
         gsad_args_get_unix_socket_owner (gsad_args),
         gsad_args_get_unix_socket_group (gsad_args),
         gsad_args_get_unix_socket_mode (gsad_args), handle_request, handlers);
