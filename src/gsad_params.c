@@ -105,7 +105,7 @@ params_value_bool (params_t *params, const gchar *name)
   param_t *param;
   param = g_hash_table_lookup (params, name);
 
-  return param ? strcmp (param->value, "0") != 0 : 0;
+  return (param && param->value) ? strcmp (param->value, "0") != 0 : 0;
 }
 /**
  * @brief Get the size of the value of param.
@@ -203,7 +203,7 @@ params_add (params_t *params, const gchar *name, const gchar *value)
 void
 params_remove (params_t *params, const gchar *name)
 {
-  g_hash_table_remove (params, (gconstpointer *) name);
+  g_hash_table_remove (params, name);
 }
 
 /**
@@ -242,7 +242,7 @@ params_append_bin (params_t *params, const gchar *name, const gchar *chunk_data,
       return param;
     }
 
-  new_value = realloc (param->value, param->value_size + chunk_size + 1);
+  new_value = g_realloc (param->value, param->value_size + chunk_size + 1);
   if (new_value == NULL)
     return NULL;
   param->value = new_value;

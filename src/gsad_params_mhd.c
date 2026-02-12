@@ -96,7 +96,10 @@ params_mhd_append (params_t *params, const gchar *name, const gchar *filename,
       params_append_bin (param->values, colon + 1, chunk_data, chunk_size,
                          chunk_offset);
       if (filename)
-        param->filename = g_strdup (filename);
+        {
+          g_free (param->filename);
+          param->filename = g_strdup (filename);
+        }
 
       return MHD_YES;
     }
