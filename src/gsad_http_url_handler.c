@@ -6,24 +6,13 @@
 #include "gsad_http_url_handler.h"
 
 #include "gsad_http_handler_internal.h"
+#include "gsad_http_url_handler_internal.h"
 
 #undef G_LOG_DOMAIN
 /**
  * @brief GLib log domain.
  */
 #define G_LOG_DOMAIN "gsad http url handler"
-
-/**
- * @brief URL regexp to handler function mapping
- *
- * Instances of url_map contain a compiled glib perl compatible regular
- * expression and a http handler function.
- */
-typedef struct gsad_http_url_handler_map
-{
-  GRegex *gregexp;
-  http_handler_t *handler;
-} gsad_http_url_handler_map_t;
 
 /**
  * @brief Handler function for URL matching.
