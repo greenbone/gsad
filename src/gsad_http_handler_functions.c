@@ -35,7 +35,8 @@ validator_t http_validator;
  * @return MHD_YES
  */
 http_result_t
-handle_validate (http_handler_t *handler, http_connection_t *connection,
+handle_validate (http_handler_t *handler_next, void *handler_data,
+                 http_connection_t *connection,
                  gsad_connection_info_t *con_info, void *data)
 {
   const gchar *url = gsad_connection_info_get_url (con_info);
@@ -69,11 +70,12 @@ handle_validate (http_handler_t *handler, http_connection_t *connection,
       return MHD_YES;
     }
 
-  return http_handler_next (handler, connection, con_info, data);
+  return http_handler_call (handler_next, connection, con_info, data);
 }
 
 http_result_t
-handle_invalid_method (http_handler_t *handler, http_connection_t *connection,
+handle_invalid_method (http_handler_t *handler_next, void *handler_data,
+                       http_connection_t *connection,
                        gsad_connection_info_t *con_info, void *data)
 {
   /* Only accept GET and POST methods and send ERROR_PAGE in other cases. */
@@ -88,7 +90,7 @@ handle_invalid_method (http_handler_t *handler, http_connection_t *connection,
       return MHD_YES;
     }
 
-  return http_handler_next (handler, connection, con_info, data);
+  return http_handler_call (handler_next, connection, con_info, data);
 }
 
 static int
@@ -129,16 +131,18 @@ get_user_from_connection (http_connection_t *connection, user_t **user)
 }
 
 http_result_t
-handle_get_user (http_handler_t *handler, http_connection_t *connection,
+handle_get_user (http_handler_t *handler_next, void *handler_data,
+                 http_connection_t *connection,
                  gsad_connection_info_t *con_info, void *data)
 {
   user_t *user = NULL;
   get_user_from_connection (connection, &user);
-  return http_handler_next (handler, connection, con_info, user);
+  return http_handler_call (handler_next, connection, con_info, user);
 }
 
 http_result_t
-handle_setup_user (http_handler_t *handler, http_connection_t *connection,
+handle_setup_user (http_handler_t *handler_next, void *handler_data,
+                   http_connection_t *connection,
                    gsad_connection_info_t *con_info, void *data)
 {
   int ret;
@@ -190,11 +194,11 @@ handle_setup_user (http_handler_t *handler, http_connection_t *connection,
 
   g_debug ("Found user %s\n", user_get_username (user));
 
-  return http_handler_next (handler, connection, con_info, user);
+  return http_handler_call (handler_next, connection, con_info, user);
 }
 
 http_result_t
-handle_setup_credentials (http_handler_t *handler,
+handle_setup_credentials (http_handler_t *handler_next, void *handler_data,
                           http_connection_t *connection,
                           gsad_connection_info_t *con_info, void *data)
 {
@@ -231,12 +235,13 @@ handle_setup_credentials (http_handler_t *handler,
   user_free (user);
   g_free (language);
 
-  return http_handler_next (handler, connection, con_info, credentials);
+  return http_handler_call (handler_next, connection, con_info, credentials);
 }
 
 http_result_t
-handle_logout (http_handler_t *handler, http_connection_t *connection,
-               gsad_connection_info_t *con_info, void *data)
+handle_logout (http_handler_t *handler_next, void *handler_data,
+               http_connection_t *connection, gsad_connection_info_t *con_info,
+               void *data)
 {
   user_t *user = (user_t *) data;
 
@@ -254,8 +259,9 @@ handle_logout (http_handler_t *handler, http_connection_t *connection,
 }
 
 http_result_t
-handle_gmp_get (http_handler_t *handler, http_connection_t *connection,
-                gsad_connection_info_t *con_info, void *data)
+handle_gmp_get (http_handler_t *handler_next, void *handler_data,
+                http_connection_t *connection, gsad_connection_info_t *con_info,
+                void *data)
 {
   /* URL requests to run GMP command. */
   credentials_t *credentials = (credentials_t *) data;
@@ -267,7 +273,8 @@ handle_gmp_get (http_handler_t *handler, http_connection_t *connection,
 }
 
 http_result_t
-handle_gmp_post (http_handler_t *handler, http_connection_t *connection,
+handle_gmp_post (http_handler_t *handler_next, void *handler_data,
+                 http_connection_t *connection,
                  gsad_connection_info_t *con_info, void *data)
 {
   const gchar *sid, *accept_language;
@@ -306,7 +313,8 @@ handle_gmp_post (http_handler_t *handler, http_connection_t *connection,
 }
 
 http_result_t
-handle_system_report (http_handler_t *handler, http_connection_t *connection,
+handle_system_report (http_handler_t *handler_next, void *handler_data,
+                      http_connection_t *connection,
                       gsad_connection_info_t *con_info, void *data)
 {
   params_t *params = params_new ();
@@ -417,8 +425,9 @@ handle_system_report (http_handler_t *handler, http_connection_t *connection,
 }
 
 http_result_t
-handle_index (http_handler_t *handler, http_connection_t *connection,
-              gsad_connection_info_t *con_info, void *data)
+handle_index (http_handler_t *handler_next, void *handler_data,
+              http_connection_t *connection, gsad_connection_info_t *con_info,
+              void *data)
 {
   http_response_t *response;
   cmd_response_data_t *response_data;
@@ -436,7 +445,8 @@ handle_index (http_handler_t *handler, http_connection_t *connection,
 }
 
 http_result_t
-handle_static_file (http_handler_t *handler, http_connection_t *connection,
+handle_static_file (http_handler_t *handler_next, void *handler_data,
+                    http_connection_t *connection,
                     gsad_connection_info_t *con_info, void *data)
 {
   gchar *path;
@@ -474,7 +484,8 @@ handle_static_file (http_handler_t *handler, http_connection_t *connection,
 }
 
 http_result_t
-handle_static_content (http_handler_t *handler, http_connection_t *connection,
+handle_static_content (http_handler_t *handler_next, void *handler_data,
+                       http_connection_t *connection,
                        gsad_connection_info_t *con_info, void *data)
 {
   gchar *path;
@@ -535,7 +546,8 @@ handle_static_content (http_handler_t *handler, http_connection_t *connection,
 }
 
 http_result_t
-handle_static_config (http_handler_t *handler, http_connection_t *connection,
+handle_static_config (http_handler_t *handler_next, void *handler_data,
+                      http_connection_t *connection,
                       gsad_connection_info_t *con_info, void *data)
 {
   gchar *path;

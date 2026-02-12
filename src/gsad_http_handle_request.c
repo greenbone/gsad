@@ -218,5 +218,5 @@ handle_request (void *cls, http_connection_t *connection, const char *url,
 
   g_debug ("Handling %s request for %s", method, url);
 
-  return http_handler_start (handlers, connection, con_info, NULL);
+  return http_handler_call (handlers, connection, con_info, NULL);
 }

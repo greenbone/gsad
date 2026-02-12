@@ -29,12 +29,13 @@
  * to call if the URL matches.
  */
 http_result_t
-gsad_http_url_handler_handle_url (http_handler_t *current,
+gsad_http_url_handler_handle_url (http_handler_t *handler_next,
+                                  void *handler_data,
                                   http_connection_t *connection,
                                   gsad_connection_info_t *con_info, void *data)
 {
   gsad_http_url_handler_map_t *map =
-    (gsad_http_url_handler_map_t *) current->data;
+    (gsad_http_url_handler_map_t *) handler_data;
   const gchar *url = gsad_connection_info_get_url (con_info);
 
   g_debug ("checking url map for url %s against %s\n", url,
@@ -44,10 +45,10 @@ gsad_http_url_handler_handle_url (http_handler_t *current,
     {
       g_debug ("Found url handler for url %s\n", url);
 
-      return http_handler_start (map->handler, connection, con_info, data);
+      return http_handler_call (map->handler, connection, con_info, data);
     }
 
-  return http_handler_next (current, connection, con_info, data);
+  return http_handler_call (handler_next, connection, con_info, data);
 }
 
 static gsad_http_url_handler_map_t *
