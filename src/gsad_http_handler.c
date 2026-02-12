@@ -61,27 +61,15 @@ http_handler_set_next (http_handler_t *handler, http_handler_t *next)
 }
 
 http_result_t
-http_handler_start (http_handler_t *handler, http_connection_t *connection,
-                    gsad_connection_info_t *con_info, void *data)
+http_handler_call (http_handler_t *handler, http_connection_t *connection,
+                   gsad_connection_info_t *con_info, void *data)
 {
   if (handler == NULL)
     {
       return MHD_NO;
     }
-  return handler->handle (handler, connection, con_info, data);
-}
-
-http_result_t
-http_handler_next (http_handler_t *handler, http_connection_t *connection,
-                   gsad_connection_info_t *con_info, void *data)
-{
-  if (handler == NULL || handler->next == NULL)
-    {
-      return MHD_NO;
-    }
-
-  http_handler_t *next = handler->next;
-  return next->handle (next, connection, con_info, data);
+  return handler->handle (handler->next, handler->data, connection, con_info,
+                          data);
 }
 
 http_handler_t *
@@ -121,22 +109,23 @@ http_handler_free (http_handler_t *handler)
 }
 
 http_result_t
-handle_get_post (http_handler_t *handler, http_connection_t *connection,
+handle_get_post (http_handler_t *handler_next, void *handler_data,
+                 http_connection_t *connection,
                  gsad_connection_info_t *con_info, void *data)
 {
-  method_router_t *routes = (method_router_t *) handler->data;
+  method_router_t *routes = (method_router_t *) handler_data;
 
   if (gsad_connection_info_get_method_type (con_info) == METHOD_TYPE_GET)
     {
       g_debug ("method router handling GET");
-      return http_handler_start (routes->get, connection, con_info, data);
+      return http_handler_call (routes->get, connection, con_info, data);
     }
   if (gsad_connection_info_get_method_type (con_info) == METHOD_TYPE_POST)
     {
       g_debug ("method router handling POST");
-      return http_handler_start (routes->post, connection, con_info, data);
+      return http_handler_call (routes->post, connection, con_info, data);
     }
-  return http_handler_next (handler, connection, con_info, data);
+  return http_handler_call (handler_next, connection, con_info, data);
 }
 
 void

@@ -12,7 +12,8 @@
 
 typedef struct call
 {
-  http_handler_t *next;
+  http_handler_t *handler_next;
+  void *handler_data;
   http_connection_t *connection;
   gsad_connection_info_t *con_info;
   void *data;
@@ -32,11 +33,13 @@ AfterEach (gsad_http_url_handler)
 }
 
 void
-record_call (http_handler_t *next, http_connection_t *connection,
-             gsad_connection_info_t *con_info, void *data)
+record_call (http_handler_t *handler_next, void *handler_data,
+             http_connection_t *connection, gsad_connection_info_t *con_info,
+             void *data)
 {
   call_t *call = g_malloc0 (sizeof (call_t));
-  call->next = next;
+  call->handler_next = handler_next;
+  call->handler_data = handler_data;
   call->connection = connection;
   call->con_info = con_info;
   call->data = data;
@@ -50,12 +53,13 @@ get_last_call ()
 }
 
 static http_result_t
-dummy_handle (http_handler_t *next, http_connection_t *connection,
-              gsad_connection_info_t *con_info, void *data)
+dummy_handle (http_handler_t *handler_next, void *handler_data,
+              http_connection_t *connection, gsad_connection_info_t *con_info,
+              void *data)
 {
-  record_call (next, connection, con_info, data);
-  http_result_t result =
-    (http_result_t) mock (next, connection, con_info, data);
+  record_call (handler_next, handler_data, connection, con_info, data);
+  http_result_t result = (http_result_t) mock (handler_next, handler_data,
+                                               connection, con_info, data);
   return result;
 }
 
@@ -108,7 +112,7 @@ Ensure (gsad_http_url_handler, should_ignore_non_matching_url)
   gsad_http_url_handler_map_t *map =
     (gsad_http_url_handler_map_t *) url_handler->data;
   assert_that (map->handler, is_equal_to (dummy_handler));
-  assert_that (http_handler_start (url_handler, NULL, con_info, NULL),
+  assert_that (http_handler_call (url_handler, NULL, con_info, NULL),
                is_equal_to (MHD_NO));
 
   assert_that (get_last_call (), is_null);
@@ -126,12 +130,13 @@ Ensure (gsad_http_url_handler, should_handle_matching_url)
   http_handler_t *url_handler =
     gsad_http_url_handler_new ("^/test-url$", dummy_handler);
 
-  assert_that (http_handler_start (url_handler, NULL, con_info, NULL),
+  assert_that (http_handler_call (url_handler, NULL, con_info, NULL),
                is_equal_to (MHD_YES));
 
   call_t *call = get_last_call ();
   assert_that (call, is_not_null);
-  assert_that (call->next, is_equal_to (dummy_handler));
+  assert_that (call->handler_next, is_null);
+  assert_that (call->handler_data, is_null);
   assert_that (call->connection, is_null);
   assert_that (call->con_info, is_equal_to (con_info));
   assert_that (call->data, is_null);
@@ -154,13 +159,16 @@ Ensure (gsad_http_url_handler, should_call_next_handler_if_url_does_not_match)
   http_handler_set_next (url_handler, next_handler);
 
   assert_that (next_handler->handle, is_equal_to (dummy_handle));
+  assert_that (next_handler->next, is_null);
   assert_that (url_handler->next, is_equal_to (next_handler));
-  assert_that (http_handler_start (url_handler, NULL, con_info, NULL),
+
+  assert_that (http_handler_call (url_handler, NULL, con_info, NULL),
                is_equal_to (MHD_YES));
 
   call_t *call = get_last_call ();
   assert_that (call, is_not_null);
-  assert_that (call->next, is_equal_to (next_handler));
+  assert_that (call->handler_next, is_null);
+  assert_that (call->handler_data, is_null);
   assert_that (call->connection, is_null);
   assert_that (call->con_info, is_equal_to (con_info));
   assert_that (call->data, is_null);
