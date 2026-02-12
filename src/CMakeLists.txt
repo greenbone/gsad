@@ -220,6 +220,13 @@ if(BUILD_TESTING)
   add_unit_test(gsad-args)
   add_unit_test(gsad-settings)
   add_unit_test(gsad-connection-info gsad_params.c)
+  add_unit_test(
+    gsad-http-url-handler
+    gsad_http_url_handler.c
+    gsad_http_handler.c
+    gsad_connection_info.c
+    gsad_params.c
+  )
   add_custom_target(
     tests
     DEPENDS
@@ -228,6 +235,7 @@ if(BUILD_TESTING)
       gsad-args-test
       gsad-settings-test
       gsad-connection-info-test
+      gsad-http-url-handler-test
   )
 endif(BUILD_TESTING)
 
