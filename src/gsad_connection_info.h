@@ -21,12 +21,13 @@
 /**
  * @brief Method type for HTTP requests.
  */
-enum method_type
+typedef enum gsad_method_type
 {
-  METHOD_TYPE_UNKNOWN = 0, ///< Unknown method types.
-  METHOD_TYPE_POST = 1,    ///< POST method.
-  METHOD_TYPE_GET = 2      ///< GET method.
-};
+  METHOD_TYPE_UNKNOWN =
+    0, ///< Other/Unknown method types. Currently only GET and POST are used.
+  METHOD_TYPE_POST = 1, ///< POST method.
+  METHOD_TYPE_GET = 2   ///< GET method.
+} gsad_method_type_t;
 
 /**
  * @brief Connection information.
@@ -35,17 +36,17 @@ enum method_type
  * during the multiple calls of the request handler that
  * refer to the same request.
  *
- * Once a request is finished, the object will be free'd.
+ * Once a request is finished, the object will be freed.
  */
 typedef struct gsad_connection_info gsad_connection_info_t;
 
 gsad_connection_info_t *
-gsad_connection_info_new (enum method_type, const gchar *);
+gsad_connection_info_new (gsad_method_type_t, const gchar *);
 
 void
 gsad_connection_info_free (gsad_connection_info_t *);
 
-enum method_type
+enum gsad_method_type
 gsad_connection_info_get_method_type (const gsad_connection_info_t *);
 
 params_t *
