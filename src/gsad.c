@@ -61,7 +61,7 @@
 #include "gsad_gmp.h"
 #include "gsad_gmp_auth.h" /* for authenticate_gmp */
 #include "gsad_http.h"
-#include "gsad_http_handle_request.h" /* for handle_request */
+#include "gsad_http_handle_request.h" /* for gsad_http_handle_request */
 #include "gsad_http_handler.h"        /* for init_http_handlers */
 #include "gsad_i18n.h"
 #include "gsad_params.h"
@@ -1716,7 +1716,7 @@ start_https_daemon (int port, const gchar *key, const gchar *cert,
   g_free (ip_address);
 
   return MHD_start_daemon (
-    flags, port, NULL, NULL, &handle_request, http_handlers,
+    flags, port, NULL, NULL, &gsad_http_handle_request, http_handlers,
     MHD_OPTION_EXTERNAL_LOGGER, mhd_logger, NULL, MHD_OPTION_HTTPS_MEM_KEY, key,
     MHD_OPTION_HTTPS_MEM_CERT, cert, MHD_OPTION_NOTIFY_COMPLETED,
     free_resources, NULL, MHD_OPTION_SOCK_ADDR, address,
@@ -2095,11 +2095,12 @@ main (int argc, char **argv)
                 gsad_args_get_manager_address (gsad_args),
                 gsad_args_get_manager_port (gsad_args));
 
-      gsad_daemon = start_unix_http_daemon (
-        gsad_args_get_unix_socket_path (gsad_args),
-        gsad_args_get_unix_socket_owner (gsad_args),
-        gsad_args_get_unix_socket_group (gsad_args),
-        gsad_args_get_unix_socket_mode (gsad_args), handle_request, handlers);
+      gsad_daemon =
+        start_unix_http_daemon (gsad_args_get_unix_socket_path (gsad_args),
+                                gsad_args_get_unix_socket_owner (gsad_args),
+                                gsad_args_get_unix_socket_group (gsad_args),
+                                gsad_args_get_unix_socket_mode (gsad_args),
+                                gsad_http_handle_request, handlers);
 
       if (gsad_daemon == NULL)
         {
@@ -2121,8 +2122,8 @@ main (int argc, char **argv)
 
           while (list)
             {
-              gsad_daemon = start_http_daemon (gsad_port, handle_request,
-                                               handlers, list->data);
+              gsad_daemon = start_http_daemon (
+                gsad_port, gsad_http_handle_request, handlers, list->data);
               if (gsad_daemon == NULL)
                 {
                   g_critical ("Binding to port %d failed", gsad_port);
