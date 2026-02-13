@@ -8,12 +8,12 @@
 
 #include "gsad_http_handler.h"
 
-http_result_t
-gsad_http_handle_request (void *, http_connection_t *, const gchar *,
+gsad_http_result_t
+gsad_http_handle_request (void *, gsad_http_connection_t *, const gchar *,
                           const gchar *, const gchar *, const gchar *, size_t *,
                           void **);
 
-http_handler_t *
+gsad_http_handler_t *
 gsad_http_request_init_handlers ();
 
 void

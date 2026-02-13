@@ -17,7 +17,7 @@
  * @param[out]  chunk_size    Size of chunk.
  * @param[out]  chunk_offset  Offset into all data.
  */
-http_result_t
+gsad_http_result_t
 params_mhd_append (params_t *params, const gchar *name, const gchar *filename,
                    const gchar *chunk_data, int chunk_size, int chunk_offset)
 {
@@ -162,7 +162,7 @@ params_mhd_append (params_t *params, const gchar *name, const gchar *filename,
  * @param[in]  name    Name.
  * @param[in]  value   Value.
  */
-http_result_t
+gsad_http_result_t
 params_mhd_add (void *params, enum MHD_ValueKind kind, const gchar *name,
                 const gchar *value)
 {

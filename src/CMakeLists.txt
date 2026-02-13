@@ -236,6 +236,13 @@ if(BUILD_TESTING)
     gsad_params.c
   )
   add_unit_test(
+    gsad-http-method-handler
+    gsad_http_method_handler.c
+    gsad_http_handler.c
+    gsad_connection_info.c
+    gsad_params.c
+  )
+  add_unit_test(
     gsad-params-mhd
     gsad_params_mhd.c
     gsad_params.c
@@ -252,6 +259,7 @@ if(BUILD_TESTING)
       gsad-connection-info-test
       gsad-http-handler-test
       gsad-http-url-handler-test
+      gsad-http-method-handler-test
       gsad-params-mhd-test
   )
 endif(BUILD_TESTING)

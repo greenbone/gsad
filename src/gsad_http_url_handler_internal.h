@@ -17,7 +17,7 @@
 typedef struct gsad_http_url_handler_map
 {
   GRegex *gregexp;
-  http_handler_t *handler;
+  gsad_http_handler_t *handler;
 } gsad_http_url_handler_map_t;
 
 #endif /* _GSAD_HTTP_URL_HANDLER_INTERNAL_H */

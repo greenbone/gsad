@@ -24,85 +24,94 @@
  * This is initialized in init_http_handlers and cleaned up in
  * gsad_http_request_cleanup_handlers in the atexit function.
  */
-http_handler_t *global_handlers;
+gsad_http_handler_t *global_handlers;
 
-static http_handler_t *
+static gsad_http_handler_t *
 make_url_handlers ()
 {
-  http_handler_t *url_handlers;
-  http_handler_t *gmp_handler, *gmp_url_handler;
-  http_handler_t *system_report_handler, *system_report_url_handler;
-  http_handler_t *logout_handler, *logout_url_handler;
-  http_handler_t *next;
+  gsad_http_handler_t *url_handlers;
+  gsad_http_handler_t *gmp_handler, *gmp_url_handler;
+  gsad_http_handler_t *system_report_handler, *system_report_url_handler;
+  gsad_http_handler_t *logout_handler, *logout_url_handler;
+  gsad_http_handler_t *next;
 
   url_handlers = gsad_http_url_handler_from_func ("^/(img|js|css|locales)/.+$",
-                                                  handle_static_file);
-  next = http_handler_set_next (
-    url_handlers,
-    gsad_http_url_handler_from_func ("^/robots\\.txt$", handle_static_file));
-  next = http_handler_set_next (
-    next,
-    gsad_http_url_handler_from_func ("^/config\\.*js$", handle_static_config));
-  next = http_handler_set_next (
-    next, gsad_http_url_handler_from_func ("^/assets/.+$", handle_static_file));
-  next = http_handler_set_next (
+                                                  gsad_http_handle_static_file);
+  next = gsad_http_handler_set_next (
+    url_handlers, gsad_http_url_handler_from_func (
+                    "^/robots\\.txt$", gsad_http_handle_static_file));
+  next = gsad_http_handler_set_next (
+    next, gsad_http_url_handler_from_func ("^/config\\.*js$",
+                                           gsad_http_handle_static_config));
+  next = gsad_http_handler_set_next (
+    next, gsad_http_url_handler_from_func ("^/assets/.+$",
+                                           gsad_http_handle_static_file));
+  next = gsad_http_handler_set_next (
     next, gsad_http_url_handler_from_func ("^/static/(img|js|css|media)/.+$",
-                                           handle_static_file));
-  next = http_handler_set_next (next, gsad_http_url_handler_from_func (
-                                        "^/manual/.+$", handle_static_content));
+                                           gsad_http_handle_static_file));
+  next = gsad_http_handler_set_next (
+    next, gsad_http_url_handler_from_func ("^/manual/.+$",
+                                           gsad_http_handle_static_content));
 
   // Create /gmp handler chain.
 
-  gmp_handler = http_handler_new (handle_setup_user);
-  http_handler_add (gmp_handler, http_handler_new (handle_setup_credentials));
-  http_handler_add (gmp_handler, http_handler_new (handle_gmp_get));
+  gmp_handler = gsad_http_handler_new (gsad_http_handle_setup_user);
+  gsad_http_handler_add (
+    gmp_handler, gsad_http_handler_new (gsad_http_handle_setup_credentials));
+  gsad_http_handler_add (gmp_handler,
+                         gsad_http_handler_new (gsad_http_handle_gmp_get));
   gmp_url_handler = gsad_http_url_handler_new ("^/gmp$", gmp_handler);
-  next = http_handler_set_next (next, gmp_url_handler);
+  next = gsad_http_handler_set_next (next, gmp_url_handler);
 
   // Create /system_report handler chain.
 
-  system_report_handler = http_handler_new (handle_setup_user);
-  http_handler_add (system_report_handler,
-                    http_handler_new (handle_setup_credentials));
-  http_handler_add (system_report_handler,
-                    http_handler_new (handle_system_report));
+  system_report_handler = gsad_http_handler_new (gsad_http_handle_setup_user);
+  gsad_http_handler_add (
+    system_report_handler,
+    gsad_http_handler_new (gsad_http_handle_setup_credentials));
+  gsad_http_handler_add (
+    system_report_handler,
+    gsad_http_handler_new (gsad_http_handle_system_report));
   system_report_url_handler =
     gsad_http_url_handler_new ("^/system_report/.+$", system_report_handler);
-  next = http_handler_set_next (next, system_report_url_handler);
+  next = gsad_http_handler_set_next (next, system_report_url_handler);
 
   // Create /logout handler chain.
 
-  logout_handler = http_handler_new (handle_get_user);
-  http_handler_add (logout_handler, http_handler_new (handle_logout));
+  logout_handler = gsad_http_handler_new (gsad_http_handle_get_user);
+  gsad_http_handler_add (logout_handler,
+                         gsad_http_handler_new (gsad_http_handle_logout));
   logout_url_handler =
     gsad_http_url_handler_new ("^/logout/?$", logout_handler);
-  next = http_handler_set_next (next, logout_url_handler);
+  next = gsad_http_handler_set_next (next, logout_url_handler);
 
   // fallback to index handler
-  http_handler_set_next (next, http_handler_new (handle_index));
+  gsad_http_handler_set_next (next,
+                              gsad_http_handler_new (gsad_http_handle_index));
 
   return url_handlers;
 }
 
-http_handler_t *
+gsad_http_handler_t *
 gsad_http_request_init_handlers ()
 {
-  http_handler_t *method_router, *gmp_post_handler, *url_handlers;
-  init_validator ();
+  gsad_http_handler_t *method_router, *gmp_post_handler, *url_handlers;
+  gsad_http_init_validator ();
 
-  global_handlers = http_handler_new (handle_validate);
+  global_handlers = gsad_http_handler_new (gsad_http_handle_validate);
 
   method_router = gsad_http_method_handler_new ();
-  gmp_post_handler = http_handler_new (handle_gmp_post);
+  gmp_post_handler = gsad_http_handler_new (gsad_http_handle_gmp_post);
 
-  http_handler_add (global_handlers, method_router);
+  gsad_http_handler_add (global_handlers, method_router);
 
   url_handlers = make_url_handlers ();
 
   gsad_http_method_handler_set_get_handler (method_router, url_handlers);
   gsad_http_method_handler_set_post_handler (method_router, gmp_post_handler);
 
-  http_handler_add (global_handlers, http_handler_new (handle_invalid_method));
+  gsad_http_handler_add (
+    global_handlers, gsad_http_handler_new (gsad_http_handle_invalid_method));
 
   return global_handlers;
 }
@@ -119,10 +128,10 @@ gsad_http_request_cleanup_handlers ()
 {
   g_debug ("Cleaning up http handlers");
 
-  http_handler_free (global_handlers);
+  gsad_http_handler_free (global_handlers);
   global_handlers = NULL;
 
-  cleanup_validator ();
+  gsad_http_cleanup_validator ();
 }
 
 /**
@@ -146,14 +155,14 @@ gsad_http_request_cleanup_handlers ()
  *
  * @return MHD_NO in case of problems. MHD_YES if all is OK.
  */
-http_result_t
-gsad_http_handle_request (void *cls, http_connection_t *connection,
+gsad_http_result_t
+gsad_http_handle_request (void *cls, gsad_http_connection_t *connection,
                           const char *url, const char *method,
                           const char *version, const char *upload_data,
                           size_t *upload_data_size, void **con_cls)
 {
   gsad_connection_info_t *con_info = *con_cls;
-  http_handler_t *handlers = (http_handler_t *) cls;
+  gsad_http_handler_t *handlers = (gsad_http_handler_t *) cls;
   gboolean new_connection = (con_info == NULL);
 
   if (handlers == NULL)
@@ -226,5 +235,5 @@ gsad_http_handle_request (void *cls, http_connection_t *connection,
 
   g_debug ("Handling %s request for %s", method, url);
 
-  return http_handler_call (handlers, connection, con_info, NULL);
+  return gsad_http_handler_call (handlers, connection, con_info, NULL);
 }

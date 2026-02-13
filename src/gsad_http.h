@@ -100,31 +100,31 @@
  */
 #define MAX_FILE_NAME_SIZE 128
 
-typedef struct MHD_Connection http_connection_t;
+typedef struct MHD_Connection gsad_http_connection_t;
 
-typedef struct MHD_Response http_response_t;
+typedef struct MHD_Response gsad_http_response_t;
 
 #if MHD_VERSION < 0x00097002
-typedef int http_result_t;
+typedef int gsad_http_result_t;
 #else
-typedef enum MHD_Result http_result_t;
+typedef enum MHD_Result gsad_http_result_t;
 #endif
 
 content_type_t
 gsad_http_guess_content_type (const gchar *);
 
-http_result_t
-gsad_http_create_response (http_connection_t *, gchar *, cmd_response_data_t *,
-                           const gchar *);
+gsad_http_result_t
+gsad_http_create_response (gsad_http_connection_t *, gchar *,
+                           cmd_response_data_t *, const gchar *);
 
-http_result_t
-gsad_http_send_response (http_connection_t *, http_response_t *,
+gsad_http_result_t
+gsad_http_send_response (gsad_http_connection_t *, gsad_http_response_t *,
                          cmd_response_data_t *, const gchar *);
 
 /**
  * @brief Content types.
  */
-typedef enum authentication_reason
+typedef enum gsad_authentication_reason
 {
   LOGIN_FAILED,
   LOGIN_ERROR,
@@ -136,67 +136,67 @@ typedef enum authentication_reason
   BAD_MISSING_TOKEN,
   TOO_MANY_USER_SESSIONS,
   UNKNOWN_ERROR,
-} authentication_reason_t;
+} gsad_authentication_reason_t;
 
-http_result_t
-gsad_http_send_reauthentication (http_connection_t *, int,
-                                 authentication_reason_t);
+gsad_http_result_t
+gsad_http_send_reauthentication (gsad_http_connection_t *, int,
+                                 gsad_authentication_reason_t);
 
-http_result_t
-gsad_http_send_response_for_content (http_connection_t *, const gchar *, int,
-                                     const gchar *, content_type_t,
+gsad_http_result_t
+gsad_http_send_response_for_content (gsad_http_connection_t *, const gchar *,
+                                     int, const gchar *, content_type_t,
                                      const gchar *, size_t);
 
-http_result_t
-gsad_http_send_redirect_to_uri (http_connection_t *, const gchar *,
+gsad_http_result_t
+gsad_http_send_redirect_to_uri (gsad_http_connection_t *, const gchar *,
                                 const gchar *);
 
 void
-gsad_http_add_security_headers (http_response_t *);
+gsad_http_add_security_headers (gsad_http_response_t *);
 
 void
-gsad_http_add_guest_chart_content_security_headers (http_response_t *);
+gsad_http_add_guest_chart_content_security_headers (gsad_http_response_t *);
 
 void
-gsad_http_add_cors_headers (http_response_t *);
+gsad_http_add_cors_headers (gsad_http_response_t *);
 
 void
-gsad_http_add_forbid_caching_headers (http_response_t *);
+gsad_http_add_forbid_caching_headers (gsad_http_response_t *);
 
 void
-gsad_http_add_content_type_header (http_response_t *, content_type_t *);
+gsad_http_add_content_type_header (gsad_http_response_t *, content_type_t *);
 
-http_response_t *
-gsad_http_create_file_content_response (http_connection_t *, const gchar *,
+gsad_http_response_t *
+gsad_http_create_file_content_response (gsad_http_connection_t *, const gchar *,
                                         const gchar *, cmd_response_data_t *);
 
 /* helper functions required in gsad_http */
 int
-get_client_address (http_connection_t *conn, char *client_address);
+get_client_address (gsad_http_connection_t *conn, char *client_address);
 
-http_result_t
+gsad_http_result_t
 serve_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,
             const char *filename, const char *content_type,
             const char *transfer_encoding, const char *data, uint64_t off,
             size_t size);
 
-http_result_t
-remove_sid (http_response_t *response);
+gsad_http_result_t
+remove_sid (gsad_http_response_t *response);
 
-http_result_t
-attach_sid (http_response_t *response, const char *sid);
+gsad_http_result_t
+attach_sid (gsad_http_response_t *response, const char *sid);
 
-http_result_t
-attach_remove_sid (http_response_t *response, const gchar *sid);
+gsad_http_result_t
+attach_remove_sid (gsad_http_response_t *response, const gchar *sid);
 
 /* exec_gmp functions are still in gsad.c */
-http_result_t
-exec_gmp_get (http_connection_t *connection, gsad_connection_info_t *con_info,
-              credentials_t *credentials);
+gsad_http_result_t
+exec_gmp_get (gsad_http_connection_t *connection,
+              gsad_connection_info_t *con_info, credentials_t *credentials);
 
-http_result_t
-exec_gmp_post (http_connection_t *connection, gsad_connection_info_t *con_info,
-               const gchar *client_address);
+gsad_http_result_t
+exec_gmp_post (gsad_http_connection_t *connection,
+               gsad_connection_info_t *con_info, const gchar *client_address);
 
 gchar *
 gsad_message (credentials_t *, const gchar *, const gchar *, int, const gchar *,

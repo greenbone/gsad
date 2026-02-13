@@ -28,10 +28,10 @@
  * @param[in] data The URL map containing the regular expression and the handler
  * to call if the URL matches.
  */
-http_result_t
-gsad_http_url_handler_handle_url (http_handler_t *handler_next,
+gsad_http_result_t
+gsad_http_url_handler_handle_url (gsad_http_handler_t *handler_next,
                                   void *handler_data,
-                                  http_connection_t *connection,
+                                  gsad_http_connection_t *connection,
                                   gsad_connection_info_t *con_info, void *data)
 {
   gsad_http_url_handler_map_t *map =
@@ -45,10 +45,10 @@ gsad_http_url_handler_handle_url (http_handler_t *handler_next,
     {
       g_debug ("Found url handler for url %s\n", url);
 
-      return http_handler_call (map->handler, connection, con_info, data);
+      return gsad_http_handler_call (map->handler, connection, con_info, data);
     }
 
-  return http_handler_call (handler_next, connection, con_info, data);
+  return gsad_http_handler_call (handler_next, connection, con_info, data);
 }
 
 /**
@@ -58,7 +58,8 @@ gsad_http_url_handler_handle_url (http_handler_t *handler_next,
  * matches the regular expression.
  */
 static gsad_http_url_handler_map_t *
-gsad_http_url_handler_map_new (http_handler_t *handler, const gchar *regexp)
+gsad_http_url_handler_map_new (gsad_http_handler_t *handler,
+                               const gchar *regexp)
 {
   gsad_http_url_handler_map_t *map =
     g_malloc0 (sizeof (gsad_http_url_handler_map_t));
@@ -81,7 +82,7 @@ gsad_http_handler_url_map_free (void *data)
   gsad_http_url_handler_map_t *map = (gsad_http_url_handler_map_t *) data;
 
   g_regex_unref (map->gregexp);
-  http_handler_free (map->handler); /* free the chain */
+  gsad_http_handler_free (map->handler); /* free the chain */
   g_free (map);
 }
 
@@ -95,13 +96,13 @@ gsad_http_handler_url_map_free (void *data)
  *
  * @return A new http_handler_t object that handles the given URL.
  */
-http_handler_t *
-gsad_http_url_handler_new (const gchar *regexp, http_handler_t *handler)
+gsad_http_handler_t *
+gsad_http_url_handler_new (const gchar *regexp, gsad_http_handler_t *handler)
 {
   gsad_http_url_handler_map_t *map =
     gsad_http_url_handler_map_new (handler, regexp);
-  return http_handler_new_with_data (&gsad_http_url_handler_handle_url,
-                                     gsad_http_handler_url_map_free, map);
+  return gsad_http_handler_new_with_data (&gsad_http_url_handler_handle_url,
+                                          gsad_http_handler_url_map_free, map);
 }
 
 /**
@@ -114,9 +115,10 @@ gsad_http_url_handler_new (const gchar *regexp, http_handler_t *handler)
  *
  * @return A new http_handler_t object that handles the given URL.
  */
-http_handler_t *
-gsad_http_url_handler_from_func (const gchar *regexp, http_handler_func_t func)
+gsad_http_handler_t *
+gsad_http_url_handler_from_func (const gchar *regexp,
+                                 gsad_http_handler_func_t func)
 {
-  http_handler_t *handler = http_handler_new (func);
+  gsad_http_handler_t *handler = gsad_http_handler_new (func);
   return gsad_http_url_handler_new (regexp, handler);
 }
