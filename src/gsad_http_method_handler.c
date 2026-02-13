@@ -16,8 +16,8 @@
  */
 typedef struct gsad_http_method_handler
 {
-  http_handler_t *get;  ///< Handler for GET requests.
-  http_handler_t *post; ///< Handler for POST requests.
+  gsad_http_handler_t *get;  ///< Handler for GET requests.
+  gsad_http_handler_t *post; ///< Handler for POST requests.
 } gsad_http_method_handler_t;
 
 /**
@@ -40,9 +40,9 @@ typedef struct gsad_http_method_handler
  *
  * @return MHD_YES if the request was handled successfully, MHD_NO otherwise.
  */
-http_result_t
-handle_get_post (http_handler_t *handler_next, void *handler_data,
-                 http_connection_t *connection,
+gsad_http_result_t
+handle_get_post (gsad_http_handler_t *handler_next, void *handler_data,
+                 gsad_http_connection_t *connection,
                  gsad_connection_info_t *con_info, void *data)
 {
   gsad_http_method_handler_t *routes =
@@ -51,14 +51,14 @@ handle_get_post (http_handler_t *handler_next, void *handler_data,
   if (gsad_connection_info_get_method_type (con_info) == METHOD_TYPE_GET)
     {
       g_debug ("method router handling GET");
-      return http_handler_call (routes->get, connection, con_info, data);
+      return gsad_http_handler_call (routes->get, connection, con_info, data);
     }
   if (gsad_connection_info_get_method_type (con_info) == METHOD_TYPE_POST)
     {
       g_debug ("method router handling POST");
-      return http_handler_call (routes->post, connection, con_info, data);
+      return gsad_http_handler_call (routes->post, connection, con_info, data);
     }
-  return http_handler_call (handler_next, connection, con_info, data);
+  return gsad_http_handler_call (handler_next, connection, con_info, data);
 }
 
 /**
@@ -76,8 +76,8 @@ gsad_http_method_handler_free (void *data)
 {
   gsad_http_method_handler_t *routes = (gsad_http_method_handler_t *) data;
 
-  http_handler_free (routes->get);
-  http_handler_free (routes->post);
+  gsad_http_handler_free (routes->get);
+  gsad_http_handler_free (routes->post);
 
   g_free (routes);
 }
@@ -92,15 +92,15 @@ gsad_http_method_handler_free (void *data)
  *
  * @return A new method handler.
  */
-http_handler_t *
+gsad_http_handler_t *
 gsad_http_method_handler_new ()
 {
   gsad_http_method_handler_t *router =
     g_malloc0 (sizeof (gsad_http_method_handler_t));
   router->get = NULL;
   router->post = NULL;
-  return http_handler_new_with_data (handle_get_post,
-                                     gsad_http_method_handler_free, router);
+  return gsad_http_handler_new_with_data (
+    handle_get_post, gsad_http_method_handler_free, router);
 }
 
 /**
@@ -110,8 +110,8 @@ gsad_http_method_handler_new ()
  * @param[in] handler The GET handler to set.
  */
 void
-gsad_http_method_handler_set_get_handler (const http_handler_t *router,
-                                          http_handler_t *handler)
+gsad_http_method_handler_set_get_handler (const gsad_http_handler_t *router,
+                                          gsad_http_handler_t *handler)
 {
   gsad_http_method_handler_t *method_handler =
     (gsad_http_method_handler_t *) router->data;
@@ -125,8 +125,8 @@ gsad_http_method_handler_set_get_handler (const http_handler_t *router,
  * @param[in] handler The POST handler to set.
  */
 void
-gsad_http_method_handler_set_post_handler (const http_handler_t *router,
-                                           http_handler_t *handler)
+gsad_http_method_handler_set_post_handler (const gsad_http_handler_t *router,
+                                           gsad_http_handler_t *handler)
 {
   gsad_http_method_handler_t *method_handler =
     (gsad_http_method_handler_t *) router->data;

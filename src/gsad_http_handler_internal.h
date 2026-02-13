@@ -8,12 +8,12 @@
 
 #include "gsad_http_handler.h"
 
-typedef struct http_handler
+typedef struct gsad_http_handler
 {
-  http_handler_t *next;
-  http_handler_func_t handle;
-  http_handler_free_func_t free;
+  gsad_http_handler_t *next;
+  gsad_http_handler_func_t handle;
+  gsad_http_handler_free_func_t free;
   void *data;
-} http_handler_t;
+} gsad_http_handler_t;
 
 #endif /* _GSAD_HTTP_HANDLER_INTERNAL_H */

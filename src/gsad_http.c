@@ -74,7 +74,7 @@ gsad_http_guess_content_type (const gchar *path)
  * @param[in]      ct        Content Type to set.
  */
 void
-gsad_http_add_content_type_header (http_response_t *response,
+gsad_http_add_content_type_header (gsad_http_response_t *response,
                                    content_type_t *ct)
 {
   if (!response)
@@ -168,12 +168,12 @@ gsad_http_add_content_type_header (http_response_t *response,
  *
  * @return MHD_NO in case of a problem. Else MHD_YES.
  */
-http_result_t
-gsad_http_send_redirect_to_uri (http_connection_t *connection, const char *uri,
-                                const gchar *sid)
+gsad_http_result_t
+gsad_http_send_redirect_to_uri (gsad_http_connection_t *connection,
+                                const char *uri, const gchar *sid)
 {
   int ret;
-  http_response_t *response;
+  gsad_http_response_t *response;
   char *body;
 
   /* Some libmicrohttp versions get into an endless loop in https mode
@@ -231,15 +231,15 @@ gsad_http_send_redirect_to_uri (http_connection_t *connection, const char *uri,
  *
  * @return MHD_YES on success, else MHD_NO.
  */
-http_result_t
-gsad_http_send_response_for_content (http_connection_t *connection,
+gsad_http_result_t
+gsad_http_send_response_for_content (gsad_http_connection_t *connection,
                                      const gchar *content, int status_code,
                                      const gchar *sid,
                                      content_type_t content_type,
                                      const gchar *content_disposition,
                                      size_t content_length)
 {
-  http_response_t *response;
+  gsad_http_response_t *response;
   size_t size;
   int ret;
 
@@ -285,9 +285,9 @@ gsad_http_send_response_for_content (http_connection_t *connection,
  *
  * @return MHD_YES on success, else MHD_NO.
  */
-http_result_t
-gsad_http_send_response (http_connection_t *connection,
-                         http_response_t *response,
+gsad_http_result_t
+gsad_http_send_response (gsad_http_connection_t *connection,
+                         gsad_http_response_t *response,
                          cmd_response_data_t *response_data, const gchar *sid)
 {
   int ret;
@@ -360,11 +360,11 @@ gsad_http_send_response (http_connection_t *connection,
  *
  * @return MHD_YES on success, else MHD_NO.
  */
-http_result_t
-gsad_http_create_response (http_connection_t *connection, gchar *data,
+gsad_http_result_t
+gsad_http_create_response (gsad_http_connection_t *connection, gchar *data,
                            cmd_response_data_t *response_data, const gchar *sid)
 {
-  http_response_t *response;
+  gsad_http_response_t *response;
   gsize len = 0;
 
   len = cmd_response_data_get_content_length (response_data);
@@ -384,10 +384,10 @@ gsad_http_create_response (http_connection_t *connection, gchar *data,
  *
  * @return A http response
  */
-http_response_t *
+gsad_http_response_t *
 gsad_http_create_not_found_response (cmd_response_data_t *response_data)
 {
-  http_response_t *response;
+  gsad_http_response_t *response;
   int len;
 
   cmd_response_data_set_status_code (response_data, MHD_HTTP_NOT_FOUND);
@@ -427,10 +427,10 @@ gsad_http_create_not_found_response (cmd_response_data_t *response_data)
  *
  * @return MHD_YES on success. MHD_NO on errors.
  */
-http_result_t
-gsad_http_send_reauthentication (http_connection_t *connection,
+gsad_http_result_t
+gsad_http_send_reauthentication (gsad_http_connection_t *connection,
                                  int http_status_code,
-                                 authentication_reason_t reason)
+                                 gsad_authentication_reason_t reason)
 {
   const char *msg;
 
@@ -486,8 +486,8 @@ gsad_http_send_reauthentication (http_connection_t *connection,
  *
  * @return MHD_NO in case of problems. MHD_YES if all is OK.
  */
-http_result_t
-remove_sid (http_response_t *response)
+gsad_http_result_t
+remove_sid (gsad_http_response_t *response)
 {
   int ret;
   gchar *value;
@@ -535,8 +535,8 @@ remove_sid (http_response_t *response)
  *
  * @return MHD_NO in case of problems. MHD_YES if all is OK.
  */
-http_result_t
-attach_sid (http_response_t *response, const char *sid)
+gsad_http_result_t
+attach_sid (gsad_http_response_t *response, const char *sid)
 {
   int ret, timeout;
   gchar *value;
@@ -617,8 +617,8 @@ attach_sid (http_response_t *response, const char *sid)
  *
  * @return MHD_YES on success, MHD_NO on failure
  */
-http_result_t
-attach_remove_sid (http_response_t *response, const gchar *sid)
+gsad_http_result_t
+attach_remove_sid (gsad_http_response_t *response, const gchar *sid)
 {
   if (sid)
     {
@@ -675,15 +675,15 @@ file_reader (void *cls, uint64_t pos, char *buf, int max)
  * @return Response to send in combination with the response code. NULL only
  *         if file information could not be retrieved.
  */
-http_response_t *
-gsad_http_create_file_content_response (http_connection_t *connection,
+gsad_http_response_t *
+gsad_http_create_file_content_response (gsad_http_connection_t *connection,
                                         const char *url, const char *path,
                                         cmd_response_data_t *response_data)
 {
   char date_2822[DATE_2822_LEN];
   struct tm mtime;
   time_t next_week;
-  http_response_t *response;
+  gsad_http_response_t *response;
   FILE *file;
   struct stat buf;
 
@@ -759,7 +759,7 @@ gsad_http_create_file_content_response (http_connection_t *connection,
  *
  * @return MHD_YES.
  */
-http_result_t
+gsad_http_result_t
 append_param (void *string, enum MHD_ValueKind kind, const char *key,
               const char *value)
 {
@@ -786,7 +786,7 @@ append_param (void *string, enum MHD_ValueKind kind, const char *key,
  * @brief Add security headers to a MHD response.
  */
 void
-gsad_http_add_security_headers (http_response_t *response)
+gsad_http_add_security_headers (gsad_http_response_t *response)
 {
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
   const gchar *http_x_frame_options =
@@ -813,7 +813,8 @@ gsad_http_add_security_headers (http_response_t *response)
  * @brief Add guest chart content security headers to a MHD response.
  */
 void
-gsad_http_add_guest_chart_content_security_headers (http_response_t *response)
+gsad_http_add_guest_chart_content_security_headers (
+  gsad_http_response_t *response)
 {
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
   const char *http_guest_chart_x_frame_options =
@@ -833,7 +834,7 @@ gsad_http_add_guest_chart_content_security_headers (http_response_t *response)
 }
 
 void
-gsad_http_add_cors_headers (http_response_t *response)
+gsad_http_add_cors_headers (gsad_http_response_t *response)
 {
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
   const gchar *http_cors_origin =
@@ -853,7 +854,7 @@ gsad_http_add_cors_headers (http_response_t *response)
  * @param[in]  response       The HTTP response to add the headers to.
  */
 void
-gsad_http_add_forbid_caching_headers (http_response_t *response)
+gsad_http_add_forbid_caching_headers (gsad_http_response_t *response)
 {
   MHD_add_response_header (response, MHD_HTTP_HEADER_EXPIRES, "-1");
   MHD_add_response_header (response, MHD_HTTP_HEADER_CACHE_CONTROL,
@@ -871,7 +872,7 @@ gsad_http_add_forbid_caching_headers (http_response_t *response)
  * @return  0 success, 1 invalid UTF-8 in X-Real-IP header
  */
 int
-get_client_address (http_connection_t *conn, char *client_address)
+get_client_address (gsad_http_connection_t *conn, char *client_address)
 {
   const char *x_real_ip;
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
@@ -921,7 +922,7 @@ get_client_address (http_connection_t *conn, char *client_address)
  *
  * @return MHD_YES to continue iterating over post data, MHD_NO to stop.
  */
-http_result_t
+gsad_http_result_t
 serve_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,
             const char *filename, const char *content_type,
             const char *transfer_encoding, const char *data, uint64_t off,

@@ -171,8 +171,8 @@ free_resources (void *cls, struct MHD_Connection *connection, void **con_cls,
  *
  * @return MHD_YES on success, MHD_NO on error.
  */
-http_result_t
-exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
+gsad_http_result_t
+exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
                const gchar *client_address)
 {
   int ret;
@@ -615,7 +615,7 @@ watch_client_connection (void *data)
  * @return 1 if may, else 0.
  */
 static int
-may_compress (http_connection_t *con, const gchar *encoding)
+may_compress (gsad_http_connection_t *con, const gchar *encoding)
 {
   const gchar *all, *one;
 
@@ -646,7 +646,7 @@ may_compress (http_connection_t *con, const gchar *encoding)
  * @return 1 if may, else 0.
  */
 static int
-may_deflate (http_connection_t *con)
+may_deflate (gsad_http_connection_t *con)
 {
   return may_compress (con, "deflate");
 }
@@ -750,8 +750,8 @@ compress_response_brotli (const size_t res_len, const gchar *res,
  *
  * @return MHD_YES on success, MHD_NO on error.
  */
-http_result_t
-exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
+gsad_http_result_t
+exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
               credentials_t *credentials)
 {
   const gchar *cmd = NULL;
@@ -761,7 +761,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   gvm_connection_t connection;
   gchar *res = NULL, *comp = NULL;
   gsize res_len = 0;
-  http_response_t *response;
+  gsad_http_response_t *response;
   cmd_response_data_t *response_data;
   pthread_t watch_thread;
   connection_watcher_data_t *watcher_data;
@@ -1152,7 +1152,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
  *
  * @return MHD_NO in case of problems. MHD_YES if all is OK.
  */
-static http_result_t
+static gsad_http_result_t
 redirect_handler (void *cls, struct MHD_Connection *connection,
                   const gchar *url, const gchar *method, const gchar *version,
                   const gchar *upload_data, size_t *upload_data_size,
@@ -1501,7 +1501,7 @@ start_unix_http_daemon (
                            const gchar *, const gchar *, const gchar *,
                            size_t *, void **),
 #endif
-  http_handler_t *http_handlers)
+  gsad_http_handler_t *http_handlers)
 {
   struct sockaddr_un addr;
   struct stat ustat;
@@ -1619,7 +1619,7 @@ start_http_daemon (int port,
                                             const gchar *, const gchar *,
                                             size_t *, void **),
 #endif
-                   http_handler_t *http_handlers,
+                   gsad_http_handler_t *http_handlers,
                    struct sockaddr_storage *address)
 {
   unsigned int flags;
@@ -1666,7 +1666,7 @@ start_http_daemon (int port,
 static struct MHD_Daemon *
 start_https_daemon (int port, const gchar *key, const gchar *cert,
                     const gchar *priorities, const gchar *dh_params,
-                    http_handler_t *http_handlers,
+                    gsad_http_handler_t *http_handlers,
                     struct sockaddr_storage *address)
 {
   unsigned int flags;
@@ -2017,7 +2017,7 @@ main (int argc, char **argv)
   else if (gsad_address_init (NULL, gsad_port))
     goto error;
 
-  http_handler_t *handlers = gsad_http_request_init_handlers ();
+  gsad_http_handler_t *handlers = gsad_http_request_init_handlers ();
 
   if (should_redirect)
     {
