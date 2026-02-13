@@ -141,7 +141,7 @@ params_mhd_append (params_t *params, const gchar *name, const gchar *filename,
 
       g_free (index_str);
 
-      if (filename)
+      if (filename && param->filename == NULL)
         param->filename = g_strdup (filename);
 
       return MHD_YES;
