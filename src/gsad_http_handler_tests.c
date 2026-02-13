@@ -97,7 +97,7 @@ dummy_free (void *data)
 
 Ensure (gsad_http_handler, should_allow_to_create_new_handler)
 {
-  gsad_http_handler_t *handler = gad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *handler = gsad_http_handler_new (dummy_handle);
 
   assert_that (handler, is_not_null);
   assert_that (handler->handle, is_equal_to (dummy_handle));
@@ -132,9 +132,9 @@ Ensure (gsad_http_handler, should_allow_to_create_new_handler_with_data)
 
 Ensure (gsad_http_handler, should_allow_to_set_next_handler)
 {
-  gsad_http_handler_t *handler1 = gad_http_handler_new (dummy_handle);
-  gsad_http_handler_t *handler2 = gad_http_handler_new (dummy_handle);
-  gsad_http_handler_t *handler3 = gad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *handler1 = gsad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *handler2 = gsad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *handler3 = gsad_http_handler_new (dummy_handle);
 
   gsad_http_handler_set_next (handler1, handler2);
 
@@ -157,9 +157,9 @@ Ensure (gsad_http_handler, should_allow_to_set_next_handler)
 
 Ensure (gsad_http_handler, should_allow_to_add_handler)
 {
-  gsad_http_handler_t *handler1 = gad_http_handler_new (dummy_handle);
-  gsad_http_handler_t *handler2 = gad_http_handler_new (dummy_handle);
-  gsad_http_handler_t *handler3 = gad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *handler1 = gsad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *handler2 = gsad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *handler3 = gsad_http_handler_new (dummy_handle);
 
   gsad_http_handler_add (handler1, handler2);
   gsad_http_handler_add (handler1, handler3);
@@ -178,8 +178,8 @@ Ensure (gsad_http_handler, should_start_handling)
 {
   void *some_data = g_malloc0 (1);
   always_expect (dummy_handle, will_return (MHD_YES));
-  gsad_http_handler_t *handler1 = gad_http_handler_new (dummy_handle);
-  gsad_http_handler_t *handler2 = gad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *handler1 = gsad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *handler2 = gsad_http_handler_new (dummy_handle);
 
   gsad_http_handler_add (handler1, handler2);
 
@@ -213,8 +213,8 @@ Ensure (gsad_http_handler, should_call_handler_chain)
 {
   void *some_data = g_malloc0 (1);
   always_expect (dummy_handle, will_return (MHD_YES));
-  gsad_http_handler_t *handler1 = gad_http_handler_new (dummy_call_next);
-  gsad_http_handler_t *handler2 = gad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *handler1 = gsad_http_handler_new (dummy_call_next);
+  gsad_http_handler_t *handler2 = gsad_http_handler_new (dummy_handle);
 
   gsad_http_handler_add (handler1, handler2);
   assert_that (handler1->next, is_equal_to (handler2));
