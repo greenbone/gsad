@@ -11,10 +11,13 @@
 
 #define G_LOG_DOMAIN "gsad http method handler"
 
+/**
+ * @brief Struct for the method handler data.
+ */
 typedef struct gsad_http_method_handler
 {
-  http_handler_t *get;
-  http_handler_t *post;
+  http_handler_t *get;  ///< Handler for GET requests.
+  http_handler_t *post; ///< Handler for POST requests.
 } gsad_http_method_handler_t;
 
 /**
