@@ -33,10 +33,6 @@ handle_logout (http_handler_t *, void *, http_connection_t *,
                gsad_connection_info_t *, void *);
 
 http_result_t
-handle_gmp_post (http_handler_t *, void *, http_connection_t *,
-                 gsad_connection_info_t *, void *);
-
-http_result_t
 handle_system_report (http_handler_t *, void *, http_connection_t *,
                       gsad_connection_info_t *, void *);
 
