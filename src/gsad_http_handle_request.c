@@ -140,10 +140,10 @@ cleanup_http_handlers ()
  * @return MHD_NO in case of problems. MHD_YES if all is OK.
  */
 http_result_t
-handle_request (void *cls, http_connection_t *connection, const char *url,
-                const char *method, const char *version,
-                const char *upload_data, size_t *upload_data_size,
-                void **con_cls)
+gsad_http_handle_request (void *cls, http_connection_t *connection,
+                          const char *url, const char *method,
+                          const char *version, const char *upload_data,
+                          size_t *upload_data_size, void **con_cls)
 {
   gsad_connection_info_t *con_info = *con_cls;
   http_handler_t *handlers = (http_handler_t *) cls;

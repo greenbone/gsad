@@ -9,10 +9,9 @@
 #include "gsad_http_handler.h"
 
 http_result_t
-handle_request (void *cls, http_connection_t *connection, const gchar *url,
-                const gchar *method, const gchar *version,
-                const gchar *upload_data, size_t *upload_data_size,
-                void **con_cls);
+gsad_http_handle_request (void *, http_connection_t *, const gchar *,
+                          const gchar *, const gchar *, const gchar *, size_t *,
+                          void **);
 
 http_handler_t *
 init_http_handlers ();
