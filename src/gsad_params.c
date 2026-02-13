@@ -230,17 +230,22 @@ params_append_bin (params_t *params, const gchar *name, const gchar *chunk_data,
 
   if (param == NULL)
     {
-      gchar *value;
-
-      value = g_malloc0 (chunk_size + 1);
-      memcpy (value + chunk_offset, chunk_data, chunk_size);
-
       param = params_add (params, name, "");
-      g_free (param->value);
-      param->value = value;
-      param->value_size = chunk_size;
+
+      if (chunk_data && chunk_size)
+        {
+          gchar *value = g_malloc0 (chunk_size + 1);
+          memcpy (value + chunk_offset, chunk_data, chunk_size);
+
+          g_free (param->value);
+          param->value = value;
+          param->value_size = chunk_size;
+        }
       return param;
     }
+
+  if (chunk_data == NULL || chunk_size == 0)
+    return param;
 
   new_value = g_realloc (param->value, param->value_size + chunk_size + 1);
   if (new_value == NULL)

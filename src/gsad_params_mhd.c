@@ -207,6 +207,7 @@ params_mhd_add (void *params, enum MHD_ValueKind kind, const gchar *name,
       param_t *param;
       const gchar *colon;
       gchar *prefix;
+      int value_size = value ? strlen (value) : 0;
 
       /* Hashtable param, like for radios. */
 
@@ -214,7 +215,7 @@ params_mhd_add (void *params, enum MHD_ValueKind kind, const gchar *name,
 
       if ((colon - name) == (strlen (name) - 1))
         {
-          params_append_bin (params, name, value, strlen (value), 0);
+          params_append_bin (params, name, value, value_size, 0);
 
           return MHD_YES;
         }
@@ -232,7 +233,7 @@ params_mhd_add (void *params, enum MHD_ValueKind kind, const gchar *name,
 
       g_free (prefix);
 
-      params_append_bin (param->values, colon + 1, value, strlen (value), 0);
+      params_append_bin (param->values, colon + 1, value, value_size, 0);
 
       return MHD_YES;
     }
@@ -249,6 +250,7 @@ params_mhd_add (void *params, enum MHD_ValueKind kind, const gchar *name,
     {
       param_t *param;
       gchar *index_str;
+      int value_size = value ? strlen (value) : 0;
 
       param = params_get (params, name);
 
@@ -264,7 +266,7 @@ params_mhd_add (void *params, enum MHD_ValueKind kind, const gchar *name,
 
       index_str = g_strdup_printf ("%d", param->array_len);
 
-      params_append_bin (param->values, index_str, value, strlen (value), 0);
+      params_append_bin (param->values, index_str, value, value_size, 0);
 
       g_free (index_str);
 
