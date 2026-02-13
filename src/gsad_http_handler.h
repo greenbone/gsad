@@ -46,16 +46,6 @@ init_http_handlers ();
 void
 cleanup_http_handlers ();
 
-http_handler_t *
-method_router_new ();
-
-void
-method_router_set_get_handler (http_handler_t *router, http_handler_t *handler);
-
-void
-method_router_set_post_handler (http_handler_t *router,
-                                http_handler_t *handler);
-
 http_result_t
 handle_request (void *cls, http_connection_t *connection, const gchar *url,
                 const gchar *method, const gchar *version,
