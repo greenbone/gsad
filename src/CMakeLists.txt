@@ -98,6 +98,7 @@ add_executable(
   gsad_http_handle_request.c
   gsad_http_handler.c
   gsad_http_handler_functions.c
+  gsad_http_method_handler.c
   gsad_http_url_handler.c
   gsad_i18n.c
   gsad_params.c

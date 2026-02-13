@@ -6,6 +6,7 @@
 #include "gsad_http.h"
 #include "gsad_http_handler.h"
 #include "gsad_http_handler_functions.h"
+#include "gsad_http_method_handler.h"
 #include "gsad_http_url_handler.h"
 #include "gsad_params_mhd.h" /* for params_mhd_add */
 #include "utils.h"           /* for str_equal */
