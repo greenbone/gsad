@@ -6,19 +6,11 @@
 #include "gsad_http_method_handler.h"
 
 #include "gsad_http_handler_internal.h"
+#include "gsad_http_method_handler_internal.h"
 
 #undef G_LOG_DOMAIN
 
 #define G_LOG_DOMAIN "gsad http method handler"
-
-/**
- * @brief Struct for the method handler data.
- */
-typedef struct gsad_http_method_handler
-{
-  gsad_http_handler_t *get;  ///< Handler for GET requests.
-  gsad_http_handler_t *post; ///< Handler for POST requests.
-} gsad_http_method_handler_t;
 
 /**
  * @brief Handler function for routing based on HTTP method.
@@ -40,7 +32,7 @@ typedef struct gsad_http_method_handler
  *
  * @return MHD_YES if the request was handled successfully, MHD_NO otherwise.
  */
-gsad_http_result_t
+static gsad_http_result_t
 handle_get_post (gsad_http_handler_t *handler_next, void *handler_data,
                  gsad_http_connection_t *connection,
                  gsad_connection_info_t *con_info, void *data)
@@ -48,17 +40,90 @@ handle_get_post (gsad_http_handler_t *handler_next, void *handler_data,
   gsad_http_method_handler_t *routes =
     (gsad_http_method_handler_t *) handler_data;
 
-  if (gsad_connection_info_get_method_type (con_info) == METHOD_TYPE_GET)
+  if (routes->get != NULL
+      && gsad_connection_info_get_method_type (con_info) == METHOD_TYPE_GET)
     {
-      g_debug ("method router handling GET");
+      g_debug ("Handling GET method");
       return gsad_http_handler_call (routes->get, connection, con_info, data);
     }
-  if (gsad_connection_info_get_method_type (con_info) == METHOD_TYPE_POST)
+  else if (routes->post != NULL
+           && gsad_connection_info_get_method_type (con_info)
+                == METHOD_TYPE_POST)
     {
-      g_debug ("method router handling POST");
+      g_debug ("Handling POST method");
       return gsad_http_handler_call (routes->post, connection, con_info, data);
     }
   return gsad_http_handler_call (handler_next, connection, con_info, data);
+}
+
+/**
+ * @brief Create a new method handler with the specified GET and POST handlers.
+ *
+ * This function creates a new method handler and sets the GET and POST handlers
+ * to the specified handlers. The method handler will route incoming requests to
+ * the appropriate handler based on the HTTP method of the request.
+ *
+ * @param[in] get_handler The handler to route GET requests to.
+ * @param[in] post_handler The handler to route POST requests to.
+ *
+ * @return A new method handler with the specified GET and POST handlers.
+ */
+gsad_http_handler_t *
+gsad_http_method_handler_new_with_handlers (gsad_http_handler_t *get_handler,
+                                            gsad_http_handler_t *post_handler)
+{
+  gsad_http_method_handler_t *router =
+    g_malloc0 (sizeof (gsad_http_method_handler_t));
+  router->get = get_handler;
+  router->post = post_handler;
+  return gsad_http_handler_new_with_data (
+    handle_get_post, gsad_http_method_handler_free, router);
+}
+
+/**
+ * @brief Create a new method handler
+ *
+ * This function creates a new method handler with the GET and POST handlers set
+ * to NULL. The caller can then set the GET and POST handlers using the
+ * gsad_http_method_handler_set_get_handler and
+ * gsad_http_method_handler_set_post_handler functions.
+ *
+ * @return A new method handler.
+ */
+gsad_http_handler_t *
+gsad_http_method_handler_new ()
+{
+  return gsad_http_method_handler_new_with_handlers (NULL, NULL);
+}
+
+/**
+ * @brief Create a new method handler for GET request handling with the
+ * specified handler function.
+ *
+ * @param[in] get_func The handler function to handle GET requests.
+ *
+ * @return A new method handler with the specified GET handler function.
+ */
+gsad_http_handler_t *
+gsad_http_method_handler_new_from_get_func (gsad_http_handler_func_t get_func)
+{
+  gsad_http_handler_t *get_handler = gsad_http_handler_new (get_func);
+  return gsad_http_method_handler_new_with_handlers (get_handler, NULL);
+}
+
+/**
+ * @brief Create a new method handler for POST request handling with the
+ * specified handler function.
+ *
+ * @param[in] post_func The handler function to handle POST requests.
+ *
+ * @return A new method handler with the specified POST handler function.
+ */
+gsad_http_handler_t *
+gsad_http_method_handler_new_from_post_func (gsad_http_handler_func_t post_func)
+{
+  gsad_http_handler_t *post_handler = gsad_http_handler_new (post_func);
+  return gsad_http_method_handler_new_with_handlers (NULL, post_handler);
 }
 
 /**
@@ -80,27 +145,6 @@ gsad_http_method_handler_free (void *data)
   gsad_http_handler_free (routes->post);
 
   g_free (routes);
-}
-
-/**
- * @brief Create a new method handler
- *
- * This function creates a new method handler with the GET and POST handlers set
- * to NULL. The caller can then set the GET and POST handlers using the
- * gsad_http_method_handler_set_get_handler and
- * gsad_http_method_handler_set_post_handler functions.
- *
- * @return A new method handler.
- */
-gsad_http_handler_t *
-gsad_http_method_handler_new ()
-{
-  gsad_http_method_handler_t *router =
-    g_malloc0 (sizeof (gsad_http_method_handler_t));
-  router->get = NULL;
-  router->post = NULL;
-  return gsad_http_handler_new_with_data (
-    handle_get_post, gsad_http_method_handler_free, router);
 }
 
 /**

@@ -9,6 +9,16 @@
 #include "gsad_http_handler.h"
 
 gsad_http_handler_t *
+gsad_http_method_handler_new_with_handlers (gsad_http_handler_t *,
+                                            gsad_http_handler_t *);
+
+gsad_http_handler_t *
+  gsad_http_method_handler_new_from_get_func (gsad_http_handler_func_t);
+
+gsad_http_handler_t *
+  gsad_http_method_handler_new_from_post_func (gsad_http_handler_func_t);
+
+gsad_http_handler_t *
 gsad_http_method_handler_new ();
 
 void
