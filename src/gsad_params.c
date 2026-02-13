@@ -221,7 +221,7 @@ params_remove (params_t *params, const gchar *name)
  */
 param_t *
 params_append_bin (params_t *params, const gchar *name, const gchar *chunk_data,
-                   int chunk_size, int chunk_offset)
+                   int chunk_size)
 {
   param_t *param;
   gchar *new_value;
@@ -235,7 +235,7 @@ params_append_bin (params_t *params, const gchar *name, const gchar *chunk_data,
       if (chunk_data && chunk_size)
         {
           gchar *value = g_malloc0 (chunk_size + 1);
-          memcpy (value + chunk_offset, chunk_data, chunk_size);
+          memcpy (value, chunk_data, chunk_size);
 
           g_free (param->value);
           param->value = value;
@@ -251,8 +251,8 @@ params_append_bin (params_t *params, const gchar *name, const gchar *chunk_data,
   if (new_value == NULL)
     return NULL;
   param->value = new_value;
-  memcpy (param->value + chunk_offset, chunk_data, chunk_size);
-  param->value[chunk_offset + chunk_size] = '\0';
+  memcpy (param->value + param->value_size, chunk_data, chunk_size);
+  param->value[param->value_size + chunk_size] = '\0';
   param->value_size += chunk_size;
 
   return param;

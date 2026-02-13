@@ -72,8 +72,7 @@ params_mhd_append (params_t *params, const gchar *name, const gchar *filename,
         {
           /* name: "example:", value "abc". */
 
-          params_append_bin (params, name, chunk_data, chunk_size,
-                             chunk_offset);
+          params_append_bin (params, name, chunk_data, chunk_size);
 
           return MHD_YES;
         }
@@ -93,8 +92,7 @@ params_mhd_append (params_t *params, const gchar *name, const gchar *filename,
 
       g_free (prefix);
 
-      params_append_bin (param->values, colon + 1, chunk_data, chunk_size,
-                         chunk_offset);
+      params_append_bin (param->values, colon + 1, chunk_data, chunk_size);
       if (filename)
         {
           g_free (param->filename);
@@ -139,8 +137,7 @@ params_mhd_append (params_t *params, const gchar *name, const gchar *filename,
 
       index_str = g_strdup_printf ("%d", param->array_len);
 
-      params_append_bin (param->values, index_str, chunk_data, chunk_size,
-                         chunk_offset);
+      params_append_bin (param->values, index_str, chunk_data, chunk_size);
 
       g_free (index_str);
 
@@ -152,7 +149,7 @@ params_mhd_append (params_t *params, const gchar *name, const gchar *filename,
 
   /* Single value param. */
 
-  params_append_bin (params, name, chunk_data, chunk_size, chunk_offset);
+  params_append_bin (params, name, chunk_data, chunk_size);
 
   return MHD_YES;
 }
@@ -215,7 +212,7 @@ params_mhd_add (void *params, enum MHD_ValueKind kind, const gchar *name,
 
       if ((colon - name) == (strlen (name) - 1))
         {
-          params_append_bin (params, name, value, value_size, 0);
+          params_append_bin (params, name, value, value_size);
 
           return MHD_YES;
         }
@@ -233,7 +230,7 @@ params_mhd_add (void *params, enum MHD_ValueKind kind, const gchar *name,
 
       g_free (prefix);
 
-      params_append_bin (param->values, colon + 1, value, value_size, 0);
+      params_append_bin (param->values, colon + 1, value, value_size);
 
       return MHD_YES;
     }
@@ -266,7 +263,7 @@ params_mhd_add (void *params, enum MHD_ValueKind kind, const gchar *name,
 
       index_str = g_strdup_printf ("%d", param->array_len);
 
-      params_append_bin (param->values, index_str, value, value_size, 0);
+      params_append_bin (param->values, index_str, value, value_size);
 
       g_free (index_str);
 
