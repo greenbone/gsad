@@ -40,16 +40,4 @@ http_handler_call (http_handler_t *, http_connection_t *,
 void
 http_handler_free (http_handler_t *);
 
-http_handler_t *
-init_http_handlers ();
-
-void
-cleanup_http_handlers ();
-
-http_result_t
-handle_request (void *cls, http_connection_t *connection, const gchar *url,
-                const gchar *method, const gchar *version,
-                const gchar *upload_data, size_t *upload_data_size,
-                void **con_cls);
-
 #endif /* _GSAD_HTTP_HANDLER_H */
