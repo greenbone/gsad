@@ -101,6 +101,7 @@ add_executable(
   gsad_http_method_handler.c
   gsad_http_url_handler.c
   gsad_i18n.c
+  gsad_logging.c
   gsad_params.c
   gsad_params_mhd.c
   gsad_session.c
