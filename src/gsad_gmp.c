@@ -20853,11 +20853,11 @@ logout_gmp (const gchar *username, const gchar *password)
  * @return MHD_YES on success. MHD_NO on errors.
  */
 int
-login (http_connection_t *con, params_t *params,
+login (gsad_http_connection_t *con, params_t *params,
        cmd_response_data_t *response_data, const char *client_address)
 {
   int ret, status;
-  authentication_reason_t auth_reason;
+  gsad_authentication_reason_t auth_reason;
   credentials_t *credentials;
   gchar *timezone;
   gchar *role;

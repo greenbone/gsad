@@ -8,62 +8,74 @@
 
 #include "gsad_http_handler.h"
 
-http_result_t
-handle_validate (http_handler_t *, void *, http_connection_t *,
-                 gsad_connection_info_t *, void *);
+gsad_http_result_t
+gsad_http_handle_validate (gsad_http_handler_t *, void *,
+                           gsad_http_connection_t *, gsad_connection_info_t *,
+                           void *);
 
-http_result_t
-handle_invalid_method (http_handler_t *, void *, http_connection_t *,
-                       gsad_connection_info_t *, void *);
+gsad_http_result_t
+gsad_http_handle_invalid_method (gsad_http_handler_t *, void *,
+                                 gsad_http_connection_t *,
+                                 gsad_connection_info_t *, void *);
 
-http_result_t
-handle_get_user (http_handler_t *, void *, http_connection_t *,
-                 gsad_connection_info_t *, void *);
+gsad_http_result_t
+gsad_http_handle_get_user (gsad_http_handler_t *, void *,
+                           gsad_http_connection_t *, gsad_connection_info_t *,
+                           void *);
 
-http_result_t
-handle_setup_user (http_handler_t *, void *, http_connection_t *,
-                   gsad_connection_info_t *, void *);
+gsad_http_result_t
+gsad_http_handle_setup_user (gsad_http_handler_t *, void *,
+                             gsad_http_connection_t *, gsad_connection_info_t *,
+                             void *);
 
-http_result_t
-handle_setup_credentials (http_handler_t *, void *, http_connection_t *,
-                          gsad_connection_info_t *, void *);
+gsad_http_result_t
+gsad_http_handle_setup_credentials (gsad_http_handler_t *, void *,
+                                    gsad_http_connection_t *,
+                                    gsad_connection_info_t *, void *);
 
-http_result_t
-handle_logout (http_handler_t *, void *, http_connection_t *,
-               gsad_connection_info_t *, void *);
+gsad_http_result_t
+gsad_http_handle_logout (gsad_http_handler_t *, void *,
+                         gsad_http_connection_t *, gsad_connection_info_t *,
+                         void *);
 
-http_result_t
-handle_system_report (http_handler_t *, void *, http_connection_t *,
-                      gsad_connection_info_t *, void *);
+gsad_http_result_t
+gsad_http_handle_system_report (gsad_http_handler_t *, void *,
+                                gsad_http_connection_t *,
+                                gsad_connection_info_t *, void *);
 
-http_result_t
-handle_index (http_handler_t *, void *, http_connection_t *,
-              gsad_connection_info_t *, void *);
+gsad_http_result_t
+gsad_http_handle_index (gsad_http_handler_t *, void *, gsad_http_connection_t *,
+                        gsad_connection_info_t *, void *);
 
-http_result_t
-handle_static_file (http_handler_t *, void *, http_connection_t *,
-                    gsad_connection_info_t *, void *);
+gsad_http_result_t
+gsad_http_handle_static_file (gsad_http_handler_t *, void *,
+                              gsad_http_connection_t *,
+                              gsad_connection_info_t *, void *);
 
-http_result_t
-handle_static_content (http_handler_t *, void *, http_connection_t *,
-                       gsad_connection_info_t *, void *);
+gsad_http_result_t
+gsad_http_handle_static_content (gsad_http_handler_t *, void *,
+                                 gsad_http_connection_t *,
+                                 gsad_connection_info_t *, void *);
 
-http_result_t
-handle_static_config (http_handler_t *, void *, http_connection_t *,
-                      gsad_connection_info_t *, void *);
+gsad_http_result_t
+gsad_http_handle_static_config (gsad_http_handler_t *, void *,
+                                gsad_http_connection_t *,
+                                gsad_connection_info_t *, void *);
 
-http_result_t
-handle_gmp_get (http_handler_t *, void *, http_connection_t *,
-                gsad_connection_info_t *, void *);
+gsad_http_result_t
+gsad_http_handle_gmp_get (gsad_http_handler_t *, void *,
+                          gsad_http_connection_t *, gsad_connection_info_t *,
+                          void *);
 
-http_result_t
-handle_gmp_post (http_handler_t *, void *, http_connection_t *,
-                 gsad_connection_info_t *, void *);
+gsad_http_result_t
+gsad_http_handle_gmp_post (gsad_http_handler_t *, void *,
+                           gsad_http_connection_t *, gsad_connection_info_t *,
+                           void *);
 
 void
-init_validator (void);
+gsad_http_init_validator (void);
 
 void
-cleanup_validator (void);
+gsad_http_cleanup_validator (void);
 
 #endif /* _GSAD_HTTP_HANDLER_FUNCTIONS_H */

@@ -34,10 +34,10 @@
  *
  * @return The head of the handler chain.
  */
-http_handler_t *
-http_handler_add (http_handler_t *handlers, http_handler_t *next)
+gsad_http_handler_t *
+gsad_http_handler_add (gsad_http_handler_t *handlers, gsad_http_handler_t *next)
 {
-  http_handler_t *handler = handlers;
+  gsad_http_handler_t *handler = handlers;
 
   if (handler == NULL)
     {
@@ -65,8 +65,9 @@ http_handler_add (http_handler_t *handlers, http_handler_t *next)
  *
  * @return The next handler in the chain.
  */
-http_handler_t *
-http_handler_set_next (http_handler_t *handler, http_handler_t *next)
+gsad_http_handler_t *
+gsad_http_handler_set_next (gsad_http_handler_t *handler,
+                            gsad_http_handler_t *next)
 {
   if (handler == NULL)
     {
@@ -88,9 +89,10 @@ http_handler_set_next (http_handler_t *handler, http_handler_t *next)
  *
  * @return MHD_YES if the request was handled successfully, MHD_NO otherwise.
  */
-http_result_t
-http_handler_call (http_handler_t *handler, http_connection_t *connection,
-                   gsad_connection_info_t *con_info, void *data)
+gsad_http_result_t
+gsad_http_handler_call (gsad_http_handler_t *handler,
+                        gsad_http_connection_t *connection,
+                        gsad_connection_info_t *con_info, void *data)
 {
   if (handler == NULL)
     {
@@ -109,12 +111,12 @@ http_handler_call (http_handler_t *handler, http_connection_t *connection,
  * @param[in] handler_data The handler_data to pass to the handler function when
  * the handler is called.
  */
-http_handler_t *
-http_handler_new_with_data (http_handler_func_t func,
-                            http_handler_free_func_t freefunc,
-                            void *handler_data)
+gsad_http_handler_t *
+gsad_http_handler_new_with_data (gsad_http_handler_func_t func,
+                                 gsad_http_handler_free_func_t freefunc,
+                                 void *handler_data)
 {
-  http_handler_t *handler = g_malloc0 (sizeof (http_handler_t));
+  gsad_http_handler_t *handler = g_malloc0 (sizeof (gsad_http_handler_t));
   handler->handle = func;
   handler->free = freefunc;
   handler->data = handler_data;
@@ -126,17 +128,17 @@ http_handler_new_with_data (http_handler_func_t func,
  * @brief Create a new HTTP handler without handler data
  *
  * This is a convenience function for creating a handler without handler data.
- * It simply calls http_handler_new_with_data with NULL for the free function
- * and handler data.
+ * It simply calls gsad_http_handler_new_with_data with NULL for the free
+ * function and handler data.
  *
  * @param[in] func The function to call when the handler is called.
  *
  * @return A new HTTP handler that calls the given function when called.
  */
-http_handler_t *
-http_handler_new (http_handler_func_t func)
+gsad_http_handler_t *
+gad_http_handler_new (gsad_http_handler_func_t func)
 {
-  return http_handler_new_with_data (func, NULL, NULL);
+  return gsad_http_handler_new_with_data (func, NULL, NULL);
 }
 
 /**
@@ -149,7 +151,7 @@ http_handler_new (http_handler_func_t func)
  * @param[in] handler The handler to free.
  */
 void
-http_handler_free (http_handler_t *handler)
+gsad_http_handler_free (gsad_http_handler_t *handler)
 {
   if (!handler)
     return;
@@ -157,7 +159,7 @@ http_handler_free (http_handler_t *handler)
   if (handler->next)
     {
       // free the chain
-      http_handler_free (handler->next);
+      gsad_http_handler_free (handler->next);
     }
   if (handler->free)
     {

@@ -12,9 +12,9 @@
 
 typedef struct call
 {
-  http_handler_t *handler_next;
+  gsad_http_handler_t *handler_next;
   void *handler_data;
-  http_connection_t *connection;
+  gsad_http_connection_t *connection;
   gsad_connection_info_t *con_info;
   void *data;
 } call_t;
@@ -33,9 +33,9 @@ AfterEach (gsad_http_url_handler)
 }
 
 void
-record_call (http_handler_t *handler_next, void *handler_data,
-             http_connection_t *connection, gsad_connection_info_t *con_info,
-             void *data)
+record_call (gsad_http_handler_t *handler_next, void *handler_data,
+             gsad_http_connection_t *connection,
+             gsad_connection_info_t *con_info, void *data)
 {
   call_t *call = g_malloc0 (sizeof (call_t));
   call->handler_next = handler_next;
@@ -52,21 +52,21 @@ get_last_call ()
   return last_call;
 }
 
-static http_result_t
-dummy_handle (http_handler_t *handler_next, void *handler_data,
-              http_connection_t *connection, gsad_connection_info_t *con_info,
-              void *data)
+static gsad_http_result_t
+dummy_handle (gsad_http_handler_t *handler_next, void *handler_data,
+              gsad_http_connection_t *connection,
+              gsad_connection_info_t *con_info, void *data)
 {
   record_call (handler_next, handler_data, connection, con_info, data);
-  http_result_t result = (http_result_t) mock (handler_next, handler_data,
-                                               connection, con_info, data);
+  gsad_http_result_t result = (gsad_http_result_t) mock (
+    handler_next, handler_data, connection, con_info, data);
   return result;
 }
 
 Ensure (gsad_http_url_handler, should_allow_to_create_url_handler)
 {
-  http_handler_t *dummy_handler = http_handler_new (dummy_handle);
-  http_handler_t *url_handler =
+  gsad_http_handler_t *dummy_handler = gad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *url_handler =
     gsad_http_url_handler_new ("^/test-url$", dummy_handler);
 
   assert_that (url_handler->handle, is_not_null);
@@ -79,12 +79,12 @@ Ensure (gsad_http_url_handler, should_allow_to_create_url_handler)
 
   assert_that (get_last_call (), is_null);
 
-  http_handler_free (url_handler);
+  gsad_http_handler_free (url_handler);
 }
 
 Ensure (gsad_http_url_handler, should_allow_to_create_url_handler_from_func)
 {
-  http_handler_t *url_handler =
+  gsad_http_handler_t *url_handler =
     gsad_http_url_handler_from_func ("^/test-url$", dummy_handle);
 
   assert_that (url_handler->handle, is_not_null);
@@ -97,7 +97,7 @@ Ensure (gsad_http_url_handler, should_allow_to_create_url_handler_from_func)
 
   assert_that (get_last_call (), is_null);
 
-  http_handler_free (url_handler);
+  gsad_http_handler_free (url_handler);
 }
 
 Ensure (gsad_http_url_handler, should_ignore_non_matching_url)
@@ -105,19 +105,19 @@ Ensure (gsad_http_url_handler, should_ignore_non_matching_url)
   always_expect (dummy_handle, will_return (MHD_YES));
   gsad_connection_info_t *con_info =
     gsad_connection_info_new (METHOD_TYPE_GET, "/foo");
-  http_handler_t *dummy_handler = http_handler_new (dummy_handle);
-  http_handler_t *url_handler =
+  gsad_http_handler_t *dummy_handler = gad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *url_handler =
     gsad_http_url_handler_new ("^/test-url$", dummy_handler);
 
   gsad_http_url_handler_map_t *map =
     (gsad_http_url_handler_map_t *) url_handler->data;
   assert_that (map->handler, is_equal_to (dummy_handler));
-  assert_that (http_handler_call (url_handler, NULL, con_info, NULL),
+  assert_that (gsad_http_handler_call (url_handler, NULL, con_info, NULL),
                is_equal_to (MHD_NO));
 
   assert_that (get_last_call (), is_null);
 
-  http_handler_free (url_handler);
+  gsad_http_handler_free (url_handler);
   gsad_connection_info_free (con_info);
 }
 
@@ -126,11 +126,11 @@ Ensure (gsad_http_url_handler, should_handle_matching_url)
   expect (dummy_handle, will_return (MHD_YES));
   gsad_connection_info_t *con_info =
     gsad_connection_info_new (METHOD_TYPE_GET, "/test-url");
-  http_handler_t *dummy_handler = http_handler_new (dummy_handle);
-  http_handler_t *url_handler =
+  gsad_http_handler_t *dummy_handler = gad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *url_handler =
     gsad_http_url_handler_new ("^/test-url$", dummy_handler);
 
-  assert_that (http_handler_call (url_handler, NULL, con_info, NULL),
+  assert_that (gsad_http_handler_call (url_handler, NULL, con_info, NULL),
                is_equal_to (MHD_YES));
 
   call_t *call = get_last_call ();
@@ -141,7 +141,7 @@ Ensure (gsad_http_url_handler, should_handle_matching_url)
   assert_that (call->con_info, is_equal_to (con_info));
   assert_that (call->data, is_null);
 
-  http_handler_free (url_handler);
+  gsad_http_handler_free (url_handler);
   gsad_connection_info_free (con_info);
 }
 
@@ -151,18 +151,18 @@ Ensure (gsad_http_url_handler, should_call_next_handler_if_url_does_not_match)
 
   gsad_connection_info_t *con_info =
     gsad_connection_info_new (METHOD_TYPE_GET, "/foo");
-  http_handler_t *dummy_handler = http_handler_new (dummy_handle);
-  http_handler_t *url_handler =
+  gsad_http_handler_t *dummy_handler = gad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *url_handler =
     gsad_http_url_handler_new ("^/test-url$", dummy_handler);
 
-  http_handler_t *next_handler = http_handler_new (dummy_handle);
-  http_handler_set_next (url_handler, next_handler);
+  gsad_http_handler_t *next_handler = gad_http_handler_new (dummy_handle);
+  gsad_http_handler_set_next (url_handler, next_handler);
 
   assert_that (next_handler->handle, is_equal_to (dummy_handle));
   assert_that (next_handler->next, is_null);
   assert_that (url_handler->next, is_equal_to (next_handler));
 
-  assert_that (http_handler_call (url_handler, NULL, con_info, NULL),
+  assert_that (gsad_http_handler_call (url_handler, NULL, con_info, NULL),
                is_equal_to (MHD_YES));
 
   call_t *call = get_last_call ();
@@ -173,7 +173,7 @@ Ensure (gsad_http_url_handler, should_call_next_handler_if_url_does_not_match)
   assert_that (call->con_info, is_equal_to (con_info));
   assert_that (call->data, is_null);
 
-  http_handler_free (url_handler);
+  gsad_http_handler_free (url_handler);
   gsad_connection_info_free (con_info);
 }
 
