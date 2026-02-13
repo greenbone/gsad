@@ -62,6 +62,7 @@
 #include "gsad_gmp_auth.h"            /* for authenticate_gmp */
 #include "gsad_http_handle_request.h" /* for gsad_http_handle_request */
 #include "gsad_i18n.h"
+#include "gsad_logging.h" /* for gsad_logging_init and gsad_logging_cleanup */
 #include "gsad_params.h"
 #include "gsad_params_mhd.h"
 #include "gsad_session.h" /* for session_init */
@@ -70,7 +71,6 @@
 #include "gsad_validator.h"
 #include "utils.h" /* for str_equal */
 
-#include <gvm/base/logging.h>
 #include <gvm/base/networking.h> /* for ipv6_is_enabled */
 #include <gvm/base/pidfile.h>
 #include <gvm/util/fileutils.h>
@@ -125,11 +125,6 @@ gchar *redirect_location = NULL;
 pid_t redirect_pid = 0;
 
 /** @todo Ensure the accesses to these are thread safe. */
-
-/**
- * @brief Logging parameters, as passed to setup_log_handlers.
- */
-GSList *log_config = NULL;
 
 /**
  * @brief Whether chroot is used
@@ -1427,7 +1422,7 @@ gsad_init (const gchar *static_content_directory)
  * and remove the pidfile.
  */
 void
-gsad_cleanup ()
+gsad_cleanup (gsad_log_config_t *log_config)
 {
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
 
@@ -1450,12 +1445,7 @@ gsad_cleanup ()
   pidfile_remove (
     (gchar *) gsad_settings_get_pid_filename (gsad_global_settings));
 
-  if (log_config)
-    {
-      g_debug ("Cleaning up log configuration...");
-      free_log_configuration (log_config);
-    }
-
+  gsad_logging_cleanup (log_config);
   gsad_settings_free (gsad_global_settings);
 }
 
@@ -1786,33 +1776,6 @@ gsad_address_init (const gchar *address_str, int port)
   return 0;
 }
 
-void
-gsad_init_logging (gsad_settings_t *gsad_settings)
-{
-  /* Setup logging. */
-  const gchar *rc_name = gsad_settings_get_log_config_filename (gsad_settings);
-  if (gvm_file_is_readable (rc_name))
-    log_config = load_log_configuration ((gchar *) rc_name);
-  else
-    g_debug (
-      "Log configuration file %s not found or not readable, using defaults.",
-      rc_name);
-
-  setup_log_handlers (log_config);
-  /* Set to ensure that recursion is left out, in case two threads log
-   * concurrently. */
-  g_log_set_always_fatal (G_LOG_FATAL_MASK);
-  /* Enable GNUTLS debugging if requested via env variable.  */
-  {
-    const gchar *s;
-    if ((s = getenv ("GVM_GNUTLS_DEBUG")))
-      {
-        gnutls_global_set_log_function (log_func_for_gnutls);
-        gnutls_global_set_log_level (atoi (s));
-      }
-  }
-}
-
 /**
  * @brief Main routine of Greenbone Security Assistant daemon.
  *
@@ -1849,7 +1812,7 @@ main (int argc, char **argv)
   gsad_settings_set_log_config_filename (
     gsad_global_settings, gsad_args_get_log_config_filename (gsad_args));
 
-  gsad_init_logging (gsad_global_settings);
+  gsad_log_config_t *log_config = gsad_logging_init (gsad_global_settings);
 
   /* Validate command line options. */
   if (gsad_args_validate_session_timeout (gsad_args))
@@ -2032,16 +1995,7 @@ main (int argc, char **argv)
   gsad_settings_set_user_session_limit (
     gsad_global_settings, gsad_args_get_user_session_limit (gsad_args));
 
-  /* Register the cleanup function. */
-
-  if (atexit (&gsad_cleanup))
-    {
-      g_critical ("Failed to register cleanup function!");
-      goto error_with_settings_cleanup;
-    }
-
   /* Write pidfile. */
-
   if (pidfile_create (
         (gchar *) gsad_settings_get_pid_filename (gsad_global_settings)))
     {
@@ -2225,7 +2179,7 @@ main (int argc, char **argv)
       if (termination_signal)
         {
           g_debug ("Received %s signal.", strsignal (termination_signal));
-          gsad_cleanup ();
+          gsad_cleanup (log_config);
           /* Raise signal again, to exit with the correct return value. */
           signal (termination_signal, SIG_DFL);
           raise (termination_signal);
@@ -2240,13 +2194,15 @@ main (int argc, char **argv)
         }
     }
 success:
-  gsad_args_free (gsad_args);
   g_debug ("Exiting...");
+  gsad_cleanup (log_config);
+  gsad_args_free (gsad_args);
   return EXIT_SUCCESS;
 error_with_settings_cleanup:
   gsad_settings_free (gsad_global_settings);
 error:
-  gsad_args_free (gsad_args);
   g_debug ("Exiting with failure...");
+  gsad_cleanup (log_config);
+  gsad_args_free (gsad_args);
   return EXIT_FAILURE;
 }
