@@ -136,7 +136,7 @@ gsad_http_handler_new_with_data (gsad_http_handler_func_t func,
  * @return A new HTTP handler that calls the given function when called.
  */
 gsad_http_handler_t *
-gad_http_handler_new (gsad_http_handler_func_t func)
+gsad_http_handler_new (gsad_http_handler_func_t func)
 {
   return gsad_http_handler_new_with_data (func, NULL, NULL);
 }

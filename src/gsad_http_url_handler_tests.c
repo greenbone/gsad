@@ -65,7 +65,7 @@ dummy_handle (gsad_http_handler_t *handler_next, void *handler_data,
 
 Ensure (gsad_http_url_handler, should_allow_to_create_url_handler)
 {
-  gsad_http_handler_t *dummy_handler = gad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *dummy_handler = gsad_http_handler_new (dummy_handle);
   gsad_http_handler_t *url_handler =
     gsad_http_url_handler_new ("^/test-url$", dummy_handler);
 
@@ -105,7 +105,7 @@ Ensure (gsad_http_url_handler, should_ignore_non_matching_url)
   always_expect (dummy_handle, will_return (MHD_YES));
   gsad_connection_info_t *con_info =
     gsad_connection_info_new (METHOD_TYPE_GET, "/foo");
-  gsad_http_handler_t *dummy_handler = gad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *dummy_handler = gsad_http_handler_new (dummy_handle);
   gsad_http_handler_t *url_handler =
     gsad_http_url_handler_new ("^/test-url$", dummy_handler);
 
@@ -126,7 +126,7 @@ Ensure (gsad_http_url_handler, should_handle_matching_url)
   expect (dummy_handle, will_return (MHD_YES));
   gsad_connection_info_t *con_info =
     gsad_connection_info_new (METHOD_TYPE_GET, "/test-url");
-  gsad_http_handler_t *dummy_handler = gad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *dummy_handler = gsad_http_handler_new (dummy_handle);
   gsad_http_handler_t *url_handler =
     gsad_http_url_handler_new ("^/test-url$", dummy_handler);
 
@@ -151,11 +151,11 @@ Ensure (gsad_http_url_handler, should_call_next_handler_if_url_does_not_match)
 
   gsad_connection_info_t *con_info =
     gsad_connection_info_new (METHOD_TYPE_GET, "/foo");
-  gsad_http_handler_t *dummy_handler = gad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *dummy_handler = gsad_http_handler_new (dummy_handle);
   gsad_http_handler_t *url_handler =
     gsad_http_url_handler_new ("^/test-url$", dummy_handler);
 
-  gsad_http_handler_t *next_handler = gad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *next_handler = gsad_http_handler_new (dummy_handle);
   gsad_http_handler_set_next (url_handler, next_handler);
 
   assert_that (next_handler->handle, is_equal_to (dummy_handle));

@@ -21,7 +21,7 @@ typedef gsad_http_result_t (*gsad_http_handler_func_t) (
   gsad_http_handler_t *, void *, gsad_http_connection_t *,
   gsad_connection_info_t *, void *);
 
-gsad_http_handler_t *gad_http_handler_new (gsad_http_handler_func_t);
+gsad_http_handler_t *gsad_http_handler_new (gsad_http_handler_func_t);
 
 gsad_http_handler_t *
 gsad_http_handler_new_with_data (gsad_http_handler_func_t,

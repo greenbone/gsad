@@ -55,38 +55,39 @@ make_url_handlers ()
 
   // Create /gmp handler chain.
 
-  gmp_handler = gad_http_handler_new (gsad_http_handle_setup_user);
+  gmp_handler = gsad_http_handler_new (gsad_http_handle_setup_user);
   gsad_http_handler_add (
-    gmp_handler, gad_http_handler_new (gsad_http_handle_setup_credentials));
+    gmp_handler, gsad_http_handler_new (gsad_http_handle_setup_credentials));
   gsad_http_handler_add (gmp_handler,
-                         gad_http_handler_new (gsad_http_handle_gmp_get));
+                         gsad_http_handler_new (gsad_http_handle_gmp_get));
   gmp_url_handler = gsad_http_url_handler_new ("^/gmp$", gmp_handler);
   next = gsad_http_handler_set_next (next, gmp_url_handler);
 
   // Create /system_report handler chain.
 
-  system_report_handler = gad_http_handler_new (gsad_http_handle_setup_user);
+  system_report_handler = gsad_http_handler_new (gsad_http_handle_setup_user);
   gsad_http_handler_add (
     system_report_handler,
-    gad_http_handler_new (gsad_http_handle_setup_credentials));
-  gsad_http_handler_add (system_report_handler,
-                         gad_http_handler_new (gsad_http_handle_system_report));
+    gsad_http_handler_new (gsad_http_handle_setup_credentials));
+  gsad_http_handler_add (
+    system_report_handler,
+    gsad_http_handler_new (gsad_http_handle_system_report));
   system_report_url_handler =
     gsad_http_url_handler_new ("^/system_report/.+$", system_report_handler);
   next = gsad_http_handler_set_next (next, system_report_url_handler);
 
   // Create /logout handler chain.
 
-  logout_handler = gad_http_handler_new (gsad_http_handle_get_user);
+  logout_handler = gsad_http_handler_new (gsad_http_handle_get_user);
   gsad_http_handler_add (logout_handler,
-                         gad_http_handler_new (gsad_http_handle_logout));
+                         gsad_http_handler_new (gsad_http_handle_logout));
   logout_url_handler =
     gsad_http_url_handler_new ("^/logout/?$", logout_handler);
   next = gsad_http_handler_set_next (next, logout_url_handler);
 
   // fallback to index handler
   gsad_http_handler_set_next (next,
-                              gad_http_handler_new (gsad_http_handle_index));
+                              gsad_http_handler_new (gsad_http_handle_index));
 
   return url_handlers;
 }
@@ -97,10 +98,10 @@ gsad_http_request_init_handlers ()
   gsad_http_handler_t *method_router, *gmp_post_handler, *url_handlers;
   gsad_http_init_validator ();
 
-  global_handlers = gad_http_handler_new (gsad_http_handle_validate);
+  global_handlers = gsad_http_handler_new (gsad_http_handle_validate);
 
   method_router = gsad_http_method_handler_new ();
-  gmp_post_handler = gad_http_handler_new (gsad_http_handle_gmp_post);
+  gmp_post_handler = gsad_http_handler_new (gsad_http_handle_gmp_post);
 
   gsad_http_handler_add (global_handlers, method_router);
 
@@ -110,7 +111,7 @@ gsad_http_request_init_handlers ()
   gsad_http_method_handler_set_post_handler (method_router, gmp_post_handler);
 
   gsad_http_handler_add (
-    global_handlers, gad_http_handler_new (gsad_http_handle_invalid_method));
+    global_handlers, gsad_http_handler_new (gsad_http_handle_invalid_method));
 
   return global_handlers;
 }

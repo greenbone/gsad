@@ -119,6 +119,6 @@ gsad_http_handler_t *
 gsad_http_url_handler_from_func (const gchar *regexp,
                                  gsad_http_handler_func_t func)
 {
-  gsad_http_handler_t *handler = gad_http_handler_new (func);
+  gsad_http_handler_t *handler = gsad_http_handler_new (func);
   return gsad_http_url_handler_new (regexp, handler);
 }
