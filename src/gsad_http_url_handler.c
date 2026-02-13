@@ -51,6 +51,12 @@ gsad_http_url_handler_handle_url (http_handler_t *handler_next,
   return http_handler_call (handler_next, connection, con_info, data);
 }
 
+/**
+ * @brief Create a new URL handler map.
+ *
+ * Maps a regular expression to a handler. The handler will be called if the URL
+ * matches the regular expression.
+ */
 static gsad_http_url_handler_map_t *
 gsad_http_url_handler_map_new (http_handler_t *handler, const gchar *regexp)
 {
@@ -61,6 +67,11 @@ gsad_http_url_handler_map_new (http_handler_t *handler, const gchar *regexp)
   return map;
 }
 
+/**
+ * @brief Free a URL handler map.
+ *
+ * @param[in] data The URL handler map to free.
+ */
 void
 gsad_http_handler_url_map_free (void *data)
 {

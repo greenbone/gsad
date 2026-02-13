@@ -29,6 +29,17 @@ typedef struct method_router
   http_handler_t *post;
 } method_router_t;
 
+/**
+ * @brief Add a handler to the end of the handler chain.
+ *
+ * If the handler chain is empty, the new handler will be the first handler.
+ * Otherwise, the new handler will be added to the end of the chain.
+ *
+ * @param[in] handlers The handler chain to add to.
+ * @param[in] next The handler to add to the end of the chain.
+ *
+ * @return The head of the handler chain.
+ */
 http_handler_t *
 http_handler_add (http_handler_t *handlers, http_handler_t *next)
 {
@@ -49,6 +60,17 @@ http_handler_add (http_handler_t *handlers, http_handler_t *next)
   return handlers;
 }
 
+/**
+ * @brief Set the next handler in the chain.
+ *
+ * If the handler is NULL, the next handler will be returned. Otherwise, the
+ * next handler will be set and returned.
+ *
+ * @param[in] handler The handler to set the next handler for.
+ * @param[in] next The handler to set as the next handler.
+ *
+ * @return The next handler in the chain.
+ */
 http_handler_t *
 http_handler_set_next (http_handler_t *handler, http_handler_t *next)
 {
@@ -60,6 +82,18 @@ http_handler_set_next (http_handler_t *handler, http_handler_t *next)
   return next;
 }
 
+/**
+ * @brief Call the handler chain.
+ *
+ * Calls the handler chain with the given connection, connection info and data.
+ *
+ * @param[in] handler The head of the handler chain to call.
+ * @param[in] connection The connection to pass to the handlers.
+ * @param[in] con_info The connection info to pass to the handlers.
+ * @param[in] data The data to pass to the handlers.
+ *
+ * @return MHD_YES if the request was handled successfully, MHD_NO otherwise.
+ */
 http_result_t
 http_handler_call (http_handler_t *handler, http_connection_t *connection,
                    gsad_connection_info_t *con_info, void *data)
@@ -72,24 +106,54 @@ http_handler_call (http_handler_t *handler, http_connection_t *connection,
                           data);
 }
 
+/**
+ * @brief Create a new HTTP handler with handler data
+ *
+ * @param[in] func The function to call when the handler is called.
+ * @param[in] freefunc The function to call to free the handler data when the
+ * handler is freed. Can be NULL if no special cleanup is needed.
+ * @param[in] handler_data The handler_data to pass to the handler function when
+ * the handler is called.
+ */
 http_handler_t *
 http_handler_new_with_data (http_handler_func_t func,
-                            http_handler_free_func_t freefunc, void *data)
+                            http_handler_free_func_t freefunc,
+                            void *handler_data)
 {
   http_handler_t *handler = g_malloc0 (sizeof (http_handler_t));
   handler->handle = func;
   handler->free = freefunc;
-  handler->data = data;
+  handler->data = handler_data;
   handler->next = NULL;
   return handler;
 }
 
+/**
+ * @brief Create a new HTTP handler without handler data
+ *
+ * This is a convenience function for creating a handler without handler data.
+ * It simply calls http_handler_new_with_data with NULL for the free function
+ * and handler data.
+ *
+ * @param[in] func The function to call when the handler is called.
+ *
+ * @return A new HTTP handler that calls the given function when called.
+ */
 http_handler_t *
 http_handler_new (http_handler_func_t func)
 {
   return http_handler_new_with_data (func, NULL, NULL);
 }
 
+/**
+ * @brief Free an HTTP handler and its handler chain.
+ *
+ * Frees the given handler and all handlers in its chain. If the handler has a
+ * free function, it will be called with the handler data before freeing the
+ * handler.
+ *
+ * @param[in] handler The handler to free.
+ */
 void
 http_handler_free (http_handler_t *handler)
 {
