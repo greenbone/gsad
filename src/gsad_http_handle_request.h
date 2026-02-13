@@ -14,9 +14,9 @@ gsad_http_handle_request (void *, http_connection_t *, const gchar *,
                           void **);
 
 http_handler_t *
-init_http_handlers ();
+gsad_http_request_init_handlers ();
 
 void
-cleanup_http_handlers ();
+gsad_http_request_cleanup_handlers ();
 
 #endif /* _GSAD_HTTP_HANDLE_REQUEST_H */

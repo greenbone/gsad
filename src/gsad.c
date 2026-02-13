@@ -59,10 +59,8 @@
 #include "gsad_base.h"
 #include "gsad_credentials.h"
 #include "gsad_gmp.h"
-#include "gsad_gmp_auth.h" /* for authenticate_gmp */
-#include "gsad_http.h"
+#include "gsad_gmp_auth.h"            /* for authenticate_gmp */
 #include "gsad_http_handle_request.h" /* for gsad_http_handle_request */
-#include "gsad_http_handler.h"        /* for init_http_handlers */
 #include "gsad_i18n.h"
 #include "gsad_params.h"
 #include "gsad_params_mhd.h"
@@ -1442,7 +1440,7 @@ gsad_cleanup ()
   g_debug ("Stopping HTTP server...");
   MHD_stop_daemon (gsad_daemon);
 
-  cleanup_http_handlers ();
+  gsad_http_request_cleanup_handlers ();
 
   g_debug ("Cleaning up base...");
   gsad_base_cleanup ();
@@ -2065,7 +2063,7 @@ main (int argc, char **argv)
   else if (gsad_address_init (NULL, gsad_port))
     goto error;
 
-  http_handler_t *handlers = init_http_handlers ();
+  http_handler_t *handlers = gsad_http_request_init_handlers ();
 
   if (should_redirect)
     {

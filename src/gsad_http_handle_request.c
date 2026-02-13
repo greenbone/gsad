@@ -22,7 +22,7 @@
  * @brief Global HTTP handler chain.
  *
  * This is initialized in init_http_handlers and cleaned up in
- * cleanup_http_handlers in the atexit function.
+ * gsad_http_request_cleanup_handlers in the atexit function.
  */
 http_handler_t *global_handlers;
 
@@ -85,7 +85,7 @@ make_url_handlers ()
 }
 
 http_handler_t *
-init_http_handlers ()
+gsad_http_request_init_handlers ()
 {
   http_handler_t *method_router, *gmp_post_handler, *url_handlers;
   init_validator ();
@@ -107,8 +107,15 @@ init_http_handlers ()
   return global_handlers;
 }
 
+/**
+ * @brief Cleanup routine for HTTP handlers.
+ *
+ * Cleanup the global HTTP handler chain and the validator. This is registered
+ * as an atexit function in gsad.c, so it will be called when the program exits.
+ * It is also called manually in gsad.c during shutdown.
+ */
 void
-cleanup_http_handlers ()
+gsad_http_request_cleanup_handlers ()
 {
   g_debug ("Cleaning up http handlers");
 
