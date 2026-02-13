@@ -92,15 +92,15 @@ init_http_handlers ()
 
   global_handlers = http_handler_new (handle_validate);
 
-  method_router = method_router_new ();
+  method_router = gsad_http_method_handler_new ();
   gmp_post_handler = http_handler_new (handle_gmp_post);
 
   http_handler_add (global_handlers, method_router);
 
   url_handlers = make_url_handlers ();
 
-  method_router_set_get_handler (method_router, url_handlers);
-  method_router_set_post_handler (method_router, gmp_post_handler);
+  gsad_http_method_handler_set_get_handler (method_router, url_handlers);
+  gsad_http_method_handler_set_post_handler (method_router, gmp_post_handler);
 
   http_handler_add (global_handlers, http_handler_new (handle_invalid_method));
 
