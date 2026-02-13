@@ -61,7 +61,8 @@
 #include "gsad_gmp.h"
 #include "gsad_gmp_auth.h" /* for authenticate_gmp */
 #include "gsad_http.h"
-#include "gsad_http_handler.h" /* for init_http_handlers */
+#include "gsad_http_handle_request.h" /* for handle_request */
+#include "gsad_http_handler.h"        /* for init_http_handlers */
 #include "gsad_i18n.h"
 #include "gsad_params.h"
 #include "gsad_params_mhd.h"
