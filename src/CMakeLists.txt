@@ -242,6 +242,13 @@ if(BUILD_TESTING)
     gsad_connection_info.c
     gsad_params.c
   )
+  add_unit_test(
+    gsad-params-mhd
+    gsad_params_mhd.c
+    gsad_params.c
+    gsad_validator.c
+    validator.c
+  )
   add_custom_target(
     tests
     DEPENDS
@@ -253,6 +260,7 @@ if(BUILD_TESTING)
       gsad-http-handler-test
       gsad-http-url-handler-test
       gsad-http-method-handler-test
+      gsad-params-mhd-test
   )
 endif(BUILD_TESTING)
 

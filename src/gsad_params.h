@@ -75,7 +75,7 @@ void
 params_remove (params_t *, const gchar *);
 
 param_t *
-params_append_bin (params_t *, const gchar *, const gchar *, int, int);
+params_append_bin (params_t *, const gchar *, const gchar *, int);
 
 #define params_iterator_t GHashTableIter
 
