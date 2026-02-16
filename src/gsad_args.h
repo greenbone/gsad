@@ -76,7 +76,7 @@
 /**
  * @brief Default pid file path for gsad.
  */
-#define DEFAULT_GSAD_PID_FILE GSAD_CONFIG_DIR "gsad.pid"
+#define DEFAULT_GSAD_PID_FILE GSAD_PID_PATH
 
 #define DEFAULT_GSAD_STATIC_CONTENT_DIRECTORY GSAD_STATIC_CONTENT_DIR
 
