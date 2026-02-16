@@ -18569,8 +18569,7 @@ get_timezones_gmp (gvm_connection_t *connection, credentials_t *credentials,
         response_data);
     }
 
-  xml = g_string_new ("");
-  g_string_append (xml, "<get_timezones>");
+  xml = g_string_new ("<get_timezones>");
 
   /* Read the response. */
   if (read_entity_and_string_c (connection, &entity, &xml))
