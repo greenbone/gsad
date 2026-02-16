@@ -26,6 +26,7 @@ struct gsad_settings
 {
   gboolean ignore_http_x_real_ip;
   gboolean use_secure_cookie;
+  gboolean api_only;
   gchar *log_config_filename;
   gchar *http_content_security_policy;
   gchar *http_cors_origin;
@@ -68,6 +69,7 @@ gsad_settings_t *
 gsad_settings_new ()
 {
   gsad_settings_t *settings = g_malloc0 (sizeof (gsad_settings_t));
+  settings->api_only = FALSE;
   settings->ignore_http_x_real_ip = FALSE;
   settings->use_secure_cookie = FALSE;
   settings->http_content_security_policy = NULL;
@@ -582,7 +584,7 @@ gsad_settings_set_log_config_filename (gsad_settings_t *settings,
  * @return The configuration filename. The value is owned by the settings and
  * should not be modified or freed by the caller.
  */
-const char *
+const gchar *
 gsad_settings_get_log_config_filename (const gsad_settings_t *settings)
 {
   return settings->log_config_filename;
@@ -615,8 +617,37 @@ gsad_settings_set_pid_filename (gsad_settings_t *settings,
  * @return The PID filename. The value is owned by the settings and should not
  * be modified or freed by the caller.
  */
-const char *
+const gchar *
 gsad_settings_get_pid_filename (const gsad_settings_t *settings)
 {
   return settings->pid_filename;
+}
+
+/**
+ * @brief Set whether to run in API-only mode.
+ *
+ * @param[in]  settings  The settings instance to modify.
+ * @param[in]  api_only  Whether to run in API-only mode, disabling serving of
+ * static content.
+ */
+void
+gsad_settings_set_api_only (gsad_settings_t *settings, gboolean api_only)
+{
+  settings->api_only = api_only;
+}
+
+/**
+ * @brief Check if API-only mode is enabled.
+ *
+ * API-only mode is enabled if the --api-only flag is set. It disables
+ * serving of static content and only serves the API.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return TRUE if API-only mode is enabled, FALSE otherwise.
+ */
+gboolean
+gsad_settings_is_api_only_enabled (const gsad_settings_t *settings)
+{
+  return settings->api_only;
 }
