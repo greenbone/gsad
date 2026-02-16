@@ -122,10 +122,11 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
      "gsad_log.conf",
      "<file>"},
     {"pid-file", '\0', 0, G_OPTION_ARG_FILENAME, &args->gsad_pid_filename,
-     "Path to PID file. Defaults to " GSAD_CONFIG_DIR "gsad.pid", "<file>"},
+     "Path to PID file. Defaults to " DEFAULT_GSAD_PID_FILE, "<file>"},
     {"static-content", '\0', 0, G_OPTION_ARG_FILENAME,
      &args->gsad_static_content_directory,
-     "Path to static content directory. Defaults to " GSAD_STATIC_CONTENT_DIR,
+     "Path to static content directory. Defaults "
+     "to " DEFAULT_GSAD_STATIC_CONTENT_DIRECTORY,
      "<directory>"},
     {NULL}};
 
@@ -171,8 +172,7 @@ gsad_args_new ()
   args->gsad_manager_address_string = NULL;
   args->gsad_manager_port = PORT_NOT_SET;
   args->manager_unix_socket_path = NULL;
-  args->gsad_pid_filename =
-    g_build_filename (GSAD_CONFIG_DIR, "gsad.pid", NULL);
+  args->gsad_pid_filename = g_strdup (DEFAULT_GSAD_PID_FILE);
   args->gsad_port = PORT_NOT_SET;
   args->gsad_static_content_directory =
     g_strdup (DEFAULT_GSAD_STATIC_CONTENT_DIRECTORY);
