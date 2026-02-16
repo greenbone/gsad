@@ -72,6 +72,10 @@ gsad_http_handle_gmp_post (gsad_http_handler_t *, void *,
                            gsad_http_connection_t *, gsad_connection_info_t *,
                            void *);
 
+gsad_http_result_t
+gsad_http_handle_not_found (gsad_http_handler_t *, void *,
+                            gsad_http_connection_t *, gsad_connection_info_t *,
+                            void *);
 void
 gsad_http_init_validator (void);
 
