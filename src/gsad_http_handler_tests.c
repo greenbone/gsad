@@ -93,6 +93,16 @@ static void
 dummy_free (void *data)
 {
   mock (data);
+  g_free (data);
+}
+
+static void
+dummy_set_leaf (gsad_http_handler_t *handler, gsad_http_handler_t *next,
+                gboolean free_next)
+{
+  mock (handler, next, free_next);
+  handler->next = next;
+  handler->free_next = free_next;
 }
 
 Ensure (gsad_http_handler, should_allow_to_create_new_handler)
@@ -114,7 +124,7 @@ Ensure (gsad_http_handler, should_allow_to_create_new_handler_with_data)
 {
   void *some_data = g_malloc0 (1);
   gsad_http_handler_t *handler =
-    gsad_http_handler_new_with_data (dummy_handle, dummy_free, some_data);
+    gsad_http_handler_new_with_data (dummy_handle, NULL, dummy_free, some_data);
 
   expect (dummy_free, when (data, is_equal_to (some_data)));
 
@@ -136,40 +146,50 @@ Ensure (gsad_http_handler, should_allow_to_set_next_handler)
   gsad_http_handler_t *handler2 = gsad_http_handler_new (dummy_handle);
   gsad_http_handler_t *handler3 = gsad_http_handler_new (dummy_handle);
 
-  gsad_http_handler_set_next (handler1, handler2);
+  gsad_http_handler_add (handler1, handler2);
 
   assert_that (handler1->next, is_equal_to (handler2));
+  assert_that (handler1->free_next, is_true);
   assert_that (handler2->next, is_null);
 
   assert_that (get_call_count (), is_equal_to (0));
   assert_that (get_last_call (), is_null);
 
-  gsad_http_handler_set_next (handler1, handler3);
-  assert_that (handler1->next, is_equal_to (handler3));
+  gsad_http_handler_add (handler1, handler3);
+  assert_that (handler1->next, is_equal_to (handler2));
+  assert_that (handler1->free_next, is_true);
+  assert_that (handler2->next, is_equal_to (handler3));
+  assert_that (handler2->free_next, is_true);
   assert_that (handler3->next, is_null);
+  assert_that (handler3->free_next, is_true);
 
   assert_that (get_call_count (), is_equal_to (0));
   assert_that (get_last_call (), is_null);
 
   gsad_http_handler_free (handler1);
-  gsad_http_handler_free (handler2);
 }
 
-Ensure (gsad_http_handler, should_allow_to_add_handler)
+Ensure (gsad_http_handler, should_allow_to_call_set_leaf)
 {
-  gsad_http_handler_t *handler1 = gsad_http_handler_new (dummy_handle);
-  gsad_http_handler_t *handler2 = gsad_http_handler_new (dummy_handle);
-  gsad_http_handler_t *handler3 = gsad_http_handler_new (dummy_handle);
+  void *some_data = g_malloc0 (1);
+  gsad_http_handler_t *handler1 = gsad_http_handler_new_with_data (
+    dummy_handle, dummy_set_leaf, dummy_free, some_data);
+  gsad_http_handler_t *leaf_handler = gsad_http_handler_new (dummy_handle);
+  expect (dummy_set_leaf, when (handler, is_equal_to (handler1)),
+          when (next, is_equal_to (leaf_handler)), when (free_next, is_true));
+  always_expect (dummy_set_leaf, will_return (NULL));
+  always_expect (dummy_free, when (data, is_equal_to (some_data)));
 
-  gsad_http_handler_add (handler1, handler2);
-  gsad_http_handler_add (handler1, handler3);
+  gsad_http_handler_add (handler1, leaf_handler);
 
-  assert_that (handler1->next, is_equal_to (handler2));
-  assert_that (handler2->next, is_equal_to (handler3));
-  assert_that (handler3->next, is_null);
-
-  assert_that (get_call_count (), is_equal_to (0));
-  assert_that (get_last_call (), is_null);
+  assert_that (handler1, is_not_null);
+  assert_that (handler1->handle, is_equal_to (dummy_handle));
+  assert_that (handler1->set_leaf, is_equal_to (dummy_set_leaf));
+  assert_that (handler1->free, is_equal_to (dummy_free));
+  assert_that (handler1->free_next, is_true);
+  assert_that (handler1->data, is_equal_to (some_data));
+  assert_that (handler1->next, is_equal_to (leaf_handler));
+  assert_that (leaf_handler->next, is_null);
 
   gsad_http_handler_free (handler1);
 }
@@ -251,10 +271,10 @@ Ensure (gsad_http_handler, should_call_handler_chain_with_handler_data)
   void *handler1_data = g_malloc0 (1);
   void *handler2_data = g_malloc0 (1);
   always_expect (dummy_handle, will_return (MHD_YES));
-  gsad_http_handler_t *handler1 =
-    gsad_http_handler_new_with_data (dummy_call_next, g_free, handler1_data);
+  gsad_http_handler_t *handler1 = gsad_http_handler_new_with_data (
+    dummy_call_next, NULL, g_free, handler1_data);
   gsad_http_handler_t *handler2 =
-    gsad_http_handler_new_with_data (dummy_handle, g_free, handler2_data);
+    gsad_http_handler_new_with_data (dummy_handle, NULL, g_free, handler2_data);
 
   gsad_http_handler_add (handler1, handler2);
   assert_that (handler1->next, is_equal_to (handler2));
@@ -285,9 +305,50 @@ Ensure (gsad_http_handler, should_call_handler_chain_with_handler_data)
   g_free (some_data);
 }
 
+Ensure (gsad_http_handler, should_free_all_handlers)
+{
+  always_expect (dummy_handle, will_return (MHD_YES));
+  gsad_http_handler_t *handler1 = gsad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *handler2 = gsad_http_handler_new (dummy_handle);
+
+  gsad_http_handler_add (handler1, handler2);
+  assert_that (handler1, is_non_null);
+  assert_that (handler2, is_non_null);
+  assert_that (handler1->next, is_equal_to (handler2));
+
+  gsad_http_handler_free (handler1);
+}
+
+Ensure (gsad_http_handler, should_allow_to_free_handler_data)
+{
+  void *some_data = g_malloc0 (1);
+  always_expect (dummy_free, when (data, is_equal_to (some_data)));
+  gsad_http_handler_t *handler =
+    gsad_http_handler_new_with_data (dummy_handle, NULL, dummy_free, some_data);
+
+  assert_that (handler->data, is_equal_to (some_data));
+
+  gsad_http_handler_free (handler);
+}
+
 Ensure (gsad_http_handler, should_allow_to_free_null_handler)
 {
   gsad_http_handler_free (NULL);
+}
+
+Ensure (gsad_http_handler, should_allow_to_add_handler_from_func)
+{
+  gsad_http_handler_t *handler = gsad_http_handler_new (dummy_handle);
+
+  assert_that (handler, is_not_null);
+  assert_that (handler->next, is_null);
+
+  gsad_http_handler_add_from_func (handler, dummy_handle);
+  assert_that (handler->next, is_not_null);
+  assert_that (handler->next->handle, is_equal_to (dummy_handle));
+  assert_that (handler->next->next, is_null);
+
+  gsad_http_handler_free (handler);
 }
 
 int
@@ -301,16 +362,21 @@ main (int argc, char **argv)
                          should_allow_to_create_new_handler_with_data);
   add_test_with_context (suite, gsad_http_handler,
                          should_allow_to_set_next_handler);
-  add_test_with_context (suite, gsad_http_handler, should_allow_to_add_handler);
+  add_test_with_context (suite, gsad_http_handler,
+                         should_allow_to_call_set_leaf);
   add_test_with_context (suite, gsad_http_handler, should_start_handling);
   add_test_with_context (suite, gsad_http_handler,
                          should_return_no_if_handler_is_null_when_calling_it);
   add_test_with_context (suite, gsad_http_handler, should_call_handler_chain);
   add_test_with_context (suite, gsad_http_handler,
                          should_call_handler_chain_with_handler_data);
-
+  add_test_with_context (suite, gsad_http_handler, should_free_all_handlers);
+  add_test_with_context (suite, gsad_http_handler,
+                         should_allow_to_free_handler_data);
   add_test_with_context (suite, gsad_http_handler,
                          should_allow_to_free_null_handler);
+  add_test_with_context (suite, gsad_http_handler,
+                         should_allow_to_add_handler_from_func);
 
   int ret = run_test_suite (suite, create_text_reporter ());
   destroy_test_suite (suite);

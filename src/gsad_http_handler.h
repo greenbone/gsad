@@ -16,6 +16,9 @@
 typedef struct gsad_http_handler gsad_http_handler_t;
 
 typedef void (*gsad_http_handler_free_func_t) (void *);
+typedef void (*gsad_http_handler_set_leaf_func_t) (gsad_http_handler_t *,
+                                                   gsad_http_handler_t *,
+                                                   gboolean);
 
 typedef gsad_http_result_t (*gsad_http_handler_func_t) (
   gsad_http_handler_t *, void *, gsad_http_connection_t *,
@@ -25,13 +28,15 @@ gsad_http_handler_t *gsad_http_handler_new (gsad_http_handler_func_t);
 
 gsad_http_handler_t *
 gsad_http_handler_new_with_data (gsad_http_handler_func_t,
+                                 gsad_http_handler_set_leaf_func_t,
                                  gsad_http_handler_free_func_t, void *);
 
 gsad_http_handler_t *
 gsad_http_handler_add (gsad_http_handler_t *, gsad_http_handler_t *);
 
 gsad_http_handler_t *
-gsad_http_handler_set_next (gsad_http_handler_t *, gsad_http_handler_t *);
+gsad_http_handler_add_from_func (gsad_http_handler_t *,
+                                 gsad_http_handler_func_t);
 
 gsad_http_result_t
 gsad_http_handler_call (gsad_http_handler_t *, gsad_http_connection_t *,
