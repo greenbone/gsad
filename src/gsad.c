@@ -660,7 +660,7 @@ may_deflate (gsad_http_connection_t *con)
  * @return 1 if may, else 0.
  */
 static int
-may_brotli (http_connection_t *con)
+may_brotli (gsad_http_connection_t *con)
 {
   return may_compress (con, "br");
 }
