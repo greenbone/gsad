@@ -90,9 +90,30 @@ dummy_handle (gsad_http_handler_t *handler_next, void *handler_data,
   return result;
 }
 
-Ensure (gsad_http_method_handler, should_create_new_handler)
+Ensure (gsad_http_method_handler, should_create_new_get_handler)
 {
-  gsad_http_handler_t *method_handler = gsad_http_method_handler_new ();
+  gsad_http_handler_t *get_handler = gsad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *method_handler =
+    gsad_http_method_handler_new_get (get_handler);
+  gsad_http_method_handler_t *handler_data =
+    (gsad_http_method_handler_t *) method_handler->data;
+
+  assert_that (handler_data, is_not_null);
+  assert_that (method_handler, is_not_null);
+  assert_that (method_handler->handle, is_not_null);
+  assert_that (method_handler->next, is_null);
+  assert_that (handler_data->get, is_equal_to (get_handler));
+  assert_that (handler_data->get->handle, is_equal_to (dummy_handle));
+  assert_that (handler_data->post, is_null);
+
+  gsad_http_handler_free (method_handler);
+}
+
+Ensure (gsad_http_method_handler, should_create_new_post_handler)
+{
+  gsad_http_handler_t *post_handler = gsad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *method_handler =
+    gsad_http_method_handler_new_post (post_handler);
   gsad_http_method_handler_t *handler_data =
     (gsad_http_method_handler_t *) method_handler->data;
 
@@ -101,15 +122,16 @@ Ensure (gsad_http_method_handler, should_create_new_handler)
   assert_that (method_handler->handle, is_not_null);
   assert_that (method_handler->next, is_null);
   assert_that (handler_data->get, is_null);
-  assert_that (handler_data->post, is_null);
+  assert_that (handler_data->post, is_equal_to (post_handler));
+  assert_that (handler_data->post->handle, is_equal_to (dummy_handle));
 
   gsad_http_handler_free (method_handler);
 }
 
-Ensure (gsad_http_method_handler, should_create_new_get_handler)
+Ensure (gsad_http_method_handler, should_create_new_get_handler_from_func)
 {
   gsad_http_handler_t *method_handler =
-    gsad_http_method_handler_new_from_get_func (dummy_handle);
+    gsad_http_method_handler_new_get_from_func (dummy_handle);
   gsad_http_method_handler_t *handler_data =
     (gsad_http_method_handler_t *) method_handler->data;
 
@@ -124,10 +146,10 @@ Ensure (gsad_http_method_handler, should_create_new_get_handler)
   gsad_http_handler_free (method_handler);
 }
 
-Ensure (gsad_http_method_handler, should_create_new_post_handler)
+Ensure (gsad_http_method_handler, should_create_new_post_handler_from_func)
 {
   gsad_http_handler_t *method_handler =
-    gsad_http_method_handler_new_from_post_func (dummy_handle);
+    gsad_http_method_handler_new_post_from_func (dummy_handle);
   gsad_http_method_handler_t *handler_data =
     (gsad_http_method_handler_t *) method_handler->data;
 
@@ -166,7 +188,7 @@ Ensure (gsad_http_method_handler, should_create_new_handler_with_handlers)
 Ensure (gsad_http_method_handler, should_call_get_handler_for_get_method)
 {
   gsad_http_handler_t *method_handler =
-    gsad_http_method_handler_new_from_get_func (dummy_handle);
+    gsad_http_method_handler_new_get_from_func (dummy_handle);
   gsad_connection_info_t *con_info =
     gsad_connection_info_new (METHOD_TYPE_GET, "/some-url");
 
@@ -190,7 +212,7 @@ Ensure (gsad_http_method_handler, should_call_get_handler_for_get_method)
 Ensure (gsad_http_method_handler, should_call_post_handler_for_post_method)
 {
   gsad_http_handler_t *method_handler =
-    gsad_http_method_handler_new_from_post_func (dummy_handle);
+    gsad_http_method_handler_new_post_from_func (dummy_handle);
   gsad_connection_info_t *con_info =
     gsad_connection_info_new (METHOD_TYPE_POST, "/some-url");
 
@@ -235,7 +257,7 @@ Ensure (gsad_http_method_handler, should_call_next_handler_for_other_methods)
   gsad_http_handler_t *method_handler =
     gsad_http_method_handler_new_with_handlers (get_handler, post_handler);
   gsad_http_handler_t *next_handler = gsad_http_handler_new (dummy_handle);
-  gsad_http_handler_set_next (method_handler, next_handler);
+  gsad_http_handler_add (method_handler, next_handler);
   gsad_connection_info_t *con_info =
     gsad_connection_info_new (METHOD_TYPE_UNKNOWN, "/some-url");
 
@@ -256,17 +278,60 @@ Ensure (gsad_http_method_handler, should_call_next_handler_for_other_methods)
   gsad_http_handler_free (method_handler);
 }
 
+Ensure (gsad_http_method_handler, should_set_next_on_all_leaves)
+{
+  /* Handler layout should look like this even if it doesn't make much sense as
+   * a real handler tree, as it tests that the next handler of all leaves is
+   * updated:
+   *
+   * method_handler3
+   *  - GET: method_handler2
+   *    - GET: get_handler2
+   *    - POST: method_handler1
+   *      - GET: get_handler1
+   *      - POST: post_handler1
+   *    - next: next_handler
+   *  - POST: post_handler2
+   *  - next: next_handler
+   */
+  gsad_http_handler_t *get_handler1 = gsad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *post_handler1 = gsad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *method_handler1 =
+    gsad_http_method_handler_new_with_handlers (get_handler1, post_handler1);
+  gsad_http_handler_t *get_handler2 = gsad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *post_handler2 = gsad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *method_handler2 =
+    gsad_http_method_handler_new_with_handlers (get_handler2, method_handler1);
+  gsad_http_handler_t *method_handler3 =
+    gsad_http_method_handler_new_with_handlers (method_handler2, post_handler2);
+
+  gsad_http_handler_t *next_handler = gsad_http_handler_new (dummy_handle);
+  // This should set the next handler of all leaves to next_handler
+  gsad_http_handler_add (method_handler3, next_handler);
+
+  assert_that (method_handler3->next, is_equal_to (next_handler));
+  assert_that (post_handler2->next, is_equal_to (next_handler));
+  assert_that (method_handler2->next, is_equal_to (next_handler));
+  assert_that (get_handler1->next, is_equal_to (next_handler));
+  assert_that (post_handler1->next, is_equal_to (next_handler));
+  assert_that (get_handler2->next, is_equal_to (next_handler));
+
+  gsad_http_handler_free (method_handler1);
+}
+
 int
 main (int argc, char **argv)
 {
   TestSuite *suite = create_test_suite ();
 
   add_test_with_context (suite, gsad_http_method_handler,
-                         should_create_new_handler);
-  add_test_with_context (suite, gsad_http_method_handler,
                          should_create_new_get_handler);
   add_test_with_context (suite, gsad_http_method_handler,
                          should_create_new_post_handler);
+  add_test_with_context (suite, gsad_http_method_handler,
+                         should_create_new_get_handler_from_func);
+  add_test_with_context (suite, gsad_http_method_handler,
+                         should_create_new_post_handler_from_func);
   add_test_with_context (suite, gsad_http_method_handler,
                          should_create_new_handler_with_handlers);
   add_test_with_context (suite, gsad_http_method_handler,
@@ -277,6 +342,8 @@ main (int argc, char **argv)
                          should_not_call_handlers_for_other_methods);
   add_test_with_context (suite, gsad_http_method_handler,
                          should_call_next_handler_for_other_methods);
+  add_test_with_context (suite, gsad_http_method_handler,
+                         should_set_next_on_all_leaves);
 
   int ret = run_test_suite (suite, create_text_reporter ());
   destroy_test_suite (suite);
