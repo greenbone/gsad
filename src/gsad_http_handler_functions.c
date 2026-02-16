@@ -116,7 +116,7 @@ gsad_http_handle_invalid_method (gsad_http_handler_t *handler_next,
                != METHOD_TYPE_POST))
     {
       gsad_http_send_response_for_content (
-        connection, ERROR_PAGE, MHD_HTTP_NOT_ACCEPTABLE, NULL,
+        connection, ERROR_PAGE, MHD_HTTP_METHOD_NOT_ALLOWED, NULL,
         GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
       return MHD_YES;
     }

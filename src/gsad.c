@@ -1935,9 +1935,14 @@ main (int argc, char **argv)
                                      gsad_args_get_session_timeout (gsad_args));
   gsad_settings_set_pid_filename (gsad_global_settings,
                                   gsad_args_get_pid_filename (gsad_args));
+  gsad_settings_set_api_only (gsad_global_settings,
+                              gsad_args_is_api_only_enabled (gsad_args));
 
   gsad_settings_set_client_watch_interval (
     gsad_global_settings, gsad_args_get_client_watch_interval (gsad_args));
+
+  gsad_settings_set_user_session_limit (
+    gsad_global_settings, gsad_args_get_user_session_limit (gsad_args));
 
   if (!gsad_args_is_run_in_foreground_enabled (gsad_args))
     {
@@ -1995,9 +2000,6 @@ main (int argc, char **argv)
         }
     }
 
-  gsad_settings_set_user_session_limit (
-    gsad_global_settings, gsad_args_get_user_session_limit (gsad_args));
-
   /* Write pidfile. */
   if (pidfile_create (
         (gchar *) gsad_settings_get_pid_filename (gsad_global_settings)))
@@ -2020,7 +2022,8 @@ main (int argc, char **argv)
   else if (gsad_address_init (NULL, gsad_port))
     goto error;
 
-  gsad_http_handler_t *handlers = gsad_http_request_init_handlers ();
+  gsad_http_handler_t *handlers =
+    gsad_http_request_init_handlers (gsad_global_settings);
 
   if (should_redirect)
     {
