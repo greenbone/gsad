@@ -26,92 +26,98 @@
  */
 gsad_http_handler_t *global_handlers;
 
-static gsad_http_handler_t *
-make_url_handlers ()
-{
-  gsad_http_handler_t *url_handlers;
-  gsad_http_handler_t *gmp_handler, *gmp_url_handler;
-  gsad_http_handler_t *system_report_handler, *system_report_url_handler;
-  gsad_http_handler_t *logout_handler, *logout_url_handler;
-  gsad_http_handler_t *next;
-
-  url_handlers = gsad_http_url_handler_from_func ("^/(img|js|css|locales)/.+$",
-                                                  gsad_http_handle_static_file);
-  next = gsad_http_handler_set_next (
-    url_handlers, gsad_http_url_handler_from_func (
-                    "^/robots\\.txt$", gsad_http_handle_static_file));
-  next = gsad_http_handler_set_next (
-    next, gsad_http_url_handler_from_func ("^/config\\.*js$",
-                                           gsad_http_handle_static_config));
-  next = gsad_http_handler_set_next (
-    next, gsad_http_url_handler_from_func ("^/assets/.+$",
-                                           gsad_http_handle_static_file));
-  next = gsad_http_handler_set_next (
-    next, gsad_http_url_handler_from_func ("^/static/(img|js|css|media)/.+$",
-                                           gsad_http_handle_static_file));
-  next = gsad_http_handler_set_next (
-    next, gsad_http_url_handler_from_func ("^/manual/.+$",
-                                           gsad_http_handle_static_content));
-
-  // Create /gmp handler chain.
-
-  gmp_handler = gsad_http_handler_new (gsad_http_handle_setup_user);
-  gsad_http_handler_add (
-    gmp_handler, gsad_http_handler_new (gsad_http_handle_setup_credentials));
-  gsad_http_handler_add (gmp_handler,
-                         gsad_http_handler_new (gsad_http_handle_gmp_get));
-  gmp_url_handler = gsad_http_url_handler_new ("^/gmp$", gmp_handler);
-  next = gsad_http_handler_set_next (next, gmp_url_handler);
-
-  // Create /system_report handler chain.
-
-  system_report_handler = gsad_http_handler_new (gsad_http_handle_setup_user);
-  gsad_http_handler_add (
-    system_report_handler,
-    gsad_http_handler_new (gsad_http_handle_setup_credentials));
-  gsad_http_handler_add (
-    system_report_handler,
-    gsad_http_handler_new (gsad_http_handle_system_report));
-  system_report_url_handler =
-    gsad_http_url_handler_new ("^/system_report/.+$", system_report_handler);
-  next = gsad_http_handler_set_next (next, system_report_url_handler);
-
-  // Create /logout handler chain.
-
-  logout_handler = gsad_http_handler_new (gsad_http_handle_get_user);
-  gsad_http_handler_add (logout_handler,
-                         gsad_http_handler_new (gsad_http_handle_logout));
-  logout_url_handler =
-    gsad_http_url_handler_new ("^/logout/?$", logout_handler);
-  next = gsad_http_handler_set_next (next, logout_url_handler);
-
-  // fallback to index handler
-  gsad_http_handler_set_next (next,
-                              gsad_http_handler_new (gsad_http_handle_index));
-
-  return url_handlers;
-}
-
 gsad_http_handler_t *
 gsad_http_request_init_handlers ()
 {
-  gsad_http_handler_t *method_router, *gmp_post_handler, *url_handlers;
   gsad_http_init_validator ();
 
   global_handlers = gsad_http_handler_new (gsad_http_handle_validate);
 
-  method_router = gsad_http_method_handler_new ();
-  gmp_post_handler = gsad_http_handler_new (gsad_http_handle_gmp_post);
+  gsad_http_handler_t *url_handlers = NULL;
+  gsad_http_handler_t *next = NULL;
 
-  gsad_http_handler_add (global_handlers, method_router);
+  // Create /gmp POST and GET handler chain.
+  gsad_http_handler_t *gmp_post_handler =
+    gsad_http_handler_new (gsad_http_handle_gmp_post);
+  gsad_http_handler_t *gmp_get_handler =
+    gsad_http_handler_new (gsad_http_handle_setup_user);
+  gsad_http_handler_add_from_func (gmp_get_handler,
+                                   gsad_http_handle_setup_credentials);
+  gsad_http_handler_add_from_func (gmp_get_handler, gsad_http_handle_gmp_get);
+  gsad_http_handler_t *gmp_url_handler = gsad_http_url_handler_new (
+    "^/gmp$", gsad_http_method_handler_new_with_handlers (gmp_get_handler,
+                                                          gmp_post_handler));
+  url_handlers = gsad_http_handler_add (url_handlers, gmp_url_handler);
 
-  url_handlers = make_url_handlers ();
+  // Create static file handlers for various URL patterns.
+  gsad_http_handler_t *image_url_handler = gsad_http_url_handler_new (
+    "^/(img|js|css|locales)/.+$",
+    gsad_http_method_handler_new_get_from_func (gsad_http_handle_static_file));
+  next = gsad_http_handler_add (url_handlers, image_url_handler);
 
-  gsad_http_method_handler_set_get_handler (method_router, url_handlers);
-  gsad_http_method_handler_set_post_handler (method_router, gmp_post_handler);
+  gsad_http_handler_t *robots_url_handler = gsad_http_url_handler_new (
+    "^/robots\\.txt$",
+    gsad_http_method_handler_new_get_from_func (gsad_http_handle_static_file));
+  next = gsad_http_handler_add (next, robots_url_handler);
 
-  gsad_http_handler_add (
-    global_handlers, gsad_http_handler_new (gsad_http_handle_invalid_method));
+  gsad_http_handler_t *favicon_url_handler = gsad_http_url_handler_new (
+    "^/favicon\\.ico$",
+    gsad_http_method_handler_new_get_from_func (gsad_http_handle_static_file));
+  next = gsad_http_handler_add (next, favicon_url_handler);
+
+  gsad_http_handler_t *config_js_handler = gsad_http_url_handler_new (
+    "^/config\\.*js$", gsad_http_method_handler_new_get_from_func (
+                         gsad_http_handle_static_config));
+  next = gsad_http_handler_add (next, config_js_handler);
+
+  gsad_http_handler_t *assets_url_handler = gsad_http_url_handler_new (
+    "^/assets/.+$",
+    gsad_http_method_handler_new_get_from_func (gsad_http_handle_static_file));
+  next = gsad_http_handler_add (next, assets_url_handler);
+
+  gsad_http_handler_t *static_url_handler = gsad_http_url_handler_new (
+    "^/static/(img|js|css|media)/.+$",
+    gsad_http_method_handler_new_get_from_func (gsad_http_handle_static_file));
+  next = gsad_http_handler_add (next, static_url_handler);
+
+  gsad_http_handler_t *manual_handler = gsad_http_url_handler_new (
+    "^/manual/.+$", gsad_http_method_handler_new_get_from_func (
+                      gsad_http_handle_static_content));
+  next = gsad_http_handler_add (next, manual_handler);
+
+  // Create /system_report handler
+  // chain.
+  gsad_http_handler_t *system_report_handler =
+    gsad_http_handler_new (gsad_http_handle_setup_user);
+  gsad_http_handler_add_from_func (system_report_handler,
+                                   gsad_http_handle_setup_credentials);
+  gsad_http_handler_add_from_func (system_report_handler,
+                                   gsad_http_handle_system_report);
+  gsad_http_handler_t *system_report_url_handler = gsad_http_url_handler_new (
+    "^/system_report/.+$",
+    gsad_http_method_handler_new_get (system_report_handler));
+  next = gsad_http_handler_add (next, system_report_url_handler);
+
+  // Create /logout handler chain.
+  gsad_http_handler_t *logout_handler =
+    gsad_http_handler_new (gsad_http_handle_get_user);
+  gsad_http_handler_add_from_func (logout_handler, gsad_http_handle_logout);
+  gsad_http_handler_t *logout_url_handler = gsad_http_url_handler_new (
+    "^/logout/?$", gsad_http_method_handler_new_get (logout_handler));
+  next = gsad_http_handler_add (next, logout_url_handler);
+
+  // fallback to index handler for get requests
+  gsad_http_handler_t *index_url_handler = gsad_http_url_handler_new (
+    "^/.*$", gsad_http_method_handler_new_with_handlers (
+               // get
+               gsad_http_handler_new (gsad_http_handle_index),
+               // post
+               gsad_http_handler_new (gsad_http_handle_not_found)));
+  next = gsad_http_handler_add (next, index_url_handler);
+  next =
+    gsad_http_handler_add_from_func (next, gsad_http_handle_invalid_method);
+
+  gsad_http_handler_add (global_handlers, url_handlers);
 
   return global_handlers;
 }
