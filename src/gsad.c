@@ -1789,6 +1789,8 @@ main (int argc, char **argv)
 {
   sigset_t sigmask_all, sigmask_current;
 
+  gsad_log_config_t *log_config = NULL;
+
   /* Process command line options. */
   gsad_args_t *gsad_args = gsad_args_new ();
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
@@ -1812,7 +1814,7 @@ main (int argc, char **argv)
   gsad_settings_set_log_config_filename (
     gsad_global_settings, gsad_args_get_log_config_filename (gsad_args));
 
-  gsad_log_config_t *log_config = gsad_logging_init (gsad_global_settings);
+  log_config = gsad_logging_init (gsad_global_settings);
 
   /* Validate command line options. */
   if (gsad_args_validate_session_timeout (gsad_args))
