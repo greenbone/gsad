@@ -135,6 +135,9 @@ gsad_args_is_secure_cookie_enabled (const gsad_args_t *);
 gboolean
 gsad_args_is_chroot_enabled (const gsad_args_t *);
 
+gboolean
+gsad_args_is_api_only_enabled (const gsad_args_t *);
+
 int
 gsad_args_validate_session_timeout (const gsad_args_t *);
 

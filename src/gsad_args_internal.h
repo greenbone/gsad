@@ -13,6 +13,7 @@
  */
 struct gsad_args
 {
+  gboolean api_only;   ///< Whether to enable API only mode.
   gboolean do_chroot;  ///< Whether chroot should be enabled.
   gboolean foreground; ///< Whether to run in foreground.
   gboolean
