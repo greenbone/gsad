@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+#include "gsad_http_handle_request.h"
+
 #include "gsad_http.h"
 #include "gsad_http_handler.h"
 #include "gsad_http_handler_functions.h"
@@ -26,8 +28,19 @@
  */
 gsad_http_handler_t *global_handlers;
 
+/**
+ * @brief Setup the HTTP handlers for gsad.
+ *
+ * This function initializes the global HTTP handler chain with the appropriate
+ * handlers for the different URL patterns and HTTP methods. The handlers are
+ * added in a specific order to ensure that requests are processed correctly.
+ *
+ * @param[in] gsad_settings The settings to use for initializing the handlers.
+ *
+ * @return The initialized global HTTP handler chain.
+ */
 gsad_http_handler_t *
-gsad_http_request_init_handlers ()
+gsad_http_request_init_handlers (gsad_settings_t *gsad_settings)
 {
   gsad_http_init_validator ();
 
@@ -49,41 +62,52 @@ gsad_http_request_init_handlers ()
                                                           gmp_post_handler));
   url_handlers = gsad_http_handler_add (url_handlers, gmp_url_handler);
 
-  // Create static file handlers for various URL patterns.
-  gsad_http_handler_t *image_url_handler = gsad_http_url_handler_new (
-    "^/(img|js|css|locales)/.+$",
-    gsad_http_method_handler_new_get_from_func (gsad_http_handle_static_file));
-  next = gsad_http_handler_add (url_handlers, image_url_handler);
+  gboolean is_api_only = gsad_settings_is_api_only_enabled (gsad_settings);
+  if (is_api_only)
+    {
+      // API-only mode, no static file handlers.
+      next = url_handlers;
+    }
+  else
+    {
+      // Create static file handlers for various URL patterns.
+      gsad_http_handler_t *image_url_handler =
+        gsad_http_url_handler_new ("^/(img|js|css|locales)/.+$",
+                                   gsad_http_method_handler_new_get_from_func (
+                                     gsad_http_handle_static_file));
+      next = gsad_http_handler_add (url_handlers, image_url_handler);
 
-  gsad_http_handler_t *robots_url_handler = gsad_http_url_handler_new (
-    "^/robots\\.txt$",
-    gsad_http_method_handler_new_get_from_func (gsad_http_handle_static_file));
-  next = gsad_http_handler_add (next, robots_url_handler);
+      gsad_http_handler_t *robots_url_handler = gsad_http_url_handler_new (
+        "^/robots\\.txt$", gsad_http_method_handler_new_get_from_func (
+                             gsad_http_handle_static_file));
+      next = gsad_http_handler_add (next, robots_url_handler);
 
-  gsad_http_handler_t *favicon_url_handler = gsad_http_url_handler_new (
-    "^/favicon\\.ico$",
-    gsad_http_method_handler_new_get_from_func (gsad_http_handle_static_file));
-  next = gsad_http_handler_add (next, favicon_url_handler);
+      gsad_http_handler_t *favicon_url_handler = gsad_http_url_handler_new (
+        "^/favicon\\.ico$", gsad_http_method_handler_new_get_from_func (
+                              gsad_http_handle_static_file));
+      next = gsad_http_handler_add (next, favicon_url_handler);
 
-  gsad_http_handler_t *config_js_handler = gsad_http_url_handler_new (
-    "^/config\\.*js$", gsad_http_method_handler_new_get_from_func (
-                         gsad_http_handle_static_config));
-  next = gsad_http_handler_add (next, config_js_handler);
+      gsad_http_handler_t *config_js_handler = gsad_http_url_handler_new (
+        "^/config\\.*js$", gsad_http_method_handler_new_get_from_func (
+                             gsad_http_handle_static_config));
+      next = gsad_http_handler_add (next, config_js_handler);
 
-  gsad_http_handler_t *assets_url_handler = gsad_http_url_handler_new (
-    "^/assets/.+$",
-    gsad_http_method_handler_new_get_from_func (gsad_http_handle_static_file));
-  next = gsad_http_handler_add (next, assets_url_handler);
+      gsad_http_handler_t *assets_url_handler = gsad_http_url_handler_new (
+        "^/assets/.+$", gsad_http_method_handler_new_get_from_func (
+                          gsad_http_handle_static_file));
+      next = gsad_http_handler_add (next, assets_url_handler);
 
-  gsad_http_handler_t *static_url_handler = gsad_http_url_handler_new (
-    "^/static/(img|js|css|media)/.+$",
-    gsad_http_method_handler_new_get_from_func (gsad_http_handle_static_file));
-  next = gsad_http_handler_add (next, static_url_handler);
+      gsad_http_handler_t *static_url_handler =
+        gsad_http_url_handler_new ("^/static/(img|js|css|media)/.+$",
+                                   gsad_http_method_handler_new_get_from_func (
+                                     gsad_http_handle_static_file));
+      next = gsad_http_handler_add (next, static_url_handler);
 
-  gsad_http_handler_t *manual_handler = gsad_http_url_handler_new (
-    "^/manual/.+$", gsad_http_method_handler_new_get_from_func (
-                      gsad_http_handle_static_content));
-  next = gsad_http_handler_add (next, manual_handler);
+      gsad_http_handler_t *manual_handler = gsad_http_url_handler_new (
+        "^/manual/.+$", gsad_http_method_handler_new_get_from_func (
+                          gsad_http_handle_static_content));
+      next = gsad_http_handler_add (next, manual_handler);
+    }
 
   // Create /system_report handler
   // chain.
@@ -106,16 +130,24 @@ gsad_http_request_init_handlers ()
     "^/logout/?$", gsad_http_method_handler_new_get (logout_handler));
   next = gsad_http_handler_add (next, logout_url_handler);
 
-  // fallback to index handler for get requests
-  gsad_http_handler_t *index_url_handler = gsad_http_url_handler_new (
-    "^/.*$", gsad_http_method_handler_new_with_handlers (
-               // get
-               gsad_http_handler_new (gsad_http_handle_index),
-               // post
-               gsad_http_handler_new (gsad_http_handle_not_found)));
-  next = gsad_http_handler_add (next, index_url_handler);
+  if (!is_api_only)
+    {
+      // fallback to index handler for get requests in non API-only mode, so
+      // that the UI can handle the routing based on the URL.
+      gsad_http_handler_t *index_url_handler = gsad_http_url_handler_new (
+        "^/.*$", gsad_http_method_handler_new_with_handlers (
+                   // get
+                   gsad_http_handler_new (gsad_http_handle_index),
+                   // post
+                   gsad_http_handler_new (gsad_http_handle_not_found)));
+      next = gsad_http_handler_add (next, index_url_handler);
+    }
+
+  // don't support other methods than GET and POST, return 405 for other methods
   next =
     gsad_http_handler_add_from_func (next, gsad_http_handle_invalid_method);
+  // return 404 for URLs that don't match any of the above handlers
+  next = gsad_http_handler_add_from_func (next, gsad_http_handle_not_found);
 
   gsad_http_handler_add (global_handlers, url_handlers);
 
