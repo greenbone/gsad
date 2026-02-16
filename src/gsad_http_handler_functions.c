@@ -856,7 +856,9 @@ gsad_http_handle_not_found (gsad_http_handler_t *handler_next,
   g_debug ("Returning not found for url %s", url);
 
   cmd_response_data_t *response_data = cmd_response_data_new ();
-  return gsad_http_create_not_found_response (response_data);
+  gsad_http_response_t *response =
+    gsad_http_create_not_found_response (response_data);
+  return gsad_http_send_response (connection, response, response_data, NULL);
 }
 
 /**
