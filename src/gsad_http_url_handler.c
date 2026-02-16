@@ -86,6 +86,17 @@ gsad_http_handler_url_map_free (void *data)
   g_free (map);
 }
 
+/**
+ * @brief Set the leaf handler for a URL handler.
+ *
+ * If the URL handler has a handler in its map, set the leaf handler for that
+ * handler. Then set the leaf handler for the URL handler itself.
+ *
+ * @param[in] handler The URL handler to set the leaf for.
+ * @param[in] next The leaf handler to set.
+ * @param[in] free_next Whether to free the next handler when the URL handler is
+ * freed.
+ */
 void
 gsad_http_url_handler_set_leaf (gsad_http_handler_t *handler,
                                 gsad_http_handler_t *next, gboolean free_next)
@@ -95,6 +106,8 @@ gsad_http_url_handler_set_leaf (gsad_http_handler_t *handler,
   if (map->handler != NULL)
     {
       // Set the next handler for the URL handler chain
+      // Don't free the next handler because we would create a cycle in the
+      // chain, which would lead to double free when the URL handler is freed
       map->handler->set_leaf (map->handler, next, FALSE);
     }
   gsad_http_handler_set_leaf (handler, next, free_next);
