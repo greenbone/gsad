@@ -56,6 +56,32 @@ handle_get_post (gsad_http_handler_t *handler_next, void *handler_data,
   return gsad_http_handler_call (handler_next, connection, con_info, data);
 }
 
+static void
+gsad_http_method_handler_set_leaf (gsad_http_handler_t *handler,
+                                   gsad_http_handler_t *next,
+                                   gboolean free_next)
+{
+  gsad_http_method_handler_t *routes =
+    (gsad_http_method_handler_t *) handler->data;
+  if (routes->get != NULL)
+    {
+      // Set the next handler for the GET handler chain
+      // We set free_next to FALSE here because the method handler is
+      // responsible for freeing the GET and POST handlers, so we don't want the
+      // GET handler to free the next handler in the chain.
+      routes->get->set_leaf (routes->get, next, FALSE);
+    }
+  if (routes->post != NULL)
+    {
+      // Set the next handler for the POST handler chain
+      // We set free_next to FALSE here because the method handler is
+      // responsible for freeing the GET and POST handlers, so we don't want the
+      // POST handler to free the next handler in the chain.
+      routes->post->set_leaf (routes->post, next, FALSE);
+    }
+  gsad_http_handler_set_leaf (handler, next, free_next);
+}
+
 /**
  * @brief Create a new method handler with the specified GET and POST handlers.
  *
@@ -77,23 +103,42 @@ gsad_http_method_handler_new_with_handlers (gsad_http_handler_t *get_handler,
   router->get = get_handler;
   router->post = post_handler;
   return gsad_http_handler_new_with_data (
-    handle_get_post, gsad_http_method_handler_free, router);
+    handle_get_post, gsad_http_method_handler_set_leaf,
+    gsad_http_method_handler_free, router);
 }
 
 /**
- * @brief Create a new method handler
+ * @brief Create a new method handler for POST request handling with the
+ * specified handler.
  *
- * This function creates a new method handler with the GET and POST handlers set
- * to NULL. The caller can then set the GET and POST handlers using the
- * gsad_http_method_handler_set_get_handler and
- * gsad_http_method_handler_set_post_handler functions.
+ * This is a convenience function for creating a method handler with only a POST
+ * handler.
  *
- * @return A new method handler.
+ * @param[in] post_handler The handler to route POST requests to.
+ *
+ * @return A new method handler with the specified POST handler.
  */
 gsad_http_handler_t *
-gsad_http_method_handler_new ()
+gsad_http_method_handler_new_post (gsad_http_handler_t *post_handler)
 {
-  return gsad_http_method_handler_new_with_handlers (NULL, NULL);
+  return gsad_http_method_handler_new_with_handlers (NULL, post_handler);
+}
+
+/**
+ * @brief Create a new method handler for GET request handling with the
+ * specified handler.
+ *
+ * This is a convenience function for creating a method handler with only a GET
+ * handler.
+ *
+ * @param[in] get_handler The handler to route GET requests to.
+ *
+ * @return A new method handler with the specified GET handler.
+ */
+gsad_http_handler_t *
+gsad_http_method_handler_new_get (gsad_http_handler_t *get_handler)
+{
+  return gsad_http_method_handler_new_with_handlers (get_handler, NULL);
 }
 
 /**
@@ -105,10 +150,9 @@ gsad_http_method_handler_new ()
  * @return A new method handler with the specified GET handler function.
  */
 gsad_http_handler_t *
-gsad_http_method_handler_new_from_get_func (gsad_http_handler_func_t get_func)
+gsad_http_method_handler_new_get_from_func (gsad_http_handler_func_t get_func)
 {
-  gsad_http_handler_t *get_handler = gsad_http_handler_new (get_func);
-  return gsad_http_method_handler_new_with_handlers (get_handler, NULL);
+  return gsad_http_method_handler_new_get (gsad_http_handler_new (get_func));
 }
 
 /**
@@ -120,10 +164,10 @@ gsad_http_method_handler_new_from_get_func (gsad_http_handler_func_t get_func)
  * @return A new method handler with the specified POST handler function.
  */
 gsad_http_handler_t *
-gsad_http_method_handler_new_from_post_func (gsad_http_handler_func_t post_func)
+gsad_http_method_handler_new_post_from_func (gsad_http_handler_func_t post_func)
 {
   gsad_http_handler_t *post_handler = gsad_http_handler_new (post_func);
-  return gsad_http_method_handler_new_with_handlers (NULL, post_handler);
+  return gsad_http_method_handler_new_post (post_handler);
 }
 
 /**
@@ -145,34 +189,4 @@ gsad_http_method_handler_free (void *data)
   gsad_http_handler_free (routes->post);
 
   g_free (routes);
-}
-
-/**
- * @brief Set the GET handler for the method handler
- *
- * @param[in] router The method handler to set the GET handler for.
- * @param[in] handler The GET handler to set.
- */
-void
-gsad_http_method_handler_set_get_handler (const gsad_http_handler_t *router,
-                                          gsad_http_handler_t *handler)
-{
-  gsad_http_method_handler_t *method_handler =
-    (gsad_http_method_handler_t *) router->data;
-  method_handler->get = handler;
-}
-
-/**
- * @brief Set the POST handler for the method handler
- *
- * @param[in] router The method handler to set the POST handler for.
- * @param[in] handler The POST handler to set.
- */
-void
-gsad_http_method_handler_set_post_handler (const gsad_http_handler_t *router,
-                                           gsad_http_handler_t *handler)
-{
-  gsad_http_method_handler_t *method_handler =
-    (gsad_http_method_handler_t *) router->data;
-  method_handler->post = handler;
 }
