@@ -63,6 +63,13 @@ dummy_handle (gsad_http_handler_t *handler_next, void *handler_data,
   return result;
 }
 
+void
+dummy_free (void *data)
+{
+  mock (data);
+  g_free (data);
+}
+
 Ensure (gsad_http_url_handler, should_allow_to_create_url_handler)
 {
   gsad_http_handler_t *dummy_handler = gsad_http_handler_new (dummy_handle);
@@ -156,7 +163,7 @@ Ensure (gsad_http_url_handler, should_call_next_handler_if_url_does_not_match)
     gsad_http_url_handler_new ("^/test-url$", dummy_handler);
 
   gsad_http_handler_t *next_handler = gsad_http_handler_new (dummy_handle);
-  gsad_http_handler_set_next (url_handler, next_handler);
+  gsad_http_handler_add (url_handler, next_handler);
 
   assert_that (next_handler->handle, is_equal_to (dummy_handle));
   assert_that (next_handler->next, is_null);
@@ -177,6 +184,106 @@ Ensure (gsad_http_url_handler, should_call_next_handler_if_url_does_not_match)
   gsad_connection_info_free (con_info);
 }
 
+Ensure (gsad_http_url_handler, should_allow_to_create_simple_url_handler_chain)
+{
+  /* url_handler:
+   *  - map: "^/test-url1$" -> dummy_handler1
+   *  - next: dummy_handler2
+   */
+  gsad_http_handler_t *dummy_handler1 = gsad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *dummy_handler2 = gsad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *url_handler =
+    gsad_http_url_handler_new ("^/test-url$", dummy_handler1);
+
+  assert_that (url_handler->handle, is_not_null);
+  assert_that (url_handler->next, is_null);
+
+  gsad_http_url_handler_map_t *map =
+    (gsad_http_url_handler_map_t *) url_handler->data;
+  assert_that (map->handler, is_equal_to (dummy_handler1));
+  assert_that (map->gregexp, is_not_null);
+
+  gsad_http_handler_add (url_handler, dummy_handler2);
+  assert_that (url_handler->next, is_equal_to (dummy_handler2));
+  assert_that (url_handler->free_next, is_true);
+  assert_that (dummy_handler1->next, is_equal_to (dummy_handler2));
+  assert_that (dummy_handler1->free_next, is_false);
+
+  assert_that (get_last_call (), is_null);
+
+  gsad_http_handler_free (url_handler);
+}
+
+Ensure (gsad_http_url_handler, should_allow_to_create_url_handler_chain)
+{
+  /* url_handler1:
+   *  - map: "^/test-url1$" -> dummy_handler1
+        - next: url_handler2
+   *  - next: url_handler2
+   *    - map: "^/test-url2$" -> dummy_handler2
+   *      - next: dummy_handler3
+   *    - next: dummy_handler3
+   */
+  gsad_http_handler_t *dummy_handler1 = gsad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *dummy_handler2 = gsad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *dummy_handler3 = gsad_http_handler_new (dummy_handle);
+  gsad_http_handler_t *url_handler1 =
+    gsad_http_url_handler_new ("^/test-url$", dummy_handler1);
+  gsad_http_handler_t *url_handler2 =
+    gsad_http_url_handler_new ("^/test-url2$", dummy_handler2);
+
+  assert_that (url_handler1->handle, is_not_null);
+  assert_that (url_handler1->next, is_null);
+  assert_that (url_handler2->handle, is_not_null);
+  assert_that (url_handler2->next, is_null);
+
+  gsad_http_url_handler_map_t *map1 =
+    (gsad_http_url_handler_map_t *) url_handler1->data;
+  assert_that (map1->handler, is_equal_to (dummy_handler1));
+  assert_that (map1->gregexp, is_not_null);
+
+  gsad_http_url_handler_map_t *map2 =
+    (gsad_http_url_handler_map_t *) url_handler2->data;
+  assert_that (map2->handler, is_equal_to (dummy_handler2));
+  assert_that (map2->gregexp, is_not_null);
+
+  gsad_http_handler_add (url_handler1, url_handler2);
+  gsad_http_handler_add (url_handler2, dummy_handler3);
+
+  assert_that (url_handler1->next, is_equal_to (url_handler2));
+  assert_that (url_handler1->free_next, is_true);
+  assert_that (dummy_handler1->next, is_equal_to (url_handler2));
+  assert_that (dummy_handler1->free_next, is_false);
+  assert_that (url_handler2->next, is_equal_to (dummy_handler3));
+  assert_that (url_handler2->free_next, is_true);
+  assert_that (dummy_handler2->next, is_equal_to (dummy_handler3));
+  assert_that (dummy_handler2->free_next, is_false);
+  assert_that (dummy_handler3->next, is_null);
+  assert_that (dummy_handler3->free_next, is_true);
+
+  assert_that (get_last_call (), is_null);
+
+  gsad_http_handler_free (url_handler1);
+}
+
+Ensure (gsad_http_url_handler, should_allow_to_free_chain_and_data)
+{
+  void *some_data = g_malloc0 (1);
+  expect (dummy_free, when (data, is_equal_to (some_data)));
+  gsad_http_handler_t *dummy_handler =
+    gsad_http_handler_new_with_data (dummy_handle, NULL, dummy_free, some_data);
+  gsad_http_handler_t *url_handler =
+    gsad_http_url_handler_new ("^/test-url$", dummy_handler);
+
+  gsad_http_url_handler_map_t *map =
+    (gsad_http_url_handler_map_t *) url_handler->data;
+  map->handler->data = some_data;
+
+  assert_that (get_last_call (), is_null);
+
+  gsad_http_handler_free (url_handler);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -192,6 +299,12 @@ main (int argc, char **argv)
                          should_handle_matching_url);
   add_test_with_context (suite, gsad_http_url_handler,
                          should_call_next_handler_if_url_does_not_match);
+  add_test_with_context (suite, gsad_http_url_handler,
+                         should_allow_to_create_simple_url_handler_chain);
+  add_test_with_context (suite, gsad_http_url_handler,
+                         should_allow_to_create_url_handler_chain);
+  add_test_with_context (suite, gsad_http_url_handler,
+                         should_allow_to_free_chain_and_data);
 
   int ret = run_test_suite (suite, create_text_reporter ());
   destroy_test_suite (suite);

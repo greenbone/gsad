@@ -86,6 +86,20 @@ gsad_http_handler_url_map_free (void *data)
   g_free (map);
 }
 
+void
+gsad_http_url_handler_set_leaf (gsad_http_handler_t *handler,
+                                gsad_http_handler_t *next, gboolean free_next)
+{
+  gsad_http_url_handler_map_t *map =
+    (gsad_http_url_handler_map_t *) handler->data;
+  if (map->handler != NULL)
+    {
+      // Set the next handler for the URL handler chain
+      map->handler->set_leaf (map->handler, next, FALSE);
+    }
+  gsad_http_handler_set_leaf (handler, next, free_next);
+}
+
 /**
  * @brief Create a new handler for URL matching.
  *
@@ -101,7 +115,8 @@ gsad_http_url_handler_new (const gchar *regexp, gsad_http_handler_t *handler)
 {
   gsad_http_url_handler_map_t *map =
     gsad_http_url_handler_map_new (handler, regexp);
-  return gsad_http_handler_new_with_data (&gsad_http_url_handler_handle_url,
+  return gsad_http_handler_new_with_data (gsad_http_url_handler_handle_url,
+                                          gsad_http_url_handler_set_leaf,
                                           gsad_http_handler_url_map_free, map);
 }
 
