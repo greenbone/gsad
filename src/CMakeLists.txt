@@ -151,10 +151,6 @@ if(GVMD_RUN_DIR)
   add_definitions(-DGVMD_RUN_DIR="${GVMD_RUN_DIR}")
 endif(GVMD_RUN_DIR)
 
-if(GSAD_RUN_DIR)
-  add_definitions(-DGSAD_RUN_DIR="${GSAD_RUN_DIR}")
-endif(GSAD_RUN_DIR)
-
 if(GSAD_PID_PATH)
   add_definitions(-DGSAD_PID_PATH="${GSAD_PID_PATH}")
 endif(GSAD_PID_PATH)
