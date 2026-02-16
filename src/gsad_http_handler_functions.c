@@ -32,7 +32,17 @@ validator_t http_validator;
  * If the URL is invalid, an error response will be sent and the request handler
  * will be aborted. Otherwise, the next handler in the chain will be called.
  *
- * @return MHD_YES
+ * @param[in] handler_next The next handler in the chain
+ * @param[in] handler_data Data associated with this handler (not used in this
+ * handler)
+ * @param[in] connection The HTTP connection for which the request was made
+ * @param[in] con_info Information about the HTTP connection, including the
+ * requested URL and HTTP method
+ * @param[in] data Additional data to pass to the next handler (not used in this
+ * handler)
+ *
+ * @return Result value from the next handler in the chain or MHD_YES if the URL
+ * was invalid and an error response was sent.
  */
 gsad_http_result_t
 gsad_http_handle_validate (gsad_http_handler_t *handler_next,
@@ -74,6 +84,25 @@ gsad_http_handle_validate (gsad_http_handler_t *handler_next,
   return gsad_http_handler_call (handler_next, connection, con_info, data);
 }
 
+/**
+ * @brief Handler for validating the HTTP method of incoming requests.
+ *
+ * It only accepts GET and POST methods. If the method is not accepted, an error
+ * response will be sent and the request handler will be aborted. Otherwise, the
+ * next handler in the chain will be called.
+ *
+ * @param[in] handler_next The next handler in the chain
+ * @param[in] handler_data Data associated with this handler (not used in this
+ * handler)
+ * @param[in] connection The HTTP connection for which the request was made
+ * @param[in] con_info Information about the HTTP connection, including the
+ * requested URL and HTTP method
+ * @param[in] data Additional data to pass to the next handler (not used in this
+ * handler)
+ *
+ * @return Result value from the next handler in the chain or MHD_YES if the
+ * method was invalid and an error response was sent.
+ */
 gsad_http_result_t
 gsad_http_handle_invalid_method (gsad_http_handler_t *handler_next,
                                  void *handler_data,
@@ -95,6 +124,15 @@ gsad_http_handle_invalid_method (gsad_http_handler_t *handler_next,
   return gsad_http_handler_call (handler_next, connection, con_info, data);
 }
 
+/**
+ * Internal function for getting user information from the connection.
+ *
+ * @param[in] connection The HTTP connection for which the request was made
+ * @param[out] user The user information retrieved from the connection
+ *
+ * @return 0 on success, otherwise an error code indicating the type of error
+ * that occurred while getting the user information.
+ */
 static int
 get_user_from_connection (gsad_http_connection_t *connection, user_t **user)
 {
@@ -132,6 +170,24 @@ get_user_from_connection (gsad_http_connection_t *connection, user_t **user)
   return user_find (cookie, token, client_address, user);
 }
 
+/**
+ * @brief Handler for getting user information for incoming HTTP requests.
+ *
+ * This handler gets user information from the connection and passes it to the
+ * next handler in the chain. If the user is not logged in, NULL will be passed
+ * to the next handler.
+ *
+ * @param[in] handler_next The next handler in the chain
+ * @param[in] handler_data Data associated with this handler (not used in this
+ * handler)
+ * @param[in] connection The HTTP connection for which the request was made
+ * @param[in] con_info Information about the HTTP connection, including the
+ * requested URL
+ * @param[in] data Additional data to pass to the next handler (not used in this
+ * handler)
+ *
+ * @return Result value from the next handler in the chaing
+ */
 gsad_http_result_t
 gsad_http_handle_get_user (gsad_http_handler_t *handler_next,
                            void *handler_data,
@@ -143,6 +199,26 @@ gsad_http_handle_get_user (gsad_http_handler_t *handler_next,
   return gsad_http_handler_call (handler_next, connection, con_info, user);
 }
 
+/**
+ * @brief Handler for setting up user information for incoming HTTP requests.
+ *
+ * This handler gets user information from the connection and passes it to the
+ * next handler in the chain. If the user is not logged in, it sends a
+ * reauthentication response.
+ *
+ * @param[in] handler_next The next handler in the chain
+ * @param[in] handler_data Data associated with this handler (not used in this
+ * handler)
+ * @param[in] connection The HTTP connection for which the request was made
+ * @param[in] con_info Information about the HTTP connection, including the
+ * requested URL
+ * @param[in] data Additional data to pass to the next handler (not used in this
+ * handler)
+ *
+ * @return Result value from the next handler in the chain or MHD_NO if an error
+ * occurred while getting the user information or sending the reauthentication
+ * response.
+ */
 gsad_http_result_t
 gsad_http_handle_setup_user (gsad_http_handler_t *handler_next,
                              void *handler_data,
@@ -201,6 +277,26 @@ gsad_http_handle_setup_user (gsad_http_handler_t *handler_next,
   return gsad_http_handler_call (handler_next, connection, con_info, user);
 }
 
+/**
+ * @brief Handler for setting up user credentials for incoming HTTP requests.
+ *
+ * It takes the user information from the previous handler, creates credentials
+ * for that user, and passes the credentials to the next handler in the chain.
+ * If there is an error while setting up the credentials, it sends an
+ * appropriate HTTP response.
+ *
+ * @param[in] handler_next The next handler in the chain
+ * @param[in] handler_data Data associated with this handler (not used in this
+ * handler)
+ * @param[in] connection The HTTP connection for which the request was made
+ * @param[in] con_info Information about the HTTP connection, including the
+ * requested URL
+ * @param[in] data The user information passed from the previous handler
+ * (requires the gsad_http_handle_get_user handler to be called before this
+ * handler in the handler chain)
+ *
+ * @return Result value from the next handler in the chain
+ */
 gsad_http_result_t
 gsad_http_handle_setup_credentials (gsad_http_handler_t *handler_next,
                                     void *handler_data,
@@ -245,6 +341,23 @@ gsad_http_handle_setup_credentials (gsad_http_handler_t *handler_next,
                                  credentials);
 }
 
+/**
+ * @brief Handler for processing logout requests
+ *
+ * @param[in] handler_next The next handler in the chain (not used in this
+ * handler)
+ * @param[in] handler_data Data associated with this handler (not used in this
+ * handler)
+ * @param[in] connection The HTTP connection for which the request was made
+ * @param[in] con_info Information about the HTTP connection, including the
+ * requested URL
+ * @param[in] data The user making the logout request (requires the
+ * gsad_http_handle_get_user and gsad_http_handle_setup_user handlers to be
+ * called before this handler in the handler chain)
+ *
+ * @return MHD_YES after processing the logout request or MHD_NO if an error
+ * occurred
+ */
 gsad_http_result_t
 gsad_http_handle_logout (gsad_http_handler_t *handler_next, void *handler_data,
                          gsad_http_connection_t *connection,
@@ -265,6 +378,22 @@ gsad_http_handle_logout (gsad_http_handler_t *handler_next, void *handler_data,
     0);
 }
 
+/**
+ * @brief Handler for processing /gmp GET requests
+ *
+ * @param[in] handler_next The next handler in the chain (not used in this
+ * handler)
+ * @param[in] handler_data Data associated with this handler (not used in this
+ * handler)
+ * @param[in] connection The HTTP connection for which the request was made
+ * @param[in] con_info Information about the HTTP connection, including the
+ * requested URL
+ * @param[in] data The credentials of the user making the request (requires the
+ * gsad_http_handle_setup_credentials handler to be called before this handler
+ * in the handler chain)
+ *
+ * @return MHD_YES after processing the request or MHD_NO if an error occurred
+ */
 gsad_http_result_t
 gsad_http_handle_gmp_get (gsad_http_handler_t *handler_next, void *handler_data,
                           gsad_http_connection_t *connection,
@@ -279,6 +408,21 @@ gsad_http_handle_gmp_get (gsad_http_handler_t *handler_next, void *handler_data,
   return ret;
 }
 
+/**
+ * @brief Handler for processing /gmp POST requests
+ *
+ * @param[in] handler_next The next handler in the chain (not used in this
+ * handler)
+ * @param[in] handler_data Data associated with this handler (not used in this
+ * handler)
+ * @param[in] connection The HTTP connection for which the request was made
+ * @param[in] con_info Information about the HTTP connection, including the
+ * requested URL
+ * @param[in] data Additional data passed to the handler (not used in this
+ * handler)
+ *
+ * @return MHD_YES after processing the request or MHD_NO if an error occurred
+ */
 gsad_http_result_t
 gsad_http_handle_gmp_post (gsad_http_handler_t *handler_next,
                            void *handler_data,
@@ -320,6 +464,23 @@ gsad_http_handle_gmp_post (gsad_http_handler_t *handler_next,
   return exec_gmp_post (connection, con_info, client_address);
 }
 
+/**
+ * @brief Serve the system report
+ *
+ * @param[in] handler_next The next handler in the chain (not used in this
+ * handler)
+ * @param[in] handler_data Data associated with this handler (not used in this
+ * handler)
+ * @param[in] connection The HTTP connection for which the request was made
+ * @param[in] con_info Information about the HTTP connection, including the
+ * requested URL
+ * @param[in] data The credentials of the user making the request (requires the
+ * gsad_http_handle_setup_credentials handler to be called before this handler
+ * in the handler chain)
+ *
+ * @return MHD_YES after sending the response or MHD_NO if an error occurred
+ * while sending the response
+ */
 gsad_http_result_t
 gsad_http_handle_system_report (gsad_http_handler_t *handler_next,
                                 void *handler_data,
@@ -433,6 +594,22 @@ gsad_http_handle_system_report (gsad_http_handler_t *handler_next,
   return gsad_http_create_response (connection, res, response_data, NULL);
 }
 
+/**
+ * @brief Serve the index.html page for the requested URL.
+ *
+ * @param[in] handler_next The next handler in the chain (not used in this
+ * handler)
+ * @param[in] handler_data Data associated with this handler (not used in this
+ * handler)
+ * @param[in] connection The HTTP connection for which the request was made
+ * @param[in] con_info Information about the HTTP connection, including the
+ * requested URL
+ * @param[in] data Additional data passed to the handler (not used in this
+ * handler)
+ *
+ * @return MHD_YES after sending the response or MHD_NO if an error occurred
+ * while sending the response
+ */
 gsad_http_result_t
 gsad_http_handle_index (gsad_http_handler_t *handler_next, void *handler_data,
                         gsad_http_connection_t *connection,
@@ -453,6 +630,27 @@ gsad_http_handle_index (gsad_http_handler_t *handler_next, void *handler_data,
   return gsad_http_send_response (connection, response, response_data, NULL);
 }
 
+/**
+ * @brief Handler for serving static files based on the requested URL.
+ *
+ * If the file is not found, a 404 response with the index.html page will be
+ * sent. Otherwise, the file content will be served with appropriate headers.
+ * The next handler in the chain will not be called, as this handler handles the
+ * request completely.
+ *
+ * @param[in] handler_next The next handler in the chain (not used in this
+ * handler)
+ * @param[in] handler_data Data associated with this handler (not used in this
+ * handler)
+ * @param[in] connection The HTTP connection for which the request was made
+ * @param[in] con_info Information about the HTTP connection, including the
+ * requested URL
+ * @param[in] data Additional data passed to the handler (not used in this
+ * handler)
+ *
+ * @return MHD_YES after sending the response or MHD_NO if an error occurred
+ * while sending the response
+ */
 gsad_http_result_t
 gsad_http_handle_static_file (gsad_http_handler_t *handler_next,
                               void *handler_data,
@@ -493,6 +691,22 @@ gsad_http_handle_static_file (gsad_http_handler_t *handler_next,
   return gsad_http_send_response (connection, response, response_data, NULL);
 }
 
+/**
+ * @brief Handler for serving static content based on the requested URL.
+ *
+ * @param[in] handler_next The next handler in the chain (not used in this
+ * handler)
+ * @param[in] handler_data Data associated with this handler (not used in this
+ * handler)
+ * @param[in] connection The HTTP connection for which the request was made
+ * @param[in] con_info Information about the HTTP connection, including the
+ * requested URL
+ * @param[in] data Additional data passed to the handler (not used in this
+ * handler)
+ *
+ * @return MHD_YES after sending the response or MHD_NO if an error occurred
+ * while sending the response
+ */
 gsad_http_result_t
 gsad_http_handle_static_content (gsad_http_handler_t *handler_next,
                                  void *handler_data,
@@ -556,6 +770,22 @@ gsad_http_handle_static_content (gsad_http_handler_t *handler_next,
   return gsad_http_send_response (connection, response, response_data, NULL);
 }
 
+/**
+ * @brief Handler for serving static config.js files.
+ *
+ * @param[in] handler_next The next handler in the chain (not used in this
+ * handler)
+ * @param[in] handler_data Data associated with this handler (not used in this
+ * handler)
+ * @param[in] connection The HTTP connection for which the request was made
+ * @param[in] con_info Information about the HTTP connection, including the
+ * requested URL
+ * @param[in] data Additional data passed to the handler (not used in this
+ * handler)
+ *
+ * @return MHD_YES after sending the response or MHD_NO if an error occurred
+ * while sending the response
+ */
 gsad_http_result_t
 gsad_http_handle_static_config (gsad_http_handler_t *handler_next,
                                 void *handler_data,
@@ -599,6 +829,39 @@ gsad_http_handle_static_config (gsad_http_handler_t *handler_next,
                                     NULL);
 }
 
+/**
+ * @brief Handler for returning a 404 Not Found response
+ *
+ * @param[in] handler_next The next handler in the chain (not used in this
+ * handler)
+ * @param[in] handler_data Data associated with this handler (not used in this
+ * handler)
+ * @param[in] connection The HTTP connection for which the request was made
+ * @param[in] con_info Information about the HTTP connection, including the
+ * requested URL
+ * @param[in] data Additional data passed to the handler (not used in this
+ * handler)
+ *
+ * @return MHD_YES after sending the response or MHD_NO if an error occurred
+ * while sending the response
+ */
+gsad_http_result_t
+gsad_http_handle_not_found (gsad_http_handler_t *handler_next,
+                            void *handler_data,
+                            gsad_http_connection_t *connection,
+                            gsad_connection_info_t *con_info, void *data)
+{
+  const gchar *url = gsad_connection_info_get_url (con_info);
+
+  g_debug ("Returning not found for url %s", url);
+
+  cmd_response_data_t *response_data = cmd_response_data_new ();
+  return gsad_http_create_not_found_response (response_data);
+}
+
+/**
+ * @brief Initialize the basic HTTP parameter validator.
+ */
 void
 gsad_http_init_validator (void)
 {
@@ -607,6 +870,9 @@ gsad_http_init_validator (void)
   gvm_validator_add (http_validator, "token", TOKEN_REGEXP);
 }
 
+/**
+ * @brief Clean up the basic HTTP parameter validator.
+ */
 void
 gsad_http_cleanup_validator (void)
 {
