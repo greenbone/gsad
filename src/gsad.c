@@ -1030,6 +1030,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_tasks)
   ELSE (get_ticket)
   ELSE (get_tickets)
+  ELSE (get_timezones)
   ELSE (get_tls_certificate)
   ELSE (get_tls_certificates)
   ELSE (get_trash_agent_group)
