@@ -128,6 +128,8 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
      "Path to static content directory. Defaults "
      "to " DEFAULT_GSAD_STATIC_CONTENT_DIRECTORY,
      "<directory>"},
+    {"api-only", '\0', 0, G_OPTION_ARG_NONE, &args->api_only,
+     "Run in API-only mode, disabling serving of static content.", NULL},
     {NULL}};
 
   option_context =
@@ -159,6 +161,7 @@ gsad_args_t *
 gsad_args_new ()
 {
   gsad_args_t *args = g_malloc0 (sizeof (gsad_args_t));
+  args->api_only = FALSE;
   args->client_watch_interval = DEFAULT_CLIENT_WATCH_INTERVAL;
   args->debug_tls = 0;
   args->dh_params_filename = NULL;
@@ -980,4 +983,21 @@ gboolean
 gsad_args_is_chroot_enabled (const gsad_args_t *args)
 {
   return args->do_chroot;
+}
+
+/**
+ * @brief Check if API-only mode should be enabled based on the command-line
+ * arguments.
+ *
+ * API-only mode is enabled if the --api-only flag is set. It disables
+ * serving of static content and only serves the API.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return TRUE if API-only mode should be enabled, FALSE otherwise.
+ */
+gboolean
+gsad_args_is_api_only_enabled (const gsad_args_t *args)
+{
+  return args->api_only;
 }

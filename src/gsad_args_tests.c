@@ -36,6 +36,8 @@ AfterEach (gsad_args)
 Ensure (gsad_args, gsad_args_new)
 {
   gsad_args_t *args = gsad_args_new ();
+  assert_that (args, is_not_null);
+  assert_that (args->api_only, is_false);
   assert_that (args->client_watch_interval,
                is_equal_to (DEFAULT_CLIENT_WATCH_INTERVAL));
   assert_that (args->debug_tls, is_equal_to (0));
@@ -79,6 +81,26 @@ Ensure (gsad_args, gsad_args_new)
   assert_that (args->unix_socket_path, is_null);
   assert_that (args->verbose, is_false);
 
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_parse_api_only)
+{
+  gsad_args_t *args = gsad_args_new ();
+  char *argv[] = {"gsad", "--api-only"};
+  gsad_args_parse (2, argv, args);
+
+  assert_that (gsad_args_is_api_only_enabled (args), is_true);
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_parse_api_only_default)
+{
+  gsad_args_t *args = gsad_args_new ();
+  char *argv[] = {"gsad"};
+  gsad_args_parse (1, argv, args);
+
+  assert_that (gsad_args_is_api_only_enabled (args), is_false);
   gsad_args_free (args);
 }
 
@@ -1505,6 +1527,20 @@ Ensure (gsad_args, should_is_chroot_enabled)
   gsad_args_free (args);
 }
 
+Ensure (gsad_args, should_is_api_only_enabled)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_is_api_only_enabled (args), is_false);
+
+  args->api_only = TRUE;
+  assert_that (gsad_args_is_api_only_enabled (args), is_true);
+
+  args->api_only = FALSE;
+  assert_that (gsad_args_is_api_only_enabled (args), is_false);
+
+  gsad_args_free (args);
+}
+
 Ensure (gsad_args, should_validate_tls_private_key)
 {
   gsad_args_t *args = gsad_args_new ();
@@ -1670,6 +1706,8 @@ main (int argc, char **argv)
                          should_parse_static_content_directory);
   add_test_with_context (suite, gsad_args,
                          should_parse_static_content_directory_default);
+  add_test_with_context (suite, gsad_args, should_parse_api_only);
+  add_test_with_context (suite, gsad_args, should_parse_api_only_default);
 
   add_test_with_context (suite, gsad_args, should_is_redirect_enabled);
   add_test_with_context (suite, gsad_args, should_is_unix_socket_enabled);
@@ -1682,6 +1720,7 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_args, should_is_ignore_x_real_ip_enabled);
   add_test_with_context (suite, gsad_args, should_is_secure_cookie_enabled);
   add_test_with_context (suite, gsad_args, should_is_chroot_enabled);
+  add_test_with_context (suite, gsad_args, should_is_api_only_enabled);
 
   add_test_with_context (suite, gsad_args, should_validate_session_timout);
   add_test_with_context (suite, gsad_args, should_validate_port);
