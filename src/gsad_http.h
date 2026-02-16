@@ -170,6 +170,9 @@ gsad_http_response_t *
 gsad_http_create_file_content_response (gsad_http_connection_t *, const gchar *,
                                         const gchar *, cmd_response_data_t *);
 
+gsad_http_response_t *
+gsad_http_create_not_found_response (cmd_response_data_t *);
+
 /* helper functions required in gsad_http */
 int
 get_client_address (gsad_http_connection_t *conn, char *client_address);
