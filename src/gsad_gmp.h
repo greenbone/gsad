@@ -13,7 +13,7 @@
 
 #include "gsad_cmd.h"          /* for cmd_response_data_t */
 #include "gsad_content_type.h" /* for content_type */
-#include "gsad_http.h"         /* for http_connection_t */
+#include "gsad_http.h"         /* for gsad_http_connection_t */
 #include "gsad_user.h"         /* for credentials_t */
 
 #include <glib.h>                 /* for gboolean */
