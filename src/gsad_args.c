@@ -109,6 +109,15 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
      "File mode of the unix socket", "<string>"},
     {"munix-socket", '\0', 0, G_OPTION_ARG_FILENAME,
      &args->manager_unix_socket_path, "Path to Manager unix socket", "<file>"},
+    {"http-coep", 0, 0, G_OPTION_ARG_STRING, &args->http_coep,
+     "Set Cross-Origin-Embedder-Policy (CORP) http header ",
+     "<coep>"},
+    {"http-coop", 0, 0, G_OPTION_ARG_STRING, &args->http_coop,
+     "Set Cross-Origin-Resource-Policy (CORP) http header ",
+     "<coop>"},
+    {"http-corp", 0, 0, G_OPTION_ARG_STRING, &args->http_corp,
+     "Set Cross-Origin-Resource-Policy (CORP) http header ",
+     "<corp>"},
     {"http-cors", 0, 0, G_OPTION_ARG_STRING, &args->http_cors,
      "Set Cross-Origin Resource Sharing (CORS) allow origin http header ",
      "<cors>"},
@@ -718,6 +727,57 @@ const gchar *
 gsad_args_get_http_cors_origin (const gsad_args_t *args)
 {
   return args->http_cors;
+}
+
+/**
+ * @brief Get the Cross-Origin-Embedder-Policy HTTP header
+ * value from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The Cross-Origin-Embedder-Policy HTTP header value specified
+ * in the command-line arguments, or NULL if not specified.
+ * The returned string is owned by the gsad args structure and should not be
+ * modified or freed by the caller.
+ */
+const gchar *
+gsad_args_get_http_coep (const gsad_args_t *args)
+{
+  return args->http_coep;
+}
+
+/**
+ * @brief Get the Cross-Origin-Opener-Policy HTTP header
+ * value from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The Cross-Origin-Opener-Policy HTTP header value specified
+ * in the command-line arguments, or NULL if not specified.
+ * The returned string is owned by the gsad args structure and should not be
+ * modified or freed by the caller.
+ */
+const gchar *
+gsad_args_get_http_coop (const gsad_args_t *args)
+{
+  return args->http_coop;
+}
+
+/**
+ * @brief Get the Cross-Origin-Resource-Policy HTTP header
+ * value from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The Cross-Origin-Resource-Policy HTTP header value specified
+ * in the command-line arguments, or NULL if not specified.
+ * The returned string is owned by the gsad args structure and should not be
+ * modified or freed by the caller.
+ */
+const gchar *
+gsad_args_get_http_corp (const gsad_args_t *args)
+{
+  return args->http_corp;
 }
 
 /**

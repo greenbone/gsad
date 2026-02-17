@@ -34,6 +34,9 @@ struct gsad_args
   gchar *gsad_static_content_directory; ///< Directory for static content.
   gchar *gsad_pid_filename;             ///< Filename for PID file.
   gchar *gsad_vendor_version_string;    ///< Vendor version string.
+  gchar *http_coep;                     ///< HTTP COEP configuration.
+  gchar *http_coop;                     ///< HTTP COOP configuration.
+  gchar *http_corp;                     ///< HTTP CORP configuration.
   gchar *http_cors;                     ///< HTTP CORS configuration.
   gchar *http_csp;        ///< HTTP Content Security Policy configuration.
   gchar *http_frame_opts; ///< HTTP frame options configuration.
