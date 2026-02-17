@@ -58,6 +58,9 @@ Ensure (gsad_args, gsad_args_new)
   assert_that (args->gsad_vendor_version_string, is_null);
   assert_that (args->hsts_enabled, is_false);
   assert_that (args->hsts_max_age, is_equal_to (DEFAULT_GSAD_HSTS_MAX_AGE));
+  assert_that (args->http_coep, is_null);
+  assert_that (args->http_coop, is_null);
+  assert_that (args->http_corp, is_null);
   assert_that (args->http_cors, is_null);
   assert_that (args->http_csp,
                is_equal_to_string (DEFAULT_GSAD_CONTENT_SECURITY_POLICY));
@@ -470,6 +473,69 @@ Ensure (gsad_args, should_parse_hsts_max_age_default)
 
   assert_that (gsad_args_get_http_strict_transport_security_max_age (args),
                is_equal_to (DEFAULT_GSAD_HSTS_MAX_AGE));
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_parse_http_coep)
+{
+  gsad_args_t *args = gsad_args_new ();
+  char *argv[] = {"gsad", "--http-coep", "require-corp"};
+  gsad_args_parse (3, argv, args);
+
+  assert_that (gsad_args_get_http_coep (args),
+               is_equal_to_string ("require-corp"));
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_parse_http_coep_default)
+{
+  gsad_args_t *args = gsad_args_new ();
+  char *argv[] = {"gsad"};
+  gsad_args_parse (1, argv, args);
+
+  assert_that (gsad_args_get_http_coep (args), is_null);
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_parse_http_coop)
+{
+  gsad_args_t *args = gsad_args_new ();
+  char *argv[] = {"gsad", "--http-coop", "same-origin"};
+  gsad_args_parse (3, argv, args);
+
+  assert_that (gsad_args_get_http_coop (args),
+               is_equal_to_string ("same-origin"));
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_parse_http_coop_default)
+{
+  gsad_args_t *args = gsad_args_new ();
+  char *argv[] = {"gsad"};
+  gsad_args_parse (1, argv, args);
+
+  assert_that (gsad_args_get_http_coop (args), is_null);
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_parse_http_corp)
+{
+  gsad_args_t *args = gsad_args_new ();
+  char *argv[] = {"gsad", "--http-corp", "same-origin"};
+  gsad_args_parse (3, argv, args);
+
+  assert_that (gsad_args_get_http_corp (args),
+               is_equal_to_string ("same-origin"));
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_parse_http_corp_default)
+{
+  gsad_args_t *args = gsad_args_new ();
+  char *argv[] = {"gsad"};
+  gsad_args_parse (1, argv, args);
+
+  assert_that (gsad_args_get_http_corp (args), is_null);
   gsad_args_free (args);
 }
 
@@ -1182,6 +1248,51 @@ Ensure (gsad_args, should_get_http_content_security_policy)
   gsad_args_free (args);
 }
 
+Ensure (gsad_args, should_get_http_coep)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_http_coep (args), is_null);
+
+  args->http_coep = "require-corp";
+  assert_that (gsad_args_get_http_coep (args),
+               is_equal_to_string ("require-corp"));
+
+  args->http_coep = NULL;
+  assert_that (gsad_args_get_http_coep (args), is_null);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_http_coop)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_http_coop (args), is_null);
+
+  args->http_coop = "same-origin";
+  assert_that (gsad_args_get_http_coop (args),
+               is_equal_to_string ("same-origin"));
+
+  args->http_coop = NULL;
+  assert_that (gsad_args_get_http_coop (args), is_null);
+
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_get_http_corp)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_http_corp (args), is_null);
+
+  args->http_corp = "same-origin";
+  assert_that (gsad_args_get_http_corp (args),
+               is_equal_to_string ("same-origin"));
+
+  args->http_corp = NULL;
+  assert_that (gsad_args_get_http_corp (args), is_null);
+
+  gsad_args_free (args);
+}
+
 Ensure (gsad_args, should_get_http_cors_origin)
 {
   gsad_args_t *args = gsad_args_new ();
@@ -1652,6 +1763,12 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_args, should_parse_hsts_enabled_default);
   add_test_with_context (suite, gsad_args, should_parse_hsts_max_age);
   add_test_with_context (suite, gsad_args, should_parse_hsts_max_age_default);
+  add_test_with_context (suite, gsad_args, should_parse_http_coep);
+  add_test_with_context (suite, gsad_args, should_parse_http_coep_default);
+  add_test_with_context (suite, gsad_args, should_parse_http_coop);
+  add_test_with_context (suite, gsad_args, should_parse_http_coop_default);
+  add_test_with_context (suite, gsad_args, should_parse_http_corp);
+  add_test_with_context (suite, gsad_args, should_parse_http_corp_default);
   add_test_with_context (suite, gsad_args, should_parse_http_cors);
   add_test_with_context (suite, gsad_args, should_parse_http_cors_default);
   add_test_with_context (suite, gsad_args, should_parse_http_csp);
@@ -1742,6 +1859,9 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_args, should_get_http_x_frame_options);
   add_test_with_context (suite, gsad_args,
                          should_get_http_content_security_policy);
+  add_test_with_context (suite, gsad_args, should_get_http_coep);
+  add_test_with_context (suite, gsad_args, should_get_http_coop);
+  add_test_with_context (suite, gsad_args, should_get_http_corp);
   add_test_with_context (suite, gsad_args, should_get_http_cors_origin);
   add_test_with_context (suite, gsad_args, should_get_tls_debug_level);
   add_test_with_context (suite, gsad_args, should_get_vendor_version);

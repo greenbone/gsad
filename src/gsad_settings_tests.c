@@ -34,6 +34,9 @@ Ensure (gsad_settings, should_use_defaults)
   assert_that (gsad_settings_get_http_content_security_policy (settings),
                is_null);
   assert_that (gsad_settings_get_http_x_frame_options (settings), is_null);
+  assert_that (gsad_settings_get_http_coep (settings), is_null);
+  assert_that (gsad_settings_get_http_coop (settings), is_null);
+  assert_that (gsad_settings_get_http_corp (settings), is_null);
   assert_that (gsad_settings_get_http_cors_origin (settings), is_null);
   assert_that (gsad_settings_get_http_strict_transport_security (settings),
                is_null);
@@ -158,6 +161,54 @@ Ensure (gsad_settings, should_set_http_strict_transport_security)
   gsad_settings_set_http_strict_transport_security (settings, NULL);
   assert_that (gsad_settings_get_http_strict_transport_security (settings),
                is_null);
+
+  gsad_settings_free (settings);
+}
+
+Ensure (gsad_settings, should_set_http_coep)
+{
+  gsad_settings_t *settings = gsad_settings_new ();
+
+  assert_that (gsad_settings_get_http_coep (settings), is_null);
+
+  gsad_settings_set_http_coep (settings, "require-corp");
+  assert_that (gsad_settings_get_http_coep (settings),
+               is_equal_to_string ("require-corp"));
+
+  gsad_settings_set_http_coep (settings, NULL);
+  assert_that (gsad_settings_get_http_coep (settings), is_null);
+
+  gsad_settings_free (settings);
+}
+
+Ensure (gsad_settings, should_set_http_coop)
+{
+  gsad_settings_t *settings = gsad_settings_new ();
+
+  assert_that (gsad_settings_get_http_coop (settings), is_null);
+
+  gsad_settings_set_http_coop (settings, "same-origin");
+  assert_that (gsad_settings_get_http_coop (settings),
+               is_equal_to_string ("same-origin"));
+
+  gsad_settings_set_http_coop (settings, NULL);
+  assert_that (gsad_settings_get_http_coop (settings), is_null);
+
+  gsad_settings_free (settings);
+}
+
+Ensure (gsad_settings, should_set_http_corp)
+{
+  gsad_settings_t *settings = gsad_settings_new ();
+
+  assert_that (gsad_settings_get_http_corp (settings), is_null);
+
+  gsad_settings_set_http_corp (settings, "same-origin");
+  assert_that (gsad_settings_get_http_corp (settings),
+               is_equal_to_string ("same-origin"));
+
+  gsad_settings_set_http_corp (settings, NULL);
+  assert_that (gsad_settings_get_http_corp (settings), is_null);
 
   gsad_settings_free (settings);
 }
@@ -368,6 +419,9 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_settings, should_set_http_x_frame_options);
   add_test_with_context (suite, gsad_settings,
                          should_set_http_strict_transport_security);
+  add_test_with_context (suite, gsad_settings, should_set_http_coep);
+  add_test_with_context (suite, gsad_settings, should_set_http_coop);
+  add_test_with_context (suite, gsad_settings, should_set_http_corp);
   add_test_with_context (suite, gsad_settings, should_set_http_cors_origin);
   add_test_with_context (suite, gsad_settings,
                          should_set_http_guest_chart_x_frame_options);
