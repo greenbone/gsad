@@ -794,11 +794,11 @@ gsad_http_add_security_headers (gsad_http_response_t *response)
   const gchar *http_content_security_policy =
     gsad_settings_get_http_content_security_policy (gsad_global_settings);
   const gchar *http_cross_origin_embedder_policy =
-    gsad_settings_get_http_cross_origin_embedder_policy (gsad_global_settings);
+    gsad_settings_get_http_coep (gsad_global_settings);
   const gchar *http_cross_origin_opener_policy =
-    gsad_settings_get_http_cross_origin_opener_policy (gsad_global_settings);
+    gsad_settings_get_http_coop (gsad_global_settings);
   const gchar *http_cross_origin_resource_policy =
-    gsad_settings_get_http_cross_origin_resource_policy (gsad_global_settings);
+    gsad_settings_get_http_corp (gsad_global_settings);
   const gchar *http_strict_transport_security =
     gsad_settings_get_http_strict_transport_security (gsad_global_settings);
 
