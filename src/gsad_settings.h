@@ -73,25 +73,22 @@ const gchar *
 gsad_settings_get_http_content_security_policy (const gsad_settings_t *);
 
 void
-gsad_settings_set_http_cross_origin_embedder_policy (gsad_settings_t *,
-                                                     const gchar *);
+gsad_settings_set_http_coep (gsad_settings_t *, const gchar *);
 
 const gchar *
-gsad_settings_get_http_cross_origin_embedder_policy (const gsad_settings_t *);
+gsad_settings_get_http_coep (const gsad_settings_t *);
 
 void
-gsad_settings_set_http_cross_origin_opener_policy (gsad_settings_t *,
-                                                   const gchar *);
+gsad_settings_set_http_coop (gsad_settings_t *, const gchar *);
 
 const gchar *
-gsad_settings_get_http_cross_origin_opener_policy (const gsad_settings_t *);
+gsad_settings_get_http_coop (const gsad_settings_t *);
 
 void
-gsad_settings_set_http_cross_origin_resource_policy (gsad_settings_t *,
-                                                     const gchar *);
+gsad_settings_set_http_corp (gsad_settings_t *, const gchar *);
 
 const gchar *
-gsad_settings_get_http_cross_origin_resource_policy (const gsad_settings_t *);
+gsad_settings_get_http_corp (const gsad_settings_t *);
 
 void
 gsad_settings_set_http_x_frame_options (gsad_settings_t *, const gchar *);
