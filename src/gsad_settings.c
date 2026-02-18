@@ -304,11 +304,11 @@ gsad_settings_set_http_coep (gsad_settings_t *settings, const gchar *policy)
 }
 
 /**
- * @brief Get the HTTP Cross-Origin-Opener-Policy header value.
+ * @brief Get the HTTP Cross-Origin-Embedder-Policy header value.
  *
  * @param[in]  settings  The settings instance to query.
  *
- * @return The value set for the HTTP Cross-Origin-Opener-Policy header,
+ * @return The value set for the HTTP Cross-Origin-Embedder-Policy header,
  * or NULL if the header is disabled. The value is owned by the settings and
  * should not be modified or freed by the caller.
  */
