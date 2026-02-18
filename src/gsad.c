@@ -1874,12 +1874,12 @@ main (int argc, char **argv)
     gsad_args_get_http_content_security_policy (gsad_args));
   gsad_settings_set_http_cors_origin (
     gsad_global_settings, gsad_args_get_http_cors_origin (gsad_args));
-  gsad_settings_set_http_coep (
-    gsad_global_settings, gsad_args_get_http_coep (gsad_args));
-  gsad_settings_set_http_coop (
-    gsad_global_settings, gsad_args_get_http_coop (gsad_args));
-  gsad_settings_set_http_corp (
-    gsad_global_settings, gsad_args_get_http_corp (gsad_args));
+  gsad_settings_set_http_coep (gsad_global_settings,
+                               gsad_args_get_http_coep (gsad_args));
+  gsad_settings_set_http_coop (gsad_global_settings,
+                               gsad_args_get_http_coop (gsad_args));
+  gsad_settings_set_http_corp (gsad_global_settings,
+                               gsad_args_get_http_corp (gsad_args));
 
   if (gsad_args_is_http_strict_transport_security_enabled (gsad_args))
     {
