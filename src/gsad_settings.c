@@ -293,8 +293,7 @@ gsad_settings_get_http_content_security_policy (const gsad_settings_t *settings)
  * Cross-Origin-Embedder-Policy header, or NULL to disable the header.
  */
 void
-gsad_settings_set_http_coep (gsad_settings_t *settings,
-                                                     const gchar *policy)
+gsad_settings_set_http_coep (gsad_settings_t *settings, const gchar *policy)
 {
   g_debug ("Setting HTTP Cross-Origin-Embedder-Policy to: %s",
            null_or_value (policy));
@@ -327,8 +326,7 @@ gsad_settings_get_http_coep (const gsad_settings_t *settings)
  * Cross-Origin-Opener-Policy header, or NULL to disable the header.
  */
 void
-gsad_settings_set_http_coop (gsad_settings_t *settings,
-                                                     const gchar *policy)
+gsad_settings_set_http_coop (gsad_settings_t *settings, const gchar *policy)
 {
   g_debug ("Setting HTTP Cross-Origin-Opener-Policy to: %s",
            null_or_value (policy));
@@ -361,8 +359,7 @@ gsad_settings_get_http_coop (const gsad_settings_t *settings)
  * Cross-Origin-Resource-Policy header, or NULL to disable the header.
  */
 void
-gsad_settings_set_http_corp (gsad_settings_t *settings,
-                                                     const gchar *policy)
+gsad_settings_set_http_corp (gsad_settings_t *settings, const gchar *policy)
 {
   g_debug ("Setting HTTP Cross-Origin-Resource-Policy to: %s",
            null_or_value (policy));
