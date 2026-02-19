@@ -77,6 +77,7 @@ Optional prerequisites
 - Doxygen (for building documentation)
 - xmltoman (for building man page)
 - cgreen (for building tests)
+- libasan (for building tests)
 
 Install prerequisites on Debian GNU/Linux:
 
