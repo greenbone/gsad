@@ -200,6 +200,7 @@ gsad_init_validator ()
                      "|(get_tasks)"
                      "|(get_ticket)"
                      "|(get_tickets)"
+                     "|(get_timezones)"
                      "|(get_tls_certificate)"
                      "|(get_tls_certificates)"
                      "|(get_trash_agent_group)"
