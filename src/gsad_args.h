@@ -9,11 +9,6 @@
 #include <glib.h>
 
 /**
- * @brief Max number of minutes between activity in a session.
- */
-#define SESSION_TIMEOUT 15
-
-/**
  * @brief Value indicating that no port has been set.
  */
 #define PORT_NOT_SET -1
@@ -24,11 +19,6 @@
 #define GSAD_MAX_SESSION_TIMEOUT 40320
 
 /**
- * @brief Default value for client_watch_interval
- */
-#define DEFAULT_CLIENT_WATCH_INTERVAL 1
-
-/**
  * @brief Default value for HTTP header "X-Frame-Options"
  */
 #define DEFAULT_GSAD_X_FRAME_OPTIONS "SAMEORIGIN"
@@ -37,11 +27,6 @@
  * @brief Default "max-age" for HTTP header "Strict-Transport-Security"
  */
 #define DEFAULT_GSAD_HSTS_MAX_AGE 31536000
-
-/**
- * @brief Default value for the maximum number of connection per IP address.
- */
-#define DEFAULT_GSAD_PER_IP_CONNECTION_LIMIT 30
 
 /**
  * @brief Default value for HTTP header "Content-Security-Policy"
@@ -89,49 +74,20 @@
 #define DEFAULT_GSAD_TLS_CERTIFICATE GVM_SERVER_CERTIFICATE
 
 /**
+ * @brief Default pid file path for gsad.
+ */
+#define DEFAULT_GSAD_PID_FILE GSAD_PID_PATH
+
+#define DEFAULT_GSAD_STATIC_CONTENT_DIRECTORY GSAD_STATIC_CONTENT_DIR
+
+/**
  * @brief Structure to hold the parsed command-line arguments for gsad.
  *
  * This structure contains fields corresponding to the various command-line
  * options that can be passed to gsad. It is used to store the parsed values
  * after processing the command-line arguments.
  */
-typedef struct gsad_args
-{
-  gboolean do_chroot;
-  gboolean foreground;
-  gboolean hsts_enabled;
-  gboolean http_only;
-  gboolean ignore_x_real_ip;
-  gboolean no_redirect;
-  gboolean print_version;
-  gboolean secure_cookie;
-  gboolean verbose;
-  gchar **gsad_address_string;
-  gchar *dh_params_filename;
-  gchar *drop;
-  gchar *gnutls_priorities;
-  gchar *gsad_manager_address_string;
-  gchar *gsad_manager_unix_socket_path;
-  gchar *gsad_vendor_version_string;
-  gchar *http_cors;
-  gchar *http_csp;
-  gchar *http_frame_opts;
-  gchar *ssl_certificate_filename;
-  gchar *ssl_private_key_filename;
-  gchar *unix_socket_group;
-  gchar *unix_socket_mode;
-  gchar *unix_socket_owner;
-  gchar *unix_socket_path;
-  int client_watch_interval;
-  int debug_tls;
-  int gsad_manager_port;
-  int gsad_port;
-  int gsad_redirect_port;
-  int gsad_user_session_limit;
-  int hsts_max_age;
-  int per_ip_connection_limit;
-  int timeout;
-} gsad_args_t;
+typedef struct gsad_args gsad_args_t;
 
 typedef enum
 {
@@ -150,19 +106,37 @@ int
 gsad_args_parse (int, char **, gsad_args_t *);
 
 gboolean
-gsad_args_enable_redirect (const gsad_args_t *);
+gsad_args_is_redirect_enabled (const gsad_args_t *);
 
 gboolean
-gsad_args_enable_unix_socket (const gsad_args_t *);
+gsad_args_is_unix_socket_enabled (const gsad_args_t *);
 
 gboolean
-gsad_args_enable_https (const gsad_args_t *);
+gsad_args_is_https_enabled (const gsad_args_t *);
 
 gboolean
-gsad_args_enable_http_strict_transport_security (const gsad_args_t *);
+gsad_args_is_http_strict_transport_security_enabled (const gsad_args_t *);
 
 gboolean
-gsad_args_enable_run_in_foreground (const gsad_args_t *);
+gsad_args_is_run_in_foreground_enabled (const gsad_args_t *);
+
+gboolean
+gsad_args_is_print_version_enabled (const gsad_args_t *);
+
+gboolean
+gsad_args_is_debug_tls_enabled (const gsad_args_t *);
+
+gboolean
+gsad_args_is_ignore_x_real_ip_enabled (const gsad_args_t *);
+
+gboolean
+gsad_args_is_secure_cookie_enabled (const gsad_args_t *);
+
+gboolean
+gsad_args_is_chroot_enabled (const gsad_args_t *);
+
+gboolean
+gsad_args_is_api_only_enabled (const gsad_args_t *);
 
 int
 gsad_args_validate_session_timeout (const gsad_args_t *);
@@ -196,5 +170,83 @@ gsad_args_get_per_ip_connection_limit (const gsad_args_t *);
 
 int
 gsad_args_get_client_watch_interval (const gsad_args_t *);
+
+int
+gsad_args_get_session_timeout (const gsad_args_t *);
+
+int
+gsad_args_get_manager_port (const gsad_args_t *);
+
+int
+gsad_args_get_user_session_limit (const gsad_args_t *);
+
+int
+gsad_args_get_tls_debug_level (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_log_config_filename (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_pid_filename (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_static_content_directory (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_tls_private_key_filename (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_tls_certificate_filename (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_http_x_frame_options (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_http_content_security_policy (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_http_coep (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_http_coop (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_http_corp (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_http_cors_origin (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_vendor_version (const gsad_args_t *);
+
+gchar **
+gsad_args_get_listen_addresses (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_manager_unix_socket_path (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_manager_address (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_unix_socket_path (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_unix_socket_group (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_unix_socket_owner (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_unix_socket_mode (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_dh_params_filename (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_gnutls_priorities (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_drop_privileges (const gsad_args_t *);
 
 #endif /* _GSAD_ARGS_H */

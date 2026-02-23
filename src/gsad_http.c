@@ -10,13 +10,15 @@
 
 #include "gsad_http.h"
 
-#include "gsad_base.h" /* for ctime_r_strip_newline */
-#include "gsad_i18n.h" /* for accept_language_to_env_fmt */
+#include "gsad_base.h"       /* for ctime_r_strip_newline */
+#include "gsad_i18n.h"       /* for accept_language_to_env_fmt */
+#include "gsad_params_mhd.h" /* for params_mhd_append */
 #include "gsad_settings.h"
 #include "utils.h" /* for str_equal */
 
 #include <assert.h>              /* for asset */
 #include <gvm/base/networking.h> /* for sockaddr_as_str */
+#include <gvm/util/fileutils.h>  /* for gvm_file_exists */
 #include <gvm/util/xmlutils.h>   /* for xml_string_append */
 #include <locale.h>              /* for setlocale */
 #include <stdlib.h>              /* for abort */
@@ -39,7 +41,7 @@
  * @return a content_type_t for the file
  */
 content_type_t
-guess_content_type (const gchar *path)
+gsad_http_guess_content_type (const gchar *path)
 {
   /* Guess content type. */
   if (g_str_has_suffix (path, ".png"))
@@ -72,7 +74,8 @@ guess_content_type (const gchar *path)
  * @param[in]      ct        Content Type to set.
  */
 void
-gsad_add_content_type_header (http_response_t *response, content_type_t *ct)
+gsad_http_add_content_type_header (gsad_http_response_t *response,
+                                   content_type_t *ct)
 {
   if (!response)
     return;
@@ -165,12 +168,12 @@ gsad_add_content_type_header (http_response_t *response, content_type_t *ct)
  *
  * @return MHD_NO in case of a problem. Else MHD_YES.
  */
-int
-send_redirect_to_uri (http_connection_t *connection, const char *uri,
-                      const gchar *sid)
+gsad_http_result_t
+gsad_http_send_redirect_to_uri (gsad_http_connection_t *connection,
+                                const char *uri, const gchar *sid)
 {
   int ret;
-  http_response_t *response;
+  gsad_http_response_t *response;
   char *body;
 
   /* Some libmicrohttp versions get into an endless loop in https mode
@@ -204,33 +207,39 @@ send_redirect_to_uri (http_connection_t *connection, const char *uri,
       return MHD_NO;
     }
 
-  add_forbid_caching_headers (response);
-  add_security_headers (response);
-  add_cors_headers (response);
+  gsad_http_add_forbid_caching_headers (response);
+  gsad_http_add_security_headers (response);
+  gsad_http_add_cors_headers (response);
   ret = MHD_queue_response (connection, MHD_HTTP_SEE_OTHER, response);
   MHD_destroy_response (response);
   return ret;
 }
 
 /**
- * @brief Sends a HTTP response.
+ * @brief Send response with given content.
  *
- * @param[in]  connection           The connection handle.
- * @param[in]  content              The content.
- * @param[in]  status_code          The HTTP status code.
- * @param[in]  sid                  Session ID, or NULL.
- * @param[in]  content_type         The content type.
- * @param[in]  content_disposition  The content disposition or NULL.
- * @param[in]  content_length       Content length, 0 for strlen (content).
+ * @param[in]  connection          Connection handle, e.g. used to send
+ * response.
+ * @param[in]  content             Content to send in response.
+ * @param[in]  status_code         HTTP status code to send.
+ * @param[in]  sid                 Session ID to attach, "0" to remove session,
+ * or NULL for no session header.
+ * @param[in]  content_type        Content type of content.
+ * @param[in]  content_disposition Content disposition to add, or NULL for none.
+ * @param[in]  content_length      Length of content, or 0 to calculate from
+ * content string.
  *
- * @return MHD_YES on success, MHD_NO on error.
+ * @return MHD_YES on success, else MHD_NO.
  */
-int
-send_response (http_connection_t *connection, const char *content,
-               int status_code, const gchar *sid, content_type_t content_type,
-               const char *content_disposition, size_t content_length)
+gsad_http_result_t
+gsad_http_send_response_for_content (gsad_http_connection_t *connection,
+                                     const gchar *content, int status_code,
+                                     const gchar *sid,
+                                     content_type_t content_type,
+                                     const gchar *content_disposition,
+                                     size_t content_length)
 {
-  http_response_t *response;
+  gsad_http_response_t *response;
   size_t size;
   int ret;
 
@@ -245,7 +254,7 @@ send_response (http_connection_t *connection, const char *content,
   response = MHD_create_response_from_buffer (
     size, (void *) (content ? content : ""), MHD_RESPMEM_MUST_COPY);
 
-  gsad_add_content_type_header (response, &content_type);
+  gsad_http_add_content_type_header (response, &content_type);
 
   if (content_disposition)
     MHD_add_response_header (response, "Content-Disposition",
@@ -256,16 +265,16 @@ send_response (http_connection_t *connection, const char *content,
       return MHD_NO;
     }
 
-  add_forbid_caching_headers (response);
-  add_security_headers (response);
-  add_cors_headers (response);
+  gsad_http_add_forbid_caching_headers (response);
+  gsad_http_add_security_headers (response);
+  gsad_http_add_cors_headers (response);
   ret = MHD_queue_response (connection, status_code, response);
   MHD_destroy_response (response);
   return ret;
 }
 
 /**
- * @brief Send response for handle_request.
+ * @brief Send response
  *
  * The passed response data will be freed and can't be used afterwards
  *
@@ -276,9 +285,10 @@ send_response (http_connection_t *connection, const char *content,
  *
  * @return MHD_YES on success, else MHD_NO.
  */
-int
-handler_send_response (http_connection_t *connection, http_response_t *response,
-                       cmd_response_data_t *response_data, const gchar *sid)
+gsad_http_result_t
+gsad_http_send_response (gsad_http_connection_t *connection,
+                         gsad_http_response_t *response,
+                         cmd_response_data_t *response_data, const gchar *sid)
 {
   int ret;
   const gchar *content_disposition;
@@ -302,7 +312,7 @@ handler_send_response (http_connection_t *connection, http_response_t *response,
     }
   else
     {
-      gsad_add_content_type_header (response, &content_type);
+      gsad_http_add_content_type_header (response, &content_type);
     }
 
   content_disposition =
@@ -315,9 +325,9 @@ handler_send_response (http_connection_t *connection, http_response_t *response,
     }
 
   if (cmd_response_data_is_allow_caching (response_data) == FALSE)
-    add_forbid_caching_headers (response);
-  add_security_headers (response);
-  add_cors_headers (response);
+    gsad_http_add_forbid_caching_headers (response);
+  gsad_http_add_security_headers (response);
+  gsad_http_add_cors_headers (response);
 
   status_code = cmd_response_data_get_status_code (response_data);
 
@@ -328,8 +338,9 @@ handler_send_response (http_connection_t *connection, http_response_t *response,
     {
       /* Assume this was due to a bad request, to keep the MHD "Internal
        * application error" out of the log. */
-      send_response (connection, BAD_REQUEST_PAGE, MHD_HTTP_NOT_ACCEPTABLE,
-                     NULL, GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
+      gsad_http_send_response_for_content (
+        connection, BAD_REQUEST_PAGE, MHD_HTTP_NOT_ACCEPTABLE, NULL,
+        GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
       MHD_destroy_response (response);
       return MHD_YES;
     }
@@ -349,11 +360,11 @@ handler_send_response (http_connection_t *connection, http_response_t *response,
  *
  * @return MHD_YES on success, else MHD_NO.
  */
-int
-handler_create_response (http_connection_t *connection, gchar *data,
-                         cmd_response_data_t *response_data, const gchar *sid)
+gsad_http_result_t
+gsad_http_create_response (gsad_http_connection_t *connection, gchar *data,
+                           cmd_response_data_t *response_data, const gchar *sid)
 {
-  http_response_t *response;
+  gsad_http_response_t *response;
   gsize len = 0;
 
   len = cmd_response_data_get_content_length (response_data);
@@ -363,7 +374,7 @@ handler_create_response (http_connection_t *connection, gchar *data,
     }
 
   response = MHD_create_response_from_buffer (len, data, MHD_RESPMEM_MUST_FREE);
-  return handler_send_response (connection, response, response_data, sid);
+  return gsad_http_send_response (connection, response, response_data, sid);
 }
 
 /**
@@ -373,10 +384,10 @@ handler_create_response (http_connection_t *connection, gchar *data,
  *
  * @return A http response
  */
-http_response_t *
-create_not_found_response (cmd_response_data_t *response_data)
+gsad_http_response_t *
+gsad_http_create_not_found_response (cmd_response_data_t *response_data)
 {
-  http_response_t *response;
+  gsad_http_response_t *response;
   int len;
 
   cmd_response_data_set_status_code (response_data, MHD_HTTP_NOT_FOUND);
@@ -416,10 +427,10 @@ create_not_found_response (cmd_response_data_t *response_data)
  *
  * @return MHD_YES on success. MHD_NO on errors.
  */
-int
-handler_send_reauthentication (http_connection_t *connection,
-                               int http_status_code,
-                               authentication_reason_t reason)
+gsad_http_result_t
+gsad_http_send_reauthentication (gsad_http_connection_t *connection,
+                                 int http_status_code,
+                                 gsad_authentication_reason_t reason)
 {
   const char *msg;
 
@@ -452,7 +463,7 @@ handler_send_reauthentication (http_connection_t *connection,
     case TOO_MANY_USER_SESSIONS:
       msg = "Login failed. Too many concurrent logins for user.";
       break;
-    case UNKOWN_ERROR:
+    case UNKNOWN_ERROR:
       msg = "Unknown error.";
       break;
     default:
@@ -465,7 +476,7 @@ handler_send_reauthentication (http_connection_t *connection,
   gchar *xml = gsad_message (NULL, "Authentication required", __func__,
                              __LINE__, msg, response_data);
 
-  return handler_create_response (connection, xml, response_data, REMOVE_SID);
+  return gsad_http_create_response (connection, xml, response_data, REMOVE_SID);
 }
 
 /**
@@ -475,8 +486,8 @@ handler_send_reauthentication (http_connection_t *connection,
  *
  * @return MHD_NO in case of problems. MHD_YES if all is OK.
  */
-int
-remove_sid (http_response_t *response)
+gsad_http_result_t
+remove_sid (gsad_http_response_t *response)
 {
   int ret;
   gchar *value;
@@ -484,6 +495,7 @@ remove_sid (http_response_t *response)
   char expires[EXPIRES_LENGTH + 1];
   struct tm expire_time_broken;
   time_t expire_time;
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
 
   /* Set up the expires param. */
   locale = g_strdup (setlocale (LC_ALL, NULL));
@@ -507,7 +519,9 @@ remove_sid (http_response_t *response)
 
   value = g_strdup_printf (
     SID_COOKIE_NAME "=0; expires=%s; path=/; %sHTTPonly; SameSite=strict",
-    expires, (is_use_secure_cookie () ? "secure; " : ""));
+    expires,
+    (gsad_settings_enable_secure_cookie (gsad_global_settings) ? "secure; "
+                                                               : ""));
   ret = MHD_add_response_header (response, "Set-Cookie", value);
   g_free (value);
   return ret;
@@ -521,8 +535,8 @@ remove_sid (http_response_t *response)
  *
  * @return MHD_NO in case of problems. MHD_YES if all is OK.
  */
-int
-attach_sid (http_response_t *response, const char *sid)
+gsad_http_result_t
+attach_sid (gsad_http_response_t *response, const char *sid)
 {
   int ret, timeout;
   gchar *value;
@@ -531,6 +545,7 @@ attach_sid (http_response_t *response, const char *sid)
   struct tm expire_time_broken;
   time_t now, expire_time;
   gchar *tz;
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
 
   /* Set up the expires param. */
 
@@ -547,7 +562,7 @@ attach_sid (http_response_t *response, const char *sid)
   locale = g_strdup (setlocale (LC_ALL, NULL));
   setlocale (LC_ALL, "C");
 
-  timeout = get_session_timeout () * 60 + 30;
+  timeout = gsad_settings_get_session_timeout (gsad_global_settings) * 60 + 30;
 
   now = time (NULL);
   expire_time = now + timeout;
@@ -583,7 +598,9 @@ attach_sid (http_response_t *response, const char *sid)
   value = g_strdup_printf (
     SID_COOKIE_NAME
     "=%s; expires=%s; max-age=%d; path=/; %sHTTPonly; SameSite=strict",
-    sid, expires, timeout, (is_use_secure_cookie () ? "secure; " : ""));
+    sid, expires, timeout,
+    (gsad_settings_enable_secure_cookie (gsad_global_settings) ? "secure; "
+                                                               : ""));
   ret = MHD_add_response_header (response, "Set-Cookie", value);
   g_free (value);
   return ret;
@@ -600,8 +617,8 @@ attach_sid (http_response_t *response, const char *sid)
  *
  * @return MHD_YES on success, MHD_NO on failure
  */
-int
-attach_remove_sid (http_response_t *response, const gchar *sid)
+gsad_http_result_t
+attach_remove_sid (gsad_http_response_t *response, const gchar *sid)
 {
   if (sid)
     {
@@ -658,20 +675,21 @@ file_reader (void *cls, uint64_t pos, char *buf, int max)
  * @return Response to send in combination with the response code. NULL only
  *         if file information could not be retrieved.
  */
-http_response_t *
-file_content_response (http_connection_t *connection, const char *url,
-                       const char *path, cmd_response_data_t *response_data)
+gsad_http_response_t *
+gsad_http_create_file_content_response (gsad_http_connection_t *connection,
+                                        const char *url, const char *path,
+                                        cmd_response_data_t *response_data)
 {
   char date_2822[DATE_2822_LEN];
   struct tm mtime;
   time_t next_week;
-  http_response_t *response;
+  gsad_http_response_t *response;
   FILE *file;
   struct stat buf;
 
   cmd_response_data_set_status_code (response_data, MHD_HTTP_OK);
 
-  if (!g_file_test (path, (G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR)))
+  if (!str_equal (path, "index.html") && !gvm_file_exists (path))
     {
       /* path does not exists or is not a file */
       /* return index.html to show page not found via js */
@@ -686,18 +704,19 @@ file_content_response (http_connection_t *connection, const char *url,
   if (file == NULL)
     {
       g_debug ("File %s failed, ", path);
-      return create_not_found_response (response_data);
+      return gsad_http_create_not_found_response (response_data);
     }
 
   /* Guess content type. */
-  cmd_response_data_set_content_type (response_data, guess_content_type (path));
+  cmd_response_data_set_content_type (response_data,
+                                      gsad_http_guess_content_type (path));
 
   if (stat (path, &buf))
     {
       /* File information could not be retrieved. */
       g_critical ("%s: file <%s> can not be stat'ed.\n", __func__, path);
       fclose (file);
-      return create_not_found_response (response_data);
+      return gsad_http_create_not_found_response (response_data);
     }
 
   /* Make sure the requested path really is a file. */
@@ -705,7 +724,7 @@ file_content_response (http_connection_t *connection, const char *url,
     {
       fclose (file);
       g_debug ("Path %s is not a file.", path);
-      return create_not_found_response (response_data);
+      return gsad_http_create_not_found_response (response_data);
     }
 
   response = MHD_create_response_from_callback (
@@ -740,11 +759,7 @@ file_content_response (http_connection_t *connection, const char *url,
  *
  * @return MHD_YES.
  */
-#if MHD_VERSION < 0x00097002
-static int
-#else
-static enum MHD_Result
-#endif
+gsad_http_result_t
 append_param (void *string, enum MHD_ValueKind kind, const char *key,
               const char *value)
 {
@@ -768,46 +783,42 @@ append_param (void *string, enum MHD_ValueKind kind, const char *key,
 }
 
 /**
- * @brief Reconstruct the URL for a connection.
- *
- * @param[in]  connection  Connection.
- * @param[in]  url         Base part of URL.
- *
- * @return URL.
- */
-gchar *
-reconstruct_url (http_connection_t *connection, const char *url)
-{
-  GString *full_url;
-
-  full_url = g_string_new (url);
-  /* To simplify appending the token later, ensure there is at least
-   * one param. */
-  g_string_append (full_url, "?r=1&");
-
-  MHD_get_connection_values (connection, MHD_GET_ARGUMENT_KIND, append_param,
-                             full_url);
-
-  if (full_url->str[strlen (full_url->str) - 1] == '&')
-    full_url->str[strlen (full_url->str) - 1] = '\0';
-
-  return g_string_free (full_url, FALSE);
-}
-
-/**
  * @brief Add security headers to a MHD response.
  */
 void
-add_security_headers (http_response_t *response)
+gsad_http_add_security_headers (gsad_http_response_t *response)
 {
-  const gchar *http_x_frame_options = get_http_x_frame_options ();
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
+  const gchar *http_x_frame_options =
+    gsad_settings_get_http_x_frame_options (gsad_global_settings);
   const gchar *http_content_security_policy =
-    get_http_content_security_policy ();
+    gsad_settings_get_http_content_security_policy (gsad_global_settings);
+  const gchar *http_cross_origin_embedder_policy =
+    gsad_settings_get_http_coep (gsad_global_settings);
+  const gchar *http_cross_origin_opener_policy =
+    gsad_settings_get_http_coop (gsad_global_settings);
+  const gchar *http_cross_origin_resource_policy =
+    gsad_settings_get_http_corp (gsad_global_settings);
   const gchar *http_strict_transport_security =
-    get_http_strict_transport_security ();
+    gsad_settings_get_http_strict_transport_security (gsad_global_settings);
 
   if (http_x_frame_options && strlen (http_x_frame_options) > 0)
     MHD_add_response_header (response, "X-Frame-Options", http_x_frame_options);
+
+  if (http_cross_origin_embedder_policy
+      && strlen (http_cross_origin_embedder_policy) > 0)
+    MHD_add_response_header (response, "Cross-Origin-Embedder-Policy",
+                             http_cross_origin_embedder_policy);
+
+  if (http_cross_origin_resource_policy
+      && strlen (http_cross_origin_resource_policy) > 0)
+    MHD_add_response_header (response, "Cross-Origin-Opener-Policy",
+                             http_cross_origin_resource_policy);
+
+  if (http_cross_origin_opener_policy
+      && strlen (http_cross_origin_opener_policy) > 0)
+    MHD_add_response_header (response, "Cross-Origin-Resource-Policy",
+                             http_cross_origin_opener_policy);
 
   if (http_content_security_policy && strlen (http_content_security_policy) > 0)
     MHD_add_response_header (response, "Content-Security-Policy",
@@ -823,17 +834,20 @@ add_security_headers (http_response_t *response)
  * @brief Add guest chart content security headers to a MHD response.
  */
 void
-add_guest_chart_content_security_headers (http_response_t *response)
+gsad_http_add_guest_chart_content_security_headers (
+  gsad_http_response_t *response)
 {
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
   const char *http_guest_chart_x_frame_options =
-    get_http_guest_chart_x_frame_options ();
+    gsad_settings_get_http_guest_chart_x_frame_options (gsad_global_settings);
   if (http_guest_chart_x_frame_options
       && strlen (http_guest_chart_x_frame_options) > 0)
     MHD_add_response_header (response, "X-Frame-Options",
                              http_guest_chart_x_frame_options);
 
   const char *http_guest_chart_content_security_policy =
-    get_http_guest_chart_content_security_policy ();
+    gsad_settings_get_http_guest_chart_content_security_policy (
+      gsad_global_settings);
   if (http_guest_chart_content_security_policy
       && strlen (http_guest_chart_content_security_policy) > 0)
     MHD_add_response_header (response, "Content-Security-Policy",
@@ -841,9 +855,11 @@ add_guest_chart_content_security_headers (http_response_t *response)
 }
 
 void
-add_cors_headers (http_response_t *response)
+gsad_http_add_cors_headers (gsad_http_response_t *response)
 {
-  const gchar *http_cors_origin = get_http_cors_origin ();
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
+  const gchar *http_cors_origin =
+    gsad_settings_get_http_cors_origin (gsad_global_settings);
   if (http_cors_origin && strlen (http_cors_origin) > 0)
     {
       MHD_add_response_header (response, "Access-Control-Allow-Origin",
@@ -859,7 +875,7 @@ add_cors_headers (http_response_t *response)
  * @param[in]  response       The HTTP response to add the headers to.
  */
 void
-add_forbid_caching_headers (http_response_t *response)
+gsad_http_add_forbid_caching_headers (gsad_http_response_t *response)
 {
   MHD_add_response_header (response, MHD_HTTP_HEADER_EXPIRES, "-1");
   MHD_add_response_header (response, MHD_HTTP_HEADER_CACHE_CONTROL,
@@ -877,20 +893,22 @@ add_forbid_caching_headers (http_response_t *response)
  * @return  0 success, 1 invalid UTF-8 in X-Real-IP header
  */
 int
-get_client_address (http_connection_t *conn, char *client_address)
+get_client_address (gsad_http_connection_t *conn, char *client_address)
 {
   const char *x_real_ip;
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
 
   /* First try X-Real-IP header (unless told to ignore), then MHD connection. */
 
   x_real_ip = MHD_lookup_connection_value (conn, MHD_HEADER_KIND, "X-Real-IP");
 
-  if (!is_ignore_http_x_real_ip () && x_real_ip
-      && g_utf8_validate (x_real_ip, -1, NULL) == FALSE)
+  if (gsad_settings_is_http_x_real_ip_enabled (gsad_global_settings)
+      && x_real_ip && g_utf8_validate (x_real_ip, -1, NULL) == FALSE)
     return 1;
-  else if (!is_ignore_http_x_real_ip () && x_real_ip != NULL)
+  else if (gsad_settings_is_http_x_real_ip_enabled (gsad_global_settings)
+           && x_real_ip != NULL)
     strncpy (client_address, x_real_ip, INET6_ADDRSTRLEN);
-  else if (is_unix_socket ())
+  else if (gsad_settings_is_unix_socket_enabled (gsad_global_settings))
     strncpy (client_address, "unix_socket", INET6_ADDRSTRLEN);
   else
     {
@@ -925,11 +943,7 @@ get_client_address (http_connection_t *conn, char *client_address)
  *
  * @return MHD_YES to continue iterating over post data, MHD_NO to stop.
  */
-#if MHD_VERSION < 0x00097002
-int
-#else
-enum MHD_Result
-#endif
+gsad_http_result_t
 serve_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,
             const char *filename, const char *content_type,
             const char *transfer_encoding, const char *data, uint64_t off,
@@ -939,7 +953,8 @@ serve_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,
 
   if (NULL != key)
     {
-      params_append_mhd (con_info->params, key, filename, data, size, off);
+      params_mhd_append (gsad_connection_info_get_params (con_info), key,
+                         filename, data, size, off);
       return MHD_YES;
     }
   return MHD_NO;
@@ -959,12 +974,13 @@ serve_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,
  *
  * @return An XML document as a newly allocated string.
  */
-char *
+gchar *
 gsad_message (credentials_t *credentials, const char *title,
               const char *function, int line, const char *msg,
               cmd_response_data_t *response_data)
 {
   gchar *xml, *xmltitle;
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
 
   if (function)
     {
@@ -997,9 +1013,10 @@ gsad_message (credentials_t *credentials, const char *title,
         "<role>%s</role>"
         "<i18n>%s</i18n>"
         "<client_address>%s</client_address>",
-        GSAD_VERSION, vendor_version_get (), user_get_token (user), ctime_now,
-        user_get_username (user), user_get_role (user),
-        credentials_get_language (credentials), user_get_client_address (user));
+        GSAD_VERSION, gsad_settings_get_vendor_version (gsad_global_settings),
+        user_get_token (user), ctime_now, user_get_username (user),
+        user_get_role (user), credentials_get_language (credentials),
+        user_get_client_address (user));
 
       xml = g_strdup_printf ("%s"
                              "<gsad_response>"
@@ -1015,17 +1032,18 @@ gsad_message (credentials_t *credentials, const char *title,
     }
   else
     {
-      xml = g_strdup_printf ("<envelope>"
-                             "<version>%s</version>"
-                             "<vendor_version>%s</vendor_version>"
-                             "<gsad_response>"
-                             "%s"
-                             "<message>%s</message>"
-                             "<token></token>"
-                             "</gsad_response>"
-                             "</envelope>",
-                             GSAD_VERSION, vendor_version_get (), xmltitle,
-                             msg ? msg : "");
+      xml = g_strdup_printf (
+        "<envelope>"
+        "<version>%s</version>"
+        "<vendor_version>%s</vendor_version>"
+        "<gsad_response>"
+        "%s"
+        "<message>%s</message>"
+        "<token></token>"
+        "</gsad_response>"
+        "</envelope>",
+        GSAD_VERSION, gsad_settings_get_vendor_version (gsad_global_settings),
+        xmltitle, msg ? msg : "");
     }
 
   g_free (xmltitle);

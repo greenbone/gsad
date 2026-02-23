@@ -5,6 +5,9 @@
 
 #include "gsad_args.h"
 
+#include "gsad_args_internal.h"
+#include "gsad_settings.h" // for defaults
+
 #include <gvm/util/fileutils.h>
 
 #define COPYRIGHT                                                        \
@@ -56,11 +59,11 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
      "<file>"},
     {"dh-params", '\0', 0, G_OPTION_ARG_FILENAME, &args->dh_params_filename,
      "Diffie-Hellman parameters file", "<file>"},
-    {"do-chroot", '\0', 0, G_OPTION_ARG_NONE, &args->do_chroot, "Do chroot.",
-     NULL},
+    {"do-chroot", '\0', 0, G_OPTION_ARG_NONE, &args->do_chroot,
+     "Do chroot into the static content directory.", NULL},
     {"secure-cookie", '\0', 0, G_OPTION_ARG_NONE, &args->secure_cookie,
      "Use a secure cookie (implied when using HTTPS).", NULL},
-    {"timeout", '\0', 0, G_OPTION_ARG_INT, &args->timeout,
+    {"timeout", '\0', 0, G_OPTION_ARG_INT, &args->session_timeout,
      "Minutes of user idle time before session expires. Defaults "
      "to " G_STRINGIFY (SESSION_TIMEOUT) " minutes",
      "<number>"},
@@ -68,7 +71,7 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
      &args->client_watch_interval,
      "Check if client connection was closed every <number> seconds."
      " 0 to disable. Defaults to " G_STRINGIFY (
-       DEFAULT_CLIENT_WATCH_INTERVAL) " seconds.",
+       DEFAULT_CLIENT_WATCH_INTERVAL) ".",
      "<number>"},
     {"debug-tls", 0, 0, G_OPTION_ARG_INT, &args->debug_tls,
      "Enable TLS debugging at <level>", "<level>"},
@@ -105,16 +108,34 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
     {"unix-socket-mode", '\0', 0, G_OPTION_ARG_STRING, &args->unix_socket_mode,
      "File mode of the unix socket", "<string>"},
     {"munix-socket", '\0', 0, G_OPTION_ARG_FILENAME,
-     &args->gsad_manager_unix_socket_path, "Path to Manager unix socket",
-     "<file>"},
+     &args->manager_unix_socket_path, "Path to Manager unix socket", "<file>"},
+    {"http-coep", 0, 0, G_OPTION_ARG_STRING, &args->http_coep,
+     "Set Cross-Origin-Embedder-Policy (COEP) http header ", "<coep>"},
+    {"http-coop", 0, 0, G_OPTION_ARG_STRING, &args->http_coop,
+     "Set Cross-Origin-Resource-Policy (COOP) http header ", "<coop>"},
+    {"http-corp", 0, 0, G_OPTION_ARG_STRING, &args->http_corp,
+     "Set Cross-Origin-Resource-Policy (CORP) http header ", "<corp>"},
     {"http-cors", 0, 0, G_OPTION_ARG_STRING, &args->http_cors,
      "Set Cross-Origin Resource Sharing (CORS) allow origin http header ",
      "<cors>"},
-    {"user-session-limit", '\0', 0, G_OPTION_ARG_INT,
-     &args->gsad_user_session_limit,
+    {"user-session-limit", '\0', 0, G_OPTION_ARG_INT, &args->user_session_limit,
      "Set maximum number of active sessions per user. 0 for unlimited. "
      "Defaults to 0.",
      "<max-sessions>"},
+    {"log-config", '\0', 0, G_OPTION_ARG_FILENAME,
+     &args->gsad_log_config_filename,
+     "Path to logging configuration file. Defaults to " GSAD_CONFIG_DIR
+     "gsad_log.conf",
+     "<file>"},
+    {"pid-file", '\0', 0, G_OPTION_ARG_FILENAME, &args->gsad_pid_filename,
+     "Path to PID file. Defaults to " DEFAULT_GSAD_PID_FILE, "<file>"},
+    {"static-content", '\0', 0, G_OPTION_ARG_FILENAME,
+     &args->gsad_static_content_directory,
+     "Path to static content directory. Defaults "
+     "to " DEFAULT_GSAD_STATIC_CONTENT_DIRECTORY,
+     "<directory>"},
+    {"api-only", '\0', 0, G_OPTION_ARG_NONE, &args->api_only,
+     "Run in API-only mode, disabling serving of static content.", NULL},
     {NULL}};
 
   option_context =
@@ -146,6 +167,7 @@ gsad_args_t *
 gsad_args_new ()
 {
   gsad_args_t *args = g_malloc0 (sizeof (gsad_args_t));
+  args->api_only = FALSE;
   args->client_watch_interval = DEFAULT_CLIENT_WATCH_INTERVAL;
   args->debug_tls = 0;
   args->dh_params_filename = NULL;
@@ -154,12 +176,17 @@ gsad_args_new ()
   args->foreground = FALSE;
   args->gnutls_priorities = NULL;
   args->gsad_address_string = NULL;
+  args->gsad_log_config_filename =
+    g_build_filename (GSAD_CONFIG_DIR, "gsad_log.conf", NULL);
   args->gsad_manager_address_string = NULL;
   args->gsad_manager_port = PORT_NOT_SET;
-  args->gsad_manager_unix_socket_path = NULL;
+  args->manager_unix_socket_path = NULL;
+  args->gsad_pid_filename = g_strdup (DEFAULT_GSAD_PID_FILE);
   args->gsad_port = PORT_NOT_SET;
+  args->gsad_static_content_directory =
+    g_strdup (DEFAULT_GSAD_STATIC_CONTENT_DIRECTORY);
   args->gsad_redirect_port = PORT_NOT_SET;
-  args->gsad_user_session_limit = 0;
+  args->user_session_limit = 0;
   args->gsad_vendor_version_string = NULL;
   args->hsts_enabled = FALSE;
   args->hsts_max_age = DEFAULT_GSAD_HSTS_MAX_AGE;
@@ -169,12 +196,12 @@ gsad_args_new ()
   args->http_only = FALSE;
   args->ignore_x_real_ip = FALSE;
   args->no_redirect = FALSE;
-  args->per_ip_connection_limit = DEFAULT_GSAD_PER_IP_CONNECTION_LIMIT;
+  args->per_ip_connection_limit = DEFAULT_PER_IP_CONNECTION_LIMIT;
   args->print_version = FALSE;
   args->secure_cookie = FALSE;
   args->ssl_certificate_filename = g_strdup (DEFAULT_GSAD_TLS_CERTIFICATE);
   args->ssl_private_key_filename = g_strdup (DEFAULT_GSAD_TLS_PRIVATE_KEY);
-  args->timeout = SESSION_TIMEOUT;
+  args->session_timeout = DEFAULT_SESSION_TIMEOUT;
   args->unix_socket_group = NULL;
   args->unix_socket_mode = NULL;
   args->unix_socket_owner = NULL;
@@ -193,38 +220,26 @@ gsad_args_free (gsad_args_t *args)
 {
   if (args)
     {
-      if (args->dh_params_filename)
-        g_free (args->dh_params_filename);
-      if (args->drop)
-        g_free (args->drop);
-      if (args->gnutls_priorities)
-        g_free (args->gnutls_priorities);
+      g_free (args->dh_params_filename);
+      g_free (args->drop);
+      g_free (args->gnutls_priorities);
       if (args->gsad_address_string)
         g_strfreev (args->gsad_address_string);
-      if (args->gsad_manager_address_string)
-        g_free (args->gsad_manager_address_string);
-      if (args->gsad_manager_unix_socket_path)
-        g_free (args->gsad_manager_unix_socket_path);
-      if (args->gsad_vendor_version_string)
-        g_free (args->gsad_vendor_version_string);
-      if (args->http_cors)
-        g_free (args->http_cors);
-      if (args->http_csp)
-        g_free (args->http_csp);
-      if (args->http_frame_opts)
-        g_free (args->http_frame_opts);
-      if (args->ssl_certificate_filename)
-        g_free (args->ssl_certificate_filename);
-      if (args->ssl_private_key_filename)
-        g_free (args->ssl_private_key_filename);
-      if (args->unix_socket_group)
-        g_free (args->unix_socket_group);
-      if (args->unix_socket_mode)
-        g_free (args->unix_socket_mode);
-      if (args->unix_socket_owner)
-        g_free (args->unix_socket_owner);
-      if (args->unix_socket_path)
-        g_free (args->unix_socket_path);
+      g_free (args->gsad_log_config_filename);
+      g_free (args->gsad_manager_address_string);
+      g_free (args->manager_unix_socket_path);
+      g_free (args->gsad_pid_filename);
+      g_free (args->gsad_static_content_directory);
+      g_free (args->gsad_vendor_version_string);
+      g_free (args->http_cors);
+      g_free (args->http_csp);
+      g_free (args->http_frame_opts);
+      g_free (args->ssl_certificate_filename);
+      g_free (args->ssl_private_key_filename);
+      g_free (args->unix_socket_group);
+      g_free (args->unix_socket_mode);
+      g_free (args->unix_socket_owner);
+      g_free (args->unix_socket_path);
 
       g_free (args);
     }
@@ -239,7 +254,7 @@ gsad_args_free (gsad_args_t *args)
  * @return TRUE if HTTP to HTTPS redirection should be enabled, FALSE otherwise.
  */
 gboolean
-gsad_args_enable_redirect (const gsad_args_t *args)
+gsad_args_is_redirect_enabled (const gsad_args_t *args)
 {
   return !args->http_only && !args->no_redirect;
 }
@@ -254,7 +269,7 @@ gsad_args_enable_redirect (const gsad_args_t *args)
  * otherwise.
  */
 gboolean
-gsad_args_enable_unix_socket (const gsad_args_t *args)
+gsad_args_is_unix_socket_enabled (const gsad_args_t *args)
 {
   return args->unix_socket_path != NULL;
 }
@@ -267,7 +282,7 @@ gsad_args_enable_unix_socket (const gsad_args_t *args)
  * @return TRUE if HTTPS should be enabled, FALSE otherwise.
  */
 gboolean
-gsad_args_enable_https (const gsad_args_t *args)
+gsad_args_is_https_enabled (const gsad_args_t *args)
 {
   return !args->http_only;
 }
@@ -281,7 +296,7 @@ gsad_args_enable_https (const gsad_args_t *args)
  * @return TRUE if HTTP Strict-Transport-Security should be enabled, FALSE
  */
 gboolean
-gsad_args_enable_http_strict_transport_security (const gsad_args_t *args)
+gsad_args_is_http_strict_transport_security_enabled (const gsad_args_t *args)
 {
   return !args->http_only && args->hsts_enabled;
 }
@@ -295,7 +310,7 @@ gsad_args_enable_http_strict_transport_security (const gsad_args_t *args)
  * @return TRUE if the server should run in the foreground, FALSE otherwise.
  */
 gboolean
-gsad_args_enable_run_in_foreground (const gsad_args_t *args)
+gsad_args_is_run_in_foreground_enabled (const gsad_args_t *args)
 {
   return args->foreground;
 }
@@ -310,7 +325,8 @@ gsad_args_enable_run_in_foreground (const gsad_args_t *args)
 int
 gsad_args_validate_session_timeout (const gsad_args_t *args)
 {
-  if (args->timeout < 0 || args->timeout > GSAD_MAX_SESSION_TIMEOUT)
+  if (args->session_timeout < 0
+      || args->session_timeout > GSAD_MAX_SESSION_TIMEOUT)
     {
       g_critical ("%s: timeout needs to be between 0 and %d\n", __func__,
                   GSAD_MAX_SESSION_TIMEOUT);
@@ -407,7 +423,7 @@ gsad_args_get_port (const gsad_args_t *args)
 int
 gsad_args_get_redirect_port (const gsad_args_t *args)
 {
-  if (gsad_args_enable_redirect (args) == FALSE)
+  if (gsad_args_is_redirect_enabled (args) == FALSE)
     return PORT_NOT_SET;
 
   return args->gsad_redirect_port == PORT_NOT_SET ? DEFAULT_GSAD_HTTP_PORT
@@ -440,9 +456,8 @@ gsad_args_get_http_strict_transport_security_max_age (const gsad_args_t *args)
 int
 gsad_args_get_per_ip_connection_limit (const gsad_args_t *args)
 {
-  return args->per_ip_connection_limit >= 0
-           ? args->per_ip_connection_limit
-           : DEFAULT_GSAD_PER_IP_CONNECTION_LIMIT;
+  return args->per_ip_connection_limit >= 0 ? args->per_ip_connection_limit
+                                            : DEFAULT_PER_IP_CONNECTION_LIMIT;
 }
 
 /**
@@ -457,6 +472,53 @@ int
 gsad_args_get_client_watch_interval (const gsad_args_t *args)
 {
   return args->client_watch_interval < 0 ? 0 : args->client_watch_interval;
+}
+
+/**
+ * @brief Get the configuration filename from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The configuration filename specified in the command-line arguments,
+ * or the default configuration filename if not specified. The returned string
+ * is owned by the gsad args structure and should not be modified or freed
+ * by the caller.
+ */
+const char *
+gsad_args_get_log_config_filename (const gsad_args_t *args)
+{
+  return args->gsad_log_config_filename;
+}
+
+/**
+ * @brief Get the PID filename from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The PID filename specified in the command-line arguments, or the
+ * default PID filename if not specified. The returned string is owned by the
+ * gsad args structure and should not be modified or freed by the caller.
+ */
+const char *
+gsad_args_get_pid_filename (const gsad_args_t *args)
+{
+  return args->gsad_pid_filename;
+}
+
+/**
+ * @brief Get the static content directory from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The static content directory specified in the command-line arguments,
+ * or the default static content directory if not specified. The returned string
+ * is owned by the gsad args structure and should not be modified or freed
+ * by the caller.
+ */
+const gchar *
+gsad_args_get_static_content_directory (const gsad_args_t *args)
+{
+  return args->gsad_static_content_directory;
 }
 
 /**
@@ -527,4 +589,472 @@ gsad_args_validate_tls_certificate (const gsad_args_t *args)
     }
 
   return OK;
+}
+
+/**
+ * @brief Check if version information should be printed based on the
+ * command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return TRUE if printing the version information is enabled, FALSE otherwise.
+ */
+gboolean
+gsad_args_is_print_version_enabled (const gsad_args_t *args)
+{
+  return args->print_version;
+}
+
+/**
+ * @brief Check if TLS debugging is enabled based on the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return TRUE if TLS debugging is enabled, FALSE otherwise.
+ */
+gboolean
+gsad_args_is_debug_tls_enabled (const gsad_args_t *args)
+{
+  return args->debug_tls > 0;
+}
+
+/**
+ * @brief Get the session timeout value from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The session timeout value in minutes.
+ */
+int
+gsad_args_get_session_timeout (const gsad_args_t *args)
+{
+  return args->session_timeout;
+}
+
+/**
+ * @brief Get the manager port number from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The manager port number, or PORT_NOT_SET if not specified.
+ */
+int
+gsad_args_get_manager_port (const gsad_args_t *args)
+{
+  return args->gsad_manager_port;
+}
+
+/**
+ * @brief Get the TLS private key filename from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The TLS private key filename specified in the command-line arguments,
+ * or the default TLS private key filename if not specified. The returned string
+ * is owned by the gsad args structure and should not be modified or freed
+ * by the caller.
+ */
+const gchar *
+gsad_args_get_tls_private_key_filename (const gsad_args_t *args)
+{
+  return args->ssl_private_key_filename;
+}
+
+/**
+ * @brief Get the TLS certificate filename from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The TLS certificate filename specified in the command-line arguments,
+ * or the default TLS certificate filename if not specified. The returned string
+ * is owned by the gsad args structure and should not be modified or freed
+ * by the caller.
+ */
+const gchar *
+gsad_args_get_tls_certificate_filename (const gsad_args_t *args)
+{
+  return args->ssl_certificate_filename;
+}
+
+/**
+ * @brief Get the X-Frame-Options HTTP header value from the command-line
+ * arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The X-Frame-Options HTTP header value specified in the command-line
+ * arguments, or the default value if not specified. The returned string is
+ * owned by the gsad args structure and should not be modified or freed by the
+ * caller.
+ */
+const gchar *
+gsad_args_get_http_x_frame_options (const gsad_args_t *args)
+{
+  return args->http_frame_opts;
+}
+
+/**
+ * @brief Get the Content-Security-Policy HTTP header value from the
+ * command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The Content-Security-Policy HTTP header value specified in the
+ * command-line arguments, or the default value if not specified. The returned
+ * string is owned by the gsad args structure and should not be modified or
+ * freed by the caller.
+ */
+const gchar *
+gsad_args_get_http_content_security_policy (const gsad_args_t *args)
+{
+  return args->http_csp;
+}
+
+/**
+ * @brief Get the Cross-Origin Resource Sharing (CORS) allow origin HTTP header
+ * value from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The CORS allow origin HTTP header value specified in the command-line
+ * arguments, or NULL if not specified. The returned string is owned by the
+ * gsad args structure and should not be modified or freed by the caller.
+ */
+const gchar *
+gsad_args_get_http_cors_origin (const gsad_args_t *args)
+{
+  return args->http_cors;
+}
+
+/**
+ * @brief Get the Cross-Origin-Embedder-Policy HTTP header
+ * value from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The Cross-Origin-Embedder-Policy HTTP header value specified
+ * in the command-line arguments, or NULL if not specified.
+ * The returned string is owned by the gsad args structure and should not be
+ * modified or freed by the caller.
+ */
+const gchar *
+gsad_args_get_http_coep (const gsad_args_t *args)
+{
+  return args->http_coep;
+}
+
+/**
+ * @brief Get the Cross-Origin-Opener-Policy HTTP header
+ * value from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The Cross-Origin-Opener-Policy HTTP header value specified
+ * in the command-line arguments, or NULL if not specified.
+ * The returned string is owned by the gsad args structure and should not be
+ * modified or freed by the caller.
+ */
+const gchar *
+gsad_args_get_http_coop (const gsad_args_t *args)
+{
+  return args->http_coop;
+}
+
+/**
+ * @brief Get the Cross-Origin-Resource-Policy HTTP header
+ * value from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The Cross-Origin-Resource-Policy HTTP header value specified
+ * in the command-line arguments, or NULL if not specified.
+ * The returned string is owned by the gsad args structure and should not be
+ * modified or freed by the caller.
+ */
+const gchar *
+gsad_args_get_http_corp (const gsad_args_t *args)
+{
+  return args->http_corp;
+}
+
+/**
+ * @brief Get the TLS debug level from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The TLS debug level specified in the command-line arguments, or 0 if
+ * not specified.
+ */
+int
+gsad_args_get_tls_debug_level (const gsad_args_t *args)
+{
+  return args->debug_tls;
+}
+
+/**
+ * @brief Get the vendor version string from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The vendor version string specified in the command-line arguments, or
+ * NULL if not specified. The returned string is owned by the gsad args
+ * structure and should not be modified or freed by the caller.
+ */
+const gchar *
+gsad_args_get_vendor_version (const gsad_args_t *args)
+{
+  return args->gsad_vendor_version_string;
+}
+
+/**
+ * @brief Check if the server should ignore the X-Real-IP header based on the
+ * command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return TRUE if the server should ignore the X-Real-IP header, FALSE
+ * otherwise.
+ */
+gboolean
+gsad_args_is_ignore_x_real_ip_enabled (const gsad_args_t *args)
+{
+  return args->ignore_x_real_ip;
+}
+
+/**
+ * @brief Check if secure cookies should be enabled based on the command-line
+ * arguments.
+ *
+ * Secure cookies should be enabled if the --secure-cookie flag is set or if
+ * HTTPS is enabled, since secure cookies require a secure connection. This
+ * function checks both conditions to determine if secure cookies should be
+ * enabled.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return TRUE if secure cookies should be enabled, FALSE otherwise.
+ */
+gboolean
+gsad_args_is_secure_cookie_enabled (const gsad_args_t *args)
+{
+  return args->secure_cookie || gsad_args_is_https_enabled (args);
+}
+
+/**
+ * @brief Get the user session limit from the command-line arguments.
+ *
+ * The user session limit specifies the maximum number of active sessions per
+ * user. A value of 0 means unlimited sessions. This function returns the user
+ * session limit specified in the command-line arguments, or 0 if the value is
+ * negative (which is treated as unlimited).
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The user session limit specified in the command-line arguments, or 0
+ * (which is treated as unlimited).
+ */
+int
+gsad_args_get_user_session_limit (const gsad_args_t *args)
+{
+  return args->user_session_limit >= 0 ? args->user_session_limit : 0;
+}
+
+/**
+ * @brief Get the list of listen addresses from the command-line arguments.
+ *
+ * The listen addresses are specified using the --listen option, which can be
+ * used multiple times to specify multiple addresses.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return It returns the list of listen addresses specified in the command-line
+ * arguments, or NULL if no listen addresses were specified. The returned list
+ * is owned by the gsad args structure and should not be modified or freed by
+ * the caller.
+ *
+ */
+gchar **
+gsad_args_get_listen_addresses (const gsad_args_t *args)
+{
+  return args->gsad_address_string;
+}
+
+/**
+ * @brief Get the manager address from the command-line arguments.
+ *
+ * The manager address is specified using the --mlisten option.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The manager address specified in the command-line arguments,
+ * or NULL if not specified. The returned string is owned by the gsad args
+ * structure and should not be modified or freed by the caller.
+ */
+const gchar *
+gsad_args_get_manager_address (const gsad_args_t *args)
+{
+  return args->gsad_manager_address_string;
+}
+
+/**
+ * @brief Get the manager unix socket path from the command-line arguments.
+ *
+ * The manager unix socket path is specified using the --munix-socket option.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The manager unix socket path specified in the command-line arguments,
+ * or NULL if not specified. The returned string is owned by the gsad args
+ * structure and should not be modified or freed by the caller.
+ */
+const gchar *
+gsad_args_get_manager_unix_socket_path (const gsad_args_t *args)
+{
+  return args->manager_unix_socket_path;
+}
+
+/**
+ * @brief Get the unix socket path from the command-line arguments.
+ *
+ * The unix socket path is specified using the --unix-socket option.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The unix socket path specified in the command-line arguments, or NULL
+ * if not specified. The returned string is owned by the gsad args structure and
+ * should not be modified or freed by the caller.
+ */
+const gchar *
+gsad_args_get_unix_socket_path (const gsad_args_t *args)
+{
+  return args->unix_socket_path;
+}
+
+/**
+ * @brief Get the unix socket owner from the command-line arguments.
+ *
+ * The unix socket owner is specified using the --unix-socket-owner option.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The unix socket owner specified in the command-line arguments, or
+ * NULL if not specified. The returned string is owned by the gsad args
+ * structure and should not be modified or freed by the caller.
+ */
+const gchar *
+gsad_args_get_unix_socket_owner (const gsad_args_t *args)
+{
+  return args->unix_socket_owner;
+}
+
+/**
+ * @brief Get the unix socket group from the command-line arguments.
+ *
+ * The unix socket group is specified using the --unix-socket-group option.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The unix socket group specified in the command-line arguments, or
+ * NULL if not specified. The returned string is owned by the gsad args
+ * structure and should not be modified or freed by the caller.
+ */
+const gchar *
+gsad_args_get_unix_socket_group (const gsad_args_t *args)
+{
+  return args->unix_socket_group;
+}
+
+/**
+ * @brief Get the unix socket mode from the command-line arguments.
+ *
+ * The unix socket mode is specified using the --unix-socket-mode option.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The unix socket mode specified in the command-line arguments, or NULL
+ * if not specified. The returned string is owned by the gsad args structure and
+ * should not be modified or freed by the caller.
+ */
+const gchar *
+gsad_args_get_unix_socket_mode (const gsad_args_t *args)
+{
+  return args->unix_socket_mode;
+}
+
+/**
+ * @brief Get the Diffie-Hellman parameters filename from the command-line
+ * arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The Diffie-Hellman parameters filename specified in the command-line
+ * arguments, or NULL if not specified. The returned string is owned by the gsad
+ * args structure and should not be modified or freed by the caller.
+ */
+const gchar *
+gsad_args_get_dh_params_filename (const gsad_args_t *args)
+{
+  return args->dh_params_filename;
+}
+
+/**
+ * @brief Get the GnuTLS priorities string from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The GnuTLS priorities string specified in the command-line arguments,
+ * or NULL if not specified. The returned string is owned by the gsad args
+ * structure and should not be modified or freed by the caller.
+ */
+const gchar *
+gsad_args_get_gnutls_priorities (const gsad_args_t *args)
+{
+  return args->gnutls_priorities;
+}
+
+/**
+ * @brief Get the drop privileges user from the command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The drop privileges user specified in the command-line arguments, or
+ * NULL if not specified. The returned string is owned by the gsad args
+ * structure and should not be modified or freed by the caller.
+ */
+const gchar *
+gsad_args_get_drop_privileges (const gsad_args_t *args)
+{
+  return args->drop;
+}
+
+/**
+ * @brief Check if chroot should be enabled based on the command-line arguments.
+ *
+ * Chroot should be enabled if the --do-chroot flag is set.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return TRUE if chroot should be enabled, FALSE otherwise.
+ */
+gboolean
+gsad_args_is_chroot_enabled (const gsad_args_t *args)
+{
+  return args->do_chroot;
+}
+
+/**
+ * @brief Check if API-only mode should be enabled based on the command-line
+ * arguments.
+ *
+ * API-only mode is enabled if the --api-only flag is set. It disables
+ * serving of static content and only serves the API.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return TRUE if API-only mode should be enabled, FALSE otherwise.
+ */
+gboolean
+gsad_args_is_api_only_enabled (const gsad_args_t *args)
+{
+  return args->api_only;
 }

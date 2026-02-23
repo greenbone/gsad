@@ -45,57 +45,43 @@ void
 params_free (params_t *);
 
 int
-params_given (params_t *, const char *);
+params_given (params_t *, const gchar *);
 
-const char *
-params_value (params_t *, const char *);
+const gchar *
+params_value (params_t *, const gchar *);
 
 int
-params_value_size (params_t *, const char *);
+params_value_size (params_t *, const gchar *);
 
 gboolean
-params_value_bool (params_t *, const char *);
+params_value_bool (params_t *, const gchar *);
 
-const char *
-params_original_value (params_t *, const char *);
-
-const char *
-params_filename (params_t *, const char *);
+const gchar *
+params_original_value (params_t *, const gchar *);
 
 params_t *
-params_values (params_t *, const char *);
+params_values (params_t *, const gchar *);
 
 param_t *
-params_get (params_t *, const char *);
+params_get (params_t *, const gchar *);
 
 int
-params_valid (params_t *, const char *);
+params_valid (params_t *, const gchar *);
 
 param_t *
-params_add (params_t *, const char *, const char *);
+params_add (params_t *, const gchar *, const gchar *);
 
 void
-params_remove (params_t *, const char *);
+params_remove (params_t *, const gchar *);
 
 param_t *
-params_append_bin (params_t *, const char *, const char *, int, int);
+params_append_bin (params_t *, const gchar *, const gchar *, int);
 
 #define params_iterator_t GHashTableIter
 
 #define params_iterator_init g_hash_table_iter_init
 
 gboolean
-params_iterator_next (params_iterator_t *, char **, param_t **);
-
-#if MHD_VERSION < 0x00097002
-int
-#else
-enum MHD_Result
-#endif
-params_mhd_add (void *params, enum MHD_ValueKind kind, const char *name,
-                const char *value);
-
-void
-params_mhd_validate (void *params);
+params_iterator_next (params_iterator_t *, gchar **, param_t **);
 
 #endif /* _GSAD_PARAMS_H */

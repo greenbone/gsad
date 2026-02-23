@@ -72,11 +72,12 @@ Prerequisites:
 - zlib >= 1.2
 - libbrotli (optional, for Brotli compression)
 
-Prerequisites for building documentation:
+Optional prerequisites
 
-- Doxygen
-- xmltoman (optional, for building man page)
-- cgreen (optional, for building tests)
+- Doxygen (for building documentation)
+- xmltoman (for building man page)
+- cgreen (for building tests)
+- libasan (for building tests)
 
 Install prerequisites on Debian GNU/Linux:
 

@@ -344,6 +344,7 @@ envelope_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   assert (credentials);
 
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
   user_t *user = credentials_get_user (credentials);
   const gchar *timezone = user_get_timezone (user);
   const gchar *pw_warning = user_get_password_warning (user);
@@ -367,11 +368,11 @@ envelope_gmp (gvm_connection_t *connection, credentials_t *credentials,
     "<i18n>%s</i18n>"
     "<client_address>%s</client_address>"
     "<backend_operation>%.2f</backend_operation>",
-    GSAD_VERSION, vendor_version_get (), user_get_token (user), ctime_now,
-    timezone ? timezone : "", user_get_username (user),
-    user_get_session_timeout (user), user_get_role (user),
-    credentials_get_language (credentials), user_get_client_address (user),
-    credentials_get_cmd_duration (credentials));
+    GSAD_VERSION, gsad_settings_get_vendor_version (gsad_global_settings),
+    user_get_token (user), ctime_now, timezone ? timezone : "",
+    user_get_username (user), user_get_session_timeout (user),
+    user_get_role (user), credentials_get_language (credentials),
+    user_get_client_address (user), credentials_get_cmd_duration (credentials));
 
   g_string_append (string, res);
   g_free (res);
@@ -1132,88 +1133,6 @@ get_many (gvm_connection_t *connection, const char *type,
 
   return get_entities (connection, type, credentials, params, arguments,
                        response_data);
-}
-
-/**
- * @brief Setup edit XML, envelope the result.
- *
- * @param[in]  connection         Connection to manager
- * @param[in]  type               Type or resource to edit.
- * @param[in]  credentials        Username and password for authentication.
- * @param[in]  params             Request parameters.
- * @param[in]  extra_get_attribs  Extra attributes for the get_... command.
- * @param[in]  extra_xml          Extra XML to insert inside page element.
- * @param[out] response_data      Extra data return for the HTTP response.
- *
- * @return Enveloped XML object.
- */
-char *
-edit_resource (gvm_connection_t *connection, const char *type,
-               credentials_t *credentials, params_t *params,
-               const char *extra_get_attribs, const char *extra_xml,
-               cmd_response_data_t *response_data)
-{
-  GString *xml;
-  gchar *id_name;
-  const char *resource_id;
-
-  id_name = g_strdup_printf ("%s_id", type);
-  resource_id = params_value (params, id_name);
-  g_free (id_name);
-
-  if (resource_id == NULL)
-    {
-      cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
-      return gsad_message (
-        credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while editing a resource. "
-        "The resource remains as it was. "
-        "Diagnostics: Required ID parameter was NULL.",
-        response_data);
-    }
-
-  if (gvm_connection_sendf (connection,
-                            "<get_%ss"
-                            " %s"
-                            " %s_id=\"%s\""
-                            " details=\"1\"/>",
-                            type, extra_get_attribs ? extra_get_attribs : "",
-                            type, resource_id)
-      == -1)
-    {
-      cmd_response_data_set_status_code (response_data,
-                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
-      return gsad_message (
-        credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while getting a resource. "
-        "Diagnostics: Failure to send command to manager daemon.",
-        response_data);
-    }
-
-  xml = g_string_new ("");
-
-  g_string_append_printf (xml, "<edit_%s>", type);
-
-  if (extra_xml)
-    g_string_append (xml, extra_xml);
-
-  if (read_string_c (connection, &xml))
-    {
-      g_string_free (xml, TRUE);
-      cmd_response_data_set_status_code (response_data,
-                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
-      return gsad_message (
-        credentials, "Internal error", __func__, __LINE__,
-        "An internal error occurred while getting a resource. "
-        "Diagnostics: Failure to receive response from manager daemon.",
-        response_data);
-    }
-
-  /* Cleanup, and return transformed XML. */
-
-  g_string_append_printf (xml, "</edit_%s>", type);
-  return envelope_gmp (connection, credentials, params,
-                       g_string_free (xml, FALSE), response_data);
 }
 
 /**
@@ -2023,23 +1942,6 @@ create_report_gmp (gvm_connection_t *connection, credentials_t *credentials,
   free_entity (entity);
   g_free (response);
   return html;
-}
-
-/**
- * @brief Import report, get all reports, envelope the result.
- *
- * @param[in]  connection     Connection to manager.
- * @param[in]  credentials    Username and password for authentication.
- * @param[in]  params         Request parameters.
- * @param[out] response_data  Extra data return for the HTTP response.
- *
- * @return Enveloped XML object.
- */
-char *
-import_report_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
-{
-  return create_report_gmp (connection, credentials, params, response_data);
 }
 
 /**
@@ -18639,6 +18541,72 @@ delete_ticket_gmp (gvm_connection_t *connection, credentials_t *credentials,
 }
 
 /**
+ * @brief Get all supported timezones, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_timezones_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                   params_t *params, cmd_response_data_t *response_data)
+{
+  entity_t entity = NULL;
+  GString *xml;
+
+  /* Get timezones list */
+  if (gvm_connection_sendf (connection, "<get_timezones/>"))
+    {
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while getting the timezones list. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    }
+
+  xml = g_string_new ("<get_timezones>");
+
+  /* Read the response. */
+  if (read_entity_and_string_c (connection, &entity, &xml))
+    {
+      g_string_free (xml, TRUE);
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_message (
+        credentials, "Internal error", __func__, __LINE__,
+        "An internal error occurred while getting the timezones list. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    }
+
+  if (gmp_success (entity) != 1)
+    {
+      gchar *message;
+
+      set_http_status_from_entity (entity, response_data);
+
+      message =
+        gsad_message (credentials, "Error", __func__, __LINE__,
+                      entity_attribute (entity, "status_text"), response_data);
+
+      g_string_free (xml, TRUE);
+      free_entity (entity);
+      return message;
+    }
+
+  free_entity (entity);
+
+  g_string_append (xml, "</get_timezones>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
  * @brief Get all TLS certificates, envelope the result.
  *
  * @param[in]  connection     Connection to manager.
@@ -20950,11 +20918,11 @@ logout_gmp (const gchar *username, const gchar *password)
  * @return MHD_YES on success. MHD_NO on errors.
  */
 int
-login (http_connection_t *con, params_t *params,
+login (gsad_http_connection_t *con, params_t *params,
        cmd_response_data_t *response_data, const char *client_address)
 {
   int ret, status;
-  authentication_reason_t auth_reason;
+  gsad_authentication_reason_t auth_reason;
   credentials_t *credentials;
   gchar *timezone;
   gchar *role;
@@ -20994,7 +20962,7 @@ login (http_connection_t *con, params_t *params,
           g_warning ("Authentication failure for '%s' from %s. "
                      "Status was %d.",
                      login ?: "", client_address, ret);
-          return handler_send_reauthentication (con, status, auth_reason);
+          return gsad_http_send_reauthentication (con, status, auth_reason);
         }
       else
         {
@@ -21017,7 +20985,7 @@ login (http_connection_t *con, params_t *params,
               g_free (role);
               g_free (pw_warning);
 
-              return handler_send_reauthentication (con, status, auth_reason);
+              return gsad_http_send_reauthentication (con, status, auth_reason);
             }
 
           g_message ("Authentication success for '%s' from %s", login ?: "",
@@ -21028,8 +20996,8 @@ login (http_connection_t *con, params_t *params,
           gchar *data =
             envelope_gmp (NULL, credentials, params, NULL, response_data);
 
-          ret = handler_create_response (con, data, response_data,
-                                         user_get_cookie (user));
+          ret = gsad_http_create_response (con, data, response_data,
+                                           user_get_cookie (user));
 
           user_free (user);
 
@@ -21048,8 +21016,8 @@ login (http_connection_t *con, params_t *params,
     {
       g_warning ("Authentication failure for '%s' from %s", login ?: "",
                  client_address);
-      return handler_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
-                                            LOGIN_FAILED);
+      return gsad_http_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
+                                              LOGIN_FAILED);
     }
 }
 

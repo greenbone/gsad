@@ -13,7 +13,7 @@
 
 #include "gsad_cmd.h"          /* for cmd_response_data_t */
 #include "gsad_content_type.h" /* for content_type */
-#include "gsad_http.h"         /* for http_connection_t */
+#include "gsad_http.h"         /* for gsad_http_connection_t */
 #include "gsad_user.h"         /* for credentials_t */
 
 #include <glib.h>                 /* for gboolean */
@@ -793,6 +793,10 @@ delete_ticket_gmp (gvm_connection_t *, credentials_t *, params_t *,
                    cmd_response_data_t *);
 
 char *
+get_timezones_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                   cmd_response_data_t *);
+
+char *
 get_tls_certificates_gmp (gvm_connection_t *, credentials_t *, params_t *,
                           cmd_response_data_t *);
 char *
@@ -921,7 +925,7 @@ change_password_gmp (gvm_connection_t *, credentials_t *, params_t *,
                      cmd_response_data_t *);
 
 int
-login (http_connection_t *con, params_t *params,
+login (gsad_http_connection_t *con, params_t *params,
        cmd_response_data_t *response_data, const char *client_address);
 
 #endif /* not _GSAD_GMP_H */

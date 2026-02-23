@@ -13,64 +13,36 @@
 
 #include "gsad_http.h"
 
-typedef struct http_handler http_handler_t;
+typedef struct gsad_http_handler gsad_http_handler_t;
 
-typedef void (*http_handler_free_func_t) (http_handler_t *);
+typedef void (*gsad_http_handler_free_func_t) (void *);
+typedef void (*gsad_http_handler_set_leaf_func_t) (gsad_http_handler_t *,
+                                                   gsad_http_handler_t *,
+                                                   gboolean);
 
-typedef int (*http_handler_func_t) (http_connection_t *connection,
-                                    const char *method, const char *url,
-                                    gsad_connection_info_t *con_info,
-                                    http_handler_t *handler, void *data);
+typedef gsad_http_result_t (*gsad_http_handler_func_t) (
+  gsad_http_handler_t *, void *, gsad_http_connection_t *,
+  gsad_connection_info_t *, void *);
 
-http_handler_t *
-http_handler_add (http_handler_t *handlers, http_handler_t *handler);
+gsad_http_handler_t *gsad_http_handler_new (gsad_http_handler_func_t);
 
-int
-http_handler_next (http_connection_t *connection, const char *method,
-                   const char *url, gsad_connection_info_t *con_info,
-                   http_handler_t *handler, void *data);
+gsad_http_handler_t *
+gsad_http_handler_new_with_data (gsad_http_handler_func_t,
+                                 gsad_http_handler_set_leaf_func_t,
+                                 gsad_http_handler_free_func_t, void *);
 
-int
-http_handler_start (http_connection_t *connection, const char *method,
-                    const char *url, gsad_connection_info_t *con_info,
-                    http_handler_t *handler, void *data);
+gsad_http_handler_t *
+gsad_http_handler_add (gsad_http_handler_t *, gsad_http_handler_t *);
 
-http_handler_t *http_handler_new (http_handler_func_t);
+gsad_http_handler_t *
+gsad_http_handler_add_from_func (gsad_http_handler_t *,
+                                 gsad_http_handler_func_t);
 
-void
-http_handler_free (http_handler_t *handler);
-
-http_handler_t *
-init_http_handlers ();
-
-void
-cleanup_http_handlers ();
-
-http_handler_t *
-url_handler_new (const gchar *regexp, http_handler_t *handler);
-
-http_handler_t *
-url_handler_add_func (http_handler_t *handlers, const gchar *regexp,
-                      http_handler_func_t handle);
-
-http_handler_t *
-method_router_new ();
+gsad_http_result_t
+gsad_http_handler_call (gsad_http_handler_t *, gsad_http_connection_t *,
+                        gsad_connection_info_t *, void *);
 
 void
-method_router_set_get_handler (http_handler_t *router, http_handler_t *handler);
-
-void
-method_router_set_post_handler (http_handler_t *router,
-                                http_handler_t *handler);
-
-#if MHD_VERSION < 0x00097002
-int
-#else
-enum MHD_Result
-#endif
-handle_request (void *cls, http_connection_t *connection, const char *url,
-                const char *method, const char *version,
-                const char *upload_data, size_t *upload_data_size,
-                void **con_cls);
+gsad_http_handler_free (gsad_http_handler_t *);
 
 #endif /* _GSAD_HTTP_HANDLER_H */

@@ -53,9 +53,12 @@ endif(
 set(HARDENING_FLAGS "-D_FORTIFY_SOURCE=2 -fstack-protector")
 set(LINKER_HARDENING_FLAGS "-Wl,-z,relro -Wl,-z,now")
 
+set(UNUSED_FUNCTIONS_FLAGS "")
+# Enable this to find unused functions, and search for "removing" in output.
+#set(UNUSED_FUNCTIONS_FLAGS "-flto -fwhole-program -ffunction-sections -Wl,--gc-sections -Wl,--print-gc-sections")
 set(
   CMAKE_C_FLAGS
-  "${CMAKE_C_FLAGS} -Wall -Wformat -Wformat-security ${COVERAGE_FLAGS}"
+  "${CMAKE_C_FLAGS} ${UNUSED_FUNCTIONS_FLAGS} -Wall -Wformat -Wformat-security ${COVERAGE_FLAGS}"
 )
 if(BROTLI_FOUND)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_BROTLI=1")
@@ -86,13 +89,21 @@ add_executable(
   gsad_args.c
   gsad_base.c
   gsad_cmd.c
+  gsad_connection_info.c
   gsad_credentials.c
   gsad_gmp.c
   gsad_gmp_arguments.c
   gsad_gmp_request.c
   gsad_http.c
+  gsad_http_handle_request.c
   gsad_http_handler.c
+  gsad_http_handler_functions.c
+  gsad_http_method_handler.c
+  gsad_http_url_handler.c
   gsad_i18n.c
+  gsad_logging.c
+  gsad_params.c
+  gsad_params_mhd.c
   gsad_session.c
   gsad_settings.c
   gsad_user.c
@@ -140,10 +151,6 @@ if(GVMD_RUN_DIR)
   add_definitions(-DGVMD_RUN_DIR="${GVMD_RUN_DIR}")
 endif(GVMD_RUN_DIR)
 
-if(GSAD_RUN_DIR)
-  add_definitions(-DGSAD_RUN_DIR="${GSAD_RUN_DIR}")
-endif(GSAD_RUN_DIR)
-
 if(GSAD_PID_PATH)
   add_definitions(-DGSAD_PID_PATH="${GSAD_PID_PATH}")
 endif(GSAD_PID_PATH)
@@ -151,6 +158,10 @@ endif(GSAD_PID_PATH)
 if(GSAD_DATA_DIR)
   add_definitions(-DGSAD_DATA_DIR="${GSAD_DATA_DIR}")
 endif(GSAD_DATA_DIR)
+
+if(GSAD_STATIC_CONTENT_DIR)
+  add_definitions(-DGSAD_STATIC_CONTENT_DIR="${GSAD_STATIC_CONTENT_DIR}")
+endif(GSAD_STATIC_CONTENT_DIR)
 
 if(GSAD_CONFIG_DIR)
   add_definitions(-DGSAD_CONFIG_DIR="${GSAD_CONFIG_DIR}")
@@ -202,10 +213,51 @@ if(BUILD_TESTING)
 
   include(${CMAKE_SOURCE_DIR}/cmake/add_unit_test.cmake)
 
-  add_unit_test(utils "")
+  add_unit_test(utils)
   add_unit_test(gsad-validator validator.c)
-  add_unit_test(gsad-args gsad_args.c)
-  add_custom_target(tests DEPENDS gsad-validator-test utils-test gsad-args-test)
+  add_unit_test(gsad-args)
+  add_unit_test(gsad-settings)
+  add_unit_test(gsad-connection-info gsad_params.c)
+  add_unit_test(
+    gsad-http-handler
+    gsad_http_handler.c
+    gsad_connection_info.c
+    gsad_params.c
+  )
+  add_unit_test(
+    gsad-http-url-handler
+    gsad_http_url_handler.c
+    gsad_http_handler.c
+    gsad_connection_info.c
+    gsad_params.c
+  )
+  add_unit_test(
+    gsad-http-method-handler
+    gsad_http_method_handler.c
+    gsad_http_handler.c
+    gsad_connection_info.c
+    gsad_params.c
+  )
+  add_unit_test(
+    gsad-params-mhd
+    gsad_params_mhd.c
+    gsad_params.c
+    gsad_validator.c
+    validator.c
+  )
+  add_custom_target(
+    tests
+    DEPENDS
+      gsad-validator-test
+      utils-test
+      gsad-args-test
+      gsad-settings-test
+      gsad-connection-info-test
+      gsad-http-handler-test
+      gsad-http-url-handler-test
+      gsad-http-method-handler-test
+      gsad-params-mhd-test
+  )
 endif(BUILD_TESTING)
 
 if(ENABLE_COVERAGE)

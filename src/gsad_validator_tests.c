@@ -276,5 +276,7 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_validator, alias_hosts_hosts_manual);
   add_test_with_context (suite, gsad_validator, alias_hostpath_scanner_host);
 
-  return run_test_suite (suite, create_text_reporter ());
+  int ret = run_test_suite (suite, create_text_reporter ());
+  destroy_test_suite (suite);
+  return ret;
 }

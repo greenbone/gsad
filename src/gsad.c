@@ -59,18 +59,18 @@
 #include "gsad_base.h"
 #include "gsad_credentials.h"
 #include "gsad_gmp.h"
-#include "gsad_gmp_auth.h" /* for authenticate_gmp */
-#include "gsad_http.h"
-#include "gsad_http_handler.h" /* for init_http_handlers */
+#include "gsad_gmp_auth.h"            /* for authenticate_gmp */
+#include "gsad_http_handle_request.h" /* for gsad_http_handle_request */
 #include "gsad_i18n.h"
+#include "gsad_logging.h" /* for gsad_logging_init and gsad_logging_cleanup */
 #include "gsad_params.h"
+#include "gsad_params_mhd.h"
 #include "gsad_session.h" /* for session_init */
 #include "gsad_settings.h"
 #include "gsad_user.h"
 #include "gsad_validator.h"
 #include "utils.h" /* for str_equal */
 
-#include <gvm/base/logging.h>
 #include <gvm/base/networking.h> /* for ipv6_is_enabled */
 #include <gvm/base/pidfile.h>
 #include <gvm/util/fileutils.h>
@@ -91,11 +91,6 @@
 #if MHD_VERSION < 0x00095300
 #define MHD_USE_INTERNAL_POLLING_THREAD 0
 #endif
-
-/**
- * @brief Default directory for web content.
- */
-#define DEFAULT_WEB_DIRECTORY "web"
 
 /**
  * @brief Flag for signal handler.
@@ -129,27 +124,12 @@ gchar *redirect_location = NULL;
  */
 pid_t redirect_pid = 0;
 
-/**
- * @brief PID of unix socket child in parent, 0 in child.
- */
-pid_t unix_pid = 0;
-
 /** @todo Ensure the accesses to these are thread safe. */
-
-/**
- * @brief Logging parameters, as passed to setup_log_handlers.
- */
-GSList *log_config = NULL;
 
 /**
  * @brief Whether chroot is used
  */
 int chroot_state = 0;
-
-/**
- * @brief Interval in seconds to check whether client connection was closed.
- */
-int client_watch_interval = DEFAULT_CLIENT_WATCH_INTERVAL;
 
 /**
  * @brief Free resources.
@@ -165,321 +145,9 @@ void
 free_resources (void *cls, struct MHD_Connection *connection, void **con_cls,
                 enum MHD_RequestTerminationCode toe)
 {
-  struct gsad_connection_info *con_info =
-    (struct gsad_connection_info *) *con_cls;
-
-  if (NULL == con_info)
-    {
-      g_debug ("con_info was NULL!\n");
-      return;
-    }
-
-  g_debug ("connectiontype=%d\n", con_info->connectiontype);
-
-  if (con_info->connectiontype == 1)
-    {
-      if (NULL != con_info->postprocessor)
-        {
-          MHD_destroy_post_processor (con_info->postprocessor);
-        }
-    }
-
-  params_free (con_info->params);
-  g_free (con_info->cookie);
-  g_free (con_info->language);
-  g_free (con_info);
+  gsad_connection_info_t *con_info = (gsad_connection_info_t *) *con_cls;
+  gsad_connection_info_free (con_info);
   *con_cls = NULL;
-}
-
-/**
- * @brief Append a chunk to a request parameter.
- *
- * @param[in]   params        Request parameters.
- * @param[out]  name          Parameter.
- * @param[out]  filename      Filename if uploaded file.
- * @param[in]   chunk_data    Incoming chunk data.
- * @param[out]  chunk_size    Size of chunk.
- * @param[out]  chunk_offset  Offset into all data.
- *
- * @return MHD_YES on success, MHD_NO on error.
- */
-int
-params_append_mhd (params_t *params, const char *name, const char *filename,
-                   const char *chunk_data, int chunk_size, int chunk_offset)
-{
-  if ((strncmp (name, "bulk_selected:", strlen ("bulk_selected:")) == 0)
-      || (strncmp (name, "chart_gen:", strlen ("chart_gen:")) == 0)
-      || (strncmp (name, "chart_init:", strlen ("chart_init:")) == 0)
-      || (strncmp (name, "condition_data:", strlen ("condition_data:")) == 0)
-      || (strncmp (name, "data_columns:", strlen ("data_columns:")) == 0)
-      || (strncmp (name, "event_data:", strlen ("event_data:")) == 0)
-      || (strncmp (name, "settings_changed:", strlen ("settings_changed:"))
-          == 0)
-      || (strncmp (name, "settings_default:", strlen ("settings_default:"))
-          == 0)
-      || (strncmp (name, "settings_filter:", strlen ("settings_filter:")) == 0)
-      || (strncmp (name, "exclude_file:", strlen ("exclude_file:")) == 0)
-      || (strncmp (name, "file:", strlen ("file:")) == 0)
-      || (strncmp (name, "include_id_list:", strlen ("include_id_list:")) == 0)
-      || (strncmp (name, "parameter:", strlen ("parameter:")) == 0)
-      || (strncmp (name, "param:", strlen ("param:")) == 0)
-      || (strncmp (name,
-                   "param_using_default:", strlen ("param_using_default:"))
-          == 0)
-      || (strncmp (name, "password:", strlen ("password:")) == 0)
-      || (strncmp (name, "preference:", strlen ("preference:")) == 0)
-      || (strncmp (name, "select:", strlen ("select:")) == 0)
-      || (strncmp (name, "text_columns:", strlen ("text_columns:")) == 0)
-      || (strncmp (name, "trend:", strlen ("trend:")) == 0)
-      || (strncmp (name, "method_data:", strlen ("method_data:")) == 0)
-      || (strncmp (name, "nvt:", strlen ("nvt:")) == 0)
-      || (strncmp (name, "alert_id_optional:", strlen ("alert_id_optional:"))
-          == 0)
-      || (strncmp (name, "group_id_optional:", strlen ("group_id_optional:"))
-          == 0)
-      || (strncmp (name, "role_id_optional:", strlen ("role_id_optional:"))
-          == 0)
-      || (strncmp (name, "related:", strlen ("related:")) == 0)
-      || (strncmp (name, "sort_fields:", strlen ("sort_fields:")) == 0)
-      || (strncmp (name, "sort_orders:", strlen ("sort_orders:")) == 0)
-      || (strncmp (name, "sort_stats:", strlen ("sort_stats:")) == 0)
-      || (strncmp (name, "y_fields:", strlen ("y_fields:")) == 0)
-      || (strncmp (name, "z_fields:", strlen ("z_fields:")) == 0))
-    {
-      param_t *param;
-      const char *colon;
-      gchar *prefix;
-
-      colon = strchr (name, ':');
-
-      /* Hashtable param, like for radios. */
-
-      if ((colon - name) == (strlen (name) - 1))
-        {
-          /* name: "example:", value "abc". */
-
-          params_append_bin (params, name, chunk_data, chunk_size,
-                             chunk_offset);
-
-          return MHD_YES;
-        }
-
-      /* name: "nvt:1.3.6.1.4.1.25623.1.0.105058", value "1". */
-
-      prefix = g_strndup (name, 1 + colon - name);
-      param = params_get (params, prefix);
-
-      if (param == NULL)
-        {
-          param = params_add (params, prefix, "");
-          param->values = params_new ();
-        }
-      else if (param->values == NULL)
-        param->values = params_new ();
-
-      g_free (prefix);
-
-      params_append_bin (param->values, colon + 1, chunk_data, chunk_size,
-                         chunk_offset);
-      if (filename)
-        param->filename = g_strdup (filename);
-
-      return MHD_YES;
-    }
-
-  /*
-   * Array param
-   * Can be accessed like a hashtable param,with ascending numbers as the
-   *  key, which are automatically generated instead of being part of the
-   *  full name.
-   * For example multiple instances of "x:" in the request
-   *  become "x:1", "x:2", "x:3", etc.
-   */
-  if ((strcmp (name, "alert_ids:") == 0) || (strcmp (name, "role_ids:") == 0)
-      || (strcmp (name, "group_ids:") == 0)
-      || (strcmp (name, "report_format_ids:") == 0)
-      || (strcmp (name, "id_list:") == 0)
-      || (strcmp (name, "resource_ids:") == 0) || (strcmp (name, "kdcs:") == 0)
-      || (strcmp (name, "agent_ids:") == 0)
-      || (strcmp (name, "scheduler_cron_times:") == 0)
-      || (strcmp (name, "alive_tests:") == 0))
-    {
-      param_t *param;
-      gchar *index_str;
-
-      param = params_get (params, name);
-
-      if (param == NULL)
-        {
-          param = params_add (params, name, "");
-          param->values = params_new ();
-        }
-      else if (param->values == NULL)
-        param->values = params_new ();
-
-      if (chunk_offset == 0)
-        param->array_len += 1;
-
-      index_str = g_strdup_printf ("%d", param->array_len);
-
-      params_append_bin (param->values, index_str, chunk_data, chunk_size,
-                         chunk_offset);
-
-      g_free (index_str);
-
-      if (filename)
-        param->filename = g_strdup (filename);
-
-      return MHD_YES;
-    }
-
-  /* Single value param. */
-
-  params_append_bin (params, name, chunk_data, chunk_size, chunk_offset);
-
-  return MHD_YES;
-}
-
-/**
- * @brief Validate param values.
- *
- * @param[in]  parent_name  Name of the parent param.
- * @param[in]  params       Values.
- */
-void
-params_mhd_validate_values (const char *parent_name, void *params)
-{
-  params_iterator_t iter;
-  param_t *param;
-  gchar *name, *name_name, *value_name;
-
-  name_name = g_strdup_printf ("%sname", parent_name);
-  value_name = g_strdup_printf ("%svalue", parent_name);
-  validator_t validator = gsad_get_validator ();
-
-  params_iterator_init (&iter, params);
-
-  while (params_iterator_next (&iter, &name, &param))
-    {
-      gchar *item_name;
-
-      if ((g_utf8_validate (name, -1, NULL) == FALSE))
-        {
-          param->original_value = param->value;
-          param->value = NULL;
-          param->value_size = 0;
-          param->valid = 0;
-          param->valid_utf8 = 0;
-          item_name = NULL;
-        }
-      /* Item specific value validator like "method_data:to_adddress:". */
-      else
-        switch (gvm_validate (
-          validator, (item_name = g_strdup_printf ("%s%s:", parent_name, name)),
-          param->value))
-          {
-          case 0:
-            param->valid_utf8 = g_utf8_validate (param->value, -1, NULL);
-            break;
-          case 1:
-            /* General name validator for collection like "method_data:name". */
-            if (gvm_validate (validator, name_name, name))
-              {
-                param->original_value = param->value;
-                param->value = NULL;
-                param->value_size = 0;
-                param->valid = 0;
-                param->valid_utf8 = 0;
-              }
-            /* General value validator like "method_data:value". */
-            else if (gvm_validate (validator, value_name, param->value))
-              {
-                param->original_value = param->value;
-                param->value = NULL;
-                param->value_size = 0;
-                param->valid = 0;
-                param->valid_utf8 = 0;
-              }
-            else
-              {
-                const gchar *alias_for;
-
-                param->valid = 1;
-                param->valid_utf8 = g_utf8_validate (param->value, -1, NULL);
-
-                alias_for = gvm_validator_alias_for (validator, name);
-                if ((param->value && (strcmp ((gchar *) name, "number") == 0))
-                    || (alias_for
-                        && (strcmp ((gchar *) alias_for, "number") == 0)))
-                  /* Remove any leading or trailing space from numbers. */
-                  param->value = g_strstrip (param->value);
-              }
-            break;
-          case 2:
-          default:
-            {
-              param->original_value = param->value;
-              param->value = NULL;
-              param->value_size = 0;
-              param->valid = 0;
-              param->valid_utf8 = 0;
-            }
-          }
-
-      g_free (item_name);
-    }
-
-  g_free (name_name);
-  g_free (value_name);
-}
-
-/**
- * @brief Validate params.
- *
- * @param[in]  params  Params.
- */
-void
-params_mhd_validate (void *params)
-{
-  GHashTableIter iter;
-  gpointer name, value;
-
-  validator_t validator = gsad_get_validator ();
-
-  g_hash_table_iter_init (&iter, params);
-  while (g_hash_table_iter_next (&iter, &name, &value))
-    {
-      param_t *param;
-      param = (param_t *) value;
-
-      param->valid_utf8 =
-        (g_utf8_validate (name, -1, NULL)
-         && (param->value == NULL || g_utf8_validate (param->value, -1, NULL)));
-
-      if ((!g_str_has_prefix (name, "osp_pref_")
-           && gvm_validate (validator, name, param->value)))
-        {
-          param->original_value = param->value;
-          param->value = NULL;
-          param->valid = 0;
-          param->valid_utf8 = 0;
-        }
-      else
-        {
-          const gchar *alias_for;
-
-          param->valid = 1;
-
-          alias_for = gvm_validator_alias_for (validator, name);
-          if ((param->value && (strcmp ((gchar *) name, "number") == 0))
-              || (alias_for && (strcmp ((gchar *) alias_for, "number") == 0)))
-            /* Remove any leading or trailing space from numbers. */
-            param->value = g_strstrip (param->value);
-        }
-
-      if (param->values)
-        params_mhd_validate_values (name, param->values);
-    }
 }
 
 /**
@@ -487,7 +155,8 @@ params_mhd_validate (void *params)
  */
 #define ELSE(name)                                  \
   else if (!strcmp (cmd, G_STRINGIFY (name))) res = \
-    name##_gmp (&connection, credentials, con_info->params, response_data);
+    name##_gmp (&connection, credentials,           \
+                gsad_connection_info_get_params (con_info), response_data);
 
 /**
  * @brief Handle a complete POST request.
@@ -502,9 +171,9 @@ params_mhd_validate (void *params)
  *
  * @return MHD_YES on success, MHD_NO on error.
  */
-int
-exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
-               const char *client_address)
+gsad_http_result_t
+exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
+               const gchar *client_address)
 {
   int ret;
   user_t *user;
@@ -514,9 +183,10 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   gvm_connection_t connection;
   cmd_response_data_t *response_data = cmd_response_data_new ();
 
-  params_mhd_validate (con_info->params);
+  params_t *params = gsad_connection_info_get_params (con_info);
+  params_mhd_validate (params);
 
-  cmd = params_value (con_info->params, "cmd");
+  cmd = params_value (params, "cmd");
 
   if (!cmd)
     {
@@ -526,21 +196,21 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
                           "An internal error occurred inside GSA daemon. "
                           "Diagnostics: Invalid command.",
                           response_data);
-      return handler_create_response (con, res, response_data, new_sid);
+      return gsad_http_create_response (con, res, response_data, new_sid);
     }
 
   if (str_equal (cmd, "login"))
     {
-      return login (con, con_info->params, response_data, client_address);
+      return login (con, params, response_data, client_address);
     }
 
   /* Check the session. */
 
-  if (params_value (con_info->params, "token") == NULL)
+  if (params_value (params, "token") == NULL)
     {
       cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
 
-      if (params_given (con_info->params, "token") == 0)
+      if (params_given (params, "token") == 0)
         res = gsad_message (NULL, "Internal error", __func__, __LINE__,
                             "An internal error occurred inside GSA daemon. "
                             "Diagnostics: Token missing.",
@@ -551,11 +221,11 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
                             "Diagnostics: Token bad.",
                             response_data);
 
-      return handler_create_response (con, res, response_data, NULL);
+      return gsad_http_create_response (con, res, response_data, NULL);
     }
 
-  ret = user_find (con_info->cookie, params_value (con_info->params, "token"),
-                   client_address, &user);
+  ret = user_find (gsad_connection_info_get_cookie (con_info),
+                   params_value (params, "token"), client_address, &user);
   if (ret == USER_BAD_TOKEN)
     {
       cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
@@ -563,12 +233,12 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
                           "An internal error occurred inside GSA daemon. "
                           "Diagnostics: Bad token.",
                           response_data);
-      return handler_create_response (con, res, response_data, NULL);
+      return gsad_http_create_response (con, res, response_data, NULL);
     }
 
   if (ret == USER_EXPIRED_TOKEN)
     {
-      caller = params_value (con_info->params, "caller");
+      caller = params_value (params, "caller");
 
       if (caller && g_utf8_validate (caller, -1, NULL) == FALSE)
         {
@@ -580,24 +250,24 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
 
       cmd_response_data_free (response_data);
 
-      return handler_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
-                                            SESSION_EXPIRED);
+      return gsad_http_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
+                                              SESSION_EXPIRED);
     }
 
   if (ret == USER_BAD_MISSING_COOKIE || ret == USER_IP_ADDRESS_MISSMATCH)
     {
       cmd_response_data_free (response_data);
 
-      return handler_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
-                                            BAD_MISSING_COOKIE);
+      return gsad_http_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
+                                              BAD_MISSING_COOKIE);
     }
 
   if (ret == USER_GMP_DOWN)
     {
       cmd_response_data_free (response_data);
 
-      return handler_send_reauthentication (con, MHD_HTTP_SERVICE_UNAVAILABLE,
-                                            GMP_SERVICE_DOWN);
+      return gsad_http_send_reauthentication (con, MHD_HTTP_SERVICE_UNAVAILABLE,
+                                              GMP_SERVICE_DOWN);
     }
 
   /* From here, the user is authenticated. */
@@ -605,7 +275,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   /* The caller of a POST is usually the caller of the page that the POST form
    * was on. */
   language =
-    user_get_language (user) ?: con_info->language ?: DEFAULT_GSAD_LANGUAGE;
+    user_get_language (user) ?: gsad_connection_info_get_language (con_info) ?: DEFAULT_GSAD_LANGUAGE;
 
   credentials = credentials_new (user, language);
 
@@ -642,8 +312,8 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
       break;
     case 2: /* auth failed */
       cmd_response_data_free (response_data);
-      return handler_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
-                                            LOGIN_FAILED);
+      return gsad_http_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
+                                              LOGIN_FAILED);
     case 3: /* timeout */
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
@@ -674,7 +344,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
 
   if (res)
     {
-      return handler_create_response (con, res, response_data, NULL);
+      return gsad_http_create_response (con, res, response_data, NULL);
     }
 
   /* always renew session for http post */
@@ -771,8 +441,9 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (save_group)
   else if (!strcmp (cmd, "save_my_settings"))
   {
-    res = save_my_settings_gmp (&connection, credentials, con_info->params,
-                                con_info->language, response_data);
+    res = save_my_settings_gmp (
+      &connection, credentials, gsad_connection_info_get_params (con_info),
+      gsad_connection_info_get_language (con_info), response_data);
   }
   ELSE (save_license)
   ELSE (save_note)
@@ -811,7 +482,7 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
                         response_data);
   }
 
-  ret = handler_create_response (con, res, response_data, new_sid);
+  ret = gsad_http_create_response (con, res, response_data, new_sid);
 
   user_free (user);
   credentials_free (credentials);
@@ -819,130 +490,6 @@ exec_gmp_post (http_connection_t *con, gsad_connection_info_t *con_info,
   g_free (new_sid);
 
   return ret;
-}
-
-/**
- * @brief Add a param.
- *
- * @param[in]  params  Params.
- * @param[in]  kind    MHD header kind.
- * @param[in]  name    Name.
- * @param[in]  value   Value.
- */
-#if MHD_VERSION < 0x00097002
-int
-#else
-enum MHD_Result
-#endif
-params_mhd_add (void *params, enum MHD_ValueKind kind, const char *name,
-                const char *value)
-{
-  if ((strncmp (name, "bulk_selected:", strlen ("bulk_selected:")) == 0)
-      || (strncmp (name, "chart_gen:", strlen ("chart_gen:")) == 0)
-      || (strncmp (name, "chart_init:", strlen ("chart_init:")) == 0)
-      || (strncmp (name, "condition_data:", strlen ("condition_data:")) == 0)
-      || (strncmp (name, "data_columns:", strlen ("data_columns:")) == 0)
-      || (strncmp (name, "event_data:", strlen ("event_data:")) == 0)
-      || (strncmp (name, "settings_changed:", strlen ("settings_changed:"))
-          == 0)
-      || (strncmp (name, "settings_default:", strlen ("settings_default:"))
-          == 0)
-      || (strncmp (name, "settings_filter:", strlen ("settings_filter:")) == 0)
-      || (strncmp (name, "exclude_file:", strlen ("exclude_file:")) == 0)
-      || (strncmp (name, "file:", strlen ("file:")) == 0)
-      || (strncmp (name, "include_id_list:", strlen ("include_id_list:")) == 0)
-      || (strncmp (name, "parameter:", strlen ("parameter:")) == 0)
-      || (strncmp (name, "password:", strlen ("password:")) == 0)
-      || (strncmp (name, "preference:", strlen ("preference:")) == 0)
-      || (strncmp (name, "select:", strlen ("select:")) == 0)
-      || (strncmp (name, "text_columns:", strlen ("text_columns:")) == 0)
-      || (strncmp (name, "trend:", strlen ("trend:")) == 0)
-      || (strncmp (name, "method_data:", strlen ("method_data:")) == 0)
-      || (strncmp (name, "nvt:", strlen ("nvt:")) == 0)
-      || (strncmp (name, "alert_id_optional:", strlen ("alert_id_optional:"))
-          == 0)
-      || (strncmp (name, "group_id_optional:", strlen ("group_id_optional:"))
-          == 0)
-      || (strncmp (name, "role_id_optional:", strlen ("role_id_optional:"))
-          == 0)
-      || (strncmp (name, "related:", strlen ("related:")) == 0)
-      || (strncmp (name, "sort_fields:", strlen ("sort_fields:")) == 0)
-      || (strncmp (name, "sort_orders:", strlen ("sort_orders:")) == 0)
-      || (strncmp (name, "sort_stats:", strlen ("sort_stats:")) == 0)
-      || (strncmp (name, "y_fields:", strlen ("y_fields:")) == 0)
-      || (strncmp (name, "z_fields:", strlen ("z_fields:")) == 0))
-    {
-      param_t *param;
-      const char *colon;
-      gchar *prefix;
-
-      /* Hashtable param, like for radios. */
-
-      colon = strchr (name, ':');
-
-      if ((colon - name) == (strlen (name) - 1))
-        {
-          params_append_bin (params, name, value, strlen (value), 0);
-
-          return MHD_YES;
-        }
-
-      prefix = g_strndup (name, 1 + colon - name);
-      param = params_get (params, prefix);
-
-      if (param == NULL)
-        {
-          param = params_add (params, prefix, "");
-          param->values = params_new ();
-        }
-      else if (param->values == NULL)
-        param->values = params_new ();
-
-      g_free (prefix);
-
-      params_append_bin (param->values, colon + 1, value, strlen (value), 0);
-
-      return MHD_YES;
-    }
-
-  /*
-   * Array param (See params_append_mhd for a description)
-   */
-  if ((strcmp (name, "alert_ids:") == 0) || (strcmp (name, "role_ids:") == 0)
-      || (strcmp (name, "group_ids:") == 0)
-      || (strcmp (name, "report_format_ids:") == 0)
-      || (strcmp (name, "id_list:") == 0) || (strcmp (name, "agent_ids:") == 0)
-      || (strcmp (name, "scheduler_cron_times:") == 0)
-      || (strcmp (name, "alive_tests:") == 0))
-    {
-      param_t *param;
-      gchar *index_str;
-
-      param = params_get (params, name);
-
-      if (param == NULL)
-        {
-          param = params_add (params, name, "");
-          param->values = params_new ();
-        }
-      else if (param->values == NULL)
-        param->values = params_new ();
-
-      param->array_len += 1;
-
-      index_str = g_strdup_printf ("%d", param->array_len);
-
-      params_append_bin (param->values, index_str, value, strlen (value), 0);
-
-      g_free (index_str);
-
-      return MHD_YES;
-    }
-
-  /* Single value param. */
-
-  params_add ((params_t *) params, name, value);
-  return MHD_YES;
 }
 
 /*
@@ -954,6 +501,7 @@ typedef struct
   gvm_connection_t *gvm_connection;
   int connection_closed;
   pthread_mutex_t mutex;
+  gsad_settings_t *gsad_settings;
 } connection_watcher_data_t;
 
 /**
@@ -966,14 +514,16 @@ typedef struct
  */
 static connection_watcher_data_t *
 connection_watcher_data_new (gvm_connection_t *gvm_connection,
-                             int client_socket_fd)
+                             int client_socket_fd,
+                             gsad_settings_t *gsad_settings)
 {
-  connection_watcher_data_t *watcher_data;
-  watcher_data = g_malloc (sizeof (connection_watcher_data_t));
+  connection_watcher_data_t *watcher_data =
+    g_malloc (sizeof (connection_watcher_data_t));
 
   watcher_data->gvm_connection = gvm_connection;
   watcher_data->client_socket_fd = client_socket_fd;
   watcher_data->connection_closed = 0;
+  watcher_data->gsad_settings = gsad_settings;
   pthread_mutex_init (&(watcher_data->mutex), NULL);
 
   return watcher_data;
@@ -1002,7 +552,8 @@ watch_client_connection (void *data)
   while (active)
     {
       pthread_setcancelstate (PTHREAD_CANCEL_ENABLE, NULL);
-      sleep (client_watch_interval);
+      sleep (
+        gsad_settings_get_client_watch_interval (watcher_data->gsad_settings));
       pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, NULL);
 
       pthread_mutex_lock (&(watcher_data->mutex));
@@ -1014,7 +565,7 @@ watch_client_connection (void *data)
           continue;
         }
       int ret;
-      char buf[1];
+      gchar buf[1];
       errno = 0;
       ret = recv (watcher_data->client_socket_fd, buf, 1, MSG_PEEK);
 
@@ -1063,9 +614,9 @@ watch_client_connection (void *data)
  * @return 1 if may, else 0.
  */
 static int
-may_compress (http_connection_t *con, const char *encoding)
+may_compress (gsad_http_connection_t *con, const gchar *encoding)
 {
-  const char *all, *one;
+  const gchar *all, *one;
 
   all = MHD_lookup_connection_value (con, MHD_HEADER_KIND,
                                      MHD_HTTP_HEADER_ACCEPT_ENCODING);
@@ -1094,7 +645,7 @@ may_compress (http_connection_t *con, const char *encoding)
  * @return 1 if may, else 0.
  */
 static int
-may_deflate (http_connection_t *con)
+may_deflate (gsad_http_connection_t *con)
 {
   return may_compress (con, "deflate");
 }
@@ -1108,7 +659,7 @@ may_deflate (http_connection_t *con)
  * @return 1 if may, else 0.
  */
 static int
-may_brotli (http_connection_t *con)
+may_brotli (gsad_http_connection_t *con)
 {
   return may_compress (con, "br");
 }
@@ -1125,8 +676,8 @@ may_brotli (http_connection_t *con)
  * @return 1 on success, else 0.
  */
 static int
-compress_response_deflate (const size_t res_len, const char *res,
-                           size_t *comp_len, char **comp)
+compress_response_deflate (const size_t res_len, const gchar *res,
+                           size_t *comp_len, gchar **comp)
 {
   Bytef *cbuf;
   uLongf cbuf_size;
@@ -1160,8 +711,8 @@ compress_response_deflate (const size_t res_len, const char *res,
  * @return 1 on success, else 0.
  */
 static int
-compress_response_brotli (const size_t res_len, const char *res,
-                          size_t *comp_len, char **comp)
+compress_response_brotli (const size_t res_len, const gchar *res,
+                          size_t *comp_len, gchar **comp)
 {
   size_t cbuf_size;
   uint8_t *cbuf;
@@ -1198,17 +749,18 @@ compress_response_brotli (const size_t res_len, const char *res,
  *
  * @return MHD_YES on success, MHD_NO on error.
  */
-int
-exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
+gsad_http_result_t
+exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
               credentials_t *credentials)
 {
-  const char *cmd = NULL;
+  const gchar *cmd = NULL;
   const int CMD_MAX_SIZE = 27; /* delete_trash_lsc_credential */
-  params_t *params = con_info->params;
+  params_t *params = gsad_connection_info_get_params (con_info);
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
   gvm_connection_t connection;
-  char *res = NULL, *comp = NULL;
+  gchar *res = NULL, *comp = NULL;
   gsize res_len = 0;
-  http_response_t *response;
+  gsad_http_response_t *response;
   cmd_response_data_t *response_data;
   pthread_t watch_thread;
   connection_watcher_data_t *watcher_data;
@@ -1234,7 +786,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
                           "An internal error occurred inside GSA daemon. "
                           "Diagnostics: No valid command for gmp.",
                           response_data);
-      return handler_create_response (con, res, response_data, NULL);
+      return gsad_http_create_response (con, res, response_data, NULL);
     }
 
   /* Set the timezone. */
@@ -1268,8 +820,8 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
       break;
     case 2: /* auth failed */
       cmd_response_data_free (response_data);
-      return handler_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
-                                            LOGIN_FAILED);
+      return gsad_http_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
+                                              LOGIN_FAILED);
     case 3: /* timeout */
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
@@ -1300,21 +852,21 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
 
   if (res)
     {
-      return handler_create_response (con, res, response_data, NULL);
+      return gsad_http_create_response (con, res, response_data, NULL);
     }
 
   /* Set page display settings */
 
   credentials_start_cmd (credentials);
 
-  if (client_watch_interval)
+  if (gsad_settings_get_client_watch_interval (gsad_global_settings))
     {
       const union MHD_ConnectionInfo *mhd_con_info;
       mhd_con_info =
         MHD_get_connection_info (con, MHD_CONNECTION_INFO_CONNECTION_FD);
 
-      watcher_data =
-        connection_watcher_data_new (&connection, mhd_con_info->connect_fd);
+      watcher_data = connection_watcher_data_new (
+        &connection, mhd_con_info->connect_fd, gsad_global_settings);
 
       pthread_create (&watch_thread, NULL, watch_client_connection,
                       watcher_data);
@@ -1477,6 +1029,7 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_tasks)
   ELSE (get_ticket)
   ELSE (get_tickets)
+  ELSE (get_timezones)
   ELSE (get_tls_certificate)
   ELSE (get_tls_certificates)
   ELSE (get_trash_agent_group)
@@ -1577,8 +1130,8 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
       gvm_connection_close (&connection);
     }
 
-  return handler_send_response (con, response, response_data,
-                                user_get_cookie (user));
+  return gsad_http_send_response (con, response, response_data,
+                                  user_get_cookie (user));
 }
 
 /**
@@ -1599,30 +1152,23 @@ exec_gmp_get (http_connection_t *con, gsad_connection_info_t *con_info,
  *
  * @return MHD_NO in case of problems. MHD_YES if all is OK.
  */
-#if MHD_VERSION < 0x00097002
-static int
-#else
-static enum MHD_Result
-#endif
-redirect_handler (void *cls, struct MHD_Connection *connection, const char *url,
-                  const char *method, const char *version,
-                  const char *upload_data, size_t *upload_data_size,
+static gsad_http_result_t
+redirect_handler (void *cls, struct MHD_Connection *connection,
+                  const gchar *url, const gchar *method, const gchar *version,
+                  const gchar *upload_data, size_t *upload_data_size,
                   void **con_cls)
 {
   gchar *location;
-  const char *host;
-  char name[MAX_HOST_LEN + 1];
+  const gchar *host;
+  gchar name[MAX_HOST_LEN + 1];
 
   /* Never respond on first call of a GET. */
-  if ((!strcmp (method, "GET")) && *con_cls == NULL)
+  if (str_equal (method, "GET") && *con_cls == NULL)
     {
-      struct gsad_connection_info *con_info;
+      gsad_connection_info_t *con_info;
 
       /* Freed by MHD_OPTION_NOTIFY_COMPLETED callback, free_resources. */
-      con_info = g_malloc0 (sizeof (struct gsad_connection_info));
-      con_info->params = params_new ();
-      con_info->connectiontype = 2;
-
+      con_info = gsad_connection_info_new (METHOD_TYPE_GET, url);
       *con_cls = (void *) con_info;
       return MHD_YES;
     }
@@ -1634,8 +1180,9 @@ redirect_handler (void *cls, struct MHD_Connection *connection, const char *url,
   /* Only accept GET and POST methods and send ERROR_PAGE in other cases. */
   if (strcmp (method, "GET") && strcmp (method, "POST"))
     {
-      send_response (connection, ERROR_PAGE, MHD_HTTP_NOT_ACCEPTABLE, NULL,
-                     GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
+      gsad_http_send_response_for_content (
+        connection, ERROR_PAGE, MHD_HTTP_NOT_ACCEPTABLE, NULL,
+        GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
       return MHD_YES;
     }
 
@@ -1643,9 +1190,9 @@ redirect_handler (void *cls, struct MHD_Connection *connection, const char *url,
   host = MHD_lookup_connection_value (connection, MHD_HEADER_KIND, "Host");
   if (host && g_utf8_validate (host, -1, NULL) == FALSE)
     {
-      send_response (connection, UTF8_ERROR_PAGE ("'Host' header"),
-                     MHD_HTTP_BAD_REQUEST, NULL, GSAD_CONTENT_TYPE_TEXT_HTML,
-                     NULL, 0);
+      gsad_http_send_response_for_content (
+        connection, UTF8_ERROR_PAGE ("'Host' header"), MHD_HTTP_BAD_REQUEST,
+        NULL, GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
       return MHD_YES;
     }
   else if (host == NULL)
@@ -1655,7 +1202,7 @@ redirect_handler (void *cls, struct MHD_Connection *connection, const char *url,
   if (sscanf (host, "[%" G_STRINGIFY (MAX_HOST_LEN) "[0-9a-f:.]]:%*i", name)
       == 1)
     {
-      char *name6 = g_strdup_printf ("[%s]", name);
+      gchar *name6 = g_strdup_printf ("[%s]", name);
       location = g_strdup_printf (redirect_location, name6);
       g_free (name6);
     }
@@ -1664,7 +1211,7 @@ redirect_handler (void *cls, struct MHD_Connection *connection, const char *url,
     location = g_strdup_printf (redirect_location, name);
   else
     location = g_strdup_printf (redirect_location, host);
-  if (send_redirect_to_uri (connection, location, NULL) == MHD_NO)
+  if (gsad_http_send_redirect_to_uri (connection, location, NULL) == MHD_NO)
     {
       g_free (location);
       return MHD_NO;
@@ -1709,12 +1256,12 @@ drop_privileges (struct passwd *user_pw)
  *
  * @param[in]  do_chroot  Whether to chroot.
  * @param[in]  drop       Username to drop privileges to.  Null for no dropping.
- * @param[in]  subdir     Subdirectory of GSAD_DATA_DIR to chroot or chdir to.
+ * @param[in]  dir        Directory to chroot or chdir to.
  *
  * @return 0 success, 1 failed (will g_critical in fail case).
  */
 static int
-chroot_drop_privileges (gboolean do_chroot, gchar *drop, const gchar *subdir)
+chroot_drop_privileges (gboolean do_chroot, const gchar *drop, const gchar *dir)
 {
   struct passwd *user_pw;
 
@@ -1723,9 +1270,9 @@ chroot_drop_privileges (gboolean do_chroot, gchar *drop, const gchar *subdir)
       user_pw = getpwnam (drop);
       if (user_pw == NULL)
         {
-          g_critical ("%s: Failed to drop privileges."
-                      "  Could not determine UID and GID for user \"%s\"!\n",
-                      __func__, drop);
+          g_critical ("Failed to drop privileges. Could not determine UID and "
+                      "GID for user \"%s\".",
+                      drop);
           return 1;
         }
     }
@@ -1736,44 +1283,35 @@ chroot_drop_privileges (gboolean do_chroot, gchar *drop, const gchar *subdir)
     {
       /* Chroot into state dir. */
 
-      if (chroot (GSAD_DATA_DIR))
+      if (chroot (dir))
         {
-          g_critical ("%s: Failed to chroot to \"%s\": %s\n", __func__,
-                      GSAD_DATA_DIR, strerror (errno));
+          g_critical ("Failed to chroot to \"%s\": %s", dir, strerror (errno));
           return 1;
         }
       set_chroot_state (1);
+      g_info ("Chrooted to \"%s\"", dir);
     }
 
-  if (user_pw && (drop_privileges (user_pw) == FALSE))
+  if (user_pw)
     {
-      g_critical ("%s: Failed to drop privileges\n", __func__);
-      return 1;
+      if (drop_privileges (user_pw) == FALSE)
+        {
+          g_critical ("Failed to drop privileges");
+          return 1;
+        }
+      else
+        g_info ("Dropped privileges to user \"%s\" (uid: %d, gid: %d)", drop,
+                user_pw->pw_uid, user_pw->pw_gid);
     }
 
-  if (do_chroot)
+  if (!do_chroot)
     {
-      gchar *root_dir = g_build_filename ("/", subdir, NULL);
-      if (chdir (root_dir))
+      if (chdir (dir))
         {
-          g_critical ("%s: failed change to chroot root directory (%s): %s\n",
-                      __func__, root_dir, strerror (errno));
-          g_free (root_dir);
+          g_critical ("failed to change to \"%s\": %s", dir, strerror (errno));
           return 1;
         }
-      g_free (root_dir);
-    }
-  else
-    {
-      gchar *data_dir = g_build_filename (GSAD_DATA_DIR, subdir, NULL);
-      if (chdir (data_dir))
-        {
-          g_critical ("%s: failed to change to \"%s\": %s\n", __func__,
-                      data_dir, strerror (errno));
-          g_free (data_dir);
-          return 1;
-        }
-      g_free (data_dir);
+      g_debug ("Working directory is %s", dir);
     }
 
   return 0;
@@ -1788,7 +1326,7 @@ chroot_drop_privileges (gboolean do_chroot, gchar *drop, const gchar *subdir)
  * but the order of initialization in gsad is a bit strange.
  */
 static void
-my_gnutls_log_func (int level, const char *text)
+my_gnutls_log_func (int level, const gchar *text)
 {
   fprintf (stderr, "[%d] (%d) %s", getpid (), level, text);
   if (*text && text[strlen (text) - 1] != '\n')
@@ -1804,7 +1342,7 @@ my_gnutls_log_func (int level, const char *text)
  * @return MHD_NO in case of problems. MHD_YES if all is OK.
  */
 int
-gsad_init ()
+gsad_init (const gchar *static_content_directory)
 {
   g_debug ("Initializing the Greenbone Security Assistant Deamon...\n");
 
@@ -1812,9 +1350,11 @@ gsad_init ()
   session_init ();
 
   /* Check for required files. */
-  if (gvm_file_check_is_dir (GSAD_DATA_DIR) < 1)
+  if (!gvm_file_exists (static_content_directory)
+      || gvm_file_check_is_dir (static_content_directory) != 1)
     {
-      g_critical ("%s: Could not access %s!\n", __func__, GSAD_DATA_DIR);
+      g_critical ("Could not access static content directory %s",
+                  static_content_directory);
       return MHD_NO;
     }
 
@@ -1832,7 +1372,7 @@ gsad_init ()
        * mismatch test. */
       if (!gcry_check_version (NULL))
         {
-          g_critical ("%s: libgcrypt version check failed\n", __func__);
+          g_critical ("libgcrypt version check failed");
           return MHD_NO;
         }
 
@@ -1862,14 +1402,14 @@ gsad_init ()
   int ret = gnutls_global_init ();
   if (ret < 0)
     {
-      g_critical ("%s: Failed to initialize GNUTLS.\n", __func__);
+      g_critical ("Failed to initialize GNUTLS.");
       return MHD_NO;
     }
 
   /* Init the validator. */
   gsad_init_validator ();
 
-  g_debug ("Initialization of GSA successful.\n");
+  g_debug ("Initialization of GSA successful.");
   return MHD_YES;
 }
 
@@ -1880,23 +1420,31 @@ gsad_init ()
  * and remove the pidfile.
  */
 void
-gsad_cleanup ()
+gsad_cleanup (gsad_log_config_t *log_config)
 {
-  if (redirect_pid)
-    kill (redirect_pid, SIGTERM);
-  if (unix_pid)
-    kill (unix_pid, SIGTERM);
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
 
+  if (redirect_pid)
+    {
+      g_debug ("Stopping redirect daemon with PID %d", redirect_pid);
+      kill (redirect_pid, SIGTERM);
+    }
+
+  g_debug ("Stopping HTTP server...");
   MHD_stop_daemon (gsad_daemon);
 
-  cleanup_http_handlers ();
+  gsad_http_request_cleanup_handlers ();
 
-  if (log_config)
-    free_log_configuration (log_config);
-
+  g_debug ("Cleaning up base...");
   gsad_base_cleanup ();
 
-  pidfile_remove (GSAD_PID_PATH);
+  g_debug ("Removing pidfile... %s",
+           gsad_settings_get_pid_filename (gsad_global_settings));
+  pidfile_remove (
+    (gchar *) gsad_settings_get_pid_filename (gsad_global_settings));
+
+  gsad_logging_cleanup (log_config);
+  gsad_settings_free (gsad_global_settings);
 }
 
 /**
@@ -1930,9 +1478,9 @@ register_signal_handlers ()
 }
 
 static void
-mhd_logger (void *arg, const char *fmt, va_list ap)
+mhd_logger (void *arg, const gchar *fmt, va_list ap)
 {
-  char buf[1024];
+  gchar buf[1024];
 
   vsnprintf (buf, sizeof (buf), fmt, ap);
   va_end (ap);
@@ -1940,31 +1488,28 @@ mhd_logger (void *arg, const char *fmt, va_list ap)
 }
 
 static struct MHD_Daemon *
-start_unix_http_daemon (const char *unix_socket_path,
-                        const char *unix_socket_owner,
-                        const char *unix_socket_group,
-                        const char *unix_socket_mode,
+start_unix_http_daemon (
+  const gchar *unix_socket_path, const gchar *unix_socket_owner,
+  const gchar *unix_socket_group, const gchar *unix_socket_mode,
 #if MHD_VERSION < 0x00097002
-                        int handler (void *, struct MHD_Connection *,
-                                     const char *, const char *, const char *,
-                                     const char *, size_t *, void **),
+  int handler (void *, struct MHD_Connection *, const gchar *, const gchar *,
+               const gchar *, const gchar *, size_t *, void **),
 #else
-                        enum MHD_Result handler (void *,
-                                                 struct MHD_Connection *,
-                                                 const char *, const char *,
-                                                 const char *, const char *,
-                                                 size_t *, void **),
+  enum MHD_Result handler (void *, struct MHD_Connection *, const gchar *,
+                           const gchar *, const gchar *, const gchar *,
+                           size_t *, void **),
 #endif
-                        http_handler_t *http_handlers)
+  gsad_http_handler_t *http_handlers)
 {
   struct sockaddr_un addr;
   struct stat ustat;
   mode_t oldmask = 0;
   mode_t omode = 0;
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
 
   int unix_socket = socket (AF_UNIX, SOCK_STREAM, 0);
 
-  set_unix_socket (unix_socket);
+  gsad_settings_set_unix_socket (gsad_global_settings, unix_socket);
 
   if (unix_socket == -1)
     {
@@ -2056,27 +1601,29 @@ start_unix_http_daemon (const char *unix_socket_path,
     0, NULL, NULL, handler, http_handlers, MHD_OPTION_EXTERNAL_LOGGER,
     mhd_logger, NULL, MHD_OPTION_NOTIFY_COMPLETED, free_resources, NULL,
     MHD_OPTION_LISTEN_SOCKET, unix_socket, MHD_OPTION_PER_IP_CONNECTION_LIMIT,
-    get_per_ip_connection_limit (), MHD_OPTION_END);
+    gsad_settings_get_per_ip_connection_limit (gsad_global_settings),
+    MHD_OPTION_END);
 }
 
 static struct MHD_Daemon *
 start_http_daemon (int port,
 #if MHD_VERSION < 0x00097002
-                   int handler (void *, struct MHD_Connection *, const char *,
-                                const char *, const char *, const char *,
+                   int handler (void *, struct MHD_Connection *, const gchar *,
+                                const gchar *, const gchar *, const gchar *,
                                 size_t *, void **),
 #else
                    enum MHD_Result handler (void *, struct MHD_Connection *,
-                                            const char *, const char *,
-                                            const char *, const char *,
+                                            const gchar *, const gchar *,
+                                            const gchar *, const gchar *,
                                             size_t *, void **),
 #endif
-                   http_handler_t *http_handlers,
+                   gsad_http_handler_t *http_handlers,
                    struct sockaddr_storage *address)
 {
   unsigned int flags;
   int ipv6_flag;
-  char *ip_address = NULL;
+  gchar *ip_address = NULL;
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
 
   if (address->ss_family == AF_INET6)
     {
@@ -2110,18 +1657,20 @@ start_http_daemon (int port,
     flags, port, NULL, NULL, handler, http_handlers, MHD_OPTION_EXTERNAL_LOGGER,
     mhd_logger, NULL, MHD_OPTION_NOTIFY_COMPLETED, free_resources, NULL,
     MHD_OPTION_SOCK_ADDR, address, MHD_OPTION_PER_IP_CONNECTION_LIMIT,
-    get_per_ip_connection_limit (), MHD_OPTION_END);
+    gsad_settings_get_per_ip_connection_limit (gsad_global_settings),
+    MHD_OPTION_END);
 }
 
 static struct MHD_Daemon *
-start_https_daemon (int port, const char *key, const char *cert,
-                    const char *priorities, const char *dh_params,
-                    http_handler_t *http_handlers,
+start_https_daemon (int port, const gchar *key, const gchar *cert,
+                    const gchar *priorities, const gchar *dh_params,
+                    gsad_http_handler_t *http_handlers,
                     struct sockaddr_storage *address)
 {
   unsigned int flags;
   int ipv6_flag;
-  char *ip_address = NULL;
+  gchar *ip_address = NULL;
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
 
   if (address->ss_family == AF_INET6)
     {
@@ -2153,11 +1702,12 @@ start_https_daemon (int port, const char *key, const char *cert,
   g_free (ip_address);
 
   return MHD_start_daemon (
-    flags, port, NULL, NULL, &handle_request, http_handlers,
+    flags, port, NULL, NULL, &gsad_http_handle_request, http_handlers,
     MHD_OPTION_EXTERNAL_LOGGER, mhd_logger, NULL, MHD_OPTION_HTTPS_MEM_KEY, key,
     MHD_OPTION_HTTPS_MEM_CERT, cert, MHD_OPTION_NOTIFY_COMPLETED,
     free_resources, NULL, MHD_OPTION_SOCK_ADDR, address,
-    MHD_OPTION_PER_IP_CONNECTION_LIMIT, get_per_ip_connection_limit (),
+    MHD_OPTION_PER_IP_CONNECTION_LIMIT,
+    gsad_settings_get_per_ip_connection_limit (gsad_global_settings),
     MHD_OPTION_HTTPS_PRIORITIES, priorities,
 /* LibmicroHTTPD 0.9.35 and higher. */
 #if MHD_VERSION >= 0x00093500
@@ -2191,7 +1741,7 @@ gsad_address_set_port (struct sockaddr_storage *address, int port)
  * @return 0 on success, 1 on failure.
  */
 static int
-gsad_address_init (const char *address_str, int port)
+gsad_address_init (const gchar *address_str, int port)
 {
   struct sockaddr_storage *address = g_malloc0 (sizeof (*address));
   struct sockaddr_in *gsad_address = (struct sockaddr_in *) address;
@@ -2224,29 +1774,6 @@ gsad_address_init (const char *address_str, int port)
   return 0;
 }
 
-void
-gsad_init_logging ()
-{
-  /* Setup logging. */
-  char *rc_name = g_build_filename (GSAD_CONFIG_DIR, "gsad_log.conf", NULL);
-  if (gvm_file_is_readable (rc_name))
-    log_config = load_log_configuration (rc_name);
-  g_free (rc_name);
-  setup_log_handlers (log_config);
-  /* Set to ensure that recursion is left out, in case two threads log
-   * concurrently. */
-  g_log_set_always_fatal (G_LOG_FATAL_MASK);
-  /* Enable GNUTLS debugging if requested via env variable.  */
-  {
-    const char *s;
-    if ((s = getenv ("GVM_GNUTLS_DEBUG")))
-      {
-        gnutls_global_set_log_function (log_func_for_gnutls);
-        gnutls_global_set_log_level (atoi (s));
-      }
-  }
-}
-
 /**
  * @brief Main routine of Greenbone Security Assistant daemon.
  *
@@ -2260,17 +1787,21 @@ main (int argc, char **argv)
 {
   sigset_t sigmask_all, sigmask_current;
 
+  gsad_log_config_t *log_config = NULL;
+
   /* Process command line options. */
   gsad_args_t *gsad_args = gsad_args_new ();
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
+
   if (gsad_args_parse (argc, argv, gsad_args) != 0)
     {
-      goto error;
+      goto error_with_settings_cleanup;
     }
 
-  if (gsad_args->print_version)
+  if (gsad_args_is_print_version_enabled (gsad_args))
     {
       printf ("Greenbone Security Assistant Deamon %s\n", GSAD_VERSION);
-      if (gsad_args->debug_tls)
+      if (gsad_args_is_debug_tls_enabled (gsad_args))
         {
           printf ("gnutls %s\n", gnutls_check_version (NULL));
           printf ("libmicrohttpd %s\n", MHD_get_version ());
@@ -2278,101 +1809,121 @@ main (int argc, char **argv)
       goto success;
     }
 
-  gsad_init_logging ();
+  gsad_settings_set_log_config_filename (
+    gsad_global_settings, gsad_args_get_log_config_filename (gsad_args));
+
+  log_config = gsad_logging_init (gsad_global_settings);
 
   /* Validate command line options. */
   if (gsad_args_validate_session_timeout (gsad_args))
 
     {
-      g_error ("Invalid session timeout value: %d.", gsad_args->timeout);
-      goto error;
+      g_critical ("Invalid session timeout value: %d.",
+                  gsad_args_get_session_timeout (gsad_args));
+      goto error_with_settings_cleanup;
     }
   if (gsad_args_validate_port (gsad_args))
     {
-      g_error ("Invalid GSAD port value: %d.", gsad_args->gsad_port);
-      goto error;
+      g_critical ("Invalid GSAD port value: %d.",
+                  gsad_args_get_port (gsad_args));
+      goto error_with_settings_cleanup;
     }
   if (gsad_args_validate_manager_port (gsad_args))
     {
-      g_error ("Invalid gvmd port value: %d.", gsad_args->gsad_manager_port);
-      goto error;
+      g_critical ("Invalid gvmd port value: %d.",
+                  gsad_args_get_manager_port (gsad_args));
+      goto error_with_settings_cleanup;
     }
   if (gsad_args_validate_redirect_port (gsad_args))
     {
-      g_error ("Invalid redirect port value: %d.",
-               gsad_args->gsad_redirect_port);
-      goto error;
+      g_critical ("Invalid redirect port value: %d.",
+                  gsad_args_get_redirect_port (gsad_args));
+      goto error_with_settings_cleanup;
     }
-  if (gsad_args_enable_https (gsad_args))
+  if (gsad_args_is_https_enabled (gsad_args))
     {
       if (gsad_args_validate_tls_private_key (gsad_args))
         {
-          g_error ("Invalid TLS private key file: %s.",
-                   gsad_args->ssl_private_key_filename);
-          goto error;
+          g_critical ("Invalid TLS private key file: %s.",
+                      gsad_args_get_tls_private_key_filename (gsad_args));
+          goto error_with_settings_cleanup;
         }
       if (gsad_args_validate_tls_certificate (gsad_args))
         {
-          g_error ("Invalid TLS certificate file: %s.",
-                   gsad_args->ssl_certificate_filename);
-          goto error;
+          g_critical ("Invalid TLS certificate file: %s.",
+                      gsad_args_get_tls_certificate_filename (gsad_args));
+          goto error_with_settings_cleanup;
         }
     }
 
   /* Initialise. */
 
-  if (gsad_init () == MHD_NO)
+  if (gsad_init (gsad_args_get_static_content_directory (gsad_args)) == MHD_NO)
     {
-      g_error ("Initialization failed! Exiting...");
-      goto error;
+      g_critical ("Initialization failed! Exiting...");
+      goto error_with_settings_cleanup;
     }
 
-  set_http_x_frame_options (gsad_args->http_frame_opts);
-  set_http_content_security_policy (gsad_args->http_csp);
-  set_http_cors_origin (gsad_args->http_cors);
+  gsad_settings_set_http_x_frame_options (
+    gsad_global_settings, gsad_args_get_http_x_frame_options (gsad_args));
+  gsad_settings_set_http_content_security_policy (
+    gsad_global_settings,
+    gsad_args_get_http_content_security_policy (gsad_args));
+  gsad_settings_set_http_cors_origin (
+    gsad_global_settings, gsad_args_get_http_cors_origin (gsad_args));
+  gsad_settings_set_http_coep (gsad_global_settings,
+                               gsad_args_get_http_coep (gsad_args));
+  gsad_settings_set_http_coop (gsad_global_settings,
+                               gsad_args_get_http_coop (gsad_args));
+  gsad_settings_set_http_corp (gsad_global_settings,
+                               gsad_args_get_http_corp (gsad_args));
 
-  set_http_only (gsad_args->http_only);
-  if (gsad_args_enable_http_strict_transport_security (gsad_args))
+  if (gsad_args_is_http_strict_transport_security_enabled (gsad_args))
     {
-      set_http_strict_transport_security (g_strdup_printf (
-        "max-age=%d",
-        gsad_args_get_http_strict_transport_security_max_age (gsad_args)));
+      gsad_settings_set_http_strict_transport_security (
+        gsad_global_settings,
+        g_strdup_printf (
+          "max-age=%d",
+          gsad_args_get_http_strict_transport_security_max_age (gsad_args)));
     }
   else
-    set_http_strict_transport_security (NULL);
+    gsad_settings_set_http_strict_transport_security (gsad_global_settings,
+                                                      NULL);
 
-  set_ignore_http_x_real_ip (gsad_args->ignore_x_real_ip);
+  gsad_settings_set_ignore_http_x_real_ip (
+    gsad_global_settings, gsad_args_is_ignore_x_real_ip_enabled (gsad_args));
 
-  set_per_ip_connection_limit (
-    gsad_args_get_per_ip_connection_limit (gsad_args));
+  gsad_settings_set_per_ip_connection_limit (
+    gsad_global_settings, gsad_args_get_per_ip_connection_limit (gsad_args));
 
   if (register_signal_handlers ())
     {
-      g_error ("Failed to register signal handlers!");
-      goto error;
+      g_critical ("Failed to register signal handlers!");
+      goto error_with_settings_cleanup;
     }
 
-  if (gsad_args->debug_tls)
+  if (gsad_args_is_debug_tls_enabled (gsad_args))
     {
       gnutls_global_set_log_function (my_gnutls_log_func);
-      gnutls_global_set_log_level (gsad_args->debug_tls);
+      gnutls_global_set_log_level (gsad_args_get_tls_debug_level (gsad_args));
     }
 
   if (gsad_base_init ())
     {
-      g_error ("libxml must be compiled with thread support");
-      goto error;
+      g_critical ("libxml must be compiled with thread support");
+      goto error_with_settings_cleanup;
     }
 
-  if (gsad_args->gsad_vendor_version_string)
-    vendor_version_set (gsad_args->gsad_vendor_version_string);
+  if (gsad_args_get_vendor_version (gsad_args))
+    gsad_settings_set_vendor_version (gsad_global_settings,
+                                      gsad_args_get_vendor_version (gsad_args));
 
   /* Switch to UTC for scheduling. */
 
   if (setenv ("TZ", "utc 0", 1) == -1)
     {
-      g_error ("Failed to set timezone.");
-      goto error;
+      g_critical ("Failed to set timezone.");
+      goto error_with_settings_cleanup;
     }
   tzset ();
 
@@ -2380,13 +1931,23 @@ main (int argc, char **argv)
 
   /* Finish processing the command line options. */
 
-  set_use_secure_cookie (gsad_args->secure_cookie);
+  gsad_settings_set_use_secure_cookie (
+    gsad_global_settings, gsad_args_is_secure_cookie_enabled (gsad_args));
 
-  set_session_timeout (gsad_args->timeout);
+  gsad_settings_set_session_timeout (gsad_global_settings,
+                                     gsad_args_get_session_timeout (gsad_args));
+  gsad_settings_set_pid_filename (gsad_global_settings,
+                                  gsad_args_get_pid_filename (gsad_args));
+  gsad_settings_set_api_only (gsad_global_settings,
+                              gsad_args_is_api_only_enabled (gsad_args));
 
-  client_watch_interval = gsad_args_get_client_watch_interval (gsad_args);
+  gsad_settings_set_client_watch_interval (
+    gsad_global_settings, gsad_args_get_client_watch_interval (gsad_args));
 
-  if (!gsad_args_enable_run_in_foreground (gsad_args))
+  gsad_settings_set_user_session_limit (
+    gsad_global_settings, gsad_args_get_user_session_limit (gsad_args));
+
+  if (!gsad_args_is_run_in_foreground_enabled (gsad_args))
     {
       /* Fork into the background. */
       g_debug ("Forking...");
@@ -2398,8 +1959,8 @@ main (int argc, char **argv)
           break;
         case -1:
           /* Parent when error. */
-          g_error ("Failed to fork!");
-          goto error;
+          g_critical ("Failed to fork!");
+          goto error_with_settings_cleanup;
           break;
         default:
           /* Parent. */
@@ -2408,7 +1969,7 @@ main (int argc, char **argv)
         }
     }
 
-  gboolean should_redirect = gsad_args_enable_redirect (gsad_args);
+  gboolean should_redirect = gsad_args_is_redirect_enabled (gsad_args);
   int redirect_port = gsad_args_get_redirect_port (gsad_args);
   if (should_redirect)
     {
@@ -2431,8 +1992,8 @@ main (int argc, char **argv)
           break;
         case -1:
           /* Parent when error. */
-          g_error ("Failed to fork for redirect!");
-          goto error;
+          g_critical ("Failed to fork for redirect!");
+          goto error_with_settings_cleanup;
           break;
         default:
           /* Parent. */
@@ -2442,37 +2003,30 @@ main (int argc, char **argv)
         }
     }
 
-  set_user_session_limit (gsad_args->gsad_user_session_limit);
-
-  /* Register the cleanup function. */
-
-  if (atexit (&gsad_cleanup))
-    {
-      g_error ("Failed to register cleanup function!");
-      goto error;
-    }
-
   /* Write pidfile. */
-
-  if (pidfile_create (GSAD_PID_PATH))
+  if (pidfile_create (
+        (gchar *) gsad_settings_get_pid_filename (gsad_global_settings)))
     {
-      g_error ("Could not write PID file.");
+      g_critical ("Could not write PID file at %s.",
+                  gsad_settings_get_pid_filename (gsad_global_settings));
       goto error;
     }
 
   int gsad_port = gsad_args_get_port (gsad_args);
 
-  if (gsad_args->gsad_address_string)
-    while (*gsad_args->gsad_address_string)
+  gchar **gsad_addresses = gsad_args_get_listen_addresses (gsad_args);
+  if (gsad_addresses)
+    while (*gsad_addresses)
       {
-        if (gsad_address_init (*gsad_args->gsad_address_string, gsad_port))
+        if (gsad_address_init (*gsad_addresses, gsad_port))
           goto error;
-        gsad_args->gsad_address_string++;
+        gsad_addresses++;
       }
   else if (gsad_address_init (NULL, gsad_port))
     goto error;
 
-  http_handler_t *handlers = init_http_handlers ();
+  gsad_http_handler_t *handlers =
+    gsad_http_request_init_handlers (gsad_global_settings);
 
   if (should_redirect)
     {
@@ -2490,56 +2044,50 @@ main (int argc, char **argv)
 
       if (gsad_daemon == NULL)
         {
-          g_error ("Starting gsad redirect daemon failed!");
+          g_critical ("Starting gsad redirect daemon failed!");
           goto error;
         }
-      else
-        {
-          g_info ("GSAD started successfully");
-        }
     }
-  else if (gsad_args_enable_unix_socket (gsad_args) && !unix_pid)
+  else if (gsad_args_is_unix_socket_enabled (gsad_args))
     {
       /* Start the unix socket server. */
 
-      gmp_init (gsad_args->gsad_manager_unix_socket_path,
-                gsad_args->gsad_manager_address_string,
-                gsad_args->gsad_manager_port);
+      gmp_init (gsad_args_get_manager_unix_socket_path (gsad_args),
+                gsad_args_get_manager_address (gsad_args),
+                gsad_args_get_manager_port (gsad_args));
 
-      gsad_daemon = start_unix_http_daemon (
-        gsad_args->unix_socket_path, gsad_args->unix_socket_owner,
-        gsad_args->unix_socket_group, gsad_args->unix_socket_mode,
-        handle_request, handlers);
+      gsad_daemon =
+        start_unix_http_daemon (gsad_args_get_unix_socket_path (gsad_args),
+                                gsad_args_get_unix_socket_owner (gsad_args),
+                                gsad_args_get_unix_socket_group (gsad_args),
+                                gsad_args_get_unix_socket_mode (gsad_args),
+                                gsad_http_handle_request, handlers);
 
       if (gsad_daemon == NULL)
         {
-          g_error ("Starting gsad unix daemon failed!");
+          g_critical ("Starting gsad unix daemon failed!");
           goto error;
-        }
-      else
-        {
-          g_info ("GSAD started successfully");
         }
     }
   else
     {
       /* Start the real server. */
 
-      gmp_init (gsad_args->gsad_manager_unix_socket_path,
-                gsad_args->gsad_manager_address_string,
-                gsad_args->gsad_manager_port);
+      gmp_init (gsad_args_get_manager_unix_socket_path (gsad_args),
+                gsad_args_get_manager_address (gsad_args),
+                gsad_args_get_manager_port (gsad_args));
 
-      if (gsad_args->http_only)
+      if (!gsad_args_is_https_enabled (gsad_args))
         {
           GSList *list = address_list;
 
           while (list)
             {
-              gsad_daemon = start_http_daemon (gsad_port, handle_request,
-                                               handlers, list->data);
+              gsad_daemon = start_http_daemon (
+                gsad_port, gsad_http_handle_request, handlers, list->data);
               if (gsad_daemon == NULL)
                 {
-                  g_error ("Binding to port %d failed", gsad_port);
+                  g_critical ("Binding to port %d failed", gsad_port);
                   goto error;
                 }
               list = list->next;
@@ -2553,44 +2101,49 @@ main (int argc, char **argv)
           GSList *list = address_list;
           GError *error = NULL;
 
-          set_use_secure_cookie (1);
-
-          if (!g_file_get_contents (gsad_args->ssl_private_key_filename,
-                                    &ssl_private_key, NULL, &error))
+          if (!g_file_get_contents (
+                gsad_args_get_tls_private_key_filename (gsad_args),
+                &ssl_private_key, NULL, &error))
             {
-              g_error ("Could not load private SSL key from %s: %s",
-                       gsad_args->ssl_private_key_filename, error->message);
+              g_critical ("Could not load private SSL key from %s: %s",
+                          gsad_args_get_tls_private_key_filename (gsad_args),
+                          error->message);
               g_error_free (error);
               goto error;
             }
 
-          if (!g_file_get_contents (gsad_args->ssl_certificate_filename,
-                                    &ssl_certificate, NULL, &error))
+          if (!g_file_get_contents (
+                gsad_args_get_tls_certificate_filename (gsad_args),
+                &ssl_certificate, NULL, &error))
             {
-              g_error ("Could not load SSL certificate from %s: %s",
-                       gsad_args->ssl_certificate_filename, error->message);
+              g_critical ("Could not load SSL certificate from %s: %s",
+                          gsad_args_get_tls_certificate_filename (gsad_args),
+                          error->message);
               g_error_free (error);
               goto error;
             }
 
-          if (gsad_args->dh_params_filename
-              && !g_file_get_contents (gsad_args->dh_params_filename,
-                                       &dh_params, NULL, &error))
+          if (gsad_args_get_dh_params_filename (gsad_args)
+              && !g_file_get_contents (
+                gsad_args_get_dh_params_filename (gsad_args), &dh_params, NULL,
+                &error))
             {
-              g_error ("Could not load SSL certificate from %s: %s",
-                       gsad_args->dh_params_filename, error->message);
+              g_critical ("Could not load SSL certificate from %s: %s",
+                          gsad_args_get_dh_params_filename (gsad_args),
+                          error->message);
               g_error_free (error);
               goto error;
             }
 
           while (list)
             {
-              gsad_daemon = start_https_daemon (
-                gsad_port, ssl_private_key, ssl_certificate,
-                gsad_args->gnutls_priorities, dh_params, handlers, list->data);
+              gsad_daemon =
+                start_https_daemon (gsad_port, ssl_private_key, ssl_certificate,
+                                    gsad_args_get_gnutls_priorities (gsad_args),
+                                    dh_params, handlers, list->data);
               if (gsad_daemon == NULL)
                 {
-                  g_error ("Binding to port %d failed.", gsad_port);
+                  g_critical ("Binding to port %d failed.", gsad_port);
                   goto error;
                 }
               list = list->next;
@@ -2599,43 +2152,43 @@ main (int argc, char **argv)
 
       if (gsad_daemon == NULL)
         {
-          g_error ("Starting gsad http(s) daemon failed!");
+          g_critical ("Starting gsad http(s) daemon failed!");
           goto error;
-        }
-      else
-        {
-          g_info ("GSAD started successfully");
         }
     }
 
   /* Chroot and drop privileges, if requested. */
 
-  if (chroot_drop_privileges (gsad_args->do_chroot, gsad_args->drop,
-                              DEFAULT_WEB_DIRECTORY))
+  if (chroot_drop_privileges (
+        gsad_args_is_chroot_enabled (gsad_args),
+        gsad_args_get_drop_privileges (gsad_args),
+        gsad_args_get_static_content_directory (gsad_args)))
     {
-      g_critical ("%s: Cannot use drop privileges for directory \"%s\"!\n",
-                  __func__, DEFAULT_WEB_DIRECTORY);
+      g_critical ("Cannot use drop privileges for directory \"%s\".",
+                  gsad_args_get_static_content_directory (gsad_args));
       goto error;
     }
+
+  g_info ("gsad started successfully");
 
   /* Wait forever for input or interrupts. */
 
   if (sigfillset (&sigmask_all))
     {
-      g_critical ("%s: Error filling signal set\n", __func__);
+      g_critical ("Error filling signal set");
       goto error;
     }
   if (pthread_sigmask (SIG_BLOCK, &sigmask_all, &sigmask_current))
     {
-      g_critical ("%s: Error setting signal mask\n", __func__);
+      g_critical ("Error setting signal mask");
       goto error;
     }
   while (1)
     {
       if (termination_signal)
         {
-          g_debug ("Received %s signal.\n", strsignal (termination_signal));
-          gsad_cleanup ();
+          g_debug ("Received %s signal.", strsignal (termination_signal));
+          gsad_cleanup (log_config);
           /* Raise signal again, to exit with the correct return value. */
           signal (termination_signal, SIG_DFL);
           raise (termination_signal);
@@ -2650,9 +2203,15 @@ main (int argc, char **argv)
         }
     }
 success:
+  g_debug ("Exiting...");
+  gsad_cleanup (log_config);
   gsad_args_free (gsad_args);
   return EXIT_SUCCESS;
+error_with_settings_cleanup:
+  gsad_settings_free (gsad_global_settings);
 error:
+  g_debug ("Exiting with failure...");
+  gsad_cleanup (log_config);
   gsad_args_free (gsad_args);
   return EXIT_FAILURE;
 }

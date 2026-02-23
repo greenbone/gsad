@@ -40,5 +40,7 @@ main (int argc, char **argv)
   TestSuite *suite = create_test_suite ();
   add_test_with_context (suite, utils, credential_username_is_valid_success);
   add_test_with_context (suite, utils, credential_username_is_valid_failure);
-  return run_test_suite (suite, create_text_reporter ());
+  int ret = run_test_suite (suite, create_text_reporter ());
+  destroy_test_suite (suite);
+  return ret;
 }

@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: AGPL-2.0-or-later
 
-macro(add_unit_test _baseName _objects)
+macro(add_unit_test _baseName ${ARGN})
   string(REPLACE "-" "_" _testSource "${_baseName}")
   # utils.c
   set(_source "${_testSource}.c")
@@ -18,7 +18,7 @@ macro(add_unit_test _baseName _objects)
     EXCLUDE_FROM_ALL
     ${_source}
     ${_testSource}
-    ${_objects}
+    ${ARGN}
   )
   target_compile_options(${_testName} PRIVATE "-fsanitize=address")
   target_link_options(${_testName} PRIVATE "-fsanitize=address")
@@ -31,6 +31,7 @@ macro(add_unit_test _baseName _objects)
     ${LINKER_DEBUG_FLAGS}
     ${GLIB_LDFLAGS}
     ${LIBGVM_UTIL_LDFLAGS}
+    ${LIBMICROHTTPD_LDFLAGS}
   )
   set_target_properties(${_testName} PROPERTIES LINKER_LANGUAGE C)
   if(NOT CMAKE_BUILD_TYPE MATCHES "Release")
