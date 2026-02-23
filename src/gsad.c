@@ -1312,9 +1312,7 @@ chroot_drop_privileges (gboolean do_chroot, const gchar *drop, const gchar *dir)
           g_critical ("failed to change to \"%s\": %s", dir, strerror (errno));
           return 1;
         }
-      g_info ("Serving from directory  %s"
-              "",
-              dir);
+      g_debug ("Working directory is %s", dir);
     }
 
   return 0;
