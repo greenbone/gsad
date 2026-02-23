@@ -29,6 +29,9 @@ struct gsad_settings
   gboolean api_only;
   gchar *log_config_filename;
   gchar *http_content_security_policy;
+  gchar *http_coep;
+  gchar *http_coop;
+  gchar *http_corp;
   gchar *http_cors_origin;
   gchar *http_guest_chart_content_security_policy;
   gchar *http_guest_chart_x_frame_options;
@@ -280,6 +283,105 @@ const gchar *
 gsad_settings_get_http_content_security_policy (const gsad_settings_t *settings)
 {
   return settings->http_content_security_policy;
+}
+
+/**
+ * @brief Set the HTTP Cross-Origin-Embedder-Policy header value.
+ *
+ * @param[in]  settings  The settings instance to modify.
+ * @param[in]  policy    The value to set for the HTTP
+ * Cross-Origin-Embedder-Policy header, or NULL to disable the header.
+ */
+void
+gsad_settings_set_http_coep (gsad_settings_t *settings, const gchar *policy)
+{
+  g_debug ("Setting HTTP Cross-Origin-Embedder-Policy to: %s",
+           null_or_value (policy));
+
+  g_free (settings->http_coep);
+
+  settings->http_coep = g_strdup (policy);
+}
+
+/**
+ * @brief Get the HTTP Cross-Origin-Embedder-Policy header value.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return The value set for the HTTP Cross-Origin-Embedder-Policy header,
+ * or NULL if the header is disabled. The value is owned by the settings and
+ * should not be modified or freed by the caller.
+ */
+const gchar *
+gsad_settings_get_http_coep (const gsad_settings_t *settings)
+{
+  return settings->http_coep;
+}
+
+/**
+ * @brief Set the HTTP Cross-Origin-Opener-Policy header value.
+ *
+ * @param[in]  settings  The settings instance to modify.
+ * @param[in]  policy    The value to set for the HTTP
+ * Cross-Origin-Opener-Policy header, or NULL to disable the header.
+ */
+void
+gsad_settings_set_http_coop (gsad_settings_t *settings, const gchar *policy)
+{
+  g_debug ("Setting HTTP Cross-Origin-Opener-Policy to: %s",
+           null_or_value (policy));
+
+  g_free (settings->http_coop);
+
+  settings->http_coop = g_strdup (policy);
+}
+
+/**
+ * @brief Get the HTTP Cross-Origin-Opener-Policy header value.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return The value set for the HTTP Cross-Origin-Opener-Policy header,
+ * or NULL if the header is disabled. The value is owned by the settings and
+ * should not be modified or freed by the caller.
+ */
+const gchar *
+gsad_settings_get_http_coop (const gsad_settings_t *settings)
+{
+  return settings->http_coop;
+}
+
+/**
+ * @brief Set the HTTP Cross-Origin-Resource-Policy header value.
+ *
+ * @param[in]  settings  The settings instance to modify.
+ * @param[in]  policy    The value to set for the HTTP
+ * Cross-Origin-Resource-Policy header, or NULL to disable the header.
+ */
+void
+gsad_settings_set_http_corp (gsad_settings_t *settings, const gchar *policy)
+{
+  g_debug ("Setting HTTP Cross-Origin-Resource-Policy to: %s",
+           null_or_value (policy));
+
+  g_free (settings->http_corp);
+
+  settings->http_corp = g_strdup (policy);
+}
+
+/**
+ * @brief Get the HTTP Cross-Origin-Resource-Policy header value.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return The value set for the HTTP Cross-Origin-Resource-Policy header,
+ * or NULL if the header is disabled. The value is owned by the settings and
+ * should not be modified or freed by the caller.
+ */
+const gchar *
+gsad_settings_get_http_corp (const gsad_settings_t *settings)
+{
+  return settings->http_corp;
 }
 
 /**

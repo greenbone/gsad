@@ -793,11 +793,32 @@ gsad_http_add_security_headers (gsad_http_response_t *response)
     gsad_settings_get_http_x_frame_options (gsad_global_settings);
   const gchar *http_content_security_policy =
     gsad_settings_get_http_content_security_policy (gsad_global_settings);
+  const gchar *http_cross_origin_embedder_policy =
+    gsad_settings_get_http_coep (gsad_global_settings);
+  const gchar *http_cross_origin_opener_policy =
+    gsad_settings_get_http_coop (gsad_global_settings);
+  const gchar *http_cross_origin_resource_policy =
+    gsad_settings_get_http_corp (gsad_global_settings);
   const gchar *http_strict_transport_security =
     gsad_settings_get_http_strict_transport_security (gsad_global_settings);
 
   if (http_x_frame_options && strlen (http_x_frame_options) > 0)
     MHD_add_response_header (response, "X-Frame-Options", http_x_frame_options);
+
+  if (http_cross_origin_embedder_policy
+      && strlen (http_cross_origin_embedder_policy) > 0)
+    MHD_add_response_header (response, "Cross-Origin-Embedder-Policy",
+                             http_cross_origin_embedder_policy);
+
+  if (http_cross_origin_resource_policy
+      && strlen (http_cross_origin_resource_policy) > 0)
+    MHD_add_response_header (response, "Cross-Origin-Opener-Policy",
+                             http_cross_origin_resource_policy);
+
+  if (http_cross_origin_opener_policy
+      && strlen (http_cross_origin_opener_policy) > 0)
+    MHD_add_response_header (response, "Cross-Origin-Resource-Policy",
+                             http_cross_origin_opener_policy);
 
   if (http_content_security_policy && strlen (http_content_security_policy) > 0)
     MHD_add_response_header (response, "Content-Security-Policy",

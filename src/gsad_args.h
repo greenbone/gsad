@@ -205,6 +205,15 @@ const gchar *
 gsad_args_get_http_content_security_policy (const gsad_args_t *);
 
 const gchar *
+gsad_args_get_http_coep (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_http_coop (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_http_corp (const gsad_args_t *);
+
+const gchar *
 gsad_args_get_http_cors_origin (const gsad_args_t *);
 
 const gchar *
