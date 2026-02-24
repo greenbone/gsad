@@ -1264,7 +1264,7 @@ drop_privileges (struct passwd *user_pw)
 static int
 chroot_drop_privileges (gboolean do_chroot, const gchar *drop, const gchar *dir)
 {
-  struct passwd *user_pw;
+  struct passwd *user_pw = NULL;
 
   if (drop)
     {
@@ -1277,8 +1277,6 @@ chroot_drop_privileges (gboolean do_chroot, const gchar *drop, const gchar *dir)
           return 1;
         }
     }
-  else
-    user_pw = NULL;
 
   if (do_chroot)
     {
@@ -1290,7 +1288,24 @@ chroot_drop_privileges (gboolean do_chroot, const gchar *drop, const gchar *dir)
           return 1;
         }
       set_chroot_state (1);
+
+      if (chdir ("/"))
+        {
+          g_critical ("failed to change to \"/\" after chroot: %s",
+                      strerror (errno));
+          return 1;
+        }
+
       g_info ("Chrooted to \"%s\"", dir);
+    }
+  else
+    {
+      if (chdir (dir))
+        {
+          g_critical ("failed to change to \"%s\": %s", dir, strerror (errno));
+          return 1;
+        }
+      g_info ("Serving from directory %s", dir);
     }
 
   if (user_pw)
@@ -1300,21 +1315,8 @@ chroot_drop_privileges (gboolean do_chroot, const gchar *drop, const gchar *dir)
           g_critical ("Failed to drop privileges");
           return 1;
         }
-      else
-        g_info ("Dropped privileges to user \"%s\" (uid: %d, gid: %d)", drop,
-                user_pw->pw_uid, user_pw->pw_gid);
-    }
-
-  if (!do_chroot)
-    {
-      if (chdir (dir))
-        {
-          g_critical ("failed to change to \"%s\": %s", dir, strerror (errno));
-          return 1;
-        }
-      g_info ("Serving from directory  %s"
-              "",
-              dir);
+      g_info ("Dropped privileges to user \"%s\" (uid: %d, gid: %d)", drop,
+              user_pw->pw_uid, user_pw->pw_gid);
     }
 
   return 0;
