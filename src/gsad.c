@@ -1315,8 +1315,8 @@ chroot_drop_privileges (gboolean do_chroot, const gchar *drop, const gchar *dir)
           g_critical ("Failed to drop privileges");
           return 1;
         }
-      g_info ("Dropped privileges to user \"%s\" (uid: %d, gid: %d)", drop,
-              user_pw->pw_uid, user_pw->pw_gid);
+
+      g_debug ("Working directory is %s", dir);
     }
 
   return 0;
