@@ -31,6 +31,9 @@ void
 session_remove_other_sessions (const gchar *id, const gchar *user);
 
 void
+session_renew_user (const gchar *id);
+
+void
 session_init ();
 
 #endif
