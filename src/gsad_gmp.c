@@ -19334,9 +19334,7 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
     || params_given (params, "bulk_size")
     || params_given (params, "bulk_throttle_time_in_ms")
     || params_given (params, "indexer_dir_depth")
-    || (scheduler_cron_times != NULL)
-    || params_given (params, "interval_in_seconds")
-    || params_given (params, "miss_until_inactive");
+    || (scheduler_cron_times != NULL);
 
   comment = params_value (params, "comment");
 
@@ -19348,8 +19346,14 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
       CHECK_VARIABLE_INVALID (bulk_size, "Save Agent List");
       CHECK_VARIABLE_INVALID (bulk_throttle_time_in_ms, "Save Agent List");
       CHECK_VARIABLE_INVALID (indexer_dir_depth, "Save Agent List");
-      CHECK_VARIABLE_INVALID (interval_in_seconds, "Save Agent List");
-      CHECK_VARIABLE_INVALID (miss_until_inactive, "Save Agent List");
+    }
+  if (params_given (params, "interval_in_seconds"))
+    {
+      CHECK_VARIABLE_INVALID (interval_in_seconds, "Save Agent List")
+    }
+  if (params_given (params, "miss_until_inactive"))
+    {
+      CHECK_VARIABLE_INVALID (miss_until_inactive, "Save Agent List")
     }
   if (params_given (params, "comment"))
     {
