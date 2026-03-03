@@ -40,6 +40,8 @@ Ensure (gsad_args, gsad_args_new)
   assert_that (args->api_only, is_false);
   assert_that (args->client_watch_interval,
                is_equal_to (DEFAULT_CLIENT_WATCH_INTERVAL));
+  assert_that (args->cookies_same_site,
+               is_equal_to_string (DEFAULT_GSAD_COOKIE_SAME_SITE));
   assert_that (args->debug_tls, is_equal_to (0));
   assert_that (args->dh_params_filename, is_null);
   assert_that (args->do_chroot, is_false);
@@ -725,6 +727,28 @@ Ensure (gsad_args, should_parse_secure_cookie_default)
   gsad_args_free (args);
 }
 
+Ensure (gsad_args, should_parse_cookies_same_site)
+{
+  gsad_args_t *args = gsad_args_new ();
+  char *argv[] = {"gsad", "--cookies-same-site", "Strict"};
+  gsad_args_parse (3, argv, args);
+
+  assert_that (gsad_args_get_cookies_same_site (args),
+               is_equal_to_string ("Strict"));
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_parse_cookies_same_site_default)
+{
+  gsad_args_t *args = gsad_args_new ();
+  char *argv[] = {"gsad"};
+  gsad_args_parse (1, argv, args);
+
+  assert_that (gsad_args_get_cookies_same_site (args),
+               is_equal_to_string (DEFAULT_GSAD_COOKIE_SAME_SITE));
+  gsad_args_free (args);
+}
+
 Ensure (gsad_args, should_parse_tls_certificate_filename)
 {
   gsad_args_t *args = gsad_args_new ();
@@ -1048,6 +1072,29 @@ Ensure (gsad_args, should_validate_redirect_port)
 
   args->gsad_redirect_port = -1234;
   assert_that (gsad_args_validate_redirect_port (args), is_equal_to (1));
+  gsad_args_free (args);
+}
+
+Ensure (gsad_args, should_validate_cookies_same_site)
+{
+  gsad_args_t *args = gsad_args_new ();
+
+  assert_that (gsad_args_validate_cookies_same_site (args), is_equal_to (0));
+
+  args->cookies_same_site = "Lax";
+  assert_that (gsad_args_validate_cookies_same_site (args), is_equal_to (0));
+
+  args->cookies_same_site = "Strict";
+  assert_that (gsad_args_validate_cookies_same_site (args), is_equal_to (0));
+
+  args->cookies_same_site = "None";
+  assert_that (gsad_args_validate_cookies_same_site (args), is_equal_to (0));
+
+  args->cookies_same_site = "InvalidValue";
+  assert_that (gsad_args_validate_cookies_same_site (args), is_equal_to (1));
+
+  args->cookies_same_site = g_strdup ("");
+  assert_that (gsad_args_validate_cookies_same_site (args), is_equal_to (1));
   gsad_args_free (args);
 }
 
@@ -1482,6 +1529,22 @@ Ensure (gsad_args, should_get_gnutls_priorities)
   gsad_args_free (args);
 }
 
+Ensure (gsad_args, should_get_cookies_same_site)
+{
+  gsad_args_t *args = gsad_args_new ();
+  assert_that (gsad_args_get_cookies_same_site (args),
+               is_equal_to_string (DEFAULT_GSAD_COOKIE_SAME_SITE));
+
+  args->cookies_same_site = "Strict";
+  assert_that (gsad_args_get_cookies_same_site (args),
+               is_equal_to_string ("Strict"));
+
+  args->cookies_same_site = NULL;
+  assert_that (gsad_args_get_cookies_same_site (args), is_null);
+
+  gsad_args_free (args);
+}
+
 Ensure (gsad_args, should_get_drop_privileges)
 {
   gsad_args_t *args = gsad_args_new ();
@@ -1825,6 +1888,9 @@ main (int argc, char **argv)
                          should_parse_static_content_directory_default);
   add_test_with_context (suite, gsad_args, should_parse_api_only);
   add_test_with_context (suite, gsad_args, should_parse_api_only_default);
+  add_test_with_context (suite, gsad_args, should_parse_cookies_same_site);
+  add_test_with_context (suite, gsad_args,
+                         should_parse_cookies_same_site_default);
 
   add_test_with_context (suite, gsad_args, should_is_redirect_enabled);
   add_test_with_context (suite, gsad_args, should_is_unix_socket_enabled);
@@ -1845,6 +1911,7 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_args, should_validate_redirect_port);
   add_test_with_context (suite, gsad_args, should_validate_tls_private_key);
   add_test_with_context (suite, gsad_args, should_validate_tls_certificate);
+  add_test_with_context (suite, gsad_args, should_validate_cookies_same_site);
 
   add_test_with_context (suite, gsad_args, should_get_port);
   add_test_with_context (suite, gsad_args, should_get_redirect_port);
@@ -1876,6 +1943,7 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_args, should_get_dh_params_filename);
   add_test_with_context (suite, gsad_args, should_get_gnutls_priorities);
   add_test_with_context (suite, gsad_args, should_get_drop_privileges);
+  add_test_with_context (suite, gsad_args, should_get_cookies_same_site);
 
   add_test_with_context (suite, gsad_args, should_free_gsad_args);
 

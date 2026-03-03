@@ -7,6 +7,7 @@
 
 #include "gsad_args_internal.h"
 #include "gsad_settings.h" // for defaults
+#include "utils.h"         // for str_equal
 
 #include <gvm/util/fileutils.h>
 
@@ -63,6 +64,10 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
      "Do chroot into the static content directory.", NULL},
     {"secure-cookie", '\0', 0, G_OPTION_ARG_NONE, &args->secure_cookie,
      "Use a secure cookie (implied when using HTTPS).", NULL},
+    {"cookies-same-site", 0, 0, G_OPTION_ARG_STRING, &args->cookies_same_site,
+     "SameSite attribute for setting cookies. Defaults to "
+     "\"" DEFAULT_GSAD_COOKIE_SAME_SITE "\".",
+     "<samesite>"},
     {"timeout", '\0', 0, G_OPTION_ARG_INT, &args->session_timeout,
      "Minutes of user idle time before session expires. Defaults "
      "to " G_STRINGIFY (SESSION_TIMEOUT) " minutes",
@@ -169,6 +174,7 @@ gsad_args_new ()
   gsad_args_t *args = g_malloc0 (sizeof (gsad_args_t));
   args->api_only = FALSE;
   args->client_watch_interval = DEFAULT_CLIENT_WATCH_INTERVAL;
+  args->cookies_same_site = g_strdup (DEFAULT_GSAD_COOKIE_SAME_SITE);
   args->debug_tls = 0;
   args->dh_params_filename = NULL;
   args->do_chroot = FALSE;
@@ -221,6 +227,7 @@ gsad_args_free (gsad_args_t *args)
   if (args)
     {
       g_free (args->dh_params_filename);
+      g_free (args->cookies_same_site);
       g_free (args->drop);
       g_free (args->gnutls_priorities);
       if (args->gsad_address_string)
@@ -1057,4 +1064,63 @@ gboolean
 gsad_args_is_api_only_enabled (const gsad_args_t *args)
 {
   return args->api_only;
+}
+
+/**
+ * @brief Get the SameSite attribute value for cookies from the command-line
+ * arguments.
+ *
+ * The SameSite attribute for cookies is specified using the --cookies-same-site
+ * option.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return The SameSite attribute value for cookies specified in the
+ * command-line arguments, or NULL if not specified. The returned string is
+ * owned by the gsad args structure and should not be modified or freed by the
+ * caller.
+ */
+const gchar *
+gsad_args_get_cookies_same_site (const gsad_args_t *args)
+{
+  return args->cookies_same_site;
+}
+
+/**
+ * @brief Validate the SameSite attribute value for cookies based on the
+ * command-line arguments.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return FALSE if the SameSite attribute value is valid, TRUE if it is
+ * invalid. Valid values are "Strict", "Lax" or "None". Additionally, if the
+ * value is "None", secure cookies must be enabled.
+ */
+gboolean
+gsad_args_validate_cookies_same_site (const gsad_args_t *args)
+{
+  const gchar *same_site = gsad_args_get_cookies_same_site (args);
+  if (same_site == NULL)
+    return FALSE;
+
+  if (!str_equal (same_site, "Strict") && !str_equal (same_site, "Lax")
+      && !str_equal (same_site, "None"))
+    {
+      g_critical ("%s: Invalid value for --cookies-same-site: %s. Allowed "
+                  "values are Strict, Lax, None, or empty string.\n",
+                  __func__, same_site);
+      return TRUE;
+    }
+
+  if (str_equal (same_site, "None")
+      && !gsad_args_is_secure_cookie_enabled (args))
+    {
+      g_critical (
+        "%s: --cookies-same-site=None requires secure cookies to be "
+        "enabled. Please set --secure-cookie or use a secure connection.\n",
+        __func__);
+      return TRUE;
+    }
+
+  return FALSE;
 }

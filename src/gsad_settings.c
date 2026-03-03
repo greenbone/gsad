@@ -10,6 +10,8 @@
 
 #include "gsad_settings.h"
 
+#include "gsad_args.h"
+
 #undef G_LOG_DOMAIN
 /**
  * @brief GLib log domain.
@@ -27,6 +29,7 @@ struct gsad_settings
   gboolean ignore_http_x_real_ip;
   gboolean use_secure_cookie;
   gboolean api_only;
+  gchar *cookies_same_site;
   gchar *log_config_filename;
   gchar *http_content_security_policy;
   gchar *http_coep;
@@ -72,6 +75,7 @@ gsad_settings_t *
 gsad_settings_new ()
 {
   gsad_settings_t *settings = g_malloc0 (sizeof (gsad_settings_t));
+  settings->cookies_same_site = g_strdup (DEFAULT_GSAD_COOKIE_SAME_SITE);
   settings->api_only = FALSE;
   settings->ignore_http_x_real_ip = FALSE;
   settings->use_secure_cookie = FALSE;
@@ -102,6 +106,7 @@ gsad_settings_free (gsad_settings_t *settings)
 {
   if (settings)
     {
+      g_free (settings->cookies_same_site);
       g_free (settings->log_config_filename);
       g_free (settings->http_content_security_policy);
       g_free (settings->http_cors_origin);
@@ -752,4 +757,49 @@ gboolean
 gsad_settings_is_api_only_enabled (const gsad_settings_t *settings)
 {
   return settings->api_only;
+}
+
+/**
+ * @brief Set the SameSite attribute for setting cookies.
+ *
+ * @see
+ * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#samesitesamesite-value
+ *
+ * @param[in]  settings  The settings instance to modify.
+ * @param[in]  same_site The SameSite attribute value to set for setting
+ * cookies, or NULL to use the default value of "Strict". The caller is
+ * responsible for freeing the passed string if it is dynamically allocated. The
+ * settings will copy the string and free it when the settings instance is
+ * freed.
+ */
+void
+gsad_settings_set_cookies_same_site (gsad_settings_t *settings,
+                                     const gchar *same_site)
+{
+  if (!same_site)
+    same_site = DEFAULT_GSAD_COOKIE_SAME_SITE;
+
+  g_debug ("Setting cookie SameSite attribute to: %s",
+           null_or_value (same_site));
+
+  g_free (settings->cookies_same_site);
+
+  settings->cookies_same_site = g_strdup (same_site);
+}
+
+/**
+ * @brief Get the SameSite attribute for setting cookies.
+ *
+ * @see
+ * https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#samesitesamesite-value
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return The SameSite attribute value set for setting cookies. The value is
+ * owned by the settings and should not be modified or freed by the caller.
+ */
+const gchar *
+gsad_settings_get_cookies_same_site (const gsad_settings_t *settings)
+{
+  return settings->cookies_same_site;
 }

@@ -597,10 +597,11 @@ attach_sid (gsad_http_response_t *response, const char *sid)
 
   value = g_strdup_printf (
     SID_COOKIE_NAME
-    "=%s; expires=%s; max-age=%d; path=/; %sHTTPonly; SameSite=strict",
+    "=%s; expires=%s; max-age=%d; path=/; %sHTTPonly; SameSite=%s",
     sid, expires, timeout,
     (gsad_settings_enable_secure_cookie (gsad_global_settings) ? "secure; "
-                                                               : ""));
+                                                               : ""),
+    gsad_settings_get_cookies_same_site (gsad_global_settings));
   ret = MHD_add_response_header (response, "Set-Cookie", value);
   g_free (value);
   return ret;

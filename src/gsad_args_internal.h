@@ -24,11 +24,13 @@ struct gsad_args
   gboolean print_version;    ///< Whether to print version and exit.
   gboolean secure_cookie;    ///< Whether to use secure cookies.
   gboolean verbose;          ///< Whether to enable verbose logging.
-  gchar **gsad_address_string;     ///< List of addresses to listen on
-  gchar *dh_params_filename;       ///< Filename for Diffie-Hellman parameters.
-  gchar *drop;                     ///< User to drop privileges to.
-  gchar *gnutls_priorities;        ///< GnuTLS priorities string.
-  gchar *gsad_log_config_filename; ///< Filename for logging configuration.
+  gchar **gsad_address_string; ///< List of addresses to listen on
+  gchar *cookies_same_site;  ///< Setting for the SameSite attribute of setting
+                             ///< cookies.
+  gchar *dh_params_filename; ///< Filename for Diffie-Hellman parameters.
+  gchar *drop;               ///< User to drop privileges to.
+  gchar *gnutls_priorities;  ///< GnuTLS priorities string.
+  gchar *gsad_log_config_filename;      ///< Filename for logging configuration.
   gchar *gsad_manager_address_string;   ///< Address for manager interface.
   gchar *manager_unix_socket_path;      ///< Path for manager Unix socket.
   gchar *gsad_static_content_directory; ///< Directory for static content.

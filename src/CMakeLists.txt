@@ -215,7 +215,7 @@ if(BUILD_TESTING)
 
   add_unit_test(utils)
   add_unit_test(gsad-validator validator.c)
-  add_unit_test(gsad-args)
+  add_unit_test(gsad-args utils.c)
   add_unit_test(gsad-settings)
   add_unit_test(gsad-connection-info gsad_params.c)
   add_unit_test(

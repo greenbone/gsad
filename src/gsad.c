@@ -1845,6 +1845,10 @@ main (int argc, char **argv)
                   gsad_args_get_redirect_port (gsad_args));
       goto error_with_settings_cleanup;
     }
+  if (gsad_args_validate_cookies_same_site (gsad_args))
+    {
+      goto error_with_settings_cleanup;
+    }
   if (gsad_args_is_https_enabled (gsad_args))
     {
       if (gsad_args_validate_tls_private_key (gsad_args))
@@ -1951,6 +1955,9 @@ main (int argc, char **argv)
 
   gsad_settings_set_user_session_limit (
     gsad_global_settings, gsad_args_get_user_session_limit (gsad_args));
+
+  gsad_settings_set_cookies_same_site (
+    gsad_global_settings, gsad_args_get_cookies_same_site (gsad_args));
 
   if (!gsad_args_is_run_in_foreground_enabled (gsad_args))
     {

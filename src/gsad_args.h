@@ -56,6 +56,13 @@
 #define DEFAULT_GSAD_HTTP_PORT 9392
 
 /**
+ * @brief Setting for the SameSite attribute of setting cookies.
+ *
+ * https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#samesitesamesite-value
+ */
+#define DEFAULT_GSAD_COOKIE_SAME_SITE "Strict"
+
+/**
  * @brief Defines the default TLS private key used by gsad.
  *
  * Defines the default TLS private key used by gsad.
@@ -156,6 +163,9 @@ gsad_args_validate_tls_private_key (const gsad_args_t *);
 gsad_args_file_validation_result_t
 gsad_args_validate_tls_certificate (const gsad_args_t *);
 
+gboolean
+gsad_args_validate_cookies_same_site (const gsad_args_t *);
+
 int
 gsad_args_get_port (const gsad_args_t *);
 
@@ -248,5 +258,8 @@ gsad_args_get_gnutls_priorities (const gsad_args_t *);
 
 const gchar *
 gsad_args_get_drop_privileges (const gsad_args_t *);
+
+const gchar *
+gsad_args_get_cookies_same_site (const gsad_args_t *);
 
 #endif /* _GSAD_ARGS_H */

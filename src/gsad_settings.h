@@ -175,4 +175,10 @@ gsad_settings_set_api_only (gsad_settings_t *, gboolean);
 gboolean
 gsad_settings_is_api_only_enabled (const gsad_settings_t *);
 
+void
+gsad_settings_set_cookies_same_site (gsad_settings_t *, const gchar *);
+
+const gchar *
+gsad_settings_get_cookies_same_site (const gsad_settings_t *);
+
 #endif /* _GSAD_SETTINGS_H */

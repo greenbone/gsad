@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 
+#include "gsad_args.h"
 #include "gsad_settings.h"
 
 #include <cgreen/cgreen.h>
@@ -45,6 +46,8 @@ Ensure (gsad_settings, should_use_defaults)
   assert_that (gsad_settings_get_client_watch_interval (settings),
                is_equal_to (DEFAULT_CLIENT_WATCH_INTERVAL));
   assert_that (gsad_settings_get_log_config_filename (settings), is_null);
+  assert_that (gsad_settings_get_cookies_same_site (settings),
+               is_equal_to_string (DEFAULT_GSAD_COOKIE_SAME_SITE));
 
   gsad_settings_free (settings);
 }
@@ -403,6 +406,28 @@ Ensure (gsad_settings, should_set_api_only)
   gsad_settings_free (settings);
 }
 
+Ensure (gsad_settings, should_set_cookies_same_site)
+{
+  gsad_settings_t *settings = gsad_settings_new ();
+
+  assert_that (gsad_settings_get_cookies_same_site (settings),
+               is_equal_to_string (DEFAULT_GSAD_COOKIE_SAME_SITE));
+
+  gsad_settings_set_cookies_same_site (settings, "Lax");
+  assert_that (gsad_settings_get_cookies_same_site (settings),
+               is_equal_to_string ("Lax"));
+
+  gsad_settings_set_cookies_same_site (settings, "None");
+  assert_that (gsad_settings_get_cookies_same_site (settings),
+               is_equal_to_string ("None"));
+
+  gsad_settings_set_cookies_same_site (settings, NULL);
+  assert_that (gsad_settings_get_cookies_same_site (settings),
+               is_equal_to_string (DEFAULT_GSAD_COOKIE_SAME_SITE));
+
+  gsad_settings_free (settings);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -437,6 +462,7 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_settings, should_set_log_config_filename);
   add_test_with_context (suite, gsad_settings, should_set_pid_filename);
   add_test_with_context (suite, gsad_settings, should_set_api_only);
+  add_test_with_context (suite, gsad_settings, should_set_cookies_same_site);
 
   int ret = run_test_suite (suite, create_text_reporter ());
 
