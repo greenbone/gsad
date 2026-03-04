@@ -467,6 +467,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (save_user)
   ELSE (start_task)
   ELSE (stop_task)
+  ELSE (sync_agents)
   ELSE (sync_feed)
   ELSE (sync_scap)
   ELSE (sync_cert)

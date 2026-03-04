@@ -15910,6 +15910,60 @@ sync_feed (gvm_connection_t *connection, credentials_t *credentials,
 }
 
 /**
+ * @brief Synchronize agents from all agent controllers.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+sync_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
+                 params_t *params, cmd_response_data_t *response_data)
+{
+  entity_t entity;
+  char *text = NULL;
+  gchar *html, *msg;
+
+  if (gvm_connection_sendf (connection, "<sync_agents/>") == -1)
+    {
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+
+      msg = g_strdup_printf (
+        "An internal error occurred while synchronizing with agents. "
+        "Agent synchronization is currently not available. "
+        "Diagnostics: Failure to send command to manager daemon.");
+      html = gsad_message (credentials, "Internal error", __func__, __LINE__,
+                           msg, response_data);
+      g_free (msg);
+      return html;
+    }
+
+  if (read_entity_and_text_c (connection, &entity, &text))
+    {
+      cmd_response_data_set_status_code (response_data,
+                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+
+      msg = g_strdup_printf (
+        "An internal error occurred while synchronizing with agents. "
+        "Agent synchronization is currently not available. "
+        "Diagnostics: Failure to receive response from manager daemon.");
+      html = gsad_message (credentials, "Internal error", __func__, __LINE__,
+                           msg, response_data);
+      g_free (msg);
+      return html;
+    }
+
+  html = response_from_entity (connection, credentials, params, entity,
+                               "Sync agents", response_data);
+
+  return html;
+}
+
+/**
  * @brief Synchronize with an NVT feed and envelope the result.
  *
  * @param[in]  connection     Connection to manager.

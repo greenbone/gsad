@@ -562,6 +562,11 @@ get_features_gmp (gvm_connection_t *, credentials_t *, params_t *,
 char *
 get_feeds_gmp (gvm_connection_t *, credentials_t *, params_t *,
                cmd_response_data_t *);
+
+char *
+sync_agents_gmp (gvm_connection_t *, credentials_t *, params_t *,
+                 cmd_response_data_t *);
+
 char *
 sync_feed_gmp (gvm_connection_t *, credentials_t *, params_t *,
                cmd_response_data_t *);
