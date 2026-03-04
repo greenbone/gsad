@@ -277,6 +277,7 @@ gsad_init_validator ()
                      "|(save_user)"
                      "|(start_task)"
                      "|(stop_task)"
+                     "|(sync_agents)"
                      "|(sync_feed)"
                      "|(sync_scap)"
                      "|(sync_cert)"
