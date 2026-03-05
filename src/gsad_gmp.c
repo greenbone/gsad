@@ -11153,8 +11153,7 @@ save_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
     CHECK_VARIABLE_INVALID (credential_id, "Edit Scanner");
 
   xml = g_string_new ("");
-  xml_string_append (xml, "<modify_scanner scanner_id=\"%s\">",
-                          scanner_id);
+  xml_string_append (xml, "<modify_scanner scanner_id=\"%s\">", scanner_id);
   xml_string_append (xml, "<name>%s</name>", name);
   xml_string_append (xml, "<comment>%s</comment>", comment ?: "");
 
