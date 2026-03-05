@@ -11153,21 +11153,21 @@ save_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
     CHECK_VARIABLE_INVALID (credential_id, "Edit Scanner");
 
   xml = g_string_new ("");
-  g_string_append_printf (xml, "<modify_scanner scanner_id=\"%s\">",
+  xml_string_append (xml, "<modify_scanner scanner_id=\"%s\">",
                           scanner_id);
-  g_string_append_printf (xml, "<name>%s</name>", name);
-  g_string_append_printf (xml, "<comment>%s</comment>", comment ?: "");
+  xml_string_append (xml, "<name>%s</name>", name);
+  xml_string_append (xml, "<comment>%s</comment>", comment ?: "");
 
   if (!is_unix_socket && host != NULL)
-    g_string_append_printf (xml, "<host>%s</host>", host);
+    xml_string_append (xml, "<host>%s</host>", host);
   if (!is_unix_socket && port != NULL)
-    g_string_append_printf (xml, "<port>%s</port>", port);
+    xml_string_append (xml, "<port>%s</port>", port);
   if (!is_unix_socket && type != NULL)
-    g_string_append_printf (xml, "<type>%s</type>", type);
+    xml_string_append (xml, "<type>%s</type>", type);
   if (!is_unix_socket && ca_pub != NULL)
-    g_string_append_printf (xml, "<ca_pub>%s</ca_pub>", ca_pub);
+    xml_string_append (xml, "<ca_pub>%s</ca_pub>", ca_pub);
   if (!is_unix_socket && credential_id != NULL)
-    g_string_append_printf (xml, "<credential id=\"%s\"/>", credential_id);
+    xml_string_append (xml, "<credential id=\"%s\"/>", credential_id);
 
   g_string_append (xml, "</modify_scanner>");
 
