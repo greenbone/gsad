@@ -19589,6 +19589,7 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
   const char *agent_control_id, *attempts, *delay_in_seconds;
   const char *max_jitter_in_seconds, *bulk_size, *bulk_throttle_time_in_ms;
   const char *indexer_dir_depth, *interval_in_seconds, *miss_until_inactive;
+  const char *update_to_latest;
   params_t *scheduler_cron_times;
   int ret;
   entity_t entity;
@@ -19602,6 +19603,7 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
   scheduler_cron_times = params_values (params, "scheduler_cron_times:");
   interval_in_seconds = params_value (params, "interval_in_seconds");
   miss_until_inactive = params_value (params, "miss_until_inactive");
+  update_to_latest = params_value (params, "update_to_latest");
 
   CHECK_VARIABLE_INVALID (attempts, "Modify Agent Control Scan Config");
   CHECK_VARIABLE_INVALID (delay_in_seconds, "Modify Agent Control Scan Config");
@@ -19615,6 +19617,8 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (interval_in_seconds,
                           "Modify Agent Control Scan Config");
   CHECK_VARIABLE_INVALID (miss_until_inactive,
+                          "Modify Agent Control Scan Config");
+  CHECK_VARIABLE_INVALID (update_to_latest,
                           "Modify Agent Control Scan Config");
 
   agent_control_id = params_value (params, "agent_control_id");
@@ -19647,7 +19651,8 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
 
   format = g_strdup_printf (
     "<modify_agent_control_scan_config agent_control_id=\"%s\">"
-    "<config>"
+    "<config_defaults>"
+    "<agent_defaults>"
     "<agent_control>"
     "<retry>"
     "<attempts>%%s</attempts>"
@@ -19667,7 +19672,11 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
     "<interval_in_seconds>%%s</interval_in_seconds>"
     "<miss_until_inactive>%%s</miss_until_inactive>"
     "</heartbeat>"
-    "</config>"
+    "</agent_defaults>"
+    "<agent_control_defaults>"
+    "<update_to_latest>%%s</update_to_latest>"
+    "</agent_control_defaults>"
+    "</config_defaults>"
     "</modify_agent_control_scan_config>",
     agent_control_id, items_xml->str);
 
@@ -19677,7 +19686,7 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
   ret = gmpf (connection, credentials, &response, &entity, response_data,
               format, attempts, delay_in_seconds, max_jitter_in_seconds,
               bulk_size, bulk_throttle_time_in_ms, indexer_dir_depth,
-              interval_in_seconds, miss_until_inactive);
+              interval_in_seconds, miss_until_inactive, update_to_latest);
 
   g_free (format);
   g_string_free (items_xml, TRUE);
