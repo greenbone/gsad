@@ -19618,8 +19618,7 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
                           "Modify Agent Control Scan Config");
   CHECK_VARIABLE_INVALID (miss_until_inactive,
                           "Modify Agent Control Scan Config");
-  CHECK_VARIABLE_INVALID (update_to_latest,
-                          "Modify Agent Control Scan Config");
+  CHECK_VARIABLE_INVALID (update_to_latest, "Modify Agent Control Scan Config");
 
   agent_control_id = params_value (params, "agent_control_id");
   if (!agent_control_id)
