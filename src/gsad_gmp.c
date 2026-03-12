@@ -650,14 +650,13 @@ gmp (gvm_connection_t *connection, credentials_t *credentials, gchar **response,
  *
  * @param[in]  connection     Connection to manager
  * @param[in]  credentials    Username and password for authentication.
- * @param[out] response       Response.
+ * @param[out] response       Location for response, or NULL.
  * @param[out] entity_return  Response entity.
  * @param[out] response_data  Extra data return for the HTTP response.
  * @param[in]  format         Command.
  * @param[in]  ...            Arguments for format string.
  *
- * @return 0 success, -1 failed to connect (response set), 1 send error,
- *         2 read error.
+ * @return 0 success (response set), 1 send error, 2 read error.
  */
 static int
 gmpf (gvm_connection_t *connection, credentials_t *credentials,
@@ -1753,7 +1752,6 @@ resource_action (gvm_connection_t *connection, credentials_t *credentials,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -3053,7 +3051,6 @@ save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -3155,7 +3152,6 @@ save_import_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -3285,7 +3281,6 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -3435,7 +3430,6 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -4197,7 +4191,6 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -4712,7 +4705,6 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -4780,7 +4772,6 @@ verify_credential_store_gmp (gvm_connection_t *connection,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -7949,7 +7940,6 @@ create_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 name, base, comment, scanner ?: "", usage_type))
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -10320,7 +10310,6 @@ create_note_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 result_id ? result_id : ""))
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -10439,7 +10428,6 @@ save_note_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 result_id ? result_id : "", oid))
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -10622,7 +10610,6 @@ create_override_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 result_id ? result_id : ""))
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -10750,7 +10737,6 @@ save_override_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 result_id ? result_id : ""))
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -10910,7 +10896,6 @@ verify_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -11010,7 +10995,6 @@ create_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -11281,7 +11265,6 @@ create_schedule_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 name, comment, timezone, icalendar))
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -11837,8 +11820,6 @@ create_report_config_gmp (gvm_connection_t *connection,
     {
     case 0:
       break;
-    case -1:
-      return response;
     case 1:
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
@@ -11951,8 +11932,6 @@ save_report_config_gmp (gvm_connection_t *connection,
     {
     case 0:
       break;
-    case -1:
-      return response;
     case 1:
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
@@ -12273,7 +12252,6 @@ save_report_format_gmp (gvm_connection_t *connection,
                 "not. "
                 "Diagnostics: Failure to receive response from manager daemon.",
                 response_data);
-            case -1:
             default:
               cmd_response_data_set_status_code (
                 response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
@@ -12357,7 +12335,6 @@ save_report_format_gmp (gvm_connection_t *connection,
                     "Diagnostics: Failure to receive response from manager "
                     "daemon.",
                     response_data);
-                case -1:
                 default:
                   cmd_response_data_set_status_code (
                     response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
@@ -12392,8 +12369,6 @@ save_report_format_gmp (gvm_connection_t *connection,
     {
     case 0:
       break;
-    case -1:
-      return response;
     case 1:
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
@@ -14266,7 +14241,6 @@ save_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -14448,7 +14422,6 @@ create_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -14494,7 +14467,6 @@ create_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
   switch (ret)                                                              \
     {                                                                       \
     case 0:                                                                 \
-    case -1:                                                                \
       break;                                                                \
     case 1:                                                                 \
       cmd_response_data_set_status_code (response_data,                     \
@@ -15017,7 +14989,6 @@ save_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -15098,7 +15069,6 @@ create_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
     comment ? comment : ""))
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -15183,7 +15153,6 @@ create_port_range_gmp (gvm_connection_t *connection, credentials_t *credentials,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -15323,7 +15292,6 @@ save_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -15526,7 +15494,6 @@ create_role_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 name, comment, users))
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -15701,7 +15668,6 @@ save_role_gmp (gvm_connection_t *connection, credentials_t *credentials,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -16073,7 +16039,6 @@ create_filter_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 name, comment, term, type))
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -16327,7 +16292,6 @@ save_schedule_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 icalendar))
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -17191,7 +17155,6 @@ save_auth_gmp (gvm_connection_t *connection, credentials_t *credentials,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -18092,7 +18055,6 @@ create_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 report_id, filter))
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -18291,7 +18253,6 @@ save_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -18403,7 +18364,6 @@ create_ticket_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 result_id, user_id, note ? note : ""))
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -18486,7 +18446,6 @@ save_ticket_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 ticket_id, user_id, status, open_note, fixed_note, closed_note))
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -18717,7 +18676,6 @@ create_tls_certificate_gmp (gvm_connection_t *connection,
                 name, comment, trust, certificate_b64))
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -18805,7 +18763,6 @@ save_tls_certificate_gmp (gvm_connection_t *connection,
                 tls_certificate_id, name, comment, trust, certificate_b64))
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -18937,7 +18894,6 @@ save_license_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 file_base64))
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -19480,7 +19436,6 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -19642,7 +19597,6 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -19741,7 +19695,6 @@ delete_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
@@ -19993,7 +19946,6 @@ save_agent_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
   switch (ret)
     {
     case 0:
-    case -1:
       break;
     case 1:
       cmd_response_data_set_status_code (response_data,
