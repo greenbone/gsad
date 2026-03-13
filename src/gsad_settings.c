@@ -763,7 +763,8 @@ gsad_settings_is_api_only_enabled (const gsad_settings_t *settings)
  * @param[in]  jwt_required   Whether a JWT token should be requested.
  */
 void
-gsad_settings_set_jwt_requested (gsad_settings_t *settings, gboolean jwt_required)
+gsad_settings_set_jwt_requested (gsad_settings_t *settings,
+                                 gboolean jwt_required)
 {
   settings->jwt_requested = jwt_required ? 1 : 0;
 }
