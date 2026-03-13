@@ -1945,6 +1945,8 @@ main (int argc, char **argv)
                                   gsad_args_get_pid_filename (gsad_args));
   gsad_settings_set_api_only (gsad_global_settings,
                               gsad_args_is_api_only_enabled (gsad_args));
+  gsad_settings_set_jwt_requested (gsad_global_settings,
+                              gsad_args_is_jwt_requested (gsad_args));
 
   gsad_settings_set_client_watch_interval (
     gsad_global_settings, gsad_args_get_client_watch_interval (gsad_args));

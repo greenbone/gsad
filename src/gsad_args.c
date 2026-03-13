@@ -136,6 +136,9 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
      "<directory>"},
     {"api-only", '\0', 0, G_OPTION_ARG_NONE, &args->api_only,
      "Run in API-only mode, disabling serving of static content.", NULL},
+    {"jwt-requested", '\0', 0, G_OPTION_ARG_NONE, &args->jwt_requested,
+     "Enable JWT-based mode using the token returned in the login response.",
+     NULL},
     {NULL}};
 
   option_context =
@@ -207,6 +210,7 @@ gsad_args_new ()
   args->unix_socket_owner = NULL;
   args->unix_socket_path = NULL;
   args->verbose = FALSE;
+  args->jwt_requested = FALSE;
   return args;
 }
 
@@ -1057,4 +1061,17 @@ gboolean
 gsad_args_is_api_only_enabled (const gsad_args_t *args)
 {
   return args->api_only;
+}
+
+/**
+ * @brief Check if JWT requested from the login response.
+ *
+ * @param[in] args The parsed command-line arguments.
+ *
+ * @return TRUE if JWT requested mode should be enabled, FALSE otherwise.
+ */
+gboolean
+gsad_args_is_jwt_requested (const gsad_args_t *args)
+{
+  return args->jwt_requested;
 }

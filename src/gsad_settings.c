@@ -44,6 +44,7 @@ struct gsad_settings
   int session_timeout;
   int unix_socket;
   int user_session_limit;
+  int jwt_requested;
 };
 
 static gsad_settings_t *settings = NULL;
@@ -89,6 +90,7 @@ gsad_settings_new ()
   settings->session_timeout = DEFAULT_SESSION_TIMEOUT;
   settings->unix_socket = 0;
   settings->user_session_limit = DEFAULT_USER_SESSION_LIMIT;
+  settings->jwt_requested = 0;
   return settings;
 }
 
@@ -752,4 +754,29 @@ gboolean
 gsad_settings_is_api_only_enabled (const gsad_settings_t *settings)
 {
   return settings->api_only;
+}
+
+/**
+ * @brief Set whether a JWT token should be requested during authentication.
+ *
+ * @param[in]  settings       The settings instance to modify.
+ * @param[in]  jwt_required   Whether a JWT token should be requested.
+ */
+void
+gsad_settings_set_jwt_requested (gsad_settings_t *settings, gboolean jwt_required)
+{
+  settings->jwt_requested = jwt_required ? 1 : 0;
+}
+
+/**
+ * @brief Check whether a JWT token should be requested during authentication.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return 1 if requesting a JWT token is enabled, 0 otherwise.
+ */
+int
+gsad_settings_is_jwt_requested (const gsad_settings_t *settings)
+{
+  return settings->jwt_requested;
 }
