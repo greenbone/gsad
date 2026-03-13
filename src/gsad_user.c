@@ -318,7 +318,7 @@ user_logout (user_t *user)
  * @param[in]  capabilities  Capabilities of manager.
  * @param[in]  language      User Interface Language (language name or code)
  * @param[in]  pw_warning    Password policy warning.
- * @param[in]  pw_warning    Password policy warning.
+ * @param[in]  address       Client's IP address.
  * @param[in]  jwt           JWT token value, NULL if not requested.
  *
  * @return Added user.
