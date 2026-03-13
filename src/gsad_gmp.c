@@ -20711,7 +20711,8 @@ authenticate_gmp (const gchar *username, const gchar *password, gchar **role,
   auth_opts.role = role;
   auth_opts.timezone = timezone;
   auth_opts.pw_warning = pw_warning;
-  auth_opts.jwt_requested = gsad_settings_is_jwt_requested (gsad_global_settings);
+  auth_opts.jwt_requested =
+    gsad_settings_is_jwt_requested (gsad_global_settings);
   auth_opts.jwt = jwt;
 
   auth = gmp_authenticate_info_ext_c (&connection, auth_opts);
