@@ -102,6 +102,20 @@ SPDX-License-Identifier: GPL-2.0-or-later
     </option>
 
     <option>
+      <p><opt>--api-only</opt></p>
+      <optdesc>
+        <p>Run in API-only mode, disabling serving of static content.</p>
+      </optdesc>
+    </option>
+
+    <option>
+      <p><opt>--jwt-requested</opt></p>
+      <optdesc>
+        <p>Enable JWT-based mode using the token returned in the login response.</p>
+      </optdesc>
+    </option>
+
+    <option>
       <p><opt>-?, --help</opt></p>
       <optdesc>
         <p>Show help.</p>

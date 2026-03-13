@@ -104,6 +104,13 @@ Set Cross-Origin Resource Sharing (CORS) allow origin http header.
 .BR --user-session-limit=\fIMAX_SESSIONS\fR
 Set maximum number of active sessions per user. 0 for unlimited.
 .TP
+.BR --api-only
+Run in API-only mode, disabling serving of static content.
+.TP
+.TP
+.BR --jwt-requested
+Enable JWT-based mode using the token returned in the login response.
+.TP
 .BR -? ", " --help
 Show help.
 .SH EXAMPLES
