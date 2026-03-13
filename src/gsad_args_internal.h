@@ -24,6 +24,7 @@ struct gsad_args
   gboolean print_version;    ///< Whether to print version and exit.
   gboolean secure_cookie;    ///< Whether to use secure cookies.
   gboolean verbose;          ///< Whether to enable verbose logging.
+  gboolean jwt_requested; ///< Whether to include JWT in login response.
   gchar **gsad_address_string;     ///< List of addresses to listen on
   gchar *dh_params_filename;       ///< Filename for Diffie-Hellman parameters.
   gchar *drop;                     ///< User to drop privileges to.

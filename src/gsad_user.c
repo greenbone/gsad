@@ -38,6 +38,7 @@ struct user
   gchar *pw_warning;   ///< Password policy warning.
   gchar *address;      ///< Client's IP address.
   time_t time;         ///< Login time.
+  gchar *jwt;          ///< JSON Web token value.
 };
 
 void
@@ -53,11 +54,12 @@ user_new ()
   return user;
 }
 
-user_t *
+static user_t *
 user_new_with_data (const gchar *username, const gchar *password,
                     const gchar *timezone, const gchar *role,
                     const gchar *capabilities, const gchar *language,
-                    const gchar *pw_warning, const gchar *address)
+                    const gchar *pw_warning, const gchar *address,
+                    const gchar *jwt)
 {
   user_t *user = user_new ();
 
@@ -72,6 +74,7 @@ user_new_with_data (const gchar *username, const gchar *password,
   user->language = g_strdup (language);
   user->pw_warning = g_strdup (pw_warning);
   user->address = g_strdup (address);
+  user->jwt = g_strdup (jwt);
 
   user_set_language (user, language);
   user_renew_session (user);
@@ -97,6 +100,7 @@ user_free (user_t *user)
   g_free (user->language);
   g_free (user->pw_warning);
   g_free (user->address);
+  g_free (user->jwt);
   g_free (user);
 }
 
@@ -121,6 +125,7 @@ user_copy (user_t *user)
   copy->pw_warning = g_strdup (user->pw_warning);
   copy->address = g_strdup (user->address);
   copy->time = user->time;
+  copy->jwt = g_strdup (user->jwt);
 
   return copy;
 }
@@ -167,6 +172,12 @@ const gchar *
 user_get_password_warning (user_t *user)
 {
   return user->pw_warning;
+}
+
+const gchar *
+user_get_jwt (user_t *user)
+{
+  return user->jwt;
 }
 
 const gchar *
@@ -307,14 +318,15 @@ user_logout (user_t *user)
  * @param[in]  capabilities  Capabilities of manager.
  * @param[in]  language      User Interface Language (language name or code)
  * @param[in]  pw_warning    Password policy warning.
- * @param[in]  address       Client's IP address.
+ * @param[in]  pw_warning    Password policy warning.
+ * @param[in]  jwt           JWT token value, NULL if not requested.
  *
  * @return Added user.
  */
 user_t *
 user_add (const gchar *username, const gchar *password, const gchar *timezone,
           const gchar *role, const gchar *capabilities, const gchar *language,
-          const gchar *pw_warning, const char *address)
+          const gchar *pw_warning, const char *address, const gchar *jwt)
 {
   GList *current_user_item, *user_list;
   user_t *user;
@@ -345,7 +357,7 @@ user_add (const gchar *username, const gchar *password, const gchar *timezone,
     return NULL;
 
   user = user_new_with_data (username, password, timezone, role, capabilities,
-                             language, pw_warning, address);
+                             language, pw_warning, address, jwt);
 
   session_add_user (user->token, user);
 
