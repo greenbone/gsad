@@ -198,14 +198,6 @@ add_custom_target(
 add_custom_target(check COMMENT "Checking code...")
 add_dependencies(check cppcheck)
 
-## Tag files
-
-set(C_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.c")
-add_custom_target(etags COMMENT "Building TAGS..." COMMAND etags ${C_FILES})
-add_custom_target(ctags COMMENT "Building tags..." COMMAND ctags ${C_FILES})
-add_custom_target(tags COMMENT "Building tags files...")
-add_dependencies(tags etags ctags)
-
 ## Testing
 
 if(BUILD_TESTING)
