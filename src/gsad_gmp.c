@@ -1570,7 +1570,7 @@ delete_resource (gvm_connection_t *connection, const char *type,
                  credentials_t *credentials, params_t *params,
                  gboolean ultimate, cmd_response_data_t *response_data)
 {
-  gchar *html, *response, *id_name, *resource_id, *extra_attribs;
+  gchar *html, *id_name, *resource_id, *extra_attribs;
   entity_t entity;
   gchar *cap_type, *prev_action;
 
@@ -1632,7 +1632,7 @@ delete_resource (gvm_connection_t *connection, const char *type,
   g_free (extra_attribs);
 
   entity = NULL;
-  if (read_entity_and_text_c (connection, &entity, &response))
+  if (read_entity_c (connection, &entity))
     {
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
@@ -1653,7 +1653,6 @@ delete_resource (gvm_connection_t *connection, const char *type,
   html = response_from_entity (connection, credentials, params, entity,
                                prev_action, response_data);
 
-  g_free (response);
   free_entity (entity);
   g_free (cap_type);
   g_free (prev_action);
