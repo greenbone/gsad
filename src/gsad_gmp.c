@@ -7488,7 +7488,7 @@ char *
 toggle_tag_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *html, *response;
+  gchar *html;
   const char *tag_id, *enable;
   entity_t entity;
 
@@ -7518,7 +7518,7 @@ toggle_tag_gmp (gvm_connection_t *connection, credentials_t *credentials,
     }
 
   entity = NULL;
-  if (read_entity_and_text_c (connection, &entity, &response))
+  if (read_entity_c (connection, &entity))
     {
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
@@ -7535,7 +7535,6 @@ toggle_tag_gmp (gvm_connection_t *connection, credentials_t *credentials,
                                "Toggle Tag", response_data);
 
   free_entity (entity);
-  g_free (response);
 
   return html;
 }
