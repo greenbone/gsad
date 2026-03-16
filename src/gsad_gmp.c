@@ -706,7 +706,6 @@ setting_get_value (gvm_connection_t *connection, const char *setting_id,
   int ret;
   entity_t entity;
   const char *status;
-  gchar *response;
 
   *value = NULL;
 
@@ -716,13 +715,12 @@ setting_get_value (gvm_connection_t *connection, const char *setting_id,
     return 1;
 
   entity = NULL;
-  if (read_entity_and_text_c (connection, &entity, &response))
+  if (read_entity_c (connection, &entity))
     return 2;
 
   status = entity_attribute (entity, "status");
   if (status == NULL || strlen (status) == 0)
     {
-      g_free (response);
       free_entity (entity);
       return -1;
     }
@@ -734,18 +732,15 @@ setting_get_value (gvm_connection_t *connection, const char *setting_id,
       if (setting == NULL)
         {
           free_entity (entity);
-          g_free (response);
           return 0;
         }
       setting = entity_child (setting, "value");
       if (setting == NULL)
         {
           free_entity (entity);
-          g_free (response);
           return -1;
         }
       *value = g_strdup (entity_text (setting));
-      g_free (response);
       free_entity (entity);
     }
   else
@@ -753,7 +748,6 @@ setting_get_value (gvm_connection_t *connection, const char *setting_id,
       if (response_data)
         set_http_status_from_entity (entity, response_data);
       free_entity (entity);
-      g_free (response);
       return -1;
     }
 
