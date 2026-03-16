@@ -6928,7 +6928,7 @@ char *
 clone_gmp (gvm_connection_t *connection, credentials_t *credentials,
            params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *html, *response;
+  gchar *html;
   const char *id, *type, *alterable;
   entity_t entity;
 
@@ -6979,7 +6979,7 @@ clone_gmp (gvm_connection_t *connection, credentials_t *credentials,
     }
 
   entity = NULL;
-  if (read_entity_and_text_c (connection, &entity, &response))
+  if (read_entity_c (connection, &entity))
     {
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
@@ -6996,7 +6996,6 @@ clone_gmp (gvm_connection_t *connection, credentials_t *credentials,
                                response_data);
 
   free_entity (entity);
-  g_free (response);
 
   return html;
 }
