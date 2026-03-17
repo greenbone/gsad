@@ -20432,7 +20432,7 @@ save_oci_image_target_gmp (gvm_connection_t *connection,
     }
 
   entity = NULL;
-  if (read_entity_and_text_c (connection, &entity, &response))
+  if (read_entity_c (connection, &entity))
     {
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
