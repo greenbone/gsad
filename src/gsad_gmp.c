@@ -9728,7 +9728,7 @@ report_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
   entity_t entity;
   const char *alert_id, *report_id;
   const char *status, *filter;
-  gchar *response, *html;
+  gchar *html;
   int ret;
 
   alert_id = params_value (params, "alert_id");
@@ -9771,7 +9771,7 @@ report_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
         response_data);
     }
 
-  if (read_entity_and_text_c (connection, &entity, &response))
+  if (read_entity_c (connection, &entity))
     {
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
@@ -9787,7 +9787,6 @@ report_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
   if ((status == NULL) || (strlen (status) == 0))
     {
       free_entity (entity);
-      g_free (response);
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_message (
@@ -9800,7 +9799,6 @@ report_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
   if (strcmp (status, "200"))
     {
       free_entity (entity);
-      g_free (response);
       cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
       return gsad_message (credentials, "Failed", __func__, __LINE__,
                            "Running the report alert failed."
@@ -9812,7 +9810,6 @@ report_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
                                "Report Alert", response_data);
 
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
