@@ -20805,8 +20805,6 @@ logout_gmp (const gchar *username, const gchar *password)
   entity_t entity;
   const char *status;
 
-  gchar *response;
-
   if (gvm_connection_open (&connection, manager_address, manager_port))
     {
       g_debug ("%s failed to acquire socket!\n", __func__);
@@ -20844,7 +20842,7 @@ logout_gmp (const gchar *username, const gchar *password)
     }
 
   entity = NULL;
-  if (read_entity_and_text_c (&connection, &entity, &response))
+  if (read_entity_c (&connection, &entity))
     {
       gvm_connection_close (&connection);
       return 1;
