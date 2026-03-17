@@ -15790,7 +15790,6 @@ sync_feed (gvm_connection_t *connection, credentials_t *credentials,
            const char *feed_name, cmd_response_data_t *response_data)
 {
   entity_t entity;
-  char *text = NULL;
   gchar *html, *msg;
 
   if (gvm_connection_sendf (connection, "<%s/>", sync_cmd) == -1)
@@ -15809,7 +15808,7 @@ sync_feed (gvm_connection_t *connection, credentials_t *credentials,
       return html;
     }
 
-  if (read_entity_and_text_c (connection, &entity, &text))
+  if (read_entity_c (connection, &entity))
     {
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
