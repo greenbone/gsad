@@ -16143,7 +16143,7 @@ save_filter_gmp (gvm_connection_t *connection, credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   entity_t entity;
-  gchar *html, *response;
+  gchar *html;
   const char *filter_id, *name, *comment, *term, *type;
 
   filter_id = params_value (params, "filter_id");
@@ -16185,7 +16185,7 @@ save_filter_gmp (gvm_connection_t *connection, credentials_t *credentials,
       }
 
     entity = NULL;
-    if (read_entity_and_text_c (connection, &entity, &response))
+    if (read_entity_c (connection, &entity))
       {
         cmd_response_data_set_status_code (response_data,
                                            MHD_HTTP_INTERNAL_SERVER_ERROR);
@@ -16204,7 +16204,6 @@ save_filter_gmp (gvm_connection_t *connection, credentials_t *credentials,
                                "Save Filter", response_data);
 
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
