@@ -18102,7 +18102,7 @@ char *
 delete_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *html, *response, *resource_id;
+  gchar *html, *resource_id;
   const char *next_id;
   entity_t entity;
 
@@ -18154,7 +18154,7 @@ delete_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
   g_free (resource_id);
 
   entity = NULL;
-  if (read_entity_and_text_c (connection, &entity, &response))
+  if (read_entity_c (connection, &entity))
     {
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
@@ -18170,7 +18170,6 @@ delete_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   html = response_from_entity (connection, credentials, params, entity,
                                "Delete Asset", response_data);
-  g_free (response);
   free_entity (entity);
   return html;
 }
