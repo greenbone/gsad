@@ -17708,7 +17708,7 @@ bulk_delete_gmp (gvm_connection_t *connection, credentials_t *credentials,
       params_iterator_init (&iter, selected_ids);
       while (params_iterator_next (&iter, &param_name, &param))
         {
-          gchar *command, *response;
+          gchar *command;
           entity_t entity;
 
           /* Delete the resource. */
@@ -17732,7 +17732,7 @@ bulk_delete_gmp (gvm_connection_t *connection, credentials_t *credentials,
           g_free (command);
 
           entity = NULL;
-          if (read_entity_and_text_c (connection, &entity, &response))
+          if (read_entity_c (connection, &entity))
             {
               cmd_response_data_set_status_code (
                 response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
@@ -17750,7 +17750,6 @@ bulk_delete_gmp (gvm_connection_t *connection, credentials_t *credentials,
             count++;
 
           free_entity (entity);
-          g_free (response);
         }
     }
 
