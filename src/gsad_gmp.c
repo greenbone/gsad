@@ -1959,7 +1959,7 @@ create_import_task_gmp (gvm_connection_t *connection,
 {
   entity_t entity;
   int ret;
-  gchar *command, *html, *response;
+  gchar *command, *html;
   const char *name, *comment, *usage_type;
 
   name = params_value (params, "name");
@@ -1978,7 +1978,7 @@ create_import_task_gmp (gvm_connection_t *connection,
                                      "</create_task>",
                                      name, comment, usage_type);
   ret =
-    gmp (connection, credentials, &response, &entity, response_data, command);
+    gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
 
   switch (ret)
@@ -2019,7 +2019,6 @@ create_import_task_gmp (gvm_connection_t *connection,
   html = response_from_entity (connection, credentials, params, entity,
                                "Create Import Task", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
