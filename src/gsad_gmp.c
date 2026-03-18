@@ -2599,7 +2599,7 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
   entity_t entity;
   int ret;
   gchar *schedule_element, *command;
-  gchar *response, *html;
+  gchar *html;
   const char *name, *comment, *oci_image_target_id;
   const char *schedule_id, *schedule_periods;
   const char *alterable, *add_tag, *tag_id, *scanner_id;
@@ -2713,7 +2713,7 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
   g_free (comment_escaped);
 
   ret =
-    gmp (connection, credentials, &response, &entity, response_data, command);
+    gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
 
   g_free (schedule_element);
@@ -2757,7 +2757,7 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
       if (add_tag && strcmp (add_tag, "1") == 0)
         {
           const char *new_task_id = entity_attribute (entity, "id");
-          gchar *tag_command, *tag_response;
+          gchar *tag_command;
           entity_t tag_entity;
 
           tag_command = g_markup_printf_escaped ("<modify_tag tag_id=\"%s\">"
@@ -2767,7 +2767,7 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
                                                  "</modify_tag>",
                                                  tag_id, new_task_id);
 
-          ret = gmp (connection, credentials, &tag_response, &tag_entity,
+          ret = gmp (connection, credentials, NULL, &tag_entity,
                      response_data, tag_command);
 
           switch (ret)
@@ -2776,7 +2776,6 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
               break;
             case 1:
               free_entity (entity);
-              g_free (response);
               cmd_response_data_set_status_code (
                 response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
               return gsad_message (
@@ -2787,7 +2786,6 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
                 response_data);
             case 2:
               free_entity (entity);
-              g_free (response);
               cmd_response_data_set_status_code (
                 response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
               return gsad_message (
@@ -2798,7 +2796,6 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
                 response_data);
             default:
               free_entity (entity);
-              g_free (response);
               cmd_response_data_set_status_code (
                 response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
               return gsad_message (
@@ -2815,7 +2812,6 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
             connection, credentials, params, tag_entity,
             "Create OCI Image Task and Tag", response_data);
           free_entity (tag_entity);
-          g_free (tag_response);
         }
       else
         {
@@ -2831,7 +2827,6 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
                                    "Create OCI Image Task", response_data);
     }
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
