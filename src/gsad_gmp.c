@@ -1869,7 +1869,7 @@ create_report_gmp (gvm_connection_t *connection, credentials_t *credentials,
   entity_t entity;
   int ret;
   gchar **xml_file_array, *xml_file_escaped;
-  gchar *command, *html, *response;
+  gchar *command, *html;
   const char *task_id = params_value (params, "task_id"),
              *xml_file = params_value (params, "xml_file"),
              *in_assets = params_value (params, "in_assets");
@@ -1900,7 +1900,7 @@ create_report_gmp (gvm_connection_t *connection, credentials_t *credentials,
   g_free (xml_file_escaped);
 
   ret =
-    gmp (connection, credentials, &response, &entity, response_data, command);
+    gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
 
   switch (ret)
@@ -1939,7 +1939,6 @@ create_report_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Import Report", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
