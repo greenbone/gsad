@@ -60,8 +60,8 @@ some supported platforms.
 
 Prerequisites:
 
-- libgvm_base, libgvm_util >= 20.8.2
-- libgvm_gmp >=22.38.0
+- libgvm_base, libgvm_util >= 22.8.0
+- libgvm_gmp >= 22.38.0
 - gnutls >= 3.2.15
 - libgcrypt
 - cmake >= 3.18
