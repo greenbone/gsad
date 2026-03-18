@@ -3559,7 +3559,7 @@ char *
 move_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *command, *response, *html;
+  gchar *command, *html;
   const char *task_id, *slave_id;
   int ret;
   entity_t entity;
@@ -3570,10 +3570,9 @@ move_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   command = g_strdup_printf ("<move_task task_id=\"%s\" slave_id=\"%s\"/>",
                              task_id ? task_id : "", slave_id ? slave_id : "");
 
-  response = NULL;
   entity = NULL;
   ret =
-    gmp (connection, credentials, &response, &entity, response_data, command);
+    gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
   switch (ret)
     {
@@ -3612,7 +3611,6 @@ move_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
                                "Move Task", response_data);
 
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
