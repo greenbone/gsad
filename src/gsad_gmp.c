@@ -2039,7 +2039,7 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   entity_t entity;
   int ret;
   GString *command;
-  gchar *response, *html;
+  gchar *html;
   const char *name, *comment, *config_id, *target_id, *scanner_type;
   const char *scanner_id, *schedule_id, *schedule_periods;
   const char *max_checks, *max_hosts;
@@ -2215,7 +2215,7 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
     cs_allow_failed_retrieval ? strcmp (cs_allow_failed_retrieval, "0") : 0,
     alterable ? strcmp (alterable, "0") : 0, usage_type);
 
-  ret = gmp (connection, credentials, &response, &entity, response_data,
+  ret = gmp (connection, credentials, NULL, &entity, response_data,
              command->str);
   g_string_free (command, TRUE);
 
@@ -2257,7 +2257,7 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
       if (add_tag && strcmp (add_tag, "1") == 0)
         {
           const char *new_task_id = entity_attribute (entity, "id");
-          gchar *tag_command, *tag_response;
+          gchar *tag_command;
           entity_t tag_entity;
 
           tag_command = g_markup_printf_escaped ("<modify_tag tag_id=\"%s\">"
@@ -2267,7 +2267,7 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
                                                  "</modify_tag>",
                                                  tag_id, new_task_id);
 
-          ret = gmp (connection, credentials, &tag_response, &tag_entity,
+          ret = gmp (connection, credentials, NULL, &tag_entity,
                      response_data, tag_command);
 
           switch (ret)
@@ -2276,7 +2276,6 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
               break;
             case 1:
               free_entity (entity);
-              g_free (response);
               cmd_response_data_set_status_code (
                 response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
               return gsad_message (
@@ -2287,7 +2286,6 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 response_data);
             case 2:
               free_entity (entity);
-              g_free (response);
               cmd_response_data_set_status_code (
                 response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
               return gsad_message (
@@ -2298,7 +2296,6 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 response_data);
             default:
               free_entity (entity);
-              g_free (response);
               cmd_response_data_set_status_code (
                 response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
               return gsad_message (
@@ -2315,7 +2312,6 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
             response_from_entity (connection, credentials, params, tag_entity,
                                   "Create Task and Tag", response_data);
           free_entity (tag_entity);
-          g_free (tag_response);
         }
       else
         {
@@ -2331,7 +2327,6 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
                                    "Create Task", response_data);
     }
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
