@@ -6641,7 +6641,7 @@ create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
                    params_t *params, cmd_response_data_t *response_data)
 {
   int ret;
-  gchar *html, *response, *command;
+  gchar *html, *command;
   const char *name, *hosts, *exclude_hosts, *comment;
   const char *target_ssh_credential, *port, *target_smb_credential;
   const char *target_ssh_elevate_credential;
@@ -6847,7 +6847,7 @@ create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
   g_free (asset_hosts_element);
 
   ret =
-    gmp (connection, credentials, &response, &entity, response_data, command);
+    gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
   switch (ret)
     {
@@ -6887,7 +6887,6 @@ create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Create Target", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
