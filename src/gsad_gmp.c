@@ -12423,7 +12423,7 @@ run_wizard_gmp (gvm_connection_t *connection, credentials_t *credentials,
   int ret;
   GString *run;
   param_t *param;
-  gchar *param_name, *html, *response;
+  gchar *param_name, *html;
   params_iterator_t iter;
   params_t *wizard_params;
   entity_t entity;
@@ -12464,10 +12464,9 @@ run_wizard_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   g_string_append (run, "</params></run_wizard>");
 
-  response = NULL;
   entity = NULL;
   ret =
-    gmp (connection, credentials, &response, &entity, response_data, run->str);
+    gmp (connection, credentials, NULL, &entity, response_data, run->str);
   g_string_free (run, TRUE);
   switch (ret)
     {
@@ -12504,7 +12503,6 @@ run_wizard_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Run Wizard", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
