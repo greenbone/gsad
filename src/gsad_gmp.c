@@ -17257,7 +17257,6 @@ save_setting_gmp (gvm_connection_t *connection, credentials_t *credentials,
   gchar *value_64 =
     g_base64_encode ((guchar *) setting_value, strlen (setting_value));
   gchar *html;
-  gchar *response = NULL;
   entity_t entity = NULL;
   int ret;
   GString *xml = g_string_new ("");
@@ -17283,7 +17282,7 @@ save_setting_gmp (gvm_connection_t *connection, credentials_t *credentials,
   cmd_response_data_set_content_type (response_data, GSAD_CONTENT_TYPE_APP_XML);
 
   ret =
-    gmp (connection, credentials, &response, &entity, response_data, xml->str);
+    gmp (connection, credentials, NULL, &entity, response_data, xml->str);
 
   g_free (value_64);
   g_string_free (xml, TRUE);
@@ -17324,7 +17323,6 @@ save_setting_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Save Setting", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
