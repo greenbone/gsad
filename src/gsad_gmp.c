@@ -15346,20 +15346,19 @@ char *
 import_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
                       params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *command, *html, *response;
+  gchar *command, *html;
   entity_t entity;
   int ret;
 
   /* Create the port list. */
 
-  response = NULL;
   entity = NULL;
   command = g_strdup_printf ("<create_port_list>"
                              "%s"
                              "</create_port_list>",
                              params_value (params, "xml_file"));
   ret =
-    gmp (connection, credentials, &response, &entity, response_data, command);
+    gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
   switch (ret)
     {
@@ -15399,7 +15398,6 @@ import_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Import Port List", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
