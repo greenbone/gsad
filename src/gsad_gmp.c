@@ -5910,7 +5910,7 @@ create_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   int ret;
-  gchar *html, *response;
+  gchar *html;
   const char *name, *comment, *active, *condition, *event, *method, *filter_id;
   params_t *method_data, *event_data, *condition_data, *report_formats;
   entity_t entity;
@@ -5986,7 +5986,7 @@ create_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
                           "</create_alert>");
 
   ret =
-    gmp (connection, credentials, &response, &entity, response_data, xml->str);
+    gmp (connection, credentials, NULL, &entity, response_data, xml->str);
   g_string_free (xml, TRUE);
   switch (ret)
     {
@@ -6026,7 +6026,6 @@ create_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Create Alert", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
