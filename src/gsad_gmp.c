@@ -1899,8 +1899,7 @@ create_report_gmp (gvm_connection_t *connection, credentials_t *credentials,
                              xml_file_escaped ? xml_file_escaped : "");
   g_free (xml_file_escaped);
 
-  ret =
-    gmp (connection, credentials, NULL, &entity, response_data, command);
+  ret = gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
 
   switch (ret)
@@ -1977,8 +1976,7 @@ create_import_task_gmp (gvm_connection_t *connection,
                                      "<usage_type>%s</usage_type>"
                                      "</create_task>",
                                      name, comment, usage_type);
-  ret =
-    gmp (connection, credentials, NULL, &entity, response_data, command);
+  ret = gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
 
   switch (ret)
@@ -2215,8 +2213,8 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
     cs_allow_failed_retrieval ? strcmp (cs_allow_failed_retrieval, "0") : 0,
     alterable ? strcmp (alterable, "0") : 0, usage_type);
 
-  ret = gmp (connection, credentials, NULL, &entity, response_data,
-             command->str);
+  ret =
+    gmp (connection, credentials, NULL, &entity, response_data, command->str);
   g_string_free (command, TRUE);
 
   switch (ret)
@@ -2267,8 +2265,8 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
                                                  "</modify_tag>",
                                                  tag_id, new_task_id);
 
-          ret = gmp (connection, credentials, NULL, &tag_entity,
-                     response_data, tag_command);
+          ret = gmp (connection, credentials, NULL, &tag_entity, response_data,
+                     tag_command);
 
           switch (ret)
             {
@@ -2462,8 +2460,7 @@ create_agent_group_task_gmp (gvm_connection_t *connection,
   g_free (name_escaped);
   g_free (comment_escaped);
 
-  ret =
-    gmp (connection, credentials, NULL, &entity, response_data, command);
+  ret = gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
 
   g_free (schedule_element);
@@ -2517,8 +2514,8 @@ create_agent_group_task_gmp (gvm_connection_t *connection,
                                                  "</modify_tag>",
                                                  tag_id, new_task_id);
 
-          ret = gmp (connection, credentials, NULL, &tag_entity,
-                     response_data, tag_command);
+          ret = gmp (connection, credentials, NULL, &tag_entity, response_data,
+                     tag_command);
 
           switch (ret)
             {
@@ -2712,8 +2709,7 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
   g_free (name_escaped);
   g_free (comment_escaped);
 
-  ret =
-    gmp (connection, credentials, NULL, &entity, response_data, command);
+  ret = gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
 
   g_free (schedule_element);
@@ -2767,8 +2763,8 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
                                                  "</modify_tag>",
                                                  tag_id, new_task_id);
 
-          ret = gmp (connection, credentials, NULL, &tag_entity,
-                     response_data, tag_command);
+          ret = gmp (connection, credentials, NULL, &tag_entity, response_data,
+                     tag_command);
 
           switch (ret)
             {
@@ -3571,8 +3567,7 @@ move_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
                              task_id ? task_id : "", slave_id ? slave_id : "");
 
   entity = NULL;
-  ret =
-    gmp (connection, credentials, NULL, &entity, response_data, command);
+  ret = gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
   switch (ret)
     {
@@ -5119,8 +5114,8 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   xml_string_append (command, "</modify_credential>");
 
   /* Modify the credential. */
-  ret = gmp (connection, credentials, NULL, &entity, response_data,
-             command->str);
+  ret =
+    gmp (connection, credentials, NULL, &entity, response_data, command->str);
   g_string_free (command, TRUE);
 
   switch (ret)
@@ -5985,8 +5980,7 @@ create_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
   xml_string_append (xml, "</condition>"
                           "</create_alert>");
 
-  ret =
-    gmp (connection, credentials, NULL, &entity, response_data, xml->str);
+  ret = gmp (connection, credentials, NULL, &entity, response_data, xml->str);
   g_string_free (xml, TRUE);
   switch (ret)
     {
@@ -6484,8 +6478,7 @@ save_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
   xml_string_append (xml, "</condition>"
                           "</modify_alert>");
 
-  ret =
-    gmp (connection, credentials, NULL, &entity, response_data, xml->str);
+  ret = gmp (connection, credentials, NULL, &entity, response_data, xml->str);
   g_string_free (xml, TRUE);
   switch (ret)
     {
@@ -6846,8 +6839,7 @@ create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
   g_free (krb5_credentials_element);
   g_free (asset_hosts_element);
 
-  ret =
-    gmp (connection, credentials, NULL, &entity, response_data, command);
+  ret = gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
   switch (ret)
     {
@@ -7984,8 +7976,7 @@ import_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
                              "%s"
                              "</create_config>",
                              params_value (params, "xml_file"));
-  ret =
-    gmp (connection, credentials, NULL, &entity, response_data, command);
+  ret = gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
   switch (ret)
     {
@@ -11089,8 +11080,7 @@ save_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   g_string_append (xml, "</modify_scanner>");
 
-  ret =
-    gmp (connection, credentials, NULL, &entity, response_data, xml->str);
+  ret = gmp (connection, credentials, NULL, &entity, response_data, xml->str);
 
   g_string_free (xml, TRUE);
 
@@ -12051,8 +12041,7 @@ import_report_format_gmp (gvm_connection_t *connection,
                              "%s"
                              "</create_report_format>",
                              params_value (params, "xml_file"));
-  ret =
-    gmp (connection, credentials, NULL, &entity, response_data, command);
+  ret = gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
   switch (ret)
     {
@@ -12465,8 +12454,7 @@ run_wizard_gmp (gvm_connection_t *connection, credentials_t *credentials,
   g_string_append (run, "</params></run_wizard>");
 
   entity = NULL;
-  ret =
-    gmp (connection, credentials, NULL, &entity, response_data, run->str);
+  ret = gmp (connection, credentials, NULL, &entity, response_data, run->str);
   g_string_free (run, TRUE);
   switch (ret)
     {
@@ -14084,8 +14072,7 @@ create_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
   g_string_free (xml, TRUE);
   g_free (specials_element);
 
-  ret =
-    gmp (connection, credentials, NULL, &entity, response_data, command);
+  ret = gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
   switch (ret)
     {
@@ -15357,8 +15344,7 @@ import_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
                              "%s"
                              "</create_port_list>",
                              params_value (params, "xml_file"));
-  ret =
-    gmp (connection, credentials, NULL, &entity, response_data, command);
+  ret = gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
   switch (ret)
     {
@@ -16813,8 +16799,8 @@ save_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
   g_string_append (command, "</modify_user>");
 
   entity = NULL;
-  ret = gmp (connection, credentials, NULL, &entity, response_data,
-             command->str);
+  ret =
+    gmp (connection, credentials, NULL, &entity, response_data, command->str);
   g_string_free (command, TRUE);
 
   switch (ret)
@@ -17281,8 +17267,7 @@ save_setting_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   cmd_response_data_set_content_type (response_data, GSAD_CONTENT_TYPE_APP_XML);
 
-  ret =
-    gmp (connection, credentials, NULL, &entity, response_data, xml->str);
+  ret = gmp (connection, credentials, NULL, &entity, response_data, xml->str);
 
   g_free (value_64);
   g_string_free (xml, TRUE);
@@ -17830,8 +17815,7 @@ create_host_gmp (gvm_connection_t *connection, credentials_t *credentials,
                      "</create_asset>",
                      name, comment);
 
-  ret =
-    gmp (connection, credentials, NULL, &entity, response_data, xml->str);
+  ret = gmp (connection, credentials, NULL, &entity, response_data, xml->str);
   g_string_free (xml, TRUE);
   switch (ret)
     {
@@ -19788,8 +19772,7 @@ create_agent_group_gmp (gvm_connection_t *connection,
   command = g_string_free (cmd, FALSE);
 
   /* Send the command */
-  ret =
-    gmp (connection, credentials, NULL, &entity, response_data, command);
+  ret = gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
 
   switch (ret)
@@ -20152,8 +20135,8 @@ create_oci_image_target_gmp (gvm_connection_t *connection,
   g_free (comment_element);
   g_free (credential_element);
 
-  ret = gmp (connection, credentials, NULL, &entity, response_data,
-             command->str);
+  ret =
+    gmp (connection, credentials, NULL, &entity, response_data, command->str);
   g_string_free (command, TRUE);
   switch (ret)
     {
