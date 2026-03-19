@@ -19735,7 +19735,7 @@ create_agent_group_gmp (gvm_connection_t *connection,
                         credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
-  gchar *command = NULL, *response = NULL, *html = NULL;
+  gchar *command = NULL, *html = NULL;
   GString *agents_element = NULL, *cmd = NULL;
   const char *name = NULL, *comment = NULL, *copy = NULL;
   char *param_name = NULL;
@@ -19789,7 +19789,7 @@ create_agent_group_gmp (gvm_connection_t *connection,
 
   /* Send the command */
   ret =
-    gmp (connection, credentials, &response, &entity, response_data, command);
+    gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
 
   switch (ret)
@@ -19831,7 +19831,6 @@ create_agent_group_gmp (gvm_connection_t *connection,
   html = response_from_entity (connection, credentials, params, entity,
                                "Create Agent Group", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
