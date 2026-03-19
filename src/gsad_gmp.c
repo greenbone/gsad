@@ -11041,7 +11041,6 @@ save_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   GString *xml = NULL;
-  gchar *response = NULL;
   entity_t entity = NULL;
   const char *scanner_id, *name, *comment, *port, *host, *type, *ca_pub;
   const char *credential_id;
@@ -11091,7 +11090,7 @@ save_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
   g_string_append (xml, "</modify_scanner>");
 
   ret =
-    gmp (connection, credentials, &response, &entity, response_data, xml->str);
+    gmp (connection, credentials, NULL, &entity, response_data, xml->str);
 
   g_string_free (xml, TRUE);
 
@@ -11132,7 +11131,6 @@ save_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
                                "Save Scanner", response_data);
 
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
