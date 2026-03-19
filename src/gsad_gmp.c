@@ -20072,7 +20072,7 @@ create_oci_image_target_gmp (gvm_connection_t *connection,
                              cmd_response_data_t *response_data)
 {
   int ret;
-  gchar *xml, *response;
+  gchar *xml;
   const char *name, *image_references, *comment;
   const char *credential, *target_source, *file;
   const char *exclude_images, *target_exclude_source, *exclude_file;
@@ -20152,7 +20152,7 @@ create_oci_image_target_gmp (gvm_connection_t *connection,
   g_free (comment_element);
   g_free (credential_element);
 
-  ret = gmp (connection, credentials, &response, &entity, response_data,
+  ret = gmp (connection, credentials, NULL, &entity, response_data,
              command->str);
   g_string_free (command, TRUE);
   switch (ret)
@@ -20193,7 +20193,6 @@ create_oci_image_target_gmp (gvm_connection_t *connection,
   xml = response_from_entity (connection, credentials, params, entity,
                               "Create OCI Image Target", response_data);
   free_entity (entity);
-  g_free (response);
   return xml;
 }
 
