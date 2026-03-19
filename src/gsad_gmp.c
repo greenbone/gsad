@@ -16436,7 +16436,7 @@ create_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
   int ret;
   params_t *groups, *roles;
   GString *group_elements, *role_elements, *string;
-  gchar *buf, *response, *html;
+  gchar *buf, *html;
   entity_t entity;
 
   name = params_value (params, "login");
@@ -16537,9 +16537,8 @@ create_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   buf = g_string_free (string, FALSE);
 
-  response = NULL;
   entity = NULL;
-  ret = gmp (connection, credentials, &response, &entity, response_data, buf);
+  ret = gmp (connection, credentials, NULL, &entity, response_data, buf);
   g_free (buf);
   switch (ret)
     {
@@ -16579,7 +16578,6 @@ create_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Create User", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
