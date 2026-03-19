@@ -14043,7 +14043,7 @@ char *
 create_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *html, *response, *command, *specials_element;
+  gchar *html, *command, *specials_element;
   const char *name, *comment, *users, *grant_full;
   entity_t entity;
   GString *xml;
@@ -14085,7 +14085,7 @@ create_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
   g_free (specials_element);
 
   ret =
-    gmp (connection, credentials, &response, &entity, response_data, command);
+    gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
   switch (ret)
     {
@@ -14125,7 +14125,6 @@ create_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Create Group", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
