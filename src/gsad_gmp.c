@@ -20235,7 +20235,7 @@ save_oci_image_target_gmp (gvm_connection_t *connection,
   const char *credential, *target_source, *file;
   const char *target_exclude_source = NULL, *exclude_file = NULL;
   const char *oci_image_target_id, *in_use;
-  gchar *xml, *response;
+  gchar *xml;
   GString *command;
   int ret;
 
@@ -20261,9 +20261,8 @@ save_oci_image_target_gmp (gvm_connection_t *connection,
                          "</modify_oci_image_target>",
                          oci_image_target_id, name, comment);
 
-      response = NULL;
       entity = NULL;
-      ret = gmp (connection, credentials, &response, &entity, response_data,
+      ret = gmp (connection, credentials, NULL, &entity, response_data,
                  command->str);
       g_string_free (command, TRUE);
       switch (ret)
@@ -20303,7 +20302,6 @@ save_oci_image_target_gmp (gvm_connection_t *connection,
                                   "Save OCI Image Target", response_data);
 
       free_entity (entity);
-      g_free (response);
       return xml;
     }
 
