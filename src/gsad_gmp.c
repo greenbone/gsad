@@ -16678,7 +16678,7 @@ save_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   int ret;
-  gchar *html, *response, *buf;
+  gchar *html, *buf;
   const char *user_id, *login, *old_login, *modify_password, *password;
   const char *hosts, *hosts_allow, *comment;
   entity_t entity;
@@ -16812,9 +16812,8 @@ save_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   g_string_append (command, "</modify_user>");
 
-  response = NULL;
   entity = NULL;
-  ret = gmp (connection, credentials, &response, &entity, response_data,
+  ret = gmp (connection, credentials, NULL, &entity, response_data,
              command->str);
   g_string_free (command, TRUE);
 
@@ -16879,7 +16878,6 @@ save_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
       && str_equal (old_login, user_get_username (current_user)))
     {
       free_entity (entity);
-      g_free (response);
 
       cmd_response_data_set_status_code (response_data, MHD_HTTP_UNAUTHORIZED);
       return gsad_message (
@@ -16890,7 +16888,6 @@ save_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
     html = response_from_entity (connection, credentials, params, entity,
                                  "Save User", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
