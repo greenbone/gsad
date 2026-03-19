@@ -6401,7 +6401,7 @@ save_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
 {
   GString *xml;
   int ret;
-  gchar *html, *response;
+  gchar *html;
   const char *name, *comment, *alert_id;
   const char *event, *condition, *method;
   const char *filter_id, *active;
@@ -6485,7 +6485,7 @@ save_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
                           "</modify_alert>");
 
   ret =
-    gmp (connection, credentials, &response, &entity, response_data, xml->str);
+    gmp (connection, credentials, NULL, &entity, response_data, xml->str);
   g_string_free (xml, TRUE);
   switch (ret)
     {
@@ -6523,7 +6523,6 @@ save_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Save Alert", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
