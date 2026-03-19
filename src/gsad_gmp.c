@@ -4828,7 +4828,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
                      params_t *params, cmd_response_data_t *response_data)
 {
   int ret;
-  gchar *html = NULL, *response = NULL;
+  gchar *html = NULL;
   const char *credential_id, *public_key;
   const char *name, *comment, *credential_login, *password, *passphrase, *type;
   const char *credential_store_id, *vault_id, *host_identifier;
@@ -5119,7 +5119,7 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   xml_string_append (command, "</modify_credential>");
 
   /* Modify the credential. */
-  ret = gmp (connection, credentials, &response, &entity, response_data,
+  ret = gmp (connection, credentials, NULL, &entity, response_data,
              command->str);
   g_string_free (command, TRUE);
 
@@ -5159,7 +5159,6 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Save Credential", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
