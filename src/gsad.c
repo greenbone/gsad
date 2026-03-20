@@ -1443,10 +1443,13 @@ gsad_cleanup (gsad_log_config_t *log_config)
   g_debug ("Cleaning up base...");
   gsad_base_cleanup ();
 
-  g_debug ("Removing pidfile... %s",
-           gsad_settings_get_pid_filename (gsad_global_settings));
-  pidfile_remove (
-    (gchar *) gsad_settings_get_pid_filename (gsad_global_settings));
+  if (gsad_settings_get_pid_filename (gsad_global_settings))
+    {
+      g_debug ("Removing pidfile... %s",
+               gsad_settings_get_pid_filename (gsad_global_settings));
+      pidfile_remove (
+        (gchar *) gsad_settings_get_pid_filename (gsad_global_settings));
+    }
 
   gsad_logging_cleanup (log_config);
   gsad_settings_free (gsad_global_settings);
