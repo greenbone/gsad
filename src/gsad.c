@@ -1800,7 +1800,7 @@ main (int argc, char **argv)
 
   if (gsad_args_parse (argc, argv, gsad_args) != 0)
     {
-      goto error_with_settings_cleanup;
+      goto error;
     }
 
   if (gsad_args_is_print_version_enabled (gsad_args))
@@ -1825,25 +1825,25 @@ main (int argc, char **argv)
     {
       g_critical ("Invalid session timeout value: %d.",
                   gsad_args_get_session_timeout (gsad_args));
-      goto error_with_settings_cleanup;
+      goto error;
     }
   if (gsad_args_validate_port (gsad_args))
     {
       g_critical ("Invalid GSAD port value: %d.",
                   gsad_args_get_port (gsad_args));
-      goto error_with_settings_cleanup;
+      goto error;
     }
   if (gsad_args_validate_manager_port (gsad_args))
     {
       g_critical ("Invalid gvmd port value: %d.",
                   gsad_args_get_manager_port (gsad_args));
-      goto error_with_settings_cleanup;
+      goto error;
     }
   if (gsad_args_validate_redirect_port (gsad_args))
     {
       g_critical ("Invalid redirect port value: %d.",
                   gsad_args_get_redirect_port (gsad_args));
-      goto error_with_settings_cleanup;
+      goto error;
     }
   if (gsad_args_is_https_enabled (gsad_args))
     {
@@ -1851,13 +1851,13 @@ main (int argc, char **argv)
         {
           g_critical ("Invalid TLS private key file: %s.",
                       gsad_args_get_tls_private_key_filename (gsad_args));
-          goto error_with_settings_cleanup;
+          goto error;
         }
       if (gsad_args_validate_tls_certificate (gsad_args))
         {
           g_critical ("Invalid TLS certificate file: %s.",
                       gsad_args_get_tls_certificate_filename (gsad_args));
-          goto error_with_settings_cleanup;
+          goto error;
         }
     }
 
@@ -1866,7 +1866,7 @@ main (int argc, char **argv)
   if (gsad_init (gsad_args_get_static_content_directory (gsad_args)) == MHD_NO)
     {
       g_critical ("Initialization failed! Exiting...");
-      goto error_with_settings_cleanup;
+      goto error;
     }
 
   gsad_settings_set_http_x_frame_options (
@@ -1904,7 +1904,7 @@ main (int argc, char **argv)
   if (register_signal_handlers ())
     {
       g_critical ("Failed to register signal handlers!");
-      goto error_with_settings_cleanup;
+      goto error;
     }
 
   if (gsad_args_is_debug_tls_enabled (gsad_args))
@@ -1916,7 +1916,7 @@ main (int argc, char **argv)
   if (gsad_base_init ())
     {
       g_critical ("libxml must be compiled with thread support");
-      goto error_with_settings_cleanup;
+      goto error;
     }
 
   if (gsad_args_get_vendor_version (gsad_args))
@@ -1928,7 +1928,7 @@ main (int argc, char **argv)
   if (setenv ("TZ", "utc 0", 1) == -1)
     {
       g_critical ("Failed to set timezone.");
-      goto error_with_settings_cleanup;
+      goto error;
     }
   tzset ();
 
@@ -1967,7 +1967,7 @@ main (int argc, char **argv)
         case -1:
           /* Parent when error. */
           g_critical ("Failed to fork!");
-          goto error_with_settings_cleanup;
+          goto error;
           break;
         default:
           /* Parent. */
@@ -2000,7 +2000,7 @@ main (int argc, char **argv)
         case -1:
           /* Parent when error. */
           g_critical ("Failed to fork for redirect!");
-          goto error_with_settings_cleanup;
+          goto error;
           break;
         default:
           /* Parent. */
@@ -2214,8 +2214,6 @@ success:
   gsad_cleanup (log_config);
   gsad_args_free (gsad_args);
   return EXIT_SUCCESS;
-error_with_settings_cleanup:
-  gsad_settings_free (gsad_global_settings);
 error:
   g_debug ("Exiting with failure...");
   gsad_cleanup (log_config);
