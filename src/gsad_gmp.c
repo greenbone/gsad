@@ -17575,6 +17575,7 @@ wizard_get (gvm_connection_t *connection, credentials_t *credentials,
 
   wizard_xml = g_strdup_printf ("<wizard><%s/>%s%s</wizard>", name,
                                 extra_xml ? extra_xml : "", response);
+  g_free (response);
 
   return envelope_gmp (connection, credentials, params, wizard_xml,
                        response_data);
