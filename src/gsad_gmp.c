@@ -1721,7 +1721,7 @@ resource_action (gvm_connection_t *connection, credentials_t *credentials,
                  params_t *params, const char *type, const char *action,
                  cmd_response_data_t *response_data)
 {
-  gchar *html, *response, *param_name;
+  gchar *html, *param_name;
   const char *resource_id;
   gchar *cap_action, *cap_type, *get_cmd, *prev_action;
 
@@ -1750,9 +1750,8 @@ resource_action (gvm_connection_t *connection, credentials_t *credentials,
     }
   g_free (param_name);
 
-  response = NULL;
   entity = NULL;
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
+  ret = gmpf (connection, credentials, NULL, &entity, response_data,
               "<%s_%s %s_id=\"%s\"/>", action, type, type, resource_id);
   switch (ret)
     {
@@ -1797,7 +1796,6 @@ resource_action (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                prev_action, response_data);
 
-  g_free (response);
   free_entity (entity);
   g_free (cap_action);
   g_free (cap_type);
@@ -2858,7 +2856,7 @@ char *
 save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *html, *response, *format;
+  gchar *html, *format;
   const char *comment, *name, *schedule_id, *in_assets;
   const char *scanner_id, *task_id, *max_checks, *max_hosts;
   const char *config_id, *target_id, *alterable;
@@ -3019,10 +3017,9 @@ save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
     "</modify_task>",
     alert_element->str, alterable ? "<alterable>" : "",
     alterable ? strcmp (alterable, "0") : 0, alterable ? "</alterable>" : "");
-  response = NULL;
   entity = NULL;
   ret = gmpf (
-    connection, credentials, &response, &entity, response_data, format, task_id,
+    connection, credentials, NULL, &entity, response_data, format, task_id,
     name, comment, target_id, config_id, schedule_id, schedule_periods,
     scanner_id, max_checks, max_hosts, strcmp (in_assets, "0") ? "yes" : "no",
     strcmp (apply_overrides, "0") ? "yes" : "no", min_qod, auto_delete,
@@ -3068,7 +3065,6 @@ save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Save Task", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
@@ -3088,7 +3084,7 @@ char *
 save_import_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
                       params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *format, *response, *html;
+  gchar *format, *html;
   const char *comment, *name, *task_id;
   const char *in_assets, *auto_delete, *auto_delete_data;
   int ret;
@@ -3126,10 +3122,9 @@ save_import_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
                             "</preferences>"
                             "</modify_task>");
 
-  response = NULL;
   entity = NULL;
   ret =
-    gmpf (connection, credentials, &response, &entity, response_data, format,
+    gmpf (connection, credentials, NULL, &entity, response_data, format,
           task_id, name, comment, strcmp (in_assets, "0") ? "yes" : "no",
           auto_delete, auto_delete_data);
   g_free (format);
@@ -3169,7 +3164,6 @@ save_import_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Save Import Task", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
@@ -3183,7 +3177,7 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
                            credentials_t *credentials, params_t *params,
                            cmd_response_data_t *response_data)
 {
-  gchar *html = NULL, *response = NULL, *format = NULL;
+  gchar *html = NULL, *format = NULL;
   const char *comment, *name, *schedule_id, *schedule_periods;
   const char *task_id, *agent_group_id;
   const char *alterable;
@@ -3255,7 +3249,7 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
     alterable ? strcmp (alterable, "0") : 0, alterable ? "</alterable>" : "");
 
   /* Send */
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
+  ret = gmpf (connection, credentials, NULL, &entity, response_data,
               format, task_id, name, comment, agent_group_id, schedule_id,
               schedule_periods);
 
@@ -3298,7 +3292,6 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
   html = response_from_entity (connection, credentials, params, entity,
                                "Save Agent Group Task", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
@@ -3312,7 +3305,7 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
                          credentials_t *credentials, params_t *params,
                          cmd_response_data_t *response_data)
 {
-  gchar *html = NULL, *response = NULL, *format = NULL;
+  gchar *html = NULL, *format = NULL;
   const char *comment, *name, *schedule_id, *schedule_periods;
   const char *task_id, *oci_image_target_id, *scanner_id;
   const char *accept_invalid_certs, *registry_allow_insecure;
@@ -3403,7 +3396,7 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
 
   /* Send */
   ret = gmpf (
-    connection, credentials, &response, &entity, response_data, format, task_id,
+    connection, credentials, NULL, &entity, response_data, format, task_id,
     name, comment, oci_image_target_id, schedule_id, schedule_periods,
     scanner_id, accept_invalid_certs ? strcmp (accept_invalid_certs, "0") : 0,
     registry_allow_insecure ? strcmp (registry_allow_insecure, "0") : 0);
@@ -3447,7 +3440,6 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
   html = response_from_entity (connection, credentials, params, entity,
                                "Save OCI Image Task", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
@@ -3738,7 +3730,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
                        params_t *params, cmd_response_data_t *response_data)
 {
   int ret;
-  gchar *html, *response;
+  gchar *html;
   const char *name, *comment, *credential_login, *type, *password, *passphrase;
   const char *credential_store_id, *vault_id, *host_identifier;
   const char *privacy_host_identifier;
@@ -3782,7 +3774,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
         {
           // Auto-generate types without username
           ret =
-            gmpf (connection, credentials, &response, &entity, response_data,
+            gmpf (connection, credentials, NULL, &entity, response_data,
                   "<create_credential>"
                   "<name>%s</name>"
                   "<comment>%s</comment>"
@@ -3797,7 +3789,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           CHECK_VARIABLE_INVALID (credential_login, "Create Credential");
 
           ret =
-            gmpf (connection, credentials, &response, &entity, response_data,
+            gmpf (connection, credentials, NULL, &entity, response_data,
                   "<create_credential>"
                   "<name>%s</name>"
                   "<comment>%s</comment>"
@@ -3816,7 +3808,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           CHECK_VARIABLE_INVALID (password, "Create Credential");
 
           ret = gmpf (
-            connection, credentials, &response, &entity, response_data,
+            connection, credentials, NULL, &entity, response_data,
             "<create_credential>"
             "<name>%s</name>"
             "<comment>%s</comment>"
@@ -3922,7 +3914,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
             login_password_xml->str ? login_password_xml->str : "",
             kdcs_xml->str ? kdcs_xml->str : "", realm_esc);
 
-          ret = gmp (connection, credentials, &response, &entity, response_data,
+          ret = gmp (connection, credentials, NULL, &entity, response_data,
                      command);
 
           // cleanup
@@ -3943,7 +3935,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
             CHECK_VARIABLE_INVALID (passphrase, "Create Credential");
 
           ret =
-            gmpf (connection, credentials, &response, &entity, response_data,
+            gmpf (connection, credentials, NULL, &entity, response_data,
                   "<create_credential>"
                   "<name>%s</name>"
                   "<comment>%s</comment>"
@@ -3965,7 +3957,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           CHECK_VARIABLE_INVALID (private_key, "Create Credential");
 
           ret = gmpf (
-            connection, credentials, &response, &entity, response_data,
+            connection, credentials, NULL, &entity, response_data,
             "<create_credential>"
             "<name>%s</name>"
             "<comment>%s</comment>"
@@ -3991,7 +3983,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
           if (privacy_password && strcmp (privacy_password, ""))
             ret = gmpf (
-              connection, credentials, &response, &entity, response_data,
+              connection, credentials, NULL, &entity, response_data,
               "<create_credential>"
               "<name>%s</name>"
               "<comment>%s</comment>"
@@ -4014,7 +4006,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
               auth_algorithm ? auth_algorithm : "");
           else
             ret = gmpf (
-              connection, credentials, &response, &entity, response_data,
+              connection, credentials, NULL, &entity, response_data,
               "<create_credential>"
               "<name>%s</name>"
               "<comment>%s</comment>"
@@ -4048,7 +4040,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           if (privacy_host_identifier
               && !str_equal (privacy_host_identifier, ""))
             ret = gmpf (
-              connection, credentials, &response, &entity, response_data,
+              connection, credentials, NULL, &entity, response_data,
               "<create_credential>"
               "<name>%s</name>"
               "<comment>%s</comment>"
@@ -4070,7 +4062,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
               auth_algorithm ? auth_algorithm : "");
           else
             ret = gmpf (
-              connection, credentials, &response, &entity, response_data,
+              connection, credentials, NULL, &entity, response_data,
               "<create_credential>"
               "<name>%s</name>"
               "<comment>%s</comment>"
@@ -4089,7 +4081,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           CHECK_VARIABLE_INVALID (public_key, "Create Credential");
 
           ret =
-            gmpf (connection, credentials, &response, &entity, response_data,
+            gmpf (connection, credentials, NULL, &entity, response_data,
                   "<create_credential>"
                   "<name>%s</name>"
                   "<comment>%s</comment>"
@@ -4106,7 +4098,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           CHECK_VARIABLE_INVALID (certificate, "Create Credential");
 
           ret =
-            gmpf (connection, credentials, &response, &entity, response_data,
+            gmpf (connection, credentials, NULL, &entity, response_data,
                   "<create_credential>"
                   "<name>%s</name>"
                   "<comment>%s</comment>"
@@ -4121,7 +4113,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           CHECK_VARIABLE_INVALID (password, "Create Credential");
 
           ret =
-            gmpf (connection, credentials, &response, &entity, response_data,
+            gmpf (connection, credentials, NULL, &entity, response_data,
                   "<create_credential>"
                   "<name>%s</name>"
                   "<comment>%s</comment>"
@@ -4142,7 +4134,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           CHECK_VARIABLE_INVALID (host_identifier, "Create Credential");
 
           ret =
-            gmpf (connection, credentials, &response, &entity, response_data,
+            gmpf (connection, credentials, NULL, &entity, response_data,
                   "<create_credential>"
                   "<name>%s</name>"
                   "<comment>%s</comment>"
@@ -4207,7 +4199,6 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Create Credential", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
@@ -4572,7 +4563,7 @@ modify_credential_store_gmp (gvm_connection_t *connection,
                              credentials_t *credentials, params_t *params,
                              cmd_response_data_t *response_data)
 {
-  gchar *xml, *response, *format;
+  gchar *xml, *format;
   int ret;
   entity_t entity;
   const char *credential_store_id, *active, *host, *port, *path, *comment,
@@ -4675,9 +4666,8 @@ modify_credential_store_gmp (gvm_connection_t *connection,
                      "</modify_credential_store>",
                      preferences_element->str);
 
-  response = NULL;
   entity = NULL;
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
+  ret = gmpf (connection, credentials, NULL, &entity, response_data,
               format, credential_store_id, active, host, port, path, comment);
 
   g_free (format);
@@ -4719,7 +4709,6 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   xml = response_from_entity (connection, credentials, params, entity,
                               "Save Credential Store", response_data);
   free_entity (entity);
-  g_free (response);
   return xml;
 }
 
@@ -4738,7 +4727,7 @@ verify_credential_store_gmp (gvm_connection_t *connection,
                              credentials_t *credentials, params_t *params,
                              cmd_response_data_t *response_data)
 {
-  gchar *html, *response;
+  gchar *html;
   const char *credential_store_id;
   int ret;
   entity_t entity;
@@ -4746,7 +4735,7 @@ verify_credential_store_gmp (gvm_connection_t *connection,
   credential_store_id = params_value (params, "credential_store_id");
   CHECK_VARIABLE_INVALID (credential_store_id, "Verify Credential Store");
 
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
+  ret = gmpf (connection, credentials, NULL, &entity, response_data,
               "<verify_credential_store credential_store_id=\"%s\"/>",
               credential_store_id);
 
@@ -4786,7 +4775,6 @@ verify_credential_store_gmp (gvm_connection_t *connection,
   html = response_from_entity (connection, credentials, params, entity,
                                "Verify Credential Store", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
@@ -10847,7 +10835,7 @@ char *
 verify_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
                     params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *html, *response;
+  gchar *html;
   const char *scanner_id;
   int ret;
   entity_t entity;
@@ -10855,7 +10843,7 @@ verify_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
   scanner_id = params_value (params, "scanner_id");
   CHECK_VARIABLE_INVALID (scanner_id, "Verify Scanner");
 
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
+  ret = gmpf (connection, credentials, NULL, &entity, response_data,
               "<verify_scanner scanner_id=\"%s\"/>", scanner_id);
 
   switch (ret)
@@ -10894,7 +10882,6 @@ verify_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Verify Scanner", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
@@ -10914,7 +10901,6 @@ create_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
 {
   int ret;
   char *html;
-  gchar *response = NULL;
   const char *name, *comment, *host, *port, *type, *ca_pub, *credential_id;
   entity_t entity = NULL;
 
@@ -10939,7 +10925,7 @@ create_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
     CHECK_VARIABLE_INVALID (ca_pub, "Create Scanner");
 
   if (ca_pub)
-    ret = gmpf (connection, credentials, &response, &entity, response_data,
+    ret = gmpf (connection, credentials, NULL, &entity, response_data,
                 "<create_scanner>"
                 "<name>%s</name><comment>%s</comment>"
                 "<host>%s</host><port>%s</port><type>%s</type>"
@@ -10949,7 +10935,7 @@ create_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 name, comment, host, port, type, ca_pub,
                 credential_id ? credential_id : "");
   else
-    ret = gmpf (connection, credentials, &response, &entity, response_data,
+    ret = gmpf (connection, credentials, NULL, &entity, response_data,
                 "<create_scanner>"
                 "<name>%s</name><comment>%s</comment>"
                 "<host>%s</host><port>%s</port><type>%s</type>"
@@ -10995,7 +10981,6 @@ create_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Create Scanner", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
@@ -11743,7 +11728,7 @@ create_report_config_gmp (gvm_connection_t *connection,
                           cmd_response_data_t *response_data)
 {
   int ret;
-  gchar *html, *response;
+  gchar *html;
   const char *name, *comment, *report_format_id;
   entity_t entity;
   GHashTable *config_params, *default_config_params;
@@ -11771,9 +11756,8 @@ create_report_config_gmp (gvm_connection_t *connection,
 
   g_string_append (command, "</create_report_config>");
 
-  response = NULL;
   entity = NULL;
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
+  ret = gmpf (connection, credentials, NULL, &entity, response_data,
               command->str);
 
   g_string_free (command, TRUE);
@@ -11814,7 +11798,6 @@ create_report_config_gmp (gvm_connection_t *connection,
   html = response_from_entity (connection, credentials, params, entity,
                                "Create Report Config", response_data);
   free_entity (entity);
-  g_free (response);
   g_hash_table_destroy (config_params);
   g_hash_table_destroy (default_config_params);
   return html;
@@ -11855,7 +11838,7 @@ save_report_config_gmp (gvm_connection_t *connection,
                         cmd_response_data_t *response_data)
 {
   int ret;
-  gchar *html, *response;
+  gchar *html;
   const char *report_config_id, *name, *comment;
   entity_t entity;
   GHashTable *config_params, *default_config_params;
@@ -11883,9 +11866,8 @@ save_report_config_gmp (gvm_connection_t *connection,
 
   g_string_append (command, "</modify_report_config>");
 
-  response = NULL;
   entity = NULL;
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
+  ret = gmpf (connection, credentials, NULL, &entity, response_data,
               command->str);
 
   g_string_free (command, TRUE);
@@ -11926,7 +11908,6 @@ save_report_config_gmp (gvm_connection_t *connection,
   html = response_from_entity (connection, credentials, params, entity,
                                "Save Report Config", response_data);
   free_entity (entity);
-  g_free (response);
   g_hash_table_destroy (config_params);
   g_hash_table_destroy (default_config_params);
   return html;
@@ -12103,7 +12084,7 @@ save_report_format_gmp (gvm_connection_t *connection,
                         cmd_response_data_t *response_data)
 {
   int ret;
-  gchar *html, *response;
+  gchar *html;
   params_t *preferences, *id_list_params, *include_id_lists;
   const char *report_format_id, *name, *summary, *enable;
   entity_t entity;
@@ -12175,10 +12156,9 @@ save_report_format_gmp (gvm_connection_t *connection,
                        ? g_base64_encode ((guchar *) value, strlen (value))
                        : g_strdup ("");
 
-          response = NULL;
           entity = NULL;
           ret =
-            gmpf (connection, credentials, &response, &entity, response_data,
+            gmpf (connection, credentials, NULL, &entity, response_data,
                   "<modify_report_format"
                   " report_format_id=\"%s\">"
                   "<param>"
@@ -12255,9 +12235,8 @@ save_report_format_gmp (gvm_connection_t *connection,
                   ? g_base64_encode ((guchar *) param->value, param->value_size)
                   : g_strdup ("");
 
-              response = NULL;
               entity = NULL;
-              ret = gmpf (connection, credentials, &response, &entity,
+              ret = gmpf (connection, credentials, NULL, &entity,
                           response_data,
                           "<modify_report_format"
                           " report_format_id=\"%s\">"
@@ -12313,9 +12292,8 @@ save_report_format_gmp (gvm_connection_t *connection,
         }
     }
 
-  response = NULL;
   entity = NULL;
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
+  ret = gmpf (connection, credentials, NULL, &entity, response_data,
               "<modify_report_format"
               " report_format_id=\"%s\">"
               "<name>%s</name>"
@@ -12360,7 +12338,6 @@ save_report_format_gmp (gvm_connection_t *connection,
   html = response_from_entity (connection, credentials, params, entity,
                                "Save Report Format", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
@@ -14166,7 +14143,7 @@ save_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   int ret;
-  gchar *html, *response;
+  gchar *html;
   const char *group_id, *name, *comment, *users;
   entity_t entity;
 
@@ -14182,9 +14159,8 @@ save_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   /* Modify the Group. */
 
-  response = NULL;
   entity = NULL;
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
+  ret = gmpf (connection, credentials, NULL, &entity, response_data,
               "<modify_group group_id=\"%s\">"
               "<name>%s</name>"
               "<comment>%s</comment>"
@@ -14228,7 +14204,6 @@ save_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Save Group", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
@@ -14327,7 +14302,7 @@ create_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
                        params_t *params, cmd_response_data_t *response_data)
 {
   int ret;
-  gchar *html, *response;
+  gchar *html;
   const char *name, *comment, *resource_id, *resource_type;
   const char *subject_id, *subject_type;
   entity_t entity;
@@ -14359,9 +14334,8 @@ create_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   /* Create the permission(s). */
 
-  response = NULL;
   entity = NULL;
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
+  ret = gmpf (connection, credentials, NULL, &entity, response_data,
               "<create_permission>"
               "<name>%s</name>"
               "<comment>%s</comment>"
@@ -14413,7 +14387,6 @@ create_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
                                "Create Permission", response_data);
 
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
@@ -14454,14 +14427,12 @@ create_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
     {                                                                       \
       successes++;                                                          \
       free_entity (entity);                                                 \
-      g_free (response);                                                    \
     }                                                                       \
   else                                                                      \
     {                                                                       \
       html = response_from_entity (connection, credentials, params, entity, \
                                    "Create Permissions", response_data);    \
       free_entity (entity);                                                 \
-      g_free (response);                                                    \
       return html;                                                          \
     }
 
@@ -14485,7 +14456,7 @@ create_permissions_gmp (gvm_connection_t *connection,
                         cmd_response_data_t *response_data)
 {
   int ret;
-  gchar *html, *response, *summary_response;
+  gchar *html, *summary_response;
   int successes;
   const char *permission, *comment, *resource_id, *resource_type;
   const char *subject_id, *subject_type;
@@ -14537,10 +14508,9 @@ create_permissions_gmp (gvm_connection_t *connection,
     {
       if (str_equal (permission, "read") || str_equal (permission, "write"))
         {
-          response = NULL;
           entity = NULL;
           ret =
-            gmpf (connection, credentials, &response, &entity, response_data,
+            gmpf (connection, credentials, NULL, &entity, response_data,
                   "<create_permission>"
                   "<name>get_%ss</name>"
                   "<comment>%s</comment>"
@@ -14559,10 +14529,9 @@ create_permissions_gmp (gvm_connection_t *connection,
           && !str_equal (permission_resource_type, "report"))
         {
           // create modify permission for resource
-          response = NULL;
           entity = NULL;
           ret =
-            gmpf (connection, credentials, &response, &entity, response_data,
+            gmpf (connection, credentials, NULL, &entity, response_data,
                   "<create_permission>"
                   "<name>modify_%s</name>"
                   "<comment>%s</comment>"
@@ -14578,9 +14547,8 @@ create_permissions_gmp (gvm_connection_t *connection,
           if (str_equal (permission_resource_type, "task"))
             {
               // create start_task, stop_task and resume_task permission
-              response = NULL;
               entity = NULL;
-              ret = gmpf (connection, credentials, &response, &entity,
+              ret = gmpf (connection, credentials, NULL, &entity,
                           response_data,
                           "<create_permission>"
                           "<name>start_%s</name>"
@@ -14594,9 +14562,8 @@ create_permissions_gmp (gvm_connection_t *connection,
 
               CHECK_GMPF_RET
 
-              response = NULL;
               entity = NULL;
-              ret = gmpf (connection, credentials, &response, &entity,
+              ret = gmpf (connection, credentials, NULL, &entity,
                           response_data,
                           "<create_permission>"
                           "<name>stop_%s</name>"
@@ -14610,9 +14577,8 @@ create_permissions_gmp (gvm_connection_t *connection,
 
               CHECK_GMPF_RET
 
-              response = NULL;
               entity = NULL;
-              ret = gmpf (connection, credentials, &response, &entity,
+              ret = gmpf (connection, credentials, NULL, &entity,
                           response_data,
                           "<create_permission>"
                           "<name>resume_%s</name>"
@@ -14630,9 +14596,8 @@ create_permissions_gmp (gvm_connection_t *connection,
           if (str_equal (permission_resource_type, "alert"))
             {
               // create test permission
-              response = NULL;
               entity = NULL;
-              ret = gmpf (connection, credentials, &response, &entity,
+              ret = gmpf (connection, credentials, NULL, &entity,
                           response_data,
                           "<create_permission>"
                           "<name>test_%s</name>"
@@ -14651,9 +14616,8 @@ create_permissions_gmp (gvm_connection_t *connection,
               || str_equal (permission_resource_type, "scanner"))
             {
               // create verify permission
-              response = NULL;
               entity = NULL;
-              ret = gmpf (connection, credentials, &response, &entity,
+              ret = gmpf (connection, credentials, NULL, &entity,
                           response_data,
                           "<create_permission>"
                           "<name>verify_%s</name>"
@@ -14698,9 +14662,8 @@ create_permissions_gmp (gvm_connection_t *connection,
               if (str_equal (permission, "read") == 0
                   || str_equal (permission, "write") == 0)
                 {
-                  response = NULL;
                   entity = NULL;
-                  ret = gmpf (connection, credentials, &response, &entity,
+                  ret = gmpf (connection, credentials, NULL, &entity,
                               response_data,
                               "<create_permission>"
                               "<name>get_%ss</name>"
@@ -14719,9 +14682,8 @@ create_permissions_gmp (gvm_connection_t *connection,
                   && !str_equal (related_type, "result")
                   && !str_equal (related_type, "report"))
                 {
-                  response = NULL;
                   entity = NULL;
-                  ret = gmpf (connection, credentials, &response, &entity,
+                  ret = gmpf (connection, credentials, NULL, &entity,
                               response_data,
                               "<create_permission>"
                               "<name>modify_%s</name>"
@@ -14737,9 +14699,8 @@ create_permissions_gmp (gvm_connection_t *connection,
 
                   if (str_equal (related_type, "task"))
                     {
-                      response = NULL;
                       entity = NULL;
-                      ret = gmpf (connection, credentials, &response, &entity,
+                      ret = gmpf (connection, credentials, NULL, &entity,
                                   response_data,
                                   "<create_permission>"
                                   "<name>start_%s</name>"
@@ -14753,9 +14714,8 @@ create_permissions_gmp (gvm_connection_t *connection,
 
                       CHECK_GMPF_RET
 
-                      response = NULL;
                       entity = NULL;
-                      ret = gmpf (connection, credentials, &response, &entity,
+                      ret = gmpf (connection, credentials, NULL, &entity,
                                   response_data,
                                   "<create_permission>"
                                   "<name>stop_%s</name>"
@@ -14769,9 +14729,8 @@ create_permissions_gmp (gvm_connection_t *connection,
 
                       CHECK_GMPF_RET
 
-                      response = NULL;
                       entity = NULL;
-                      ret = gmpf (connection, credentials, &response, &entity,
+                      ret = gmpf (connection, credentials, NULL, &entity,
                                   response_data,
                                   "<create_permission>"
                                   "<name>resume_%s</name>"
@@ -14788,9 +14747,8 @@ create_permissions_gmp (gvm_connection_t *connection,
 
                   if (str_equal (related_type, "alert"))
                     {
-                      response = NULL;
                       entity = NULL;
-                      ret = gmpf (connection, credentials, &response, &entity,
+                      ret = gmpf (connection, credentials, NULL, &entity,
                                   response_data,
                                   "<create_permission>"
                                   "<name>test_%s</name>"
@@ -14808,9 +14766,8 @@ create_permissions_gmp (gvm_connection_t *connection,
                   if (str_equal (related_type, "report_format")
                       || str_equal (related_type, "scanner"))
                     {
-                      response = NULL;
                       entity = NULL;
-                      ret = gmpf (connection, credentials, &response, &entity,
+                      ret = gmpf (connection, credentials, NULL, &entity,
                                   response_data,
                                   "<create_permission>"
                                   "<name>verify_%s</name>"
@@ -14891,7 +14848,7 @@ char *
 save_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
                      params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *html, *response;
+  gchar *html;
   const char *permission_id, *name, *comment, *resource_id, *resource_type;
   const char *subject_id, *subject_type;
   entity_t entity;
@@ -14924,9 +14881,8 @@ save_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   /* Modify the permission. */
 
-  response = NULL;
   entity = NULL;
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
+  ret = gmpf (connection, credentials, NULL, &entity, response_data,
               "<modify_permission permission_id=\"%s\">"
               "<name>%s</name>"
               "<comment>%s</comment>"
@@ -14976,7 +14932,6 @@ save_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Save Permission", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
@@ -14996,7 +14951,7 @@ char *
 create_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
                       params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *html, *response;
+  gchar *html;
   const char *name, *comment, *port_range, *from_file;
   entity_t entity;
 
@@ -15013,7 +14968,7 @@ create_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
   /* Create the port_list. */
 
   switch (gmpf (
-    connection, credentials, &response, &entity, response_data,
+    connection, credentials, NULL, &entity, response_data,
     "<create_port_list>"
     "<name>%s</name>"
     "<port_range>%s</port_range>"
@@ -15058,7 +15013,6 @@ create_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Create Port List", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
@@ -15077,7 +15031,7 @@ create_port_range_gmp (gvm_connection_t *connection, credentials_t *credentials,
                        params_t *params, cmd_response_data_t *response_data)
 {
   int ret;
-  gchar *html, *response;
+  gchar *html;
   const char *port_list_id, *start, *end, *type;
   entity_t entity;
 
@@ -15093,9 +15047,8 @@ create_port_range_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   /* Create the port range. */
 
-  response = NULL;
   entity = NULL;
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
+  ret = gmpf (connection, credentials, NULL, &entity, response_data,
               "<create_port_range>"
               "<port_list id=\"%s\"/>"
               "<start>%s</start>"
@@ -15140,7 +15093,6 @@ create_port_range_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Create Port Range", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
@@ -15220,7 +15172,7 @@ save_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
                     params_t *params, cmd_response_data_t *response_data)
 {
   int ret;
-  gchar *html, *response;
+  gchar *html;
   const char *port_list_id, *name, *comment;
   entity_t entity;
 
@@ -15234,9 +15186,8 @@ save_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   /* Modify the Port List. */
 
-  response = NULL;
   entity = NULL;
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
+  ret = gmpf (connection, credentials, NULL, &entity, response_data,
               "<modify_port_list port_list_id=\"%s\">"
               "<name>%s</name>"
               "<comment>%s</comment>"
@@ -15279,7 +15230,6 @@ save_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Save Port List", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
@@ -15422,7 +15372,6 @@ create_role_gmp (gvm_connection_t *connection, credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   char *ret;
-  gchar *response;
   const char *name, *comment, *users;
   entity_t entity;
 
@@ -15434,9 +15383,8 @@ create_role_gmp (gvm_connection_t *connection, credentials_t *credentials,
   CHECK_VARIABLE_INVALID (comment, "Create Role");
   CHECK_VARIABLE_INVALID (users, "Create Role");
 
-  response = NULL;
   entity = NULL;
-  switch (gmpf (connection, credentials, &response, &entity, response_data,
+  switch (gmpf (connection, credentials, NULL, &entity, response_data,
                 "<create_role>"
                 "<name>%s</name>"
                 "<comment>%s</comment>"
@@ -15480,7 +15428,6 @@ create_role_gmp (gvm_connection_t *connection, credentials_t *credentials,
   ret = response_from_entity (connection, credentials, params, entity,
                               "Create Role", response_data);
   free_entity (entity);
-  g_free (response);
   return ret;
 }
 
@@ -15590,7 +15537,7 @@ save_role_gmp (gvm_connection_t *connection, credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   int ret;
-  gchar *html, *response;
+  gchar *html;
   const char *role_id, *name, *comment, *users;
   entity_t entity;
 
@@ -15606,9 +15553,8 @@ save_role_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   /* Modify the Role. */
 
-  response = NULL;
   entity = NULL;
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
+  ret = gmpf (connection, credentials, NULL, &entity, response_data,
               "<modify_role role_id=\"%s\">"
               "<name>%s</name>"
               "<comment>%s</comment>"
@@ -15652,7 +15598,6 @@ save_role_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Save Role", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
@@ -15964,7 +15909,7 @@ char *
 create_filter_gmp (gvm_connection_t *connection, credentials_t *credentials,
                    params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *html, *response;
+  gchar *html;
   const char *name, *comment, *term, *type;
   entity_t entity;
 
@@ -15978,7 +15923,7 @@ create_filter_gmp (gvm_connection_t *connection, credentials_t *credentials,
   CHECK_VARIABLE_INVALID (term, "Create Filter");
   CHECK_VARIABLE_INVALID (type, "Create Filter");
 
-  switch (gmpf (connection, credentials, &response, &entity, response_data,
+  switch (gmpf (connection, credentials, NULL, &entity, response_data,
                 "<create_filter>"
                 "<name>%s</name>"
                 "<comment>%s</comment>"
@@ -16021,7 +15966,6 @@ create_filter_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Create Filter", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
@@ -16210,7 +16154,6 @@ char *
 save_schedule_gmp (gvm_connection_t *connection, credentials_t *credentials,
                    params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *response;
   entity_t entity;
   const char *schedule_id, *name, *comment, *timezone, *icalendar;
   char *ret;
@@ -16227,9 +16170,8 @@ save_schedule_gmp (gvm_connection_t *connection, credentials_t *credentials,
   CHECK_VARIABLE_INVALID (icalendar, "Save Schedule");
   CHECK_VARIABLE_INVALID (timezone, "Save Schedule");
 
-  response = NULL;
   entity = NULL;
-  switch (gmpf (connection, credentials, &response, &entity, response_data,
+  switch (gmpf (connection, credentials, NULL, &entity, response_data,
                 "<modify_schedule schedule_id=\"%s\">"
                 "<name>%s</name>"
                 "<comment>%s</comment>"
@@ -16273,7 +16215,6 @@ save_schedule_gmp (gvm_connection_t *connection, credentials_t *credentials,
   ret = response_from_entity (connection, credentials, params, entity,
                               "Save Schedule", response_data);
   free_entity (entity);
-  g_free (response);
   return ret;
 }
 
@@ -17019,7 +16960,7 @@ save_auth_gmp (gvm_connection_t *connection, credentials_t *credentials,
 {
   int ret;
   entity_t entity = NULL;
-  char *html, *response = NULL, *truefalse;
+  char *html, *truefalse;
   const char *method;
 
   if (params_value (params, "enable")
@@ -17050,7 +16991,7 @@ save_auth_gmp (gvm_connection_t *connection, credentials_t *credentials,
           CHECK_VARIABLE_INVALID (certificate, "Save Authentication");
           /** @warning authdn shall contain a single %s, handle with care. */
           ret =
-            gmpf (connection, credentials, &response, &entity, response_data,
+            gmpf (connection, credentials, NULL, &entity, response_data,
                   "<modify_auth>"
                   "<group name=\"%s\">" AUTH_CONF_SETTING ("enable", "%s")
                     AUTH_CONF_SETTING ("ldaphost", "%s")
@@ -17063,7 +17004,7 @@ save_auth_gmp (gvm_connection_t *connection, credentials_t *credentials,
       else
         /** @warning authdn shall contain a single %s, handle with care. */
         ret =
-          gmpf (connection, credentials, &response, &entity, response_data,
+          gmpf (connection, credentials, NULL, &entity, response_data,
                 "<modify_auth>"
                 "<group name=\"%s\">" AUTH_CONF_SETTING ("enable", "%s")
                   AUTH_CONF_SETTING ("ldaphost", "%s")
@@ -17081,7 +17022,7 @@ save_auth_gmp (gvm_connection_t *connection, credentials_t *credentials,
       CHECK_VARIABLE_INVALID (radiushost, "Save Authentication");
       CHECK_VARIABLE_INVALID (radiuskey, "Save Authentication");
       /** @warning authdn shall contain a single %s, handle with care. */
-      ret = gmpf (connection, credentials, &response, &entity, response_data,
+      ret = gmpf (connection, credentials, NULL, &entity, response_data,
                   "<modify_auth>"
                   "<group name=\"%s\">" AUTH_CONF_SETTING ("enable", "%s")
                     AUTH_CONF_SETTING ("radiushost", "%s")
@@ -17132,7 +17073,6 @@ save_auth_gmp (gvm_connection_t *connection, credentials_t *credentials,
     response_from_entity (connection, credentials, params, entity,
                           "Save Authentication Configuration", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
@@ -17972,7 +17912,6 @@ create_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   char *ret;
-  gchar *response;
   const char *report_id, *filter;
   entity_t entity;
 
@@ -17982,9 +17921,8 @@ create_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
   CHECK_VARIABLE_INVALID (report_id, "Create Asset");
   CHECK_VARIABLE_INVALID (filter, "Create Asset");
 
-  response = NULL;
   entity = NULL;
-  switch (gmpf (connection, credentials, &response, &entity, response_data,
+  switch (gmpf (connection, credentials, NULL, &entity, response_data,
                 "<create_asset>"
                 "<report id=\"%s\">"
                 "<filter><term>%s</term></filter>"
@@ -18026,7 +17964,6 @@ create_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
   ret = response_from_entity (connection, credentials, params, entity,
                               "Create Asset", response_data);
   free_entity (entity);
-  g_free (response);
   return ret;
 }
 
@@ -18167,7 +18104,7 @@ save_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   int ret;
-  gchar *html, *response;
+  gchar *html;
   const char *asset_id, *comment;
   entity_t entity;
 
@@ -18179,9 +18116,8 @@ save_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   /* Modify the asset. */
 
-  response = NULL;
   entity = NULL;
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
+  ret = gmpf (connection, credentials, NULL, &entity, response_data,
               "<modify_asset asset_id=\"%s\">"
               "<comment>%s</comment>"
               "</modify_asset>",
@@ -18223,7 +18159,6 @@ save_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
   html = response_from_entity (connection, credentials, params, entity,
                                "Save Asset", response_data);
   free_entity (entity);
-  g_free (response);
   return html;
 }
 
@@ -18277,7 +18212,6 @@ char *
 create_ticket_gmp (gvm_connection_t *connection, credentials_t *credentials,
                    params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *response = NULL;
   entity_t entity = NULL;
   const gchar *result_id, *user_id, *note;
   char *ret;
@@ -18290,7 +18224,7 @@ create_ticket_gmp (gvm_connection_t *connection, credentials_t *credentials,
   CHECK_VARIABLE_INVALID (user_id, "Create Ticket");
   CHECK_VARIABLE_INVALID (note, "Create Ticket")
 
-  switch (gmpf (connection, credentials, &response, &entity, response_data,
+  switch (gmpf (connection, credentials, NULL, &entity, response_data,
                 "<create_ticket>"
                 "<result id=\"%s\"/>"
                 "<assigned_to>"
@@ -18334,7 +18268,6 @@ create_ticket_gmp (gvm_connection_t *connection, credentials_t *credentials,
                               "Create Ticket", response_data);
 
   free_entity (entity);
-  g_free (response);
   return ret;
 }
 
@@ -18352,7 +18285,6 @@ char *
 save_ticket_gmp (gvm_connection_t *connection, credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *response = NULL;
   entity_t entity = NULL;
   const gchar *ticket_id, *status, *open_note, *fixed_note, *closed_note;
   const gchar *user_id;
@@ -18372,7 +18304,7 @@ save_ticket_gmp (gvm_connection_t *connection, credentials_t *credentials,
   CHECK_VARIABLE_INVALID (fixed_note, "Save Ticket");
   CHECK_VARIABLE_INVALID (closed_note, "Save Ticket");
 
-  switch (gmpf (connection, credentials, &response, &entity, response_data,
+  switch (gmpf (connection, credentials, NULL, &entity, response_data,
                 "<modify_ticket ticket_id=\"%s\">"
                 "<assigned_to><user id=\"%s\"/></assigned_to>"
                 "<status>%s</status>"
@@ -18416,7 +18348,6 @@ save_ticket_gmp (gvm_connection_t *connection, credentials_t *credentials,
                               "Save Ticket", response_data);
 
   free_entity (entity);
-  g_free (response);
   return ret;
 }
 
@@ -18581,7 +18512,6 @@ create_tls_certificate_gmp (gvm_connection_t *connection,
                             credentials_t *credentials, params_t *params,
                             cmd_response_data_t *response_data)
 {
-  gchar *response = NULL;
   entity_t entity = NULL;
   const gchar *name, *comment, *trust, *certificate_bin;
   size_t certificate_size;
@@ -18603,7 +18533,7 @@ create_tls_certificate_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (comment, "Create TLS Certificate");
   CHECK_VARIABLE_INVALID (trust, "Create TLS Certificate");
 
-  switch (gmpf (connection, credentials, &response, &entity, response_data,
+  switch (gmpf (connection, credentials, NULL, &entity, response_data,
                 "<create_tls_certificate>"
                 "<name>%s</name>"
                 "<comment>%s</comment>"
@@ -18646,7 +18576,6 @@ create_tls_certificate_gmp (gvm_connection_t *connection,
                               "Create TLS Certificate", response_data);
 
   free_entity (entity);
-  g_free (response);
   g_free (certificate_b64);
   return ret;
 }
@@ -18666,7 +18595,6 @@ save_tls_certificate_gmp (gvm_connection_t *connection,
                           credentials_t *credentials, params_t *params,
                           cmd_response_data_t *response_data)
 {
-  gchar *response = NULL;
   entity_t entity = NULL;
   const gchar *tls_certificate_id, *name, *comment, *trust, *certificate_bin;
   size_t certificate_size;
@@ -18690,7 +18618,7 @@ save_tls_certificate_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (comment, "Save TLS Certificate");
   CHECK_VARIABLE_INVALID (trust, "Save TLS Certificate");
 
-  switch (gmpf (connection, credentials, &response, &entity, response_data,
+  switch (gmpf (connection, credentials, NULL, &entity, response_data,
                 "<modify_tls_certificate tls_certificate_id=\"%s\">"
                 "<name>%s</name>"
                 "<comment>%s</comment>"
@@ -18733,7 +18661,6 @@ save_tls_certificate_gmp (gvm_connection_t *connection,
                               "Save TLS Certificate", response_data);
 
   free_entity (entity);
-  g_free (response);
   g_free (certificate_b64);
   return ret;
 }
@@ -18808,7 +18735,6 @@ char *
 save_license_gmp (gvm_connection_t *connection, credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *response;
   entity_t entity;
   const char *file;
   int file_size;
@@ -18822,9 +18748,8 @@ save_license_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   file_base64 = g_base64_encode ((const guchar *) file, file_size);
 
-  response = NULL;
   entity = NULL;
-  switch (gmpf (connection, credentials, &response, &entity, response_data,
+  switch (gmpf (connection, credentials, NULL, &entity, response_data,
                 "<modify_license>"
                 "<file>%s</file>"
                 "</modify_license>",
@@ -18869,7 +18794,6 @@ save_license_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
   g_free (file_base64);
   free_entity (entity);
-  g_free (response);
   return ret;
 }
 
@@ -19198,7 +19122,7 @@ char *
 modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *xml, *response, *format, *update_to_latest_tag;
+  gchar *xml, *format, *update_to_latest_tag;
   const char *authorized, *attempts, *delay_in_seconds, *bulk_size;
   const char *max_jitter_in_seconds, *bulk_throttle_time_in_ms,
     *indexer_dir_depth, *update_to_latest;
@@ -19337,10 +19261,9 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
         agents_element->str, authorized ? strcmp (authorized, "0") : 0,
         update_to_latest_tag, items_xml->str);
 
-      response = NULL;
       entity = NULL;
       ret = gmpf (
-        connection, credentials, &response, &entity, response_data, format,
+        connection, credentials, NULL, &entity, response_data, format,
         /* retry */ attempts, delay_in_seconds, max_jitter_in_seconds,
         /* executor */ bulk_size, bulk_throttle_time_in_ms, indexer_dir_depth,
         /* heartbeat */ interval_in_seconds, miss_until_inactive,
@@ -19358,9 +19281,8 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
                                 authorized ? strcmp (authorized, "0") : 0,
                                 update_to_latest_tag);
 
-      response = NULL;
       entity = NULL;
-      ret = gmpf (connection, credentials, &response, &entity, response_data,
+      ret = gmpf (connection, credentials, NULL, &entity, response_data,
                   format,
                   /* comment */ comment);
     }
@@ -19406,7 +19328,6 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
   xml = response_from_entity (connection, credentials, params, entity,
                               "Save Agent", response_data);
   free_entity (entity);
-  g_free (response);
   return xml;
 }
 
@@ -19426,7 +19347,7 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
                                       params_t *params,
                                       cmd_response_data_t *response_data)
 {
-  gchar *xml, *response, *format;
+  gchar *xml, *format;
   const char *agent_control_id, *attempts, *delay_in_seconds;
   const char *max_jitter_in_seconds, *bulk_size, *bulk_throttle_time_in_ms;
   const char *indexer_dir_depth, *interval_in_seconds, *miss_until_inactive;
@@ -19520,10 +19441,9 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
     "</modify_agent_control_scan_config>",
     agent_control_id, items_xml->str);
 
-  response = NULL;
   entity = NULL;
 
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
+  ret = gmpf (connection, credentials, NULL, &entity, response_data,
               format, attempts, delay_in_seconds, max_jitter_in_seconds,
               bulk_size, bulk_throttle_time_in_ms, indexer_dir_depth,
               interval_in_seconds, miss_until_inactive, update_to_latest);
@@ -19570,7 +19490,6 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
     response_from_entity (connection, credentials, params, entity,
                           "Modify Agent Control Scan Config", response_data);
   free_entity (entity);
-  g_free (response);
   return xml;
 }
 
@@ -19588,7 +19507,7 @@ char *
 delete_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *xml, *response, *format;
+  gchar *xml, *format;
   int ret;
   char *name;
   GString *agents_element;
@@ -19622,10 +19541,9 @@ delete_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
                             "%s"
                             "</delete_agent>",
                             agents_element->str);
-  response = NULL;
   entity = NULL;
   ret =
-    gmpf (connection, credentials, &response, &entity, response_data, format);
+    gmpf (connection, credentials, NULL, &entity, response_data, format);
   g_free (format);
   g_string_free (agents_element, TRUE);
 
@@ -19665,7 +19583,6 @@ delete_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
   xml = response_from_entity (connection, credentials, params, entity,
                               "Delete Agent", response_data);
   free_entity (entity);
-  g_free (response);
   return xml;
 }
 
@@ -19832,7 +19749,7 @@ char *
 save_agent_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
                       params_t *params, cmd_response_data_t *response_data)
 {
-  gchar *html = NULL, *response = NULL, *format = NULL;
+  gchar *html = NULL, *format = NULL;
   const char *agent_group_id = NULL, *name = NULL, *comment = NULL;
   params_t *agent_ids = NULL;
   GString *agents_element = NULL;
@@ -19872,7 +19789,7 @@ save_agent_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
                             "</modify_agent_group>",
                             agents_element->str);
 
-  ret = gmpf (connection, credentials, &response, &entity, response_data,
+  ret = gmpf (connection, credentials, NULL, &entity, response_data,
               format, agent_group_id, name, comment);
 
   g_free (format);
@@ -19915,7 +19832,6 @@ save_agent_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
                                "Save Agent Group", response_data);
 
   free_entity (entity);
-  g_free (response);
 
   return html;
 }
