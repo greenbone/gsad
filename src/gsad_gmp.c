@@ -3123,10 +3123,9 @@ save_import_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
                             "</modify_task>");
 
   entity = NULL;
-  ret =
-    gmpf (connection, credentials, NULL, &entity, response_data, format,
-          task_id, name, comment, strcmp (in_assets, "0") ? "yes" : "no",
-          auto_delete, auto_delete_data);
+  ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
+              task_id, name, comment, strcmp (in_assets, "0") ? "yes" : "no",
+              auto_delete, auto_delete_data);
   g_free (format);
   switch (ret)
     {
@@ -3249,8 +3248,8 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
     alterable ? strcmp (alterable, "0") : 0, alterable ? "</alterable>" : "");
 
   /* Send */
-  ret = gmpf (connection, credentials, NULL, &entity, response_data,
-              format, task_id, name, comment, agent_group_id, schedule_id,
+  ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
+              task_id, name, comment, agent_group_id, schedule_id,
               schedule_periods);
 
   g_free (format);
@@ -3773,31 +3772,29 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
       if (str_equal (type, "cc"))
         {
           // Auto-generate types without username
-          ret =
-            gmpf (connection, credentials, NULL, &entity, response_data,
-                  "<create_credential>"
-                  "<name>%s</name>"
-                  "<comment>%s</comment>"
-                  "<type>%s</type>"
-                  "<allow_insecure>1</allow_insecure>"
-                  "</create_credential>",
-                  name, comment ? comment : "", type);
+          ret = gmpf (connection, credentials, NULL, &entity, response_data,
+                      "<create_credential>"
+                      "<name>%s</name>"
+                      "<comment>%s</comment>"
+                      "<type>%s</type>"
+                      "<allow_insecure>1</allow_insecure>"
+                      "</create_credential>",
+                      name, comment ? comment : "", type);
         }
       else
         {
           // Auto-generate types with username
           CHECK_VARIABLE_INVALID (credential_login, "Create Credential");
 
-          ret =
-            gmpf (connection, credentials, NULL, &entity, response_data,
-                  "<create_credential>"
-                  "<name>%s</name>"
-                  "<comment>%s</comment>"
-                  "<type>%s</type>"
-                  "<login>%s</login>"
-                  "<allow_insecure>1</allow_insecure>"
-                  "</create_credential>",
-                  name, comment ? comment : "", type, credential_login);
+          ret = gmpf (connection, credentials, NULL, &entity, response_data,
+                      "<create_credential>"
+                      "<name>%s</name>"
+                      "<comment>%s</comment>"
+                      "<type>%s</type>"
+                      "<login>%s</login>"
+                      "<allow_insecure>1</allow_insecure>"
+                      "</create_credential>",
+                      name, comment ? comment : "", type, credential_login);
         }
     }
   else
@@ -3807,18 +3804,18 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           CHECK_VARIABLE_INVALID (credential_login, "Create Credential");
           CHECK_VARIABLE_INVALID (password, "Create Credential");
 
-          ret = gmpf (
-            connection, credentials, NULL, &entity, response_data,
-            "<create_credential>"
-            "<name>%s</name>"
-            "<comment>%s</comment>"
-            "<type>%s</type>"
-            "<login>%s</login>"
-            "<password>%s</password>"
-            "<allow_insecure>1</allow_insecure>"
-            "</create_credential>",
-            name, comment ? comment : "", type,
-            credential_login ? credential_login : "", password ? password : "");
+          ret = gmpf (connection, credentials, NULL, &entity, response_data,
+                      "<create_credential>"
+                      "<name>%s</name>"
+                      "<comment>%s</comment>"
+                      "<type>%s</type>"
+                      "<login>%s</login>"
+                      "<password>%s</password>"
+                      "<allow_insecure>1</allow_insecure>"
+                      "</create_credential>",
+                      name, comment ? comment : "", type,
+                      credential_login ? credential_login : "",
+                      password ? password : "");
         }
       else if (str_equal (type, "krb5") || str_equal (type, "cs_krb5"))
         {
@@ -3934,21 +3931,20 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           if (params_given (params, "passphrase"))
             CHECK_VARIABLE_INVALID (passphrase, "Create Credential");
 
-          ret =
-            gmpf (connection, credentials, NULL, &entity, response_data,
-                  "<create_credential>"
-                  "<name>%s</name>"
-                  "<comment>%s</comment>"
-                  "<type>%s</type>"
-                  "<login>%s</login>"
-                  "<key>"
-                  "<private>%s</private>"
-                  "<phrase>%s</phrase>"
-                  "</key>"
-                  "<allow_insecure>1</allow_insecure>"
-                  "</create_credential>",
-                  name, comment ? comment : "", type, credential_login,
-                  private_key, passphrase ? passphrase : "");
+          ret = gmpf (connection, credentials, NULL, &entity, response_data,
+                      "<create_credential>"
+                      "<name>%s</name>"
+                      "<comment>%s</comment>"
+                      "<type>%s</type>"
+                      "<login>%s</login>"
+                      "<key>"
+                      "<private>%s</private>"
+                      "<phrase>%s</phrase>"
+                      "</key>"
+                      "<allow_insecure>1</allow_insecure>"
+                      "</create_credential>",
+                      name, comment ? comment : "", type, credential_login,
+                      private_key, passphrase ? passphrase : "");
         }
       else if (str_equal (type, "cc"))
         {
@@ -3982,28 +3978,28 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           CHECK_VARIABLE_INVALID (privacy_algorithm, "Create Credential");
 
           if (privacy_password && strcmp (privacy_password, ""))
-            ret = gmpf (
-              connection, credentials, NULL, &entity, response_data,
-              "<create_credential>"
-              "<name>%s</name>"
-              "<comment>%s</comment>"
-              "<type>%s</type>"
-              "<community>%s</community>"
-              "<login>%s</login>"
-              "<password>%s</password>"
-              "<privacy>"
-              "<password>%s</password>"
-              "<algorithm>%s</algorithm>"
-              "</privacy>"
-              "<auth_algorithm>%s</auth_algorithm>"
-              "<allow_insecure>1</allow_insecure>"
-              "</create_credential>",
-              name, comment ? comment : "", type, community ? community : "",
-              credential_login ? credential_login : "",
-              password ? password : "",
-              privacy_password ? privacy_password : "",
-              privacy_algorithm ? privacy_algorithm : "",
-              auth_algorithm ? auth_algorithm : "");
+            ret = gmpf (connection, credentials, NULL, &entity, response_data,
+                        "<create_credential>"
+                        "<name>%s</name>"
+                        "<comment>%s</comment>"
+                        "<type>%s</type>"
+                        "<community>%s</community>"
+                        "<login>%s</login>"
+                        "<password>%s</password>"
+                        "<privacy>"
+                        "<password>%s</password>"
+                        "<algorithm>%s</algorithm>"
+                        "</privacy>"
+                        "<auth_algorithm>%s</auth_algorithm>"
+                        "<allow_insecure>1</allow_insecure>"
+                        "</create_credential>",
+                        name, comment ? comment : "", type,
+                        community ? community : "",
+                        credential_login ? credential_login : "",
+                        password ? password : "",
+                        privacy_password ? privacy_password : "",
+                        privacy_algorithm ? privacy_algorithm : "",
+                        auth_algorithm ? auth_algorithm : "");
           else
             ret = gmpf (
               connection, credentials, NULL, &entity, response_data,
@@ -4039,74 +4035,72 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
 
           if (privacy_host_identifier
               && !str_equal (privacy_host_identifier, ""))
-            ret = gmpf (
-              connection, credentials, NULL, &entity, response_data,
-              "<create_credential>"
-              "<name>%s</name>"
-              "<comment>%s</comment>"
-              "<type>%s</type>"
-              "<credential_store_id>%s</credential_store_id>"
-              "<vault_id>%s</vault_id>"
-              "<host_identifier>%s</host_identifier>"
-              "<privacy_host_identifier>%s</privacy_host_identifier>"
-              "<privacy>"
-              "<password></password>"
-              "<algorithm>%s</algorithm>"
-              "</privacy>"
-              "<auth_algorithm>%s</auth_algorithm>"
-              "<allow_insecure>1</allow_insecure>"
-              "</create_credential>",
-              name, comment ? comment : "", type, credential_store_id ?: "",
-              vault_id, host_identifier, privacy_host_identifier ?: "",
-              privacy_algorithm ? privacy_algorithm : "",
-              auth_algorithm ? auth_algorithm : "");
+            ret = gmpf (connection, credentials, NULL, &entity, response_data,
+                        "<create_credential>"
+                        "<name>%s</name>"
+                        "<comment>%s</comment>"
+                        "<type>%s</type>"
+                        "<credential_store_id>%s</credential_store_id>"
+                        "<vault_id>%s</vault_id>"
+                        "<host_identifier>%s</host_identifier>"
+                        "<privacy_host_identifier>%s</privacy_host_identifier>"
+                        "<privacy>"
+                        "<password></password>"
+                        "<algorithm>%s</algorithm>"
+                        "</privacy>"
+                        "<auth_algorithm>%s</auth_algorithm>"
+                        "<allow_insecure>1</allow_insecure>"
+                        "</create_credential>",
+                        name, comment ? comment : "", type,
+                        credential_store_id ?: "", vault_id, host_identifier,
+                        privacy_host_identifier ?: "",
+                        privacy_algorithm ? privacy_algorithm : "",
+                        auth_algorithm ? auth_algorithm : "");
           else
-            ret = gmpf (
-              connection, credentials, NULL, &entity, response_data,
-              "<create_credential>"
-              "<name>%s</name>"
-              "<comment>%s</comment>"
-              "<type>%s</type>"
-              "<credential_store_id>%s</credential_store_id>"
-              "<vault_id>%s</vault_id>"
-              "<host_identifier>%s</host_identifier>"
-              "<auth_algorithm>%s</auth_algorithm>"
-              "<allow_insecure>1</allow_insecure>"
-              "</create_credential>",
-              name, comment ? comment : "", type, credential_store_id ?: "",
-              vault_id, host_identifier, auth_algorithm ? auth_algorithm : "");
+            ret = gmpf (connection, credentials, NULL, &entity, response_data,
+                        "<create_credential>"
+                        "<name>%s</name>"
+                        "<comment>%s</comment>"
+                        "<type>%s</type>"
+                        "<credential_store_id>%s</credential_store_id>"
+                        "<vault_id>%s</vault_id>"
+                        "<host_identifier>%s</host_identifier>"
+                        "<auth_algorithm>%s</auth_algorithm>"
+                        "<allow_insecure>1</allow_insecure>"
+                        "</create_credential>",
+                        name, comment ? comment : "", type,
+                        credential_store_id ?: "", vault_id, host_identifier,
+                        auth_algorithm ? auth_algorithm : "");
         }
       else if (str_equal (type, "pgp"))
         {
           CHECK_VARIABLE_INVALID (public_key, "Create Credential");
 
-          ret =
-            gmpf (connection, credentials, NULL, &entity, response_data,
-                  "<create_credential>"
-                  "<name>%s</name>"
-                  "<comment>%s</comment>"
-                  "<type>%s</type>"
-                  "<key>"
-                  "<public>%s</public>"
-                  "</key>"
-                  "<allow_insecure>1</allow_insecure>"
-                  "</create_credential>",
-                  name, comment ? comment : "", type, public_key);
+          ret = gmpf (connection, credentials, NULL, &entity, response_data,
+                      "<create_credential>"
+                      "<name>%s</name>"
+                      "<comment>%s</comment>"
+                      "<type>%s</type>"
+                      "<key>"
+                      "<public>%s</public>"
+                      "</key>"
+                      "<allow_insecure>1</allow_insecure>"
+                      "</create_credential>",
+                      name, comment ? comment : "", type, public_key);
         }
       else if (str_equal (type, "smime"))
         {
           CHECK_VARIABLE_INVALID (certificate, "Create Credential");
 
-          ret =
-            gmpf (connection, credentials, NULL, &entity, response_data,
-                  "<create_credential>"
-                  "<name>%s</name>"
-                  "<comment>%s</comment>"
-                  "<type>%s</type>"
-                  "<certificate>%s</certificate>"
-                  "<allow_insecure>1</allow_insecure>"
-                  "</create_credential>",
-                  name, comment ? comment : "", type, certificate);
+          ret = gmpf (connection, credentials, NULL, &entity, response_data,
+                      "<create_credential>"
+                      "<name>%s</name>"
+                      "<comment>%s</comment>"
+                      "<type>%s</type>"
+                      "<certificate>%s</certificate>"
+                      "<allow_insecure>1</allow_insecure>"
+                      "</create_credential>",
+                      name, comment ? comment : "", type, certificate);
         }
       else if (type && (strcmp (type, "pw") == 0))
         {
@@ -4133,19 +4127,18 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
           CHECK_VARIABLE_INVALID (vault_id, "Create Credential");
           CHECK_VARIABLE_INVALID (host_identifier, "Create Credential");
 
-          ret =
-            gmpf (connection, credentials, NULL, &entity, response_data,
-                  "<create_credential>"
-                  "<name>%s</name>"
-                  "<comment>%s</comment>"
-                  "<type>%s</type>"
-                  "<credential_store_id>%s</credential_store_id>"
-                  "<vault_id>%s</vault_id>"
-                  "<host_identifier>%s</host_identifier>"
-                  "<allow_insecure>1</allow_insecure>"
-                  "</create_credential>",
-                  name, comment ? comment : "", type, credential_store_id ?: "",
-                  vault_id, host_identifier);
+          ret = gmpf (connection, credentials, NULL, &entity, response_data,
+                      "<create_credential>"
+                      "<name>%s</name>"
+                      "<comment>%s</comment>"
+                      "<type>%s</type>"
+                      "<credential_store_id>%s</credential_store_id>"
+                      "<vault_id>%s</vault_id>"
+                      "<host_identifier>%s</host_identifier>"
+                      "<allow_insecure>1</allow_insecure>"
+                      "</create_credential>",
+                      name, comment ? comment : "", type,
+                      credential_store_id ?: "", vault_id, host_identifier);
         }
       else
         {
@@ -4667,8 +4660,8 @@ modify_credential_store_gmp (gvm_connection_t *connection,
                      preferences_element->str);
 
   entity = NULL;
-  ret = gmpf (connection, credentials, NULL, &entity, response_data,
-              format, credential_store_id, active, host, port, path, comment);
+  ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
+              credential_store_id, active, host, port, path, comment);
 
   g_free (format);
   g_string_free (preferences_element, TRUE);
@@ -11757,8 +11750,8 @@ create_report_config_gmp (gvm_connection_t *connection,
   g_string_append (command, "</create_report_config>");
 
   entity = NULL;
-  ret = gmpf (connection, credentials, NULL, &entity, response_data,
-              command->str);
+  ret =
+    gmpf (connection, credentials, NULL, &entity, response_data, command->str);
 
   g_string_free (command, TRUE);
 
@@ -11867,8 +11860,8 @@ save_report_config_gmp (gvm_connection_t *connection,
   g_string_append (command, "</modify_report_config>");
 
   entity = NULL;
-  ret = gmpf (connection, credentials, NULL, &entity, response_data,
-              command->str);
+  ret =
+    gmpf (connection, credentials, NULL, &entity, response_data, command->str);
 
   g_string_free (command, TRUE);
 
@@ -12157,16 +12150,15 @@ save_report_format_gmp (gvm_connection_t *connection,
                        : g_strdup ("");
 
           entity = NULL;
-          ret =
-            gmpf (connection, credentials, NULL, &entity, response_data,
-                  "<modify_report_format"
-                  " report_format_id=\"%s\">"
-                  "<param>"
-                  "<name>%s</name>"
-                  "<value>%s</value>"
-                  "</param>"
-                  "</modify_report_format>",
-                  report_format_id, pref_name, value_64);
+          ret = gmpf (connection, credentials, NULL, &entity, response_data,
+                      "<modify_report_format"
+                      " report_format_id=\"%s\">"
+                      "<param>"
+                      "<name>%s</name>"
+                      "<value>%s</value>"
+                      "</param>"
+                      "</modify_report_format>",
+                      report_format_id, pref_name, value_64);
           g_free (value_64);
           switch (ret)
             {
@@ -12236,8 +12228,7 @@ save_report_format_gmp (gvm_connection_t *connection,
                   : g_strdup ("");
 
               entity = NULL;
-              ret = gmpf (connection, credentials, NULL, &entity,
-                          response_data,
+              ret = gmpf (connection, credentials, NULL, &entity, response_data,
                           "<modify_report_format"
                           " report_format_id=\"%s\">"
                           "<param>"
@@ -14509,17 +14500,16 @@ create_permissions_gmp (gvm_connection_t *connection,
       if (str_equal (permission, "read") || str_equal (permission, "write"))
         {
           entity = NULL;
-          ret =
-            gmpf (connection, credentials, NULL, &entity, response_data,
-                  "<create_permission>"
-                  "<name>get_%ss</name>"
-                  "<comment>%s</comment>"
-                  "<resource id=\"%s\">"
-                  "</resource>"
-                  "<subject id=\"%s\"><type>%s</type></subject>"
-                  "</create_permission>",
-                  permission_resource_type, comment ? comment : "", resource_id,
-                  subject_id, subject_type);
+          ret = gmpf (connection, credentials, NULL, &entity, response_data,
+                      "<create_permission>"
+                      "<name>get_%ss</name>"
+                      "<comment>%s</comment>"
+                      "<resource id=\"%s\">"
+                      "</resource>"
+                      "<subject id=\"%s\"><type>%s</type></subject>"
+                      "</create_permission>",
+                      permission_resource_type, comment ? comment : "",
+                      resource_id, subject_id, subject_type);
 
           CHECK_GMPF_RET
         }
@@ -14530,17 +14520,16 @@ create_permissions_gmp (gvm_connection_t *connection,
         {
           // create modify permission for resource
           entity = NULL;
-          ret =
-            gmpf (connection, credentials, NULL, &entity, response_data,
-                  "<create_permission>"
-                  "<name>modify_%s</name>"
-                  "<comment>%s</comment>"
-                  "<resource id=\"%s\">"
-                  "</resource>"
-                  "<subject id=\"%s\"><type>%s</type></subject>"
-                  "</create_permission>",
-                  permission_resource_type, comment ? comment : "", resource_id,
-                  subject_id, subject_type);
+          ret = gmpf (connection, credentials, NULL, &entity, response_data,
+                      "<create_permission>"
+                      "<name>modify_%s</name>"
+                      "<comment>%s</comment>"
+                      "<resource id=\"%s\">"
+                      "</resource>"
+                      "<subject id=\"%s\"><type>%s</type></subject>"
+                      "</create_permission>",
+                      permission_resource_type, comment ? comment : "",
+                      resource_id, subject_id, subject_type);
 
           CHECK_GMPF_RET
 
@@ -14548,8 +14537,7 @@ create_permissions_gmp (gvm_connection_t *connection,
             {
               // create start_task, stop_task and resume_task permission
               entity = NULL;
-              ret = gmpf (connection, credentials, NULL, &entity,
-                          response_data,
+              ret = gmpf (connection, credentials, NULL, &entity, response_data,
                           "<create_permission>"
                           "<name>start_%s</name>"
                           "<comment>%s</comment>"
@@ -14563,8 +14551,7 @@ create_permissions_gmp (gvm_connection_t *connection,
               CHECK_GMPF_RET
 
               entity = NULL;
-              ret = gmpf (connection, credentials, NULL, &entity,
-                          response_data,
+              ret = gmpf (connection, credentials, NULL, &entity, response_data,
                           "<create_permission>"
                           "<name>stop_%s</name>"
                           "<comment>%s</comment>"
@@ -14578,8 +14565,7 @@ create_permissions_gmp (gvm_connection_t *connection,
               CHECK_GMPF_RET
 
               entity = NULL;
-              ret = gmpf (connection, credentials, NULL, &entity,
-                          response_data,
+              ret = gmpf (connection, credentials, NULL, &entity, response_data,
                           "<create_permission>"
                           "<name>resume_%s</name>"
                           "<comment>%s</comment>"
@@ -14597,8 +14583,7 @@ create_permissions_gmp (gvm_connection_t *connection,
             {
               // create test permission
               entity = NULL;
-              ret = gmpf (connection, credentials, NULL, &entity,
-                          response_data,
+              ret = gmpf (connection, credentials, NULL, &entity, response_data,
                           "<create_permission>"
                           "<name>test_%s</name>"
                           "<comment>%s</comment>"
@@ -14617,8 +14602,7 @@ create_permissions_gmp (gvm_connection_t *connection,
             {
               // create verify permission
               entity = NULL;
-              ret = gmpf (connection, credentials, NULL, &entity,
-                          response_data,
+              ret = gmpf (connection, credentials, NULL, &entity, response_data,
                           "<create_permission>"
                           "<name>verify_%s</name>"
                           "<comment>%s</comment>"
@@ -14663,17 +14647,17 @@ create_permissions_gmp (gvm_connection_t *connection,
                   || str_equal (permission, "write") == 0)
                 {
                   entity = NULL;
-                  ret = gmpf (connection, credentials, NULL, &entity,
-                              response_data,
-                              "<create_permission>"
-                              "<name>get_%ss</name>"
-                              "<comment>%s</comment>"
-                              "<resource id=\"%s\">"
-                              "</resource>"
-                              "<subject id=\"%s\"><type>%s</type></subject>"
-                              "</create_permission>",
-                              related_type, comment ? comment : "", related_id,
-                              subject_id, subject_type);
+                  ret =
+                    gmpf (connection, credentials, NULL, &entity, response_data,
+                          "<create_permission>"
+                          "<name>get_%ss</name>"
+                          "<comment>%s</comment>"
+                          "<resource id=\"%s\">"
+                          "</resource>"
+                          "<subject id=\"%s\"><type>%s</type></subject>"
+                          "</create_permission>",
+                          related_type, comment ? comment : "", related_id,
+                          subject_id, subject_type);
 
                   CHECK_GMPF_RET
                 }
@@ -14683,17 +14667,17 @@ create_permissions_gmp (gvm_connection_t *connection,
                   && !str_equal (related_type, "report"))
                 {
                   entity = NULL;
-                  ret = gmpf (connection, credentials, NULL, &entity,
-                              response_data,
-                              "<create_permission>"
-                              "<name>modify_%s</name>"
-                              "<comment>%s</comment>"
-                              "<resource id=\"%s\">"
-                              "</resource>"
-                              "<subject id=\"%s\"><type>%s</type></subject>"
-                              "</create_permission>",
-                              related_type, comment ? comment : "", related_id,
-                              subject_id, subject_type);
+                  ret =
+                    gmpf (connection, credentials, NULL, &entity, response_data,
+                          "<create_permission>"
+                          "<name>modify_%s</name>"
+                          "<comment>%s</comment>"
+                          "<resource id=\"%s\">"
+                          "</resource>"
+                          "<subject id=\"%s\"><type>%s</type></subject>"
+                          "</create_permission>",
+                          related_type, comment ? comment : "", related_id,
+                          subject_id, subject_type);
 
                   CHECK_GMPF_RET
 
@@ -19262,12 +19246,12 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
         update_to_latest_tag, items_xml->str);
 
       entity = NULL;
-      ret = gmpf (
-        connection, credentials, NULL, &entity, response_data, format,
-        /* retry */ attempts, delay_in_seconds, max_jitter_in_seconds,
-        /* executor */ bulk_size, bulk_throttle_time_in_ms, indexer_dir_depth,
-        /* heartbeat */ interval_in_seconds, miss_until_inactive,
-        /* comment */ comment);
+      ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
+                  /* retry */ attempts, delay_in_seconds, max_jitter_in_seconds,
+                  /* executor */ bulk_size, bulk_throttle_time_in_ms,
+                  indexer_dir_depth,
+                  /* heartbeat */ interval_in_seconds, miss_until_inactive,
+                  /* comment */ comment);
     }
   else
     {
@@ -19282,8 +19266,7 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
                                 update_to_latest_tag);
 
       entity = NULL;
-      ret = gmpf (connection, credentials, NULL, &entity, response_data,
-                  format,
+      ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
                   /* comment */ comment);
     }
 
@@ -19443,10 +19426,10 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
 
   entity = NULL;
 
-  ret = gmpf (connection, credentials, NULL, &entity, response_data,
-              format, attempts, delay_in_seconds, max_jitter_in_seconds,
-              bulk_size, bulk_throttle_time_in_ms, indexer_dir_depth,
-              interval_in_seconds, miss_until_inactive, update_to_latest);
+  ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
+              attempts, delay_in_seconds, max_jitter_in_seconds, bulk_size,
+              bulk_throttle_time_in_ms, indexer_dir_depth, interval_in_seconds,
+              miss_until_inactive, update_to_latest);
 
   g_free (format);
   g_string_free (items_xml, TRUE);
@@ -19542,8 +19525,7 @@ delete_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
                             "</delete_agent>",
                             agents_element->str);
   entity = NULL;
-  ret =
-    gmpf (connection, credentials, NULL, &entity, response_data, format);
+  ret = gmpf (connection, credentials, NULL, &entity, response_data, format);
   g_free (format);
   g_string_free (agents_element, TRUE);
 
@@ -19789,8 +19771,8 @@ save_agent_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
                             "</modify_agent_group>",
                             agents_element->str);
 
-  ret = gmpf (connection, credentials, NULL, &entity, response_data,
-              format, agent_group_id, name, comment);
+  ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
+              agent_group_id, name, comment);
 
   g_free (format);
   g_string_free (agents_element, TRUE);
