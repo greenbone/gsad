@@ -2,7 +2,7 @@ ARG GVM_LIBS_VERSION=stable
 ARG DEBIAN_FRONTEND=noninteractive
 ARG FEATURE_TOGGLE=""
 
-FROM registry.community.greenbone.net/community/gvm-libs:${GVM_LIBS_VERSION} AS build
+FROM ghcr.io/gvm-libs:${GVM_LIBS_VERSION} AS build
 
 ARG FEATURE_TOGGLE
 
@@ -15,7 +15,7 @@ RUN sh /source/.github/install-dependencies.sh \
 RUN cmake -DCMAKE_BUILD_TYPE=Release ${FEATURE_TOGGLE} -B /build /source \
     && DESTDIR=/install cmake --build /build -j$(nproc) -- install
 
-FROM registry.community.greenbone.net/community/gvm-libs:${GVM_LIBS_VERSION}
+FROM ghcr.io/greenbone/gvm-libs:${GVM_LIBS_VERSION}
 
 ARG DEBIAN_FRONTEND=noninteractive
 
