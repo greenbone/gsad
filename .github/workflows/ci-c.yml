@@ -28,7 +28,7 @@ jobs:
           - stable
           - oldstable
           - testing
-    container: ${{ vars.SELF_HOSTED_REGISTRY || 'registry.community.greenbone.net' }}/community/gvm-libs:${{ matrix.container }}
+    container: ghcr.io/greenbone/gvm-libs:${{ matrix.container }}
     steps:
       - uses: actions/checkout@v6
       - name: Install build dependencies
@@ -42,7 +42,7 @@ jobs:
   unittests:
     name: Unit Tests
     runs-on: ubuntu-latest
-    container: ${{ vars.SELF_HOSTED_REGISTRY || 'registry.community.greenbone.net' }}/community/gvm-libs:stable
+    container: ghcr.io/greenbone/gvm-libs:stable
     steps:
       - name: Install git for codecov uploader and cgreen for unit tests
         run: |
