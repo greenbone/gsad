@@ -2,7 +2,7 @@ ARG GVM_LIBS_VERSION=stable
 ARG DEBIAN_FRONTEND=noninteractive
 ARG FEATURE_TOGGLE=""
 
-FROM ghcr.io/gvm-libs:${GVM_LIBS_VERSION} AS build
+FROM ghcr.io/greenbone/gvm-libs:${GVM_LIBS_VERSION} AS build
 
 ARG FEATURE_TOGGLE
 
