@@ -45,7 +45,6 @@ Ensure (gsad_settings, should_use_defaults)
   assert_that (gsad_settings_get_client_watch_interval (settings),
                is_equal_to (DEFAULT_CLIENT_WATCH_INTERVAL));
   assert_that (gsad_settings_get_log_config_filename (settings), is_null);
-  assert_that (gsad_settings_is_jwt_requested (settings), is_equal_to (0));
 
   gsad_settings_free (settings);
 }
@@ -404,21 +403,6 @@ Ensure (gsad_settings, should_set_api_only)
   gsad_settings_free (settings);
 }
 
-Ensure (gsad_settings, should_set_jwt_requested)
-{
-  gsad_settings_t *settings = gsad_settings_new ();
-
-  assert_that (gsad_settings_is_jwt_requested (settings), is_equal_to (0));
-
-  gsad_settings_set_jwt_requested (settings, TRUE);
-  assert_that (gsad_settings_is_jwt_requested (settings), is_equal_to (1));
-
-  gsad_settings_set_jwt_requested (settings, FALSE);
-  assert_that (gsad_settings_is_api_only_enabled (settings), is_equal_to (0));
-
-  gsad_settings_free (settings);
-}
-
 int
 main (int argc, char **argv)
 {
@@ -453,7 +437,6 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_settings, should_set_log_config_filename);
   add_test_with_context (suite, gsad_settings, should_set_pid_filename);
   add_test_with_context (suite, gsad_settings, should_set_api_only);
-  add_test_with_context (suite, gsad_settings, should_set_jwt_requested);
 
   int ret = run_test_suite (suite, create_text_reporter ());
 

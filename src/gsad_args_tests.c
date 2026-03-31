@@ -1708,26 +1708,6 @@ Ensure (gsad_args, should_free_gsad_args)
   gsad_args_free (args);
 }
 
-Ensure (gsad_args, should_parse_jwt_requested)
-{
-  gsad_args_t *args = gsad_args_new ();
-  char *argv[] = {"gsad", "--jwt-requested"};
-  gsad_args_parse (2, argv, args);
-
-  assert_that (gsad_args_is_jwt_requested (args), is_true);
-  gsad_args_free (args);
-}
-
-Ensure (gsad_args, should_parse_jwt_requested_default)
-{
-  gsad_args_t *args = gsad_args_new ();
-  char *argv[] = {"gsad"};
-  gsad_args_parse (1, argv, args);
-
-  assert_that (gsad_args_is_jwt_requested (args), is_false);
-  gsad_args_free (args);
-}
-
 int
 main (int argc, char **argv)
 {
@@ -1896,8 +1876,6 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_args, should_get_dh_params_filename);
   add_test_with_context (suite, gsad_args, should_get_gnutls_priorities);
   add_test_with_context (suite, gsad_args, should_get_drop_privileges);
-  add_test_with_context (suite, gsad_args, should_parse_jwt_requested);
-  add_test_with_context (suite, gsad_args, should_parse_jwt_requested_default);
 
   add_test_with_context (suite, gsad_args, should_free_gsad_args);
 
