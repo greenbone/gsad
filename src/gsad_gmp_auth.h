@@ -15,7 +15,7 @@
 
 int
 authenticate_gmp (const gchar *, const gchar *, gchar **, gchar **, gchar **,
-                  gchar **, gchar **, gchar **, gchar **);
+                  gchar **, gchar **, gchar **);
 
 int
 logout_gmp (const gchar *username, const gchar *password);
