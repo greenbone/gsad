@@ -12,7 +12,7 @@
 #define _GSAD_BASE_H
 
 #include "gsad_cmd.h"  /* for cmd_response_data_t */
-#include "gsad_user.h" /* for credentials_t */
+#include "gsad_user.h" /* for gsad_credentials_t */
 
 #include <glib.h>
 #include <sys/time.h>

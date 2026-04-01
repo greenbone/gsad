@@ -68,8 +68,8 @@
 #include "gsad_session.h" /* for session_init */
 #include "gsad_settings.h"
 #include "gsad_user.h"
+#include "gsad_utils.h" /* for str_equal */
 #include "gsad_validator.h"
-#include "utils.h" /* for str_equal */
 
 #include <gvm/base/networking.h> /* for ipv6_is_enabled */
 #include <gvm/base/pidfile.h>

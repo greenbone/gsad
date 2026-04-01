@@ -8,7 +8,7 @@
  * @brief Utility functions in GSAD
  */
 
-#include "utils.h"
+#include "gsad_utils.h"
 
 #include <ctype.h>
 #include <string.h> // For strcmp

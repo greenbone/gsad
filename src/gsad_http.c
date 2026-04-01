@@ -14,7 +14,7 @@
 #include "gsad_i18n.h"       /* for accept_language_to_env_fmt */
 #include "gsad_params_mhd.h" /* for params_mhd_append */
 #include "gsad_settings.h"
-#include "utils.h" /* for str_equal */
+#include "gsad_utils.h" /* for str_equal */
 
 #include <assert.h>              /* for asset */
 #include <gvm/base/networking.h> /* for sockaddr_as_str */
