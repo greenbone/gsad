@@ -108,7 +108,7 @@ add_executable(
   gsad_settings.c
   gsad_user.c
   gsad_validator.c
-  utils.c
+  gsad_utils.c
   validator.c
 )
 
@@ -205,7 +205,7 @@ if(BUILD_TESTING)
 
   include(${CMAKE_SOURCE_DIR}/cmake/add_unit_test.cmake)
 
-  add_unit_test(utils)
+  add_unit_test(gsad-utils)
   add_unit_test(gsad-validator validator.c)
   add_unit_test(gsad-args)
   add_unit_test(gsad-settings)
@@ -241,7 +241,7 @@ if(BUILD_TESTING)
     tests
     DEPENDS
       gsad-validator-test
-      utils-test
+      gsad-utils-test
       gsad-args-test
       gsad-settings-test
       gsad-connection-info-test

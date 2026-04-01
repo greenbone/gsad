@@ -16,13 +16,14 @@
 #include "gsad_base.h" /* for set_language_code */
 #include "gsad_credentials.h"
 #include "gsad_gmp_arguments.h" /* for gmp_arguments_t */
+#include "gsad_gmp_auth.h"      /* for authenticate_gmp */
 #include "gsad_gmp_request.h"   /* for gmp_request() */
 #include "gsad_http.h"          /* for gsad_message */
 #include "gsad_i18n.h"
 #include "gsad_params.h"
 #include "gsad_session.h"
-#include "gsad_settings.h" /* for vendor_version_get */
-#include "utils.h"
+#include "gsad_settings.h" /* for gsad_settings_get_vendor_version */
+#include "gsad_utils.h"
 
 #include <arpa/inet.h>
 #include <assert.h>

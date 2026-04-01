@@ -11,7 +11,7 @@
 #include "gsad_http_method_handler.h"
 #include "gsad_http_url_handler.h"
 #include "gsad_params_mhd.h" /* for params_mhd_add */
-#include "utils.h"           /* for str_equal */
+#include "gsad_utils.h"      /* for str_equal */
 #include "validator.h"       /* for gvm_validator_t */
 
 #undef G_LOG_DOMAIN

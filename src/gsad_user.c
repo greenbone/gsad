@@ -14,7 +14,7 @@
 #include "gsad_gmp_auth.h"
 #include "gsad_session.h"
 #include "gsad_settings.h"
-#include "utils.h"
+#include "gsad_utils.h"
 
 #include <assert.h>             /* for asset */
 #include <gvm/util/uuidutils.h> /* for gvm_uuid_make */

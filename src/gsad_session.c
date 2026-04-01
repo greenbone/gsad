@@ -12,7 +12,7 @@
 
 #include "gsad_gmp_auth.h"
 #include "gsad_user.h"
-#include "utils.h" /* for str_equal */
+#include "gsad_utils.h" /* for str_equal */
 
 #undef G_LOG_DOMAIN
 /**
