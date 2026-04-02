@@ -4,9 +4,10 @@
  */
 #include "gsad_gmp.h" /* for manager_connect */
 #include "gsad_http_handler.h"
-#include "gsad_i18n.h"       /* for accept_language_to_env_fmt */
-#include "gsad_params_mhd.h" /* for params_mhd_add */
-#include "validator.h"       /* for gvm_validate */
+#include "gsad_i18n.h"         /* for accept_language_to_env_fmt */
+#include "gsad_params_mhd.h"   /* for params_mhd_add */
+#include "gsad_user_session.h" /* for user_find and user_logout */
+#include "validator.h"         /* for gvm_validate */
 
 #include <gvm/base/networking.h>  /* for INET6_ADDRSTRLEN */
 #include <gvm/util/serverutils.h> /* for gvm_connection_t */

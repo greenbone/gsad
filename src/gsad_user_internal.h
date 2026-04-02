@@ -8,13 +8,21 @@
 
 #include "gsad_user.h"
 
-user_t *
-user_new ();
-
-user_t *
-user_new_with_data (const gchar *username, const gchar *password,
-                    const gchar *timezone, const gchar *capabilities,
-                    const gchar *language, const gchar *address,
-                    const gchar *jwt);
+/**
+ * @brief User information structure, for sessions.
+ */
+struct user
+{
+  gchar *cookie;       ///< Cookie token.
+  gchar *token;        ///< Request session token.
+  gchar *username;     ///< Login name.
+  gchar *password;     ///< Password.
+  gchar *timezone;     ///< Timezone.
+  gchar *capabilities; ///< Capabilities.
+  gchar *language;     ///< User Interface Language.
+  gchar *address;      ///< Client's IP address.
+  time_t time;         ///< Login time.
+  gchar *jwt;          ///< JSON Web token value.
+};
 
 #endif /* _GSAD_USER_INTERNAL_H */

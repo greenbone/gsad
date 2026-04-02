@@ -14,6 +14,7 @@
 #include "gsad_gmp_auth.h"
 #include "gsad_session.h"
 #include "gsad_settings.h"
+#include "gsad_user.h"
 #include "gsad_user_internal.h"
 #include "gsad_utils.h"
 
@@ -24,28 +25,10 @@
 #define BROWSER_LANGUAGE "Browser Language"
 
 /**
- * @brief User information structure, for sessions.
+ * @brief Create a new user
+ *
+ * @return A new user with all fields initialized to NULL
  */
-struct user
-{
-  gchar *cookie;       ///< Cookie token.
-  gchar *token;        ///< Request session token.
-  gchar *username;     ///< Login name.
-  gchar *password;     ///< Password.
-  gchar *timezone;     ///< Timezone.
-  gchar *capabilities; ///< Capabilities.
-  gchar *language;     ///< User Interface Language.
-  gchar *address;      ///< Client's IP address.
-  time_t time;         ///< Login time.
-  gchar *jwt;          ///< JSON Web token value.
-};
-
-void
-user_renew_session (user_t *user)
-{
-  user->time = time (NULL);
-}
-
 user_t *
 user_new ()
 {
@@ -53,6 +36,23 @@ user_new ()
   return user;
 }
 
+/**
+ * @brief Create a new user with the given data
+ *
+ * Creates and initializes a user object with given parameters and generates new
+ * cookie and token values.
+ *
+ * @param[in] username      Name of user.
+ * @param[in] password      Password for user.
+ * @param[in] timezone      Timezone of user.
+ * @param[in] capabilities  Capabilities of user.
+ * @param[in] language      User Interface Language (language code)
+ * @param[in] address       Client's IP address.
+ * @param[in] jwt           JWT token value
+ *
+ * @return A new user with the given data, cookie and token values generated,
+ * and session time set to current time.
+ */
 user_t *
 user_new_with_data (const gchar *username, const gchar *password,
                     const gchar *timezone, const gchar *capabilities,
@@ -71,13 +71,18 @@ user_new_with_data (const gchar *username, const gchar *password,
   user->language = g_strdup (language);
   user->address = g_strdup (address);
   user->jwt = g_strdup (jwt);
+  user->time = time (NULL);
 
   user_set_language (user, language);
-  user_renew_session (user);
 
   return user;
 }
 
+/**
+ * @brief Free a user and all its associated data
+ *
+ * @param[in] user User to be freed. If NULL, the function does nothing.
+ */
 void
 user_free (user_t *user)
 {
@@ -98,6 +103,14 @@ user_free (user_t *user)
   g_free (user);
 }
 
+/**
+ * @brief Create a copy of a user
+ *
+ * @param[in] user User to be copied. If NULL, the function returns NULL.
+ *
+ * @return A new user which is a copy of the given user, or NULL if the input
+ * user is NULL.
+ */
 user_t *
 user_copy (user_t *user)
 {
@@ -122,74 +135,134 @@ user_copy (user_t *user)
   return copy;
 }
 
-gboolean
-user_session_expired (user_t *user)
-{
-  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
-  return (time (NULL) - user->time)
-         > (gsad_settings_get_session_timeout (gsad_global_settings) * 60);
-}
-
+/**
+ * @brief Get the username of a user
+ *
+ * @param[in] user User whose username is to be retrieved.
+ *
+ * @return The username of the user
+ */
 const gchar *
 user_get_username (user_t *user)
 {
   return user->username;
 }
 
+/**
+ * @brief Get the User Interface Language of a user (language code)
+ *
+ * @param[in] user User whose language is to be retrieved.
+ *
+ * @return The language of the user
+ */
 const gchar *
 user_get_language (user_t *user)
 {
   return user->language;
 }
 
+/**
+ * @brief Get the cookie token of a user
+ *
+ * @param[in] user User whose cookie token is to be retrieved.
+ *
+ * @return The cookie token of the user
+ */
 const gchar *
 user_get_cookie (user_t *user)
 {
   return user->cookie;
 }
 
+/**
+ * @brief Get the session token of a user
+ *
+ * @param[in] user User whose session token is to be retrieved.
+ *
+ * @return The session token of the user
+ */
 const gchar *
 user_get_token (user_t *user)
 {
   return user->token;
 }
 
+/**
+ * @brief Get the capabilities of a user
+ *
+ * @param[in] user User whose capabilities are to be retrieved.
+ *
+ * @return The capabilities of the user
+ */
 const gchar *
 user_get_capabilities (user_t *user)
 {
   return user->capabilities;
 }
 
+/**
+ * @brief Get the JWT token value of a user
+ *
+ * @param[in] user User whose JWT token value is to be retrieved.
+ *
+ * @return The JWT token value of the user
+ */
 const gchar *
 user_get_jwt (user_t *user)
 {
   return user->jwt;
 }
 
+/**
+ * @brief Get the timezone of a user
+ *
+ * @param[in] user User whose timezone is to be retrieved.
+ *
+ * @return The timezone of the user
+ */
 const gchar *
 user_get_timezone (user_t *user)
 {
   return user->timezone;
 }
 
+/**
+ * @brief Get the client IP address of a user
+ *
+ * @param[in] user User whose client IP address is to be retrieved.
+ *
+ * @return The client IP address of the user
+ */
 const gchar *
 user_get_client_address (user_t *user)
 {
   return user->address;
 }
 
+/**
+ * @brief Get the password of a user
+ *
+ * @param[in] user User whose password is to be retrieved.
+ *
+ * @return The password of the user
+ */
 const gchar *
 user_get_password (user_t *user)
 {
   return user->password;
 }
 
-const time_t
-user_get_session_timeout (user_t *user)
+/**
+ * @brief Get the login time of a user.
+ *
+ * @param[in] user User whose login time is to be retrieved.
+ *
+ * @return The login time of the user as a time_t value
+ */
+time_t
+user_get_time (user_t *user)
 {
-  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
-  return user->time
-         + (gsad_settings_get_session_timeout (gsad_global_settings) * 60);
+  return user->time;
 }
 
 /**
@@ -256,151 +329,4 @@ user_set_username (user_t *user, const gchar *username)
 {
   g_free (user->username);
   user->username = g_strdup (username);
-}
-
-/**
- * @brief Logout a user
- *
- * @param[in]  user  User.
- *
- * @return 0 success, -1 error.
- */
-int
-user_logout (user_t *user)
-{
-  user_t *fuser = session_get_user_by_id (user->token);
-
-  if (fuser)
-    {
-      if (fuser->username && fuser->password)
-        logout_gmp (fuser->username, fuser->password);
-      session_remove_user (fuser->token);
-      user_free (fuser);
-      return 0;
-    }
-
-  return -1;
-}
-
-/**
- * @brief Add a user.
- *
- * Creates and initializes a user object with given parameters
- *
- * It's up to the caller to free the returned user.
- *
- * @param[in]  username      Name of user.
- * @param[in]  password      Password for user.
- * @param[in]  timezone      Timezone of user.
- * @param[in]  capabilities  Capabilities of manager.
- * @param[in]  language      User Interface Language (language name or code)
- * @param[in]  address       Client's IP address.
- * @param[in]  jwt           JWT token value, NULL if not requested.
- *
- * @return Added user.
- */
-user_t *
-user_add (const gchar *username, const gchar *password, const gchar *timezone,
-          const gchar *capabilities, const gchar *language, const char *address,
-          const gchar *jwt)
-{
-  GList *current_user_item, *user_list;
-  user_t *user;
-  int session_count = 0;
-
-  user_list = current_user_item = session_get_users_by_username (username);
-  while (current_user_item)
-    {
-      user = current_user_item->data;
-      if (user_session_expired (user))
-        {
-          if (user->username && user->password)
-            logout_gmp (user->username, user->password);
-          session_remove_user (user->token);
-        }
-      else
-        session_count++;
-      user_free (user);
-      current_user_item = current_user_item->next;
-    }
-  g_list_free (user_list);
-
-  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
-  int session_limit =
-    gsad_settings_get_user_session_limit (gsad_global_settings);
-  if (session_limit && (session_count >= session_limit))
-
-    return NULL;
-
-  user = user_new_with_data (username, password, timezone, capabilities,
-                             language, address, jwt);
-
-  session_add_user (user->token, user);
-
-  return user;
-}
-
-/**
- * @brief Find a user, given a token and cookie.
- *
- * If a user is returned, the session of the user is renewed and it's up to the
- * caller to free the user.
- *
- * @param[in]   cookie       Token in cookie.
- * @param[in]   token        Token request parameter.
- * @param[in]   address      Client's IP address.
- * @param[out]  user_return  Copy of the User or NULL in error cases.
- *
- * @return 0 ok (user in user_return),
- *         1 bad token,
- *         2 expired token,
- *         3 bad/missing cookie,
- *         4 bad/missing token,
- *         7 IP address mismatch,
- */
-int
-user_find (const gchar *cookie, const gchar *token, const char *address,
-           user_t **user_return)
-{
-  user_t *user = NULL;
-  if (token == NULL)
-    return USER_BAD_MISSING_TOKEN;
-
-  user = session_get_user_by_id (token);
-
-  if (user)
-    {
-      if (user_session_expired (user))
-        {
-          if (user->username && user->password)
-            logout_gmp (user->username, user->password);
-          session_remove_user (user->token);
-          user_free (user);
-          return USER_EXPIRED_TOKEN;
-        }
-
-      else if ((cookie == NULL) || !str_equal (user->cookie, cookie))
-        {
-          user_free (user);
-          return USER_BAD_MISSING_COOKIE;
-        }
-
-      /* Verify that the user address matches the client's address. */
-      else if (address == NULL || !str_equal (address, user->address))
-        {
-          user_free (user);
-          return USER_IP_ADDRESS_MISSMATCH;
-        }
-      else
-        {
-          session_add_user (user->token, user);
-
-          *user_return = user;
-          return USER_OK;
-        }
-    }
-
-  /* should it be really USER_EXPIRED_TOKEN?
-   * No user has been found therefore the token couldn't even expire */
-  return USER_EXPIRED_TOKEN;
 }

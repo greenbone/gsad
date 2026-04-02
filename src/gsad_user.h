@@ -28,20 +28,20 @@
  */
 typedef struct user user_t;
 
+user_t *
+user_new ();
+
+user_t *
+user_new_with_data (const gchar *username, const gchar *password,
+                    const gchar *timezone, const gchar *capabilities,
+                    const gchar *language, const gchar *address,
+                    const gchar *jwt);
+
 void
 user_free (user_t *user);
 
 user_t *
 user_copy (user_t *user);
-
-int
-user_find (const gchar *cookie, const gchar *token, const char *address,
-           user_t **user_return);
-
-user_t *
-user_add (const gchar *username, const gchar *password, const gchar *timezone,
-          const gchar *capabilities, const gchar *language, const char *address,
-          const gchar *jwt);
 
 void
 user_set_timezone (user_t *user, const gchar *timezone);
@@ -82,13 +82,7 @@ user_get_jwt (user_t *user);
 const gchar *
 user_get_capabilities (user_t *user);
 
-const time_t
-user_get_session_timeout (user_t *user);
-
-int
-user_logout (user_t *user);
-
-void
-user_renew_session (user_t *user);
+time_t
+user_get_time (user_t *user);
 
 #endif /* _GSAD_USER_H_ */
