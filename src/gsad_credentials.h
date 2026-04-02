@@ -29,10 +29,4 @@ gsad_credentials_get_user (gsad_credentials_t *creds);
 const gchar *
 gsad_credentials_get_language (gsad_credentials_t *creds);
 
-void
-gsad_credentials_start_cmd (gsad_credentials_t *creds);
-
-double
-gsad_credentials_get_cmd_duration (gsad_credentials_t *creds);
-
 #endif /* _GSAD_CREDENTIALS_H */
