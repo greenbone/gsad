@@ -65,7 +65,7 @@
 #include "gsad_logging.h" /* for gsad_logging_init and gsad_logging_cleanup */
 #include "gsad_params.h"
 #include "gsad_params_mhd.h"
-#include "gsad_session.h" /* for session_init */
+#include "gsad_session.h" /* for gsad_session_init */
 #include "gsad_settings.h"
 #include "gsad_user.h"
 #include "gsad_user_session.h"
@@ -348,7 +348,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     }
 
   /* always renew session for http post */
-  session_renew_user (gsad_user_get_token (user));
+  gsad_session_renew_user (gsad_user_get_token (user));
 
   /* Handle the usual commands. */
   if (0)
@@ -1350,7 +1350,7 @@ gsad_init (const gchar *static_content_directory)
   g_debug ("Initializing the Greenbone Security Assistant Deamon...\n");
 
   /* Init user ssessions. */
-  session_init ();
+  gsad_session_init ();
 
   /* Check for required files. */
   if (!gvm_file_exists (static_content_directory)

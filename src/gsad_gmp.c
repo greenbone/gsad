@@ -13304,8 +13304,8 @@ save_my_settings_gmp (gvm_connection_t *connection,
       if (gmp_success (entity) == 1)
         {
           gsad_user_set_password (user, passwd);
-          session_remove_other_sessions (gsad_user_get_token (user),
-                                         gsad_user_get_username (user));
+          gsad_session_remove_other_sessions (gsad_user_get_token (user),
+                                              gsad_user_get_username (user));
           user_changed = 1;
         }
       else
@@ -13944,7 +13944,7 @@ save_my_settings_gmp (gvm_connection_t *connection,
 
   if (user_changed)
     {
-      session_add_user (gsad_user_get_token (user), user);
+      gsad_session_add_user (gsad_user_get_token (user), user);
     }
 
   return envelope_gmp (connection, credentials, params,
@@ -16802,8 +16802,8 @@ save_user_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
             {
               /* logout all other user sessions if new password was set,
                  authentication type has changed or username has changed */
-              session_remove_other_sessions (gsad_user_get_token (current_user),
-                                             old_login);
+              gsad_session_remove_other_sessions (
+                gsad_user_get_token (current_user), old_login);
             }
 
           if (str_equal (old_login, gsad_user_get_username (current_user)))
@@ -18950,9 +18950,9 @@ change_password_gmp (gvm_connection_t *connection,
   if (gmp_success (entity) == 1)
     {
       gsad_user_set_password (user, passwd);
-      session_remove_other_sessions (gsad_user_get_token (user),
-                                     gsad_user_get_username (user));
-      session_add_user (gsad_user_get_token (user), user);
+      gsad_session_remove_other_sessions (gsad_user_get_token (user),
+                                          gsad_user_get_username (user));
+      gsad_session_add_user (gsad_user_get_token (user), user);
     }
 
   cmd_response_data_set_content_type (response_data, GSAD_CONTENT_TYPE_APP_XML);
@@ -19917,7 +19917,7 @@ renew_session_gmp (gvm_connection_t *connection,
   gchar *html;
   gchar *message;
   gsad_user_t *user = gsad_credentials_get_user (credentials);
-  session_renew_user (gsad_user_get_token (user));
+  gsad_session_renew_user (gsad_user_get_token (user));
 
   message = g_strdup_printf ("%ld", gsad_user_session_get_timeout (user));
 
