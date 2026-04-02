@@ -175,10 +175,4 @@ gsad_settings_set_api_only (gsad_settings_t *, gboolean);
 gboolean
 gsad_settings_is_api_only_enabled (const gsad_settings_t *);
 
-void
-gsad_settings_set_jwt_requested (gsad_settings_t *, gboolean);
-
-int
-gsad_settings_is_jwt_requested (const gsad_settings_t *);
-
 #endif /* _GSAD_SETTINGS_H */

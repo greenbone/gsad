@@ -20619,17 +20619,13 @@ authenticate_gmp (const gchar *username, const gchar *password, gchar **role,
       return 1;
     }
 
-  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
-
   auth_opts = gmp_authenticate_info_opts_defaults;
   auth_opts.username = username;
   auth_opts.password = password;
   auth_opts.role = role;
   auth_opts.timezone = timezone;
   auth_opts.pw_warning = pw_warning;
-  auth_opts.jwt_requested =
-    gsad_settings_is_jwt_requested (gsad_global_settings);
-  auth_opts.jwt = jwt;
+  auth_opts.jwt_requested = TRUE;
 
   auth = gmp_authenticate_info_ext_c (&connection, auth_opts);
   if (auth == 0)

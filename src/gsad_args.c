@@ -1062,16 +1062,3 @@ gsad_args_is_api_only_enabled (const gsad_args_t *args)
 {
   return args->api_only;
 }
-
-/**
- * @brief Check if JWT requested from the login response.
- *
- * @param[in] args The parsed command-line arguments.
- *
- * @return TRUE if JWT requested mode should be enabled, FALSE otherwise.
- */
-gboolean
-gsad_args_is_jwt_requested (const gsad_args_t *args)
-{
-  return args->jwt_requested;
-}
