@@ -366,13 +366,12 @@ envelope_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
     "<timezone>%s</timezone>"
     "<login>%s</login>"
     "<session>%ld</session>"
-    "<role>%s</role>"
     "<i18n>%s</i18n>"
     "<client_address>%s</client_address>",
     GSAD_VERSION, gsad_settings_get_vendor_version (gsad_global_settings),
     user_get_token (user), ctime_now, timezone ? timezone : "",
     user_get_username (user), user_get_session_timeout (user),
-    user_get_role (user), gsad_credentials_get_language (credentials),
+    gsad_credentials_get_language (credentials),
     user_get_client_address (user));
 
   g_string_append (string, res);
@@ -20593,7 +20592,6 @@ gvm_connection_open (gvm_connection_t *connection, const gchar *address,
  *
  * @param[in]  username      Username.
  * @param[in]  password      Password.
- * @param[out] role          Role.
  * @param[out] timezone      Timezone.
  * @param[out] capabilities  Capabilities of manager.
  * @param[out] language      User Interface Language, or NULL.
@@ -20603,7 +20601,7 @@ gvm_connection_open (gvm_connection_t *connection, const gchar *address,
  * @return 0 if valid, 1 manager down, 2 failed, 3 timeout, -1 error.
  */
 int
-authenticate_gmp (const gchar *username, const gchar *password, gchar **role,
+authenticate_gmp (const gchar *username, const gchar *password,
                   gchar **timezone, gchar **capabilities, gchar **language,
                   gchar **pw_warning, gchar **jwt)
 {
@@ -20622,7 +20620,6 @@ authenticate_gmp (const gchar *username, const gchar *password, gchar **role,
   auth_opts = gmp_authenticate_info_opts_defaults;
   auth_opts.username = username;
   auth_opts.password = password;
-  auth_opts.role = role;
   auth_opts.timezone = timezone;
   auth_opts.pw_warning = pw_warning;
   auth_opts.jwt_requested =
@@ -20815,7 +20812,6 @@ login (gsad_http_connection_t *con, params_t *params,
   gsad_authentication_reason_t auth_reason;
   gsad_credentials_t *credentials;
   gchar *timezone;
-  gchar *role;
   gchar *capabilities;
   gchar *language;
   gchar *pw_warning;
@@ -20829,7 +20825,7 @@ login (gsad_http_connection_t *con, params_t *params,
     password = "";
   if (login && password)
     {
-      ret = authenticate_gmp (login, password, &role, &timezone, &capabilities,
+      ret = authenticate_gmp (login, password, &timezone, &capabilities,
                               &language, &pw_warning, &jwt);
       if (ret)
         {
@@ -20858,8 +20854,8 @@ login (gsad_http_connection_t *con, params_t *params,
       else
         {
           user_t *user;
-          user = user_add (login, password, timezone, role, capabilities,
-                           language, pw_warning, client_address, jwt);
+          user = user_add (login, password, timezone, capabilities, language,
+                           pw_warning, client_address, jwt);
 
           if (user == NULL)
             {
@@ -20873,7 +20869,6 @@ login (gsad_http_connection_t *con, params_t *params,
               g_free (timezone);
               g_free (capabilities);
               g_free (language);
-              g_free (role);
               g_free (pw_warning);
               g_free (jwt);
 
@@ -20898,7 +20893,6 @@ login (gsad_http_connection_t *con, params_t *params,
           g_free (timezone);
           g_free (capabilities);
           g_free (language);
-          g_free (role);
           g_free (pw_warning);
           g_free (jwt);
 

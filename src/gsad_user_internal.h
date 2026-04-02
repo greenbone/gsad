@@ -13,9 +13,8 @@ user_new ();
 
 user_t *
 user_new_with_data (const gchar *username, const gchar *password,
-                    const gchar *timezone, const gchar *role,
-                    const gchar *capabilities, const gchar *language,
-                    const gchar *pw_warning, const gchar *address,
-                    const gchar *jwt);
+                    const gchar *timezone, const gchar *capabilities,
+                    const gchar *language, const gchar *pw_warning,
+                    const gchar *address, const gchar *jwt);
 
 #endif /* _GSAD_USER_INTERNAL_H */
