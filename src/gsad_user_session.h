@@ -13,7 +13,7 @@
 
 #include "gsad_user.h"
 
-int
+void
 gsad_user_session_logout (gsad_user_t *user);
 
 int

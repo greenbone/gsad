@@ -5,21 +5,20 @@
 
 #include "gsad_user_session.h"
 
-#include "gsad_gmp_auth.h"
+#include "gsad_gmp_auth.h" /* for logout_gmp */
 #include "gsad_session.h"
-#include "gsad_settings.h"
+#include "gsad_settings.h" /* for gsad_settings_get_session_timeout  */
 #include "gsad_user_internal.h"
-#include "gsad_user_session.h"
-#include "gsad_utils.h"
+#include "gsad_utils.h" /* for str_equal */
 
 /**
- * @brief Logout a user
+ * @brief Logout a user and remove the session of the user.
  *
- * @param[in]  user  User.
+ * @param[in]  user  User to logout.
  *
  * @return 0 success, -1 error.
  */
-int
+void
 gsad_user_session_logout (gsad_user_t *user)
 {
   gsad_user_t *fuser = session_get_user_by_id (user->token);
@@ -30,10 +29,7 @@ gsad_user_session_logout (gsad_user_t *user)
         logout_gmp (fuser->username, fuser->password);
       session_remove_user (fuser->token);
       gsad_user_free (fuser);
-      return 0;
     }
-
-  return -1;
 }
 
 /**
