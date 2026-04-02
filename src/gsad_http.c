@@ -1004,9 +1004,9 @@ gsad_message (gsad_credentials_t *credentials, const char *title,
         "<login>%s</login>"
         "<i18n>%s</i18n>"
         "<client_address>%s</client_address>",
-        GSAD_VERSION, user_get_token (user), user_get_username (user),
+        GSAD_VERSION, gsad_user_get_token (user), gsad_user_get_username (user),
         gsad_credentials_get_language (credentials),
-        user_get_client_address (user));
+        gsad_user_get_client_address (user));
 
       xml = g_strdup_printf ("%s"
                              "<gsad_response>"
@@ -1016,7 +1016,7 @@ gsad_message (gsad_credentials_t *credentials, const char *title,
                              "<capabilities>%s</capabilities>"
                              "</envelope>",
                              pre, xmltitle, msg ? msg : "",
-                             user_get_capabilities (user));
+                             gsad_user_get_capabilities (user));
 
       g_free (pre);
     }
