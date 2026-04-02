@@ -20,9 +20,9 @@
  * @return 0 success, -1 error.
  */
 int
-gsad_user_session_logout (user_t *user)
+gsad_user_session_logout (gsad_user_t *user)
 {
-  user_t *fuser = session_get_user_by_id (user->token);
+  gsad_user_t *fuser = session_get_user_by_id (user->token);
 
   if (fuser)
     {
@@ -44,7 +44,7 @@ gsad_user_session_logout (user_t *user)
  * @return TRUE if the user's session has expired, FALSE otherwise.
  */
 gboolean
-gsad_user_session_is_expired (user_t *user)
+gsad_user_session_is_expired (gsad_user_t *user)
 {
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
   return (time (NULL) - user->time)
@@ -68,14 +68,14 @@ gsad_user_session_is_expired (user_t *user)
  *
  * @return Added user.
  */
-user_t *
+gsad_user_t *
 gsad_user_session_add (const gchar *username, const gchar *password,
                        const gchar *timezone, const gchar *capabilities,
                        const gchar *language, const char *address,
                        const gchar *jwt)
 {
   GList *current_user_item, *user_list;
-  user_t *user;
+  gsad_user_t *user;
   int session_count = 0;
 
   user_list = current_user_item = session_get_users_by_username (username);
@@ -130,9 +130,9 @@ gsad_user_session_add (const gchar *username, const gchar *password,
  */
 int
 gsad_user_session_find (const gchar *cookie, const gchar *token,
-                        const char *address, user_t **user_return)
+                        const char *address, gsad_user_t **user_return)
 {
-  user_t *user = NULL;
+  gsad_user_t *user = NULL;
   if (token == NULL)
     return USER_BAD_MISSING_TOKEN;
 
@@ -183,7 +183,7 @@ gsad_user_session_find (const gchar *cookie, const gchar *token,
  * @return The session timeout time of the user, calculated as the login time
  */
 const time_t
-gsad_user_session_get_timeout (user_t *user)
+gsad_user_session_get_timeout (gsad_user_t *user)
 {
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
   return user->time
@@ -196,7 +196,7 @@ gsad_user_session_get_timeout (user_t *user)
  * @param[in] user User whose session is to be renewed.
  */
 void
-gsad_user_session_renew (user_t *user)
+gsad_user_session_renew (gsad_user_t *user)
 {
   user->time = time (NULL);
 }

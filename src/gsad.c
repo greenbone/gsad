@@ -177,7 +177,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
                const gchar *client_address)
 {
   int ret;
-  user_t *user;
+  gsad_user_t *user;
   gsad_credentials_t *credentials = NULL;
   gchar *res = NULL, *new_sid = NULL;
   const gchar *cmd, *caller, *language;
@@ -792,7 +792,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
 
   /* Set the timezone. */
 
-  user_t *user = gsad_credentials_get_user (credentials);
+  gsad_user_t *user = gsad_credentials_get_user (credentials);
   const gchar *timezone = gsad_user_get_timezone (user);
 
   if (timezone)

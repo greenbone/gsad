@@ -11,7 +11,7 @@
 #include "gsad_session.h"
 
 #include "gsad_gmp_auth.h"
-#include "gsad_user.h"         /* for user_t */
+#include "gsad_user.h"         /* for gsad_user_t */
 #include "gsad_user_session.h" /* for gsad_user_session_renew */
 #include "gsad_utils.h"        /* for str_equal */
 
@@ -31,13 +31,13 @@ GPtrArray *users = NULL;
  */
 static GMutex *mutex = NULL;
 
-user_t *
+gsad_user_t *
 session_get_user_by_id_internal (const gchar *id)
 {
   int index;
   for (index = 0; index < users->len; index++)
     {
-      user_t *item = (user_t *) g_ptr_array_index (users, index);
+      gsad_user_t *item = (gsad_user_t *) g_ptr_array_index (users, index);
       const gchar *token = gsad_user_get_token (item);
 
       if (str_equal (id, token))
@@ -52,7 +52,7 @@ session_get_user_by_id_internal (const gchar *id)
 void
 session_remove_user_internal (const gchar *id)
 {
-  user_t *user = session_get_user_by_id_internal (id);
+  gsad_user_t *user = session_get_user_by_id_internal (id);
 
   if (user)
     {
@@ -63,7 +63,7 @@ session_remove_user_internal (const gchar *id)
 }
 
 void
-session_add_user_internal (user_t *user)
+session_add_user_internal (gsad_user_t *user)
 {
   g_ptr_array_add (users, (gpointer) gsad_user_copy (user));
 }
@@ -81,10 +81,10 @@ session_init ()
  *
  * @return Return a copy of the user or NULL if not found
  */
-user_t *
+gsad_user_t *
 session_get_user_by_id (const gchar *id)
 {
-  user_t *user;
+  gsad_user_t *user;
 
   g_mutex_lock (mutex);
 
@@ -110,12 +110,12 @@ session_get_users_by_username (const gchar *username)
 
   for (index = 0; index < users->len; index++)
     {
-      user_t *item = (user_t *) g_ptr_array_index (users, index);
+      gsad_user_t *item = (gsad_user_t *) g_ptr_array_index (users, index);
       const gchar *name = gsad_user_get_username (item);
 
       if (str_equal (name, username))
         {
-          user_t *user = NULL;
+          gsad_user_t *user = NULL;
           user = gsad_user_copy (item);
           list = g_list_prepend (list, user);
         }
@@ -133,7 +133,7 @@ session_get_users_by_username (const gchar *username)
  * @param[in]  user   User.
  */
 void
-session_add_user (const gchar *id, user_t *user)
+session_add_user (const gchar *id, gsad_user_t *user)
 {
   g_mutex_lock (mutex);
 
@@ -175,7 +175,7 @@ session_remove_other_sessions (const gchar *keep_id, const gchar *username)
 
   for (index = 0; index < users->len; index++)
     {
-      user_t *item = (user_t *) g_ptr_array_index (users, index);
+      gsad_user_t *item = (gsad_user_t *) g_ptr_array_index (users, index);
 
       const gchar *itemtoken = gsad_user_get_token (item);
       const gchar *itemname = gsad_user_get_username (item);
@@ -211,7 +211,7 @@ session_renew_user (const gchar *id)
 {
   g_mutex_lock (mutex);
 
-  user_t *user = session_get_user_by_id_internal (id);
+  gsad_user_t *user = session_get_user_by_id_internal (id);
   if (user)
     {
       gsad_user_session_renew (user);

@@ -29,10 +29,10 @@
  *
  * @return A new user with all fields initialized to NULL
  */
-user_t *
+gsad_user_t *
 gsad_user_new ()
 {
-  user_t *user = g_malloc0 (sizeof (user_t));
+  gsad_user_t *user = g_malloc0 (sizeof (gsad_user_t));
   return user;
 }
 
@@ -53,13 +53,13 @@ gsad_user_new ()
  * @return A new user with the given data, cookie and token values generated,
  * and session time set to current time.
  */
-user_t *
+gsad_user_t *
 gsad_user_new_with_data (const gchar *username, const gchar *password,
                          const gchar *timezone, const gchar *capabilities,
                          const gchar *language, const gchar *address,
                          const gchar *jwt)
 {
-  user_t *user = gsad_user_new ();
+  gsad_user_t *user = gsad_user_new ();
 
   user->cookie = gvm_uuid_make ();
   user->token = gvm_uuid_make ();
@@ -84,7 +84,7 @@ gsad_user_new_with_data (const gchar *username, const gchar *password,
  * @param[in] user User to be freed. If NULL, the function does nothing.
  */
 void
-gsad_user_free (user_t *user)
+gsad_user_free (gsad_user_t *user)
 {
   if (!user)
     {
@@ -111,15 +111,15 @@ gsad_user_free (user_t *user)
  * @return A new user which is a copy of the given user, or NULL if the input
  * user is NULL.
  */
-user_t *
-gsad_user_copy (user_t *user)
+gsad_user_t *
+gsad_user_copy (gsad_user_t *user)
 {
   if (!user)
     {
       return NULL;
     }
 
-  user_t *copy = gsad_user_new ();
+  gsad_user_t *copy = gsad_user_new ();
 
   copy->cookie = g_strdup (user->cookie);
   copy->token = g_strdup (user->token);
@@ -143,7 +143,7 @@ gsad_user_copy (user_t *user)
  * @return The username of the user
  */
 const gchar *
-gsad_user_get_username (user_t *user)
+gsad_user_get_username (gsad_user_t *user)
 {
   return user->username;
 }
@@ -156,7 +156,7 @@ gsad_user_get_username (user_t *user)
  * @return The language of the user
  */
 const gchar *
-gsad_user_get_language (user_t *user)
+gsad_user_get_language (gsad_user_t *user)
 {
   return user->language;
 }
@@ -169,7 +169,7 @@ gsad_user_get_language (user_t *user)
  * @return The cookie token of the user
  */
 const gchar *
-gsad_user_get_cookie (user_t *user)
+gsad_user_get_cookie (gsad_user_t *user)
 {
   return user->cookie;
 }
@@ -182,7 +182,7 @@ gsad_user_get_cookie (user_t *user)
  * @return The session token of the user
  */
 const gchar *
-gsad_user_get_token (user_t *user)
+gsad_user_get_token (gsad_user_t *user)
 {
   return user->token;
 }
@@ -195,7 +195,7 @@ gsad_user_get_token (user_t *user)
  * @return The capabilities of the user
  */
 const gchar *
-gsad_user_get_capabilities (user_t *user)
+gsad_user_get_capabilities (gsad_user_t *user)
 {
   return user->capabilities;
 }
@@ -208,7 +208,7 @@ gsad_user_get_capabilities (user_t *user)
  * @return The JWT token value of the user
  */
 const gchar *
-gsad_user_get_jwt (user_t *user)
+gsad_user_get_jwt (gsad_user_t *user)
 {
   return user->jwt;
 }
@@ -221,7 +221,7 @@ gsad_user_get_jwt (user_t *user)
  * @return The timezone of the user
  */
 const gchar *
-gsad_user_get_timezone (user_t *user)
+gsad_user_get_timezone (gsad_user_t *user)
 {
   return user->timezone;
 }
@@ -234,7 +234,7 @@ gsad_user_get_timezone (user_t *user)
  * @return The client IP address of the user
  */
 const gchar *
-gsad_user_get_client_address (user_t *user)
+gsad_user_get_client_address (gsad_user_t *user)
 {
   return user->address;
 }
@@ -247,7 +247,7 @@ gsad_user_get_client_address (user_t *user)
  * @return The password of the user
  */
 const gchar *
-gsad_user_get_password (user_t *user)
+gsad_user_get_password (gsad_user_t *user)
 {
   return user->password;
 }
@@ -260,7 +260,7 @@ gsad_user_get_password (user_t *user)
  * @return The login time of the user as a time_t value
  */
 time_t
-gsad_user_get_time (user_t *user)
+gsad_user_get_time (gsad_user_t *user)
 {
   return user->time;
 }
@@ -273,7 +273,7 @@ gsad_user_get_time (user_t *user)
  *
  */
 void
-gsad_user_set_timezone (user_t *user, const gchar *timezone)
+gsad_user_set_timezone (gsad_user_t *user, const gchar *timezone)
 {
   g_free (user->timezone);
 
@@ -288,7 +288,7 @@ gsad_user_set_timezone (user_t *user, const gchar *timezone)
  *
  */
 void
-gsad_user_set_password (user_t *user, const gchar *password)
+gsad_user_set_password (gsad_user_t *user, const gchar *password)
 {
   g_free (user->password);
 
@@ -303,7 +303,7 @@ gsad_user_set_password (user_t *user, const gchar *password)
  *
  */
 void
-gsad_user_set_language (user_t *user, const gchar *language)
+gsad_user_set_language (gsad_user_t *user, const gchar *language)
 {
   g_free (user->language);
 
@@ -325,7 +325,7 @@ gsad_user_set_language (user_t *user, const gchar *language)
  *
  */
 void
-gsad_user_set_username (user_t *user, const gchar *username)
+gsad_user_set_username (gsad_user_t *user, const gchar *username)
 {
   g_free (user->username);
   user->username = g_strdup (username);

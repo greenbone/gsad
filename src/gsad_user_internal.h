@@ -11,7 +11,7 @@
 /**
  * @brief User information structure, for sessions.
  */
-struct user
+struct gsad_user
 {
   gchar *cookie;       ///< Cookie token.
   gchar *token;        ///< Request session token.

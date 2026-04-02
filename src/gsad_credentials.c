@@ -21,7 +21,7 @@ struct gsad_credentials
 {
   struct timeval cmd_start; ///< Seconds since command page handler started.
   gchar *language;          ///< Language for this request
-  user_t *user;             ///< Current user
+  gsad_user_t *user;        ///< Current user
 };
 
 /**
@@ -33,7 +33,7 @@ struct gsad_credentials
  * @return A new credential instance. The caller is responsible for freeing it
  */
 gsad_credentials_t *
-gsad_credentials_new (user_t *user, const gchar *language)
+gsad_credentials_new (gsad_user_t *user, const gchar *language)
 {
   gsad_credentials_t *credentials;
 
@@ -70,7 +70,7 @@ gsad_credentials_free (gsad_credentials_t *creds)
  * @return The user associated with the credential. The caller should not free
  * this user, as it is owned by the credential.
  */
-user_t *
+gsad_user_t *
 gsad_credentials_get_user (gsad_credentials_t *cred)
 {
   return cred->user;

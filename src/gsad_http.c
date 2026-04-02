@@ -995,7 +995,7 @@ gsad_message (gsad_credentials_t *credentials, const char *title,
   if (credentials)
     {
       gchar *pre;
-      user_t *user = gsad_credentials_get_user (credentials);
+      gsad_user_t *user = gsad_credentials_get_user (credentials);
 
       pre = g_markup_printf_escaped (
         "<envelope>"

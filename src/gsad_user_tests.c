@@ -18,7 +18,7 @@ AfterEach (gsad_user)
 
 Ensure (gsad_user, should_create_new_user)
 {
-  user_t *user = gsad_user_new ();
+  gsad_user_t *user = gsad_user_new ();
 
   assert_that (user, is_not_null);
   assert_that (gsad_user_get_username (user), is_null);
@@ -45,8 +45,8 @@ Ensure (gsad_user, should_create_new_user_with_data)
   const gchar *address = "127.0.0.1";
   const gchar *jwt = "jwt_token";
 
-  user_t *user = gsad_user_new_with_data (username, password, timezone,
-                                          capabilities, language, address, jwt);
+  gsad_user_t *user = gsad_user_new_with_data (
+    username, password, timezone, capabilities, language, address, jwt);
 
   assert_that (user, is_not_null);
   assert_that (gsad_user_get_username (user), is_equal_to_string (username));
@@ -75,10 +75,10 @@ Ensure (gsad_user, should_copy_user)
   const gchar *address = "127.0.0.1";
   const gchar *jwt = "jwt_token";
 
-  user_t *user = gsad_user_new_with_data (username, password, timezone,
-                                          capabilities, language, address, jwt);
+  gsad_user_t *user = gsad_user_new_with_data (
+    username, password, timezone, capabilities, language, address, jwt);
 
-  user_t *copy = gsad_user_copy (user);
+  gsad_user_t *copy = gsad_user_copy (user);
 
   assert_that (copy, is_not_null);
   assert_that (copy, is_not_equal_to (user));
@@ -101,14 +101,14 @@ Ensure (gsad_user, should_copy_user)
 
 Ensure (gsad_user, should_copy_null_user)
 {
-  user_t *copy = gsad_user_copy (NULL);
+  gsad_user_t *copy = gsad_user_copy (NULL);
 
   assert_that (copy, is_null);
 }
 
 Ensure (gsad_user, should_set_timezone)
 {
-  user_t *user = gsad_user_new ();
+  gsad_user_t *user = gsad_user_new ();
 
   const gchar *timezone = "UTC";
   gsad_user_set_timezone (user, timezone);
@@ -120,7 +120,7 @@ Ensure (gsad_user, should_set_timezone)
 
 Ensure (gsad_user, should_set_password)
 {
-  user_t *user = gsad_user_new ();
+  gsad_user_t *user = gsad_user_new ();
 
   const gchar *password = "newpassword";
   gsad_user_set_password (user, password);
@@ -132,7 +132,7 @@ Ensure (gsad_user, should_set_password)
 
 Ensure (gsad_user, should_set_language)
 {
-  user_t *user = gsad_user_new ();
+  gsad_user_t *user = gsad_user_new ();
 
   const gchar *language = "en";
   gsad_user_set_language (user, language);
@@ -144,7 +144,7 @@ Ensure (gsad_user, should_set_language)
 
 Ensure (gsad_user, should_set_username)
 {
-  user_t *user = gsad_user_new ();
+  gsad_user_t *user = gsad_user_new ();
 
   const gchar *username = "newuser";
   gsad_user_set_username (user, username);
