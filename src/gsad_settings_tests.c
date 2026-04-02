@@ -40,8 +40,6 @@ Ensure (gsad_settings, should_use_defaults)
   assert_that (gsad_settings_get_http_cors_origin (settings), is_null);
   assert_that (gsad_settings_get_http_strict_transport_security (settings),
                is_null);
-  assert_that (gsad_settings_get_vendor_version (settings),
-               is_equal_to_string (""));
   assert_that (gsad_settings_get_client_watch_interval (settings),
                is_equal_to (DEFAULT_CLIENT_WATCH_INTERVAL));
   assert_that (gsad_settings_get_log_config_filename (settings), is_null);
@@ -321,24 +319,6 @@ Ensure (gsad_settings, should_set_unix_socket)
   gsad_settings_free (settings);
 }
 
-Ensure (gsad_settings, should_set_vendor_version)
-{
-  gsad_settings_t *settings = gsad_settings_new ();
-
-  assert_that (gsad_settings_get_vendor_version (settings),
-               is_equal_to_string (""));
-
-  gsad_settings_set_vendor_version (settings, "Greenbone Security Assistant");
-  assert_that (gsad_settings_get_vendor_version (settings),
-               is_equal_to_string ("Greenbone Security Assistant"));
-
-  gsad_settings_set_vendor_version (settings, "GSA");
-  assert_that (gsad_settings_get_vendor_version (settings),
-               is_equal_to_string ("GSA"));
-
-  gsad_settings_free (settings);
-}
-
 Ensure (gsad_settings, should_set_client_watch_interval)
 {
   gsad_settings_t *settings = gsad_settings_new ();
@@ -443,7 +423,6 @@ main (int argc, char **argv)
                          should_set_http_guest_chart_x_frame_options);
   add_test_with_context (suite, gsad_settings,
                          should_set_http_guest_chart_content_security_policy);
-  add_test_with_context (suite, gsad_settings, should_set_vendor_version);
   add_test_with_context (suite, gsad_settings, should_set_user_session_limit);
   add_test_with_context (suite, gsad_settings,
                          should_set_per_ip_connection_limit);

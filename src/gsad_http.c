@@ -980,7 +980,6 @@ gsad_message (gsad_credentials_t *credentials, const char *title,
               cmd_response_data_t *response_data)
 {
   gchar *xml, *xmltitle;
-  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
 
   if (function)
     {
@@ -1006,15 +1005,13 @@ gsad_message (gsad_credentials_t *credentials, const char *title,
       pre = g_markup_printf_escaped (
         "<envelope>"
         "<version>%s</version>"
-        "<vendor_version>%s</vendor_version>"
         "<token>%s</token>"
         "<time>%s</time>"
         "<login>%s</login>"
         "<i18n>%s</i18n>"
         "<client_address>%s</client_address>",
-        GSAD_VERSION, gsad_settings_get_vendor_version (gsad_global_settings),
-        user_get_token (user), ctime_now, user_get_username (user),
-        gsad_credentials_get_language (credentials),
+        GSAD_VERSION, user_get_token (user), ctime_now,
+        user_get_username (user), gsad_credentials_get_language (credentials),
         user_get_client_address (user));
 
       xml = g_strdup_printf ("%s"
@@ -1031,18 +1028,15 @@ gsad_message (gsad_credentials_t *credentials, const char *title,
     }
   else
     {
-      xml = g_strdup_printf (
-        "<envelope>"
-        "<version>%s</version>"
-        "<vendor_version>%s</vendor_version>"
-        "<gsad_response>"
-        "%s"
-        "<message>%s</message>"
-        "<token></token>"
-        "</gsad_response>"
-        "</envelope>",
-        GSAD_VERSION, gsad_settings_get_vendor_version (gsad_global_settings),
-        xmltitle, msg ? msg : "");
+      xml = g_strdup_printf ("<envelope>"
+                             "<version>%s</version>"
+                             "<gsad_response>"
+                             "%s"
+                             "<message>%s</message>"
+                             "<token></token>"
+                             "</gsad_response>"
+                             "</envelope>",
+                             GSAD_VERSION, xmltitle, msg ? msg : "");
     }
 
   g_free (xmltitle);

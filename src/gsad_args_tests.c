@@ -411,27 +411,6 @@ Ensure (gsad_args, should_parse_gsad_user_session_limit_default)
   gsad_args_free (args);
 }
 
-Ensure (gsad_args, should_parse_gsad_vendor_version)
-{
-  gsad_args_t *args = gsad_args_new ();
-  char *argv[] = {"gsad", "--vendor-version", "MyCustomVersion"};
-  gsad_args_parse (3, argv, args);
-
-  assert_that (gsad_args_get_vendor_version (args),
-               is_equal_to_string ("MyCustomVersion"));
-  gsad_args_free (args);
-}
-
-Ensure (gsad_args, should_parse_gsad_vendor_version_default)
-{
-  gsad_args_t *args = gsad_args_new ();
-  char *argv[] = {"gsad"};
-  gsad_args_parse (1, argv, args);
-
-  assert_that (gsad_args_get_vendor_version (args), is_null);
-  gsad_args_free (args);
-}
-
 Ensure (gsad_args, should_parse_hsts_enabled)
 {
   gsad_args_t *args = gsad_args_new ();
@@ -1322,21 +1301,6 @@ Ensure (gsad_args, should_get_tls_debug_level)
   gsad_args_free (args);
 }
 
-Ensure (gsad_args, should_get_vendor_version)
-{
-  gsad_args_t *args = gsad_args_new ();
-  assert_that (gsad_args_get_vendor_version (args), is_null);
-
-  args->gsad_vendor_version_string = "MyCustomVersion";
-  assert_that (gsad_args_get_vendor_version (args),
-               is_equal_to_string ("MyCustomVersion"));
-
-  args->gsad_vendor_version_string = NULL;
-  assert_that (gsad_args_get_vendor_version (args), is_null);
-
-  gsad_args_free (args);
-}
-
 Ensure (gsad_args, should_get_user_session_limit)
 {
   gsad_args_t *args = gsad_args_new ();
@@ -1776,9 +1740,6 @@ main (int argc, char **argv)
                          should_parse_gsad_user_session_limit);
   add_test_with_context (suite, gsad_args,
                          should_parse_gsad_user_session_limit_default);
-  add_test_with_context (suite, gsad_args, should_parse_gsad_vendor_version);
-  add_test_with_context (suite, gsad_args,
-                         should_parse_gsad_vendor_version_default);
   add_test_with_context (suite, gsad_args, should_parse_hsts_enabled);
   add_test_with_context (suite, gsad_args, should_parse_hsts_enabled_default);
   add_test_with_context (suite, gsad_args, should_parse_hsts_max_age);
@@ -1884,7 +1845,6 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_args, should_get_http_corp);
   add_test_with_context (suite, gsad_args, should_get_http_cors_origin);
   add_test_with_context (suite, gsad_args, should_get_tls_debug_level);
-  add_test_with_context (suite, gsad_args, should_get_vendor_version);
   add_test_with_context (suite, gsad_args, should_get_user_session_limit);
   add_test_with_context (suite, gsad_args, should_get_listen_addresses);
   add_test_with_context (suite, gsad_args, should_get_manager_address);

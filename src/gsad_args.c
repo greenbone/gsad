@@ -44,9 +44,6 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
      "Has no effect.  See INSTALL for logging config.", NULL},
     {"version", 'V', 0, G_OPTION_ARG_NONE, &args->print_version,
      "Print version and exit.", NULL},
-    {"vendor-version", '\0', 0, G_OPTION_ARG_STRING,
-     &args->gsad_vendor_version_string, "Use <string> as version in interface.",
-     "<string>"},
     {"ssl-private-key", 'k', 0, G_OPTION_ARG_FILENAME,
      &args->ssl_private_key_filename,
      "Use <file> as the private key for HTTPS. Defaults "
@@ -190,7 +187,6 @@ gsad_args_new ()
     g_strdup (DEFAULT_GSAD_STATIC_CONTENT_DIRECTORY);
   args->gsad_redirect_port = PORT_NOT_SET;
   args->user_session_limit = 0;
-  args->gsad_vendor_version_string = NULL;
   args->hsts_enabled = FALSE;
   args->hsts_max_age = DEFAULT_GSAD_HSTS_MAX_AGE;
   args->http_cors = NULL;
@@ -234,7 +230,6 @@ gsad_args_free (gsad_args_t *args)
       g_free (args->manager_unix_socket_path);
       g_free (args->gsad_pid_filename);
       g_free (args->gsad_static_content_directory);
-      g_free (args->gsad_vendor_version_string);
       g_free (args->http_cors);
       g_free (args->http_csp);
       g_free (args->http_frame_opts);
@@ -793,21 +788,6 @@ int
 gsad_args_get_tls_debug_level (const gsad_args_t *args)
 {
   return args->debug_tls;
-}
-
-/**
- * @brief Get the vendor version string from the command-line arguments.
- *
- * @param[in] args The parsed command-line arguments.
- *
- * @return The vendor version string specified in the command-line arguments, or
- * NULL if not specified. The returned string is owned by the gsad args
- * structure and should not be modified or freed by the caller.
- */
-const gchar *
-gsad_args_get_vendor_version (const gsad_args_t *args)
-{
-  return args->gsad_vendor_version_string;
 }
 
 /**

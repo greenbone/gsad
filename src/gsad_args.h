@@ -219,9 +219,6 @@ gsad_args_get_http_corp (const gsad_args_t *);
 const gchar *
 gsad_args_get_http_cors_origin (const gsad_args_t *);
 
-const gchar *
-gsad_args_get_vendor_version (const gsad_args_t *);
-
 gchar **
 gsad_args_get_listen_addresses (const gsad_args_t *);
 

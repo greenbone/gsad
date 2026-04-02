@@ -345,7 +345,6 @@ envelope_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
 
   assert (credentials);
 
-  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
   user_t *user = gsad_credentials_get_user (credentials);
   const gchar *timezone = user_get_timezone (user);
   const gchar *pw_warning = user_get_password_warning (user);
@@ -360,7 +359,6 @@ envelope_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
   res = g_markup_printf_escaped (
     "<envelope>"
     "<version>%s</version>"
-    "<vendor_version>%s</vendor_version>"
     "<token>%s</token>"
     "<time>%s</time>"
     "<timezone>%s</timezone>"
@@ -368,8 +366,7 @@ envelope_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
     "<session>%ld</session>"
     "<i18n>%s</i18n>"
     "<client_address>%s</client_address>",
-    GSAD_VERSION, gsad_settings_get_vendor_version (gsad_global_settings),
-    user_get_token (user), ctime_now, timezone ? timezone : "",
+    GSAD_VERSION, user_get_token (user), ctime_now, timezone ? timezone : "",
     user_get_username (user), user_get_session_timeout (user),
     gsad_credentials_get_language (credentials),
     user_get_client_address (user));

@@ -1918,10 +1918,6 @@ main (int argc, char **argv)
       goto error;
     }
 
-  if (gsad_args_get_vendor_version (gsad_args))
-    gsad_settings_set_vendor_version (gsad_global_settings,
-                                      gsad_args_get_vendor_version (gsad_args));
-
   /* Switch to UTC for scheduling. */
 
   if (setenv ("TZ", "utc 0", 1) == -1)
