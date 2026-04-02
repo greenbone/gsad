@@ -995,23 +995,17 @@ gsad_message (gsad_credentials_t *credentials, const char *title,
   if (credentials)
     {
       gchar *pre;
-      time_t now;
-      char ctime_now[200];
       user_t *user = gsad_credentials_get_user (credentials);
-
-      now = time (NULL);
-      ctime_r_strip_newline (&now, ctime_now);
 
       pre = g_markup_printf_escaped (
         "<envelope>"
         "<version>%s</version>"
         "<token>%s</token>"
-        "<time>%s</time>"
         "<login>%s</login>"
         "<i18n>%s</i18n>"
         "<client_address>%s</client_address>",
-        GSAD_VERSION, user_get_token (user), ctime_now,
-        user_get_username (user), gsad_credentials_get_language (credentials),
+        GSAD_VERSION, user_get_token (user), user_get_username (user),
+        gsad_credentials_get_language (credentials),
         user_get_client_address (user));
 
       xml = g_strdup_printf ("%s"
