@@ -48,12 +48,6 @@ void
 gsad_settings_free (gsad_settings_t *settings);
 
 void
-gsad_settings_set_vendor_version (gsad_settings_t *, const gchar *);
-
-const gchar *
-gsad_settings_get_vendor_version (const gsad_settings_t *);
-
-void
 gsad_settings_set_session_timeout (gsad_settings_t *, int);
 
 int

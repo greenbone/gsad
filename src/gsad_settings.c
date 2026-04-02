@@ -38,7 +38,6 @@ struct gsad_settings
   gchar *http_strict_transport_security;
   gchar *http_x_frame_options;
   gchar *pid_filename;
-  gchar *vendor_version;
   int client_watch_interval;
   int per_ip_connection_limit;
   int session_timeout;
@@ -84,7 +83,6 @@ gsad_settings_new ()
   settings->http_x_frame_options = NULL;
   settings->log_config_filename = NULL;
   settings->pid_filename = NULL;
-  settings->vendor_version = NULL;
   settings->client_watch_interval = DEFAULT_CLIENT_WATCH_INTERVAL;
   settings->per_ip_connection_limit = DEFAULT_PER_IP_CONNECTION_LIMIT;
   settings->session_timeout = DEFAULT_SESSION_TIMEOUT;
@@ -112,40 +110,8 @@ gsad_settings_free (gsad_settings_t *settings)
       g_free (settings->http_strict_transport_security);
       g_free (settings->http_x_frame_options);
       g_free (settings->pid_filename);
-      g_free (settings->vendor_version);
       g_free (settings);
     }
-}
-
-/**
- * @brief Set the vendor version.
- *
- * @param[in]  settings  The settings instance to modify.
- * @param[in]  version   Vendor version.
- */
-void
-gsad_settings_set_vendor_version (gsad_settings_t *settings,
-                                  const gchar *version)
-{
-  g_debug ("Setting vendor version to: %s", null_or_value (version));
-
-  g_free (settings->vendor_version);
-
-  settings->vendor_version = g_strdup (version);
-}
-
-/**
- * @brief Get the vendor version.
- *
- * @param[in]  settings  The settings instance to query.
- *
- * @return Vendor version. The value is owned by the settings and should not be
- * modified or freed by the caller.
- */
-const gchar *
-gsad_settings_get_vendor_version (const gsad_settings_t *settings)
-{
-  return settings->vendor_version ? settings->vendor_version : "";
 }
 
 /**
