@@ -4,10 +4,10 @@
  */
 #include "gsad_gmp.h" /* for manager_connect */
 #include "gsad_http_handler.h"
-#include "gsad_i18n.h"         /* for accept_language_to_env_fmt */
-#include "gsad_params_mhd.h"   /* for params_mhd_add */
-#include "gsad_user_session.h" /* for user_find and user_logout */
-#include "validator.h"         /* for gvm_validate */
+#include "gsad_i18n.h"       /* for accept_language_to_env_fmt */
+#include "gsad_params_mhd.h" /* for params_mhd_add */
+#include "gsad_user_session.h" /* for gsad_user_session_find and gsad_user_session_logout */
+#include "validator.h" /* for gvm_validate */
 
 #include <gvm/base/networking.h>  /* for INET6_ADDRSTRLEN */
 #include <gvm/util/serverutils.h> /* for gvm_connection_t */
@@ -135,7 +135,8 @@ gsad_http_handle_invalid_method (gsad_http_handler_t *handler_next,
  * that occurred while getting the user information.
  */
 static int
-get_user_from_connection (gsad_http_connection_t *connection, user_t **user)
+get_user_from_connection (gsad_http_connection_t *connection,
+                          gsad_user_t **user)
 {
   const gchar *cookie;
   const gchar *token;
@@ -168,7 +169,7 @@ get_user_from_connection (gsad_http_connection_t *connection, user_t **user)
       return USER_IP_ADDRESS_MISSMATCH;
     }
 
-  return user_find (cookie, token, client_address, user);
+  return gsad_user_session_find (cookie, token, client_address, user);
 }
 
 /**
@@ -195,7 +196,7 @@ gsad_http_handle_get_user (gsad_http_handler_t *handler_next,
                            gsad_http_connection_t *connection,
                            gsad_connection_info_t *con_info, void *data)
 {
-  user_t *user = NULL;
+  gsad_user_t *user = NULL;
   get_user_from_connection (connection, &user);
   return gsad_http_handler_call (handler_next, connection, con_info, user);
 }
@@ -230,7 +231,7 @@ gsad_http_handle_setup_user (gsad_http_handler_t *handler_next,
   int http_response_code = MHD_HTTP_OK;
   gsad_authentication_reason_t auth_reason;
 
-  user_t *user;
+  gsad_user_t *user;
 
   ret = get_user_from_connection (connection, &user);
 
@@ -273,7 +274,7 @@ gsad_http_handle_setup_user (gsad_http_handler_t *handler_next,
                                               UNKNOWN_ERROR);
     }
 
-  g_debug ("Found user %s\n", user_get_username (user));
+  g_debug ("Found user %s\n", gsad_user_get_username (user));
 
   return gsad_http_handler_call (handler_next, connection, con_info, user);
 }
@@ -305,14 +306,14 @@ gsad_http_handle_setup_credentials (gsad_http_handler_t *handler_next,
                                     gsad_connection_info_t *con_info,
                                     void *data)
 {
-  user_t *user = (user_t *) data;
+  gsad_user_t *user = (gsad_user_t *) data;
   const gchar *accept_language;
   gsad_credentials_t *credentials;
   char client_address[INET6_ADDRSTRLEN];
 
   get_client_address (connection, client_address);
 
-  gchar *language = g_strdup (user_get_language (user));
+  gchar *language = g_strdup (gsad_user_get_language (user));
 
   if (!language)
     /* Accept-Language: de; q=1.0, en; q=0.5 */
@@ -335,7 +336,7 @@ gsad_http_handle_setup_credentials (gsad_http_handler_t *handler_next,
       credentials = gsad_credentials_new (user, language);
     }
 
-  user_free (user);
+  gsad_user_free (user);
   g_free (language);
 
   return gsad_http_handler_call (handler_next, connection, con_info,
@@ -364,15 +365,15 @@ gsad_http_handle_logout (gsad_http_handler_t *handler_next, void *handler_data,
                          gsad_http_connection_t *connection,
                          gsad_connection_info_t *con_info, void *data)
 {
-  user_t *user = (user_t *) data;
+  gsad_user_t *user = (gsad_user_t *) data;
 
   if (user != NULL)
     {
-      user_logout (user);
+      gsad_user_session_logout (user);
 
-      g_debug ("Logged out user %s\n", user_get_username (user));
+      g_debug ("Logged out user %s\n", gsad_user_get_username (user));
 
-      user_free (user);
+      gsad_user_free (user);
     }
   return gsad_http_send_response_for_content (
     connection, "", MHD_HTTP_OK, REMOVE_SID, GSAD_CONTENT_TYPE_TEXT_HTML, NULL,

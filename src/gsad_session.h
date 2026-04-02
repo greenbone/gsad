@@ -16,24 +16,24 @@
 #include <glib.h>
 
 void
-session_add_user (const gchar *id, user_t *user);
+gsad_session_add_user (const gchar *id, gsad_user_t *user);
 
 void
-session_remove_user (const gchar *id);
+gsad_session_remove_user (const gchar *id);
 
-user_t *
-session_get_user_by_id (const gchar *id);
+gsad_user_t *
+gsad_session_get_user_by_id (const gchar *id);
 
 GList *
-session_get_users_by_username (const gchar *username);
+gsad_session_get_users_by_username (const gchar *username);
 
 void
-session_remove_other_sessions (const gchar *id, const gchar *user);
+gsad_session_remove_other_sessions (const gchar *id, const gchar *user);
 
 void
-session_renew_user (const gchar *id);
+gsad_session_renew_user (const gchar *id);
 
 void
-session_init ();
+gsad_session_init ();
 
 #endif
