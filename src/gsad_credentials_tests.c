@@ -5,7 +5,6 @@
 
 #include "gsad_credentials.h"
 #include "gsad_user.h"
-#include "gsad_user_internal.h"
 
 #include <cgreen/cgreen.h>
 
