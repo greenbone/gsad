@@ -347,7 +347,6 @@ envelope_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
 
   user_t *user = gsad_credentials_get_user (credentials);
   const gchar *timezone = user_get_timezone (user);
-  const gchar *pw_warning = user_get_password_warning (user);
   const gchar *jwt = user_get_jwt (user);
 
   now = time (NULL);
@@ -373,17 +372,6 @@ envelope_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
 
   g_string_append (string, res);
   g_free (res);
-
-  if (pw_warning)
-    {
-      gchar *warning_elem;
-      warning_elem = g_markup_printf_escaped ("<password_warning>"
-                                              "%s"
-                                              "</password_warning>",
-                                              pw_warning);
-      g_string_append (string, warning_elem);
-      g_free (warning_elem);
-    }
 
   if (jwt)
     {
@@ -20600,7 +20588,7 @@ gvm_connection_open (gvm_connection_t *connection, const gchar *address,
 int
 authenticate_gmp (const gchar *username, const gchar *password,
                   gchar **timezone, gchar **capabilities, gchar **language,
-                  gchar **pw_warning, gchar **jwt)
+                  gchar **jwt)
 {
   gvm_connection_t connection;
   int auth;
@@ -20618,7 +20606,6 @@ authenticate_gmp (const gchar *username, const gchar *password,
   auth_opts.username = username;
   auth_opts.password = password;
   auth_opts.timezone = timezone;
-  auth_opts.pw_warning = pw_warning;
   auth_opts.jwt_requested =
     gsad_settings_is_jwt_requested (gsad_global_settings);
   auth_opts.jwt = jwt;
@@ -20811,7 +20798,6 @@ login (gsad_http_connection_t *con, params_t *params,
   gchar *timezone;
   gchar *capabilities;
   gchar *language;
-  gchar *pw_warning;
   gchar *jwt;
 
   const char *password = params_value (params, "password");
@@ -20823,7 +20809,7 @@ login (gsad_http_connection_t *con, params_t *params,
   if (login && password)
     {
       ret = authenticate_gmp (login, password, &timezone, &capabilities,
-                              &language, &pw_warning, &jwt);
+                              &language, &jwt);
       if (ret)
         {
           switch (ret)
@@ -20852,7 +20838,7 @@ login (gsad_http_connection_t *con, params_t *params,
         {
           user_t *user;
           user = user_add (login, password, timezone, capabilities, language,
-                           pw_warning, client_address, jwt);
+                           client_address, jwt);
 
           if (user == NULL)
             {
@@ -20866,7 +20852,6 @@ login (gsad_http_connection_t *con, params_t *params,
               g_free (timezone);
               g_free (capabilities);
               g_free (language);
-              g_free (pw_warning);
               g_free (jwt);
 
               return gsad_http_send_reauthentication (con, status, auth_reason);
@@ -20890,7 +20875,6 @@ login (gsad_http_connection_t *con, params_t *params,
           g_free (timezone);
           g_free (capabilities);
           g_free (language);
-          g_free (pw_warning);
           g_free (jwt);
 
           return ret;
