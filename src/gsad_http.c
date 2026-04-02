@@ -1010,12 +1010,11 @@ gsad_message (gsad_credentials_t *credentials, const char *title,
         "<token>%s</token>"
         "<time>%s</time>"
         "<login>%s</login>"
-        "<role>%s</role>"
         "<i18n>%s</i18n>"
         "<client_address>%s</client_address>",
         GSAD_VERSION, gsad_settings_get_vendor_version (gsad_global_settings),
         user_get_token (user), ctime_now, user_get_username (user),
-        user_get_role (user), gsad_credentials_get_language (credentials),
+        gsad_credentials_get_language (credentials),
         user_get_client_address (user));
 
       xml = g_strdup_printf ("%s"
