@@ -21,8 +21,8 @@ AfterEach (gsad_credentials)
 
 Ensure (gsad_credentials, should_allow_to_create_new_credential)
 {
-  user_t *user = user_new_with_data ("test_user", "test_token", "utc", "", "en",
-                                     "", "", "123");
+  user_t *user =
+    user_new_with_data ("test_user", "test_token", "utc", "", "en", "", "123");
   gsad_credentials_t *credentials = gsad_credentials_new (user, "en");
   user_t *cred_user = gsad_credentials_get_user (credentials);
 

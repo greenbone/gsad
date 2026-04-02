@@ -40,8 +40,8 @@ user_find (const gchar *cookie, const gchar *token, const char *address,
 
 user_t *
 user_add (const gchar *username, const gchar *password, const gchar *timezone,
-          const gchar *capabilities, const gchar *language,
-          const gchar *pw_warning, const char *address, const gchar *jwt);
+          const gchar *capabilities, const gchar *language, const char *address,
+          const gchar *jwt);
 
 void
 user_set_timezone (user_t *user, const gchar *timezone);
@@ -75,9 +75,6 @@ user_get_timezone (user_t *user);
 
 const gchar *
 user_get_client_address (user_t *user);
-
-const gchar *
-user_get_password_warning (user_t *user);
 
 const gchar *
 user_get_jwt (user_t *user);
