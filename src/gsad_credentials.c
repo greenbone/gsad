@@ -38,7 +38,7 @@ gsad_credentials_new (user_t *user, const gchar *language)
   gsad_credentials_t *credentials;
 
   credentials = g_malloc0 (sizeof (gsad_credentials_t));
-  credentials->user = user_copy (user);
+  credentials->user = gsad_user_copy (user);
   credentials->language = g_strdup (language);
 
   return credentials;
@@ -57,7 +57,7 @@ gsad_credentials_free (gsad_credentials_t *creds)
 
   g_free (creds->language);
 
-  user_free (creds->user);
+  gsad_user_free (creds->user);
 
   g_free (creds);
 }

@@ -29,60 +29,60 @@
 typedef struct user user_t;
 
 user_t *
-user_new ();
+gsad_user_new ();
 
 user_t *
-user_new_with_data (const gchar *username, const gchar *password,
-                    const gchar *timezone, const gchar *capabilities,
-                    const gchar *language, const gchar *address,
-                    const gchar *jwt);
+gsad_user_new_with_data (const gchar *username, const gchar *password,
+                         const gchar *timezone, const gchar *capabilities,
+                         const gchar *language, const gchar *address,
+                         const gchar *jwt);
 
 void
-user_free (user_t *user);
+gsad_user_free (user_t *user);
 
 user_t *
-user_copy (user_t *user);
+gsad_user_copy (user_t *user);
 
 void
-user_set_timezone (user_t *user, const gchar *timezone);
+gsad_user_set_timezone (user_t *user, const gchar *timezone);
 
 void
-user_set_username (user_t *user, const gchar *username);
+gsad_user_set_username (user_t *user, const gchar *username);
 
 void
-user_set_password (user_t *user, const gchar *password);
+gsad_user_set_password (user_t *user, const gchar *password);
 
 void
-user_set_language (user_t *user, const gchar *language);
+gsad_user_set_language (user_t *user, const gchar *language);
 
 const gchar *
-user_get_username (user_t *user);
+gsad_user_get_username (user_t *user);
 
 const gchar *
-user_get_password (user_t *user);
+gsad_user_get_password (user_t *user);
 
 const gchar *
-user_get_language (user_t *user);
+gsad_user_get_language (user_t *user);
 
 const gchar *
-user_get_cookie (user_t *user);
+gsad_user_get_cookie (user_t *user);
 
 const gchar *
-user_get_token (user_t *user);
+gsad_user_get_token (user_t *user);
 
 const gchar *
-user_get_timezone (user_t *user);
+gsad_user_get_timezone (user_t *user);
 
 const gchar *
-user_get_client_address (user_t *user);
+gsad_user_get_client_address (user_t *user);
 
 const gchar *
-user_get_jwt (user_t *user);
+gsad_user_get_jwt (user_t *user);
 
 const gchar *
-user_get_capabilities (user_t *user);
+gsad_user_get_capabilities (user_t *user);
 
 time_t
-user_get_time (user_t *user);
+gsad_user_get_time (user_t *user);
 
 #endif /* _GSAD_USER_H_ */
