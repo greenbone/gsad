@@ -11,8 +11,9 @@
 #include "gsad_session.h"
 
 #include "gsad_gmp_auth.h"
-#include "gsad_user.h"
-#include "gsad_utils.h" /* for str_equal */
+#include "gsad_user.h"         /* for user_t */
+#include "gsad_user_session.h" /* for user_renew_session */
+#include "gsad_utils.h"        /* for str_equal */
 
 #undef G_LOG_DOMAIN
 /**

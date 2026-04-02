@@ -107,6 +107,7 @@ add_executable(
   gsad_session.c
   gsad_settings.c
   gsad_user.c
+  gsad_user_session.c
   gsad_validator.c
   gsad_utils.c
   validator.c
@@ -239,23 +240,11 @@ if(BUILD_TESTING)
   add_unit_test(
     gsad-credentials
     gsad_credentials.c
-    gsad_args.c
-    gsad_base.c
-    gsad_cmd.c
-    gsad_connection_info.c
-    gsad_gmp_arguments.c
-    gsad_gmp_request.c
-    gsad_gmp.c
-    gsad_http.c
-    gsad_params_mhd.c
-    gsad_params.c
-    gsad_session.c
     gsad_settings.c
     gsad_user.c
     gsad_utils.c
-    gsad_validator.c
-    validator.c
   )
+  add_unit_test(gsad-user gsad_user.c gsad_utils.c)
   add_custom_target(
     tests
     DEPENDS
@@ -269,6 +258,7 @@ if(BUILD_TESTING)
       gsad-http-method-handler-test
       gsad-params-mhd-test
       gsad-credentials-test
+      gsad-user-test
   )
 endif(BUILD_TESTING)
 

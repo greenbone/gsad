@@ -22,7 +22,8 @@
 #include "gsad_i18n.h"
 #include "gsad_params.h"
 #include "gsad_session.h"
-#include "gsad_settings.h" /* for gsad_settings_get_vendor_version */
+#include "gsad_settings.h"     /* for gsad_settings_is_jwt_requested */
+#include "gsad_user_session.h" /* for user_find and user_add */
 #include "gsad_utils.h"
 
 #include <arpa/inet.h>
