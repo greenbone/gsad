@@ -18,12 +18,12 @@
 typedef struct gsad_credentials gsad_credentials_t;
 
 gsad_credentials_t *
-gsad_credentials_new (user_t *user, const gchar *language);
+gsad_credentials_new (gsad_user_t *user, const gchar *language);
 
 void
 gsad_credentials_free (gsad_credentials_t *creds);
 
-user_t *
+gsad_user_t *
 gsad_credentials_get_user (gsad_credentials_t *creds);
 
 const gchar *

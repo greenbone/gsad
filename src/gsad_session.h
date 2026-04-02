@@ -16,12 +16,12 @@
 #include <glib.h>
 
 void
-session_add_user (const gchar *id, user_t *user);
+session_add_user (const gchar *id, gsad_user_t *user);
 
 void
 session_remove_user (const gchar *id);
 
-user_t *
+gsad_user_t *
 session_get_user_by_id (const gchar *id);
 
 GList *

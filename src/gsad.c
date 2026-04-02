@@ -177,7 +177,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
                const gchar *client_address)
 {
   int ret;
-  user_t *user;
+  gsad_user_t *user;
   gsad_credentials_t *credentials = NULL;
   gchar *res = NULL, *new_sid = NULL;
   const gchar *cmd, *caller, *language;
@@ -225,8 +225,9 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
       return gsad_http_create_response (con, res, response_data, NULL);
     }
 
-  ret = user_find (gsad_connection_info_get_cookie (con_info),
-                   params_value (params, "token"), client_address, &user);
+  ret = gsad_user_session_find (gsad_connection_info_get_cookie (con_info),
+                                params_value (params, "token"), client_address,
+                                &user);
   if (ret == USER_BAD_TOKEN)
     {
       cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
@@ -276,15 +277,15 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   /* The caller of a POST is usually the caller of the page that the POST form
    * was on. */
   language =
-    user_get_language (user) ?: gsad_connection_info_get_language (con_info) ?: DEFAULT_GSAD_LANGUAGE;
+    gsad_user_get_language (user) ?: gsad_connection_info_get_language (con_info) ?: DEFAULT_GSAD_LANGUAGE;
 
   credentials = gsad_credentials_new (user, language);
 
-  new_sid = g_strdup (user_get_cookie (user));
+  new_sid = g_strdup (gsad_user_get_cookie (user));
 
   /* Set the timezone. */
 
-  const gchar *timezone = user_get_timezone (user);
+  const gchar *timezone = gsad_user_get_timezone (user);
   if (timezone)
     {
       if (setenv ("TZ", timezone, 1) == -1)
@@ -347,7 +348,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     }
 
   /* always renew session for http post */
-  session_renew_user (user_get_token (user));
+  session_renew_user (gsad_user_get_token (user));
 
   /* Handle the usual commands. */
   if (0)
@@ -484,7 +485,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
 
   ret = gsad_http_create_response (con, res, response_data, new_sid);
 
-  user_free (user);
+  gsad_user_free (user);
   gsad_credentials_free (credentials);
   gvm_connection_close (&connection);
   g_free (new_sid);
@@ -791,8 +792,8 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
 
   /* Set the timezone. */
 
-  user_t *user = gsad_credentials_get_user (credentials);
-  const gchar *timezone = user_get_timezone (user);
+  gsad_user_t *user = gsad_credentials_get_user (credentials);
+  const gchar *timezone = gsad_user_get_timezone (user);
 
   if (timezone)
     {
@@ -1129,7 +1130,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     }
 
   return gsad_http_send_response (con, response, response_data,
-                                  user_get_cookie (user));
+                                  gsad_user_get_cookie (user));
 }
 
 /**
