@@ -169,102 +169,102 @@ int manager_port = 9390;
 /* Headers. */
 
 static int
-gmp (gvm_connection_t *, credentials_t *, gchar **, entity_t *,
+gmp (gvm_connection_t *, gsad_credentials_t *, gchar **, entity_t *,
      cmd_response_data_t *, const char *);
 
 static int
-gmpf (gvm_connection_t *, credentials_t *, gchar **, entity_t *,
+gmpf (gvm_connection_t *, gsad_credentials_t *, gchar **, entity_t *,
       cmd_response_data_t *, const char *, ...);
 
 static char *
-get_alert (gvm_connection_t *, credentials_t *, params_t *, const char *,
+get_alert (gvm_connection_t *, gsad_credentials_t *, params_t *, const char *,
            cmd_response_data_t *);
 
 static char *
-get_asset (gvm_connection_t *, credentials_t *, params_t *, const char *,
+get_asset (gvm_connection_t *, gsad_credentials_t *, params_t *, const char *,
            cmd_response_data_t *);
 
 static char *
-get_config_family (gvm_connection_t *, credentials_t *, params_t *,
+get_config_family (gvm_connection_t *, gsad_credentials_t *, params_t *,
                    cmd_response_data_t *);
 
 static char *
-get_filter (gvm_connection_t *, credentials_t *, params_t *, const char *,
+get_filter (gvm_connection_t *, gsad_credentials_t *, params_t *, const char *,
             cmd_response_data_t *);
 
 static char *
-get_group (gvm_connection_t *, credentials_t *, params_t *, const char *,
+get_group (gvm_connection_t *, gsad_credentials_t *, params_t *, const char *,
            cmd_response_data_t *);
 
 static char *
-get_credential (gvm_connection_t *, credentials_t *, params_t *, const char *,
-                cmd_response_data_t *);
+get_credential (gvm_connection_t *, gsad_credentials_t *, params_t *,
+                const char *, cmd_response_data_t *);
 
 static char *
-get_note (gvm_connection_t *, credentials_t *, params_t *, const char *,
+get_note (gvm_connection_t *, gsad_credentials_t *, params_t *, const char *,
           cmd_response_data_t *);
 
 static char *
-get_override (gvm_connection_t *, credentials_t *, params_t *, const char *,
-              cmd_response_data_t *);
+get_override (gvm_connection_t *, gsad_credentials_t *, params_t *,
+              const char *, cmd_response_data_t *);
 
 static char *
-get_permission (gvm_connection_t *, credentials_t *, params_t *, const char *,
-                cmd_response_data_t *);
+get_permission (gvm_connection_t *, gsad_credentials_t *, params_t *,
+                const char *, cmd_response_data_t *);
 
 static char *
-get_port_list (gvm_connection_t *, credentials_t *, params_t *, const char *,
-               cmd_response_data_t *);
+get_port_list (gvm_connection_t *, gsad_credentials_t *, params_t *,
+               const char *, cmd_response_data_t *);
 
 static char *
-get_tag (gvm_connection_t *, credentials_t *, params_t *, const char *,
+get_tag (gvm_connection_t *, gsad_credentials_t *, params_t *, const char *,
          cmd_response_data_t *);
 
 static char *
-get_target (gvm_connection_t *, credentials_t *, params_t *, const char *,
+get_target (gvm_connection_t *, gsad_credentials_t *, params_t *, const char *,
             cmd_response_data_t *);
 
 static char *
-get_report_config (gvm_connection_t *, credentials_t *, params_t *,
+get_report_config (gvm_connection_t *, gsad_credentials_t *, params_t *,
                    const char *, cmd_response_data_t *);
 
 static char *
-get_report_format (gvm_connection_t *, credentials_t *, params_t *,
+get_report_format (gvm_connection_t *, gsad_credentials_t *, params_t *,
                    const char *, cmd_response_data_t *);
 
 static char *
-get_role (gvm_connection_t *, credentials_t *, params_t *, const char *,
+get_role (gvm_connection_t *, gsad_credentials_t *, params_t *, const char *,
           cmd_response_data_t *);
 
 static char *
-get_scanner (gvm_connection_t *, credentials_t *, params_t *, const char *,
+get_scanner (gvm_connection_t *, gsad_credentials_t *, params_t *, const char *,
              cmd_response_data_t *);
 
 static char *
-get_schedule (gvm_connection_t *, credentials_t *, params_t *, const char *,
-              cmd_response_data_t *);
+get_schedule (gvm_connection_t *, gsad_credentials_t *, params_t *,
+              const char *, cmd_response_data_t *);
 
 static char *
-get_user (gvm_connection_t *, credentials_t *, params_t *, const char *,
+get_user (gvm_connection_t *, gsad_credentials_t *, params_t *, const char *,
           cmd_response_data_t *);
 
 static char *
-wizard (gvm_connection_t *, credentials_t *, params_t *, const char *,
+wizard (gvm_connection_t *, gsad_credentials_t *, params_t *, const char *,
         cmd_response_data_t *);
 
 static char *
-wizard_get (gvm_connection_t *, credentials_t *, params_t *, const char *,
+wizard_get (gvm_connection_t *, gsad_credentials_t *, params_t *, const char *,
             cmd_response_data_t *);
 
 static int
 gmp_success (entity_t entity);
 
 static gchar *
-response_from_entity (gvm_connection_t *, credentials_t *, params_t *, entity_t,
-                      const char *, cmd_response_data_t *);
+response_from_entity (gvm_connection_t *, gsad_credentials_t *, params_t *,
+                      entity_t, const char *, cmd_response_data_t *);
 
 static gchar *
-action_result (gvm_connection_t *, credentials_t *, params_t *,
+action_result (gvm_connection_t *, gsad_credentials_t *, params_t *,
                cmd_response_data_t *, const char *action, const char *message,
                const char *details, const char *id);
 /* Helpers. */
@@ -276,11 +276,11 @@ action_result (gvm_connection_t *, credentials_t *, params_t *,
  * @param[in]  name          Command name.
  */
 int
-command_enabled (credentials_t *credentials, const gchar *name)
+command_enabled (gsad_credentials_t *credentials, const gchar *name)
 {
   /* TODO Hack.  Fails if command named in summary of another command. */
   user_t *user =
-    credentials_get_user (credentials); // TODO pass user_t directly
+    gsad_credentials_get_user (credentials); // TODO pass user_t directly
   return strstr (user_get_capabilities (user), name) ? 1 : 0;
 }
 
@@ -334,7 +334,7 @@ typedef struct
  * @return Enveloped GMP XML object.
  */
 static char *
-envelope_gmp (gvm_connection_t *connection, credentials_t *credentials,
+envelope_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
               params_t *params, gchar *xml, cmd_response_data_t *response_data)
 {
   time_t now;
@@ -346,7 +346,7 @@ envelope_gmp (gvm_connection_t *connection, credentials_t *credentials,
   assert (credentials);
 
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
-  user_t *user = credentials_get_user (credentials);
+  user_t *user = gsad_credentials_get_user (credentials);
   const gchar *timezone = user_get_timezone (user);
   const gchar *pw_warning = user_get_password_warning (user);
   const gchar *jwt = user_get_jwt (user);
@@ -373,8 +373,9 @@ envelope_gmp (gvm_connection_t *connection, credentials_t *credentials,
     GSAD_VERSION, gsad_settings_get_vendor_version (gsad_global_settings),
     user_get_token (user), ctime_now, timezone ? timezone : "",
     user_get_username (user), user_get_session_timeout (user),
-    user_get_role (user), credentials_get_language (credentials),
-    user_get_client_address (user), credentials_get_cmd_duration (credentials));
+    user_get_role (user), gsad_credentials_get_language (credentials),
+    user_get_client_address (user),
+    gsad_credentials_get_cmd_duration (credentials));
 
   g_string_append (string, res);
   g_free (res);
@@ -505,9 +506,10 @@ content_type_from_format_string (enum content_type *content_type,
  * @return Error message on failure, NULL on success.
  */
 static char *
-check_modify_config (gvm_connection_t *connection, credentials_t *credentials,
-                     params_t *params, const char *next, const char *fail_next,
-                     int *success, cmd_response_data_t *response_data)
+check_modify_config (gvm_connection_t *connection,
+                     gsad_credentials_t *credentials, params_t *params,
+                     const char *next, const char *fail_next, int *success,
+                     cmd_response_data_t *response_data)
 {
   entity_t entity;
   gchar *response;
@@ -630,9 +632,9 @@ set_http_status_from_entity (entity_t entity,
  * @return 0 success (response set), 1 send error, 2 read error.
  */
 static int
-gmp (gvm_connection_t *connection, credentials_t *credentials, gchar **response,
-     entity_t *entity_return, cmd_response_data_t *response_data,
-     const char *command)
+gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
+     gchar **response, entity_t *entity_return,
+     cmd_response_data_t *response_data, const char *command)
 {
   int ret;
   entity_t entity;
@@ -672,7 +674,7 @@ gmp (gvm_connection_t *connection, credentials_t *credentials, gchar **response,
  * @return 0 success (response set), 1 send error, 2 read error.
  */
 static int
-gmpf (gvm_connection_t *connection, credentials_t *credentials,
+gmpf (gvm_connection_t *connection, gsad_credentials_t *credentials,
       gchar **response, entity_t *entity_return,
       cmd_response_data_t *response_data, const char *format, ...)
 {
@@ -772,7 +774,7 @@ setting_get_value (gvm_connection_t *connection, const char *setting_id,
  * @return Enveloped XML object.
  */
 static gchar *
-action_result (gvm_connection_t *connection, credentials_t *credentials,
+action_result (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data,
                const char *action, const char *message, const char *details,
                const char *id)
@@ -811,7 +813,7 @@ action_result (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 gchar *
-message_invalid (gvm_connection_t *connection, credentials_t *credentials,
+message_invalid (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data,
                  const char *message, const char *op_name)
 {
@@ -837,8 +839,9 @@ message_invalid (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 static gchar *
-response_from_entity (gvm_connection_t *connection, credentials_t *credentials,
-                      params_t *params, entity_t entity, const char *action,
+response_from_entity (gvm_connection_t *connection,
+                      gsad_credentials_t *credentials, params_t *params,
+                      entity_t entity, const char *action,
                       cmd_response_data_t *response_data)
 {
   gchar *res;
@@ -874,7 +877,7 @@ response_from_entity (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 get_entity (gvm_connection_t *connection, const char *type,
-            credentials_t *credentials, params_t *params,
+            gsad_credentials_t *credentials, params_t *params,
             gmp_arguments_t *arguments, cmd_response_data_t *response_data)
 {
   GString *xml;
@@ -967,8 +970,9 @@ get_entity (gvm_connection_t *connection, const char *type,
  */
 char *
 get_one (gvm_connection_t *connection, const char *type,
-         credentials_t *credentials, params_t *params, const char *extra_xml,
-         gmp_arguments_t *arguments, cmd_response_data_t *response_data)
+         gsad_credentials_t *credentials, params_t *params,
+         const char *extra_xml, gmp_arguments_t *arguments,
+         cmd_response_data_t *response_data)
 {
   gchar *id_name;
   const gchar *id;
@@ -1017,7 +1021,7 @@ get_one (gvm_connection_t *connection, const char *type,
  */
 static char *
 get_entities (gvm_connection_t *connection, const char *type,
-              credentials_t *credentials, params_t *params,
+              gsad_credentials_t *credentials, params_t *params,
               gmp_arguments_t *arguments, cmd_response_data_t *response_data)
 {
   GString *xml;
@@ -1101,7 +1105,7 @@ get_entities (gvm_connection_t *connection, const char *type,
  */
 static char *
 get_many (gvm_connection_t *connection, const char *type,
-          credentials_t *credentials, params_t *params,
+          gsad_credentials_t *credentials, params_t *params,
           gmp_arguments_t *arguments, cmd_response_data_t *response_data)
 {
   const gchar *filter_id, *filter;
@@ -1152,7 +1156,7 @@ get_many (gvm_connection_t *connection, const char *type,
  * @return The file name.
  */
 gchar *
-format_file_name (gchar *fname_format, credentials_t *credentials,
+format_file_name (gchar *fname_format, gsad_credentials_t *credentials,
                   const char *type, const char *uuid, entity_t resource_entity)
 {
   gchar *creation_time, *modification_time, *name, *format_name;
@@ -1218,7 +1222,7 @@ format_file_name (gchar *fname_format, credentials_t *credentials,
       format_name = NULL;
     }
 
-  user_t *user = credentials_get_user (credentials);
+  user_t *user = gsad_credentials_get_user (credentials);
   ret =
     gvm_export_file_name (fname_format, user_get_username (user), type, uuid,
                           creation_time, modification_time, name, format_name);
@@ -1238,7 +1242,7 @@ format_file_name (gchar *fname_format, credentials_t *credentials,
  */
 char *
 export_resource (gvm_connection_t *connection, const char *type,
-                 credentials_t *credentials, params_t *params,
+                 gsad_credentials_t *credentials, params_t *params,
                  cmd_response_data_t *response_data)
 {
   GString *xml;
@@ -1391,7 +1395,7 @@ export_resource (gvm_connection_t *connection, const char *type,
  */
 static char *
 export_many (gvm_connection_t *connection, const char *type,
-             credentials_t *credentials, params_t *params,
+             gsad_credentials_t *credentials, params_t *params,
              cmd_response_data_t *response_data)
 {
   entity_t entity;
@@ -1568,7 +1572,7 @@ export_many (gvm_connection_t *connection, const char *type,
  */
 char *
 delete_resource (gvm_connection_t *connection, const char *type,
-                 credentials_t *credentials, params_t *params,
+                 gsad_credentials_t *credentials, params_t *params,
                  gboolean ultimate, cmd_response_data_t *response_data)
 {
   gchar *html, *id_name, *resource_id, *extra_attribs;
@@ -1674,7 +1678,7 @@ delete_resource (gvm_connection_t *connection, const char *type,
  */
 char *
 move_resource_to_trash (gvm_connection_t *connection, const char *type,
-                        credentials_t *credentials, params_t *params,
+                        gsad_credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
   return delete_resource (connection, type, credentials, params, FALSE,
@@ -1692,8 +1696,9 @@ move_resource_to_trash (gvm_connection_t *connection, const char *type,
  * @return Enveloped XML object.
  */
 char *
-delete_from_trash_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+delete_from_trash_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       cmd_response_data_t *response_data)
 {
   const gchar *resource_type;
 
@@ -1718,7 +1723,7 @@ delete_from_trash_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-resource_action (gvm_connection_t *connection, credentials_t *credentials,
+resource_action (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, const char *type, const char *action,
                  cmd_response_data_t *response_data)
 {
@@ -1862,8 +1867,9 @@ resource_action (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-create_report_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+create_report_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   entity_t entity;
   int ret;
@@ -1952,7 +1958,7 @@ create_report_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 create_import_task_gmp (gvm_connection_t *connection,
-                        credentials_t *credentials, params_t *params,
+                        gsad_credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
   entity_t entity;
@@ -2030,7 +2036,7 @@ create_import_task_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
+create_task_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   entity_t entity;
@@ -2339,7 +2345,7 @@ create_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 create_agent_group_task_gmp (gvm_connection_t *connection,
-                             credentials_t *credentials, params_t *params,
+                             gsad_credentials_t *credentials, params_t *params,
                              cmd_response_data_t *response_data)
 {
   entity_t entity;
@@ -2589,7 +2595,7 @@ create_agent_group_task_gmp (gvm_connection_t *connection,
  */
 char *
 create_oci_image_task_gmp (gvm_connection_t *connection,
-                           credentials_t *credentials, params_t *params,
+                           gsad_credentials_t *credentials, params_t *params,
                            cmd_response_data_t *response_data)
 {
   entity_t entity;
@@ -2836,7 +2842,7 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-delete_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
+delete_task_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "task", credentials, params,
@@ -2854,7 +2860,7 @@ delete_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
+save_task_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   gchar *html, *format;
@@ -3082,8 +3088,9 @@ save_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_import_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                      params_t *params, cmd_response_data_t *response_data)
+save_import_task_gmp (gvm_connection_t *connection,
+                      gsad_credentials_t *credentials, params_t *params,
+                      cmd_response_data_t *response_data)
 {
   gchar *format, *html;
   const char *comment, *name, *task_id;
@@ -3174,7 +3181,7 @@ save_import_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 save_agent_group_task_gmp (gvm_connection_t *connection,
-                           credentials_t *credentials, params_t *params,
+                           gsad_credentials_t *credentials, params_t *params,
                            cmd_response_data_t *response_data)
 {
   gchar *html = NULL, *format = NULL;
@@ -3302,7 +3309,7 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
  */
 char *
 save_oci_image_task_gmp (gvm_connection_t *connection,
-                         credentials_t *credentials, params_t *params,
+                         gsad_credentials_t *credentials, params_t *params,
                          cmd_response_data_t *response_data)
 {
   gchar *html = NULL, *format = NULL;
@@ -3454,7 +3461,7 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
  * @return Note XML on success.  Enveloped XML on error.
  */
 char *
-export_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
+export_task_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   return export_resource (connection, "task", credentials, params,
@@ -3473,7 +3480,7 @@ export_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
  *         on error.
  */
 char *
-export_tasks_gmp (gvm_connection_t *connection, credentials_t *credentials,
+export_tasks_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   return export_many (connection, "task", credentials, params, response_data);
@@ -3490,7 +3497,7 @@ export_tasks_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-stop_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
+stop_task_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   return resource_action (connection, credentials, params, "task", "stop",
@@ -3508,7 +3515,7 @@ stop_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-resume_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
+resume_task_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   return resource_action (connection, credentials, params, "task", "resume",
@@ -3526,7 +3533,7 @@ resume_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-start_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
+start_task_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   return resource_action (connection, credentials, params, "task", "start",
@@ -3544,7 +3551,7 @@ start_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-move_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
+move_task_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   gchar *command, *html;
@@ -3612,7 +3619,7 @@ move_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_info_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_info_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
               params_t *params, cmd_response_data_t *response_data)
 {
   const gchar *info_type;
@@ -3664,7 +3671,7 @@ get_info_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_tasks_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_tasks_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   const char *schedules_only, *ignore_pagination, *usage_type;
@@ -3708,7 +3715,7 @@ get_tasks_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_task_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
               params_t *params, cmd_response_data_t *response_data)
 {
   return get_one (connection, "task", credentials, params, NULL, NULL,
@@ -3726,8 +3733,9 @@ get_task_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+create_credential_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       cmd_response_data_t *response_data)
 {
   int ret;
   gchar *html;
@@ -4208,7 +4216,7 @@ create_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 static char *
-get_credential (gvm_connection_t *connection, credentials_t *credentials,
+get_credential (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, const char *extra_xml,
                 cmd_response_data_t *response_data)
 {
@@ -4231,8 +4239,9 @@ get_credential (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                    params_t *params, cmd_response_data_t *response_data)
+get_credential_gmp (gvm_connection_t *connection,
+                    gsad_credentials_t *credentials, params_t *params,
+                    cmd_response_data_t *response_data)
 {
   return get_credential (connection, credentials, params, NULL, response_data);
 }
@@ -4249,7 +4258,7 @@ get_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 download_credential_gmp (gvm_connection_t *connection,
-                         credentials_t *credentials, params_t *params,
+                         gsad_credentials_t *credentials, params_t *params,
                          cmd_response_data_t *response_data)
 {
   entity_t entity = NULL, credential_entity = NULL;
@@ -4427,8 +4436,9 @@ download_credential_gmp (gvm_connection_t *connection,
  *         on error.
  */
 char *
-export_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+export_credential_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       cmd_response_data_t *response_data)
 {
   return export_resource (connection, "credential", credentials, params,
                           response_data);
@@ -4447,7 +4457,7 @@ export_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 export_credentials_gmp (gvm_connection_t *connection,
-                        credentials_t *credentials, params_t *params,
+                        gsad_credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
   return export_many (connection, "credential", credentials, params,
@@ -4465,8 +4475,9 @@ export_credentials_gmp (gvm_connection_t *connection,
  * @return 0 success, 1 failure.
  */
 char *
-get_credentials_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                     params_t *params, cmd_response_data_t *response_data)
+get_credentials_gmp (gvm_connection_t *connection,
+                     gsad_credentials_t *credentials, params_t *params,
+                     cmd_response_data_t *response_data)
 {
   return get_many (connection, "credentials", credentials, params, NULL,
                    response_data);
@@ -4484,7 +4495,7 @@ get_credentials_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 get_credential_stores_gmp (gvm_connection_t *connection,
-                           credentials_t *credentials, params_t *params,
+                           gsad_credentials_t *credentials, params_t *params,
                            cmd_response_data_t *response_data)
 {
   const char *credential_store_uuid =
@@ -4554,7 +4565,7 @@ add_preference_to_xml_base64 (GString *xml, const char *name,
  */
 char *
 modify_credential_store_gmp (gvm_connection_t *connection,
-                             credentials_t *credentials, params_t *params,
+                             gsad_credentials_t *credentials, params_t *params,
                              cmd_response_data_t *response_data)
 {
   gchar *xml, *format;
@@ -4718,7 +4729,7 @@ modify_credential_store_gmp (gvm_connection_t *connection,
  */
 char *
 verify_credential_store_gmp (gvm_connection_t *connection,
-                             credentials_t *credentials, params_t *params,
+                             gsad_credentials_t *credentials, params_t *params,
                              cmd_response_data_t *response_data)
 {
   gchar *html;
@@ -4783,8 +4794,9 @@ verify_credential_store_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-delete_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+delete_credential_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "credential", credentials, params,
                                  response_data);
@@ -4801,8 +4813,9 @@ delete_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                     params_t *params, cmd_response_data_t *response_data)
+save_credential_gmp (gvm_connection_t *connection,
+                     gsad_credentials_t *credentials, params_t *params,
+                     cmd_response_data_t *response_data)
 {
   int ret;
   gchar *html = NULL;
@@ -5150,8 +5163,9 @@ save_credential_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return The aggregate.
  */
 char *
-get_aggregate_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+get_aggregate_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   params_t *data_columns, *text_columns;
   params_t *sort_fields, *sort_stats, *sort_orders;
@@ -5358,7 +5372,7 @@ get_aggregate_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 static char *
-new_alert (gvm_connection_t *connection, credentials_t *credentials,
+new_alert (gvm_connection_t *connection, gsad_credentials_t *credentials,
            params_t *params, const char *extra_xml,
            cmd_response_data_t *response_data)
 {
@@ -5601,14 +5615,14 @@ new_alert (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-new_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
+new_alert_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   return new_alert (connection, credentials, params, NULL, response_data);
 }
 
 char *
-get_alerts (gvm_connection_t *connection, credentials_t *, params_t *,
+get_alerts (gvm_connection_t *connection, gsad_credentials_t *, params_t *,
             const char *, cmd_response_data_t *);
 
 #define EVENT_TYPE_NEW_SECINFO "New SecInfo arrived"
@@ -5883,7 +5897,7 @@ append_alert_method_data (GString *xml, params_t *data, const char *method,
  * @return Enveloped XML object.
  */
 char *
-create_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
+create_alert_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   int ret;
@@ -6016,7 +6030,7 @@ create_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-delete_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
+delete_alert_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "alert", credentials, params,
@@ -6035,7 +6049,7 @@ delete_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_alert (gvm_connection_t *connection, credentials_t *credentials,
+get_alert (gvm_connection_t *connection, gsad_credentials_t *credentials,
            params_t *params, const char *extra_xml,
            cmd_response_data_t *response_data)
 {
@@ -6059,7 +6073,7 @@ get_alert (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_alert_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   return get_alert (connection, credentials, params, NULL, response_data);
@@ -6076,7 +6090,7 @@ get_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_alerts_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_alerts_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   return get_many (connection, "alerts", credentials, params, NULL,
@@ -6095,7 +6109,7 @@ get_alerts_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-edit_alert (gvm_connection_t *connection, credentials_t *credentials,
+edit_alert (gvm_connection_t *connection, gsad_credentials_t *credentials,
             params_t *params, const char *extra_xml,
             cmd_response_data_t *response_data)
 {
@@ -6355,7 +6369,7 @@ edit_alert (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-edit_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
+edit_alert_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   return edit_alert (connection, credentials, params, NULL, response_data);
@@ -6372,7 +6386,7 @@ edit_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
+save_alert_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   GString *xml;
@@ -6512,7 +6526,7 @@ save_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-test_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
+test_alert_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   gchar *html;
@@ -6576,7 +6590,7 @@ test_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Alert XML on success.  Enveloped XML on error.
  */
 char *
-export_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
+export_alert_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   return export_resource (connection, "alert", credentials, params,
@@ -6595,8 +6609,9 @@ export_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
  *         on error.
  */
 char *
-export_alerts_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+export_alerts_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   return export_many (connection, "alert", credentials, params, response_data);
 }
@@ -6612,8 +6627,9 @@ export_alerts_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+create_target_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   int ret;
   gchar *html, *command;
@@ -6875,7 +6891,7 @@ create_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-clone_gmp (gvm_connection_t *connection, credentials_t *credentials,
+clone_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
            params_t *params, cmd_response_data_t *response_data)
 {
   gchar *html;
@@ -6961,8 +6977,9 @@ clone_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-delete_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+delete_target_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "target", credentials, params,
                                  response_data);
@@ -6979,7 +6996,7 @@ delete_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-restore_gmp (gvm_connection_t *connection, credentials_t *credentials,
+restore_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
              params_t *params, cmd_response_data_t *response_data)
 {
   gchar *ret;
@@ -7039,8 +7056,9 @@ restore_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-empty_trashcan_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                    params_t *params, cmd_response_data_t *response_data)
+empty_trashcan_gmp (gvm_connection_t *connection,
+                    gsad_credentials_t *credentials, params_t *params,
+                    cmd_response_data_t *response_data)
 {
   gchar *ret;
   entity_t entity;
@@ -7088,7 +7106,7 @@ empty_trashcan_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-create_tag_gmp (gvm_connection_t *connection, credentials_t *credentials,
+create_tag_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   char *ret;
@@ -7202,7 +7220,7 @@ create_tag_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-delete_tag_gmp (gvm_connection_t *connection, credentials_t *credentials,
+delete_tag_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "tag", credentials, params,
@@ -7220,7 +7238,7 @@ delete_tag_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_tag_gmp (gvm_connection_t *connection, credentials_t *credentials,
+save_tag_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
               params_t *params, cmd_response_data_t *response_data)
 {
   gchar *response;
@@ -7344,7 +7362,7 @@ save_tag_gmp (gvm_connection_t *connection, credentials_t *credentials,
  *         on error.
  */
 char *
-export_tag_gmp (gvm_connection_t *connection, credentials_t *credentials,
+export_tag_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   return export_resource (connection, "tag", credentials, params,
@@ -7363,7 +7381,7 @@ export_tag_gmp (gvm_connection_t *connection, credentials_t *credentials,
  *         on error.
  */
 char *
-export_tags_gmp (gvm_connection_t *connection, credentials_t *credentials,
+export_tags_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   return export_many (connection, "tag", credentials, params, response_data);
@@ -7381,7 +7399,7 @@ export_tags_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 static char *
-get_tag (gvm_connection_t *connection, credentials_t *credentials,
+get_tag (gvm_connection_t *connection, gsad_credentials_t *credentials,
          params_t *params, const char *extra_xml,
          cmd_response_data_t *response_data)
 {
@@ -7400,7 +7418,7 @@ get_tag (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_tag_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_tag_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
              params_t *params, cmd_response_data_t *response_data)
 {
   return get_tag (connection, credentials, params, NULL, response_data);
@@ -7417,7 +7435,7 @@ get_tag_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_tags_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_tags_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
               params_t *params, cmd_response_data_t *response_data)
 {
   return get_many (connection, "tags", credentials, params, NULL,
@@ -7435,7 +7453,7 @@ get_tags_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-toggle_tag_gmp (gvm_connection_t *connection, credentials_t *credentials,
+toggle_tag_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   gchar *html;
@@ -7501,7 +7519,7 @@ toggle_tag_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 static char *
-get_target (gvm_connection_t *connection, credentials_t *credentials,
+get_target (gvm_connection_t *connection, gsad_credentials_t *credentials,
             params_t *params, const char *extra_xml,
             cmd_response_data_t *response_data)
 {
@@ -7525,7 +7543,7 @@ get_target (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_target_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   return get_target (connection, credentials, params, NULL, response_data);
@@ -7542,7 +7560,7 @@ get_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_targets_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_targets_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   return get_many (connection, "targets", credentials, params, NULL,
@@ -7560,7 +7578,7 @@ get_targets_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
+save_target_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   gchar *html;
@@ -7823,8 +7841,9 @@ save_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
  *         on error.
  */
 char *
-export_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+export_target_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   return export_resource (connection, "target", credentials, params,
                           response_data);
@@ -7842,8 +7861,9 @@ export_target_gmp (gvm_connection_t *connection, credentials_t *credentials,
  *         on error.
  */
 char *
-export_targets_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                    params_t *params, cmd_response_data_t *response_data)
+export_targets_gmp (gvm_connection_t *connection,
+                    gsad_credentials_t *credentials, params_t *params,
+                    cmd_response_data_t *response_data)
 {
   return export_many (connection, "target", credentials, params, response_data);
 }
@@ -7859,8 +7879,9 @@ export_targets_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-create_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+create_config_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   gchar *html, *response;
   const char *name, *comment, *base, *usage_type, *scanner = NULL;
@@ -7944,8 +7965,9 @@ create_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-import_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+import_config_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   gchar *command, *html;
   entity_t entity;
@@ -8012,7 +8034,7 @@ import_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_configs_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_configs_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   const char *usage_type;
@@ -8043,7 +8065,7 @@ get_configs_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_config_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   gmp_arguments_t *arguments;
@@ -8069,7 +8091,7 @@ get_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Following page.
  */
 char *
-save_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
+save_config_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   int gmp_ret;
@@ -8302,8 +8324,9 @@ save_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 static char *
-get_config_family (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+get_config_family (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   GString *xml;
   const char *config_id, *family, *sort_field, *sort_order;
@@ -8379,8 +8402,9 @@ get_config_family (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_config_family_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+get_config_family_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       cmd_response_data_t *response_data)
 {
   return get_config_family (connection, credentials, params, response_data);
 }
@@ -8397,7 +8421,7 @@ get_config_family_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 edit_config_family_gmp (gvm_connection_t *connection,
-                        credentials_t *credentials, params_t *params,
+                        gsad_credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
   return get_config_family (connection, credentials, params, response_data);
@@ -8415,7 +8439,7 @@ edit_config_family_gmp (gvm_connection_t *connection,
  */
 char *
 edit_config_family_all_gmp (gvm_connection_t *connection,
-                            credentials_t *credentials, params_t *params,
+                            gsad_credentials_t *credentials, params_t *params,
                             cmd_response_data_t *response_data)
 {
   GString *xml;
@@ -8499,7 +8523,7 @@ edit_config_family_all_gmp (gvm_connection_t *connection,
  */
 char *
 save_config_family_gmp (gvm_connection_t *connection,
-                        credentials_t *credentials, params_t *params,
+                        gsad_credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
   char *ret;
@@ -8585,8 +8609,9 @@ save_config_family_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-get_config_nvt_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                    params_t *params, cmd_response_data_t *response_data)
+get_config_nvt_gmp (gvm_connection_t *connection,
+                    gsad_credentials_t *credentials, params_t *params,
+                    cmd_response_data_t *response_data)
 {
   GString *xml;
   const char *config_id, *sort_field, *sort_order, *nvt;
@@ -8657,8 +8682,9 @@ get_config_nvt_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_nvt_families_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                      params_t *params, cmd_response_data_t *response_data)
+get_nvt_families_gmp (gvm_connection_t *connection,
+                      gsad_credentials_t *credentials, params_t *params,
+                      cmd_response_data_t *response_data)
 {
   return get_entities (connection, "nvt_families", credentials, params, NULL,
                        response_data);
@@ -8675,8 +8701,9 @@ get_nvt_families_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_config_nvt_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                     params_t *params, cmd_response_data_t *response_data)
+save_config_nvt_gmp (gvm_connection_t *connection,
+                     gsad_credentials_t *credentials, params_t *params,
+                     cmd_response_data_t *response_data)
 {
   params_t *preferences;
   const char *config_id;
@@ -8893,8 +8920,9 @@ save_config_nvt_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-delete_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+delete_config_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "config", credentials, params,
                                  response_data);
@@ -8911,8 +8939,9 @@ delete_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Config XML on success.  Enveloped XML on error.
  */
 char *
-export_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+export_config_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   return export_resource (connection, "config", credentials, params,
                           response_data);
@@ -8930,8 +8959,9 @@ export_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
  *         on error.
  */
 char *
-export_configs_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                    params_t *params, cmd_response_data_t *response_data)
+export_configs_gmp (gvm_connection_t *connection,
+                    gsad_credentials_t *credentials, params_t *params,
+                    cmd_response_data_t *response_data)
 {
   return export_many (connection, "config", credentials, params, response_data);
 }
@@ -8947,7 +8977,7 @@ export_configs_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Note XML on success.  Enveloped XML on error.
  */
 char *
-export_note_gmp (gvm_connection_t *connection, credentials_t *credentials,
+export_note_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   return export_resource (connection, "note", credentials, params,
@@ -8966,7 +8996,7 @@ export_note_gmp (gvm_connection_t *connection, credentials_t *credentials,
  *         on error.
  */
 char *
-export_notes_gmp (gvm_connection_t *connection, credentials_t *credentials,
+export_notes_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   return export_many (connection, "note", credentials, params, response_data);
@@ -8983,8 +9013,9 @@ export_notes_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Override XML on success.  Enveloped XML on error.
  */
 char *
-export_override_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                     params_t *params, cmd_response_data_t *response_data)
+export_override_gmp (gvm_connection_t *connection,
+                     gsad_credentials_t *credentials, params_t *params,
+                     cmd_response_data_t *response_data)
 {
   return export_resource (connection, "override", credentials, params,
                           response_data);
@@ -9002,8 +9033,9 @@ export_override_gmp (gvm_connection_t *connection, credentials_t *credentials,
  *         on error.
  */
 char *
-export_overrides_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                      params_t *params, cmd_response_data_t *response_data)
+export_overrides_gmp (gvm_connection_t *connection,
+                      gsad_credentials_t *credentials, params_t *params,
+                      cmd_response_data_t *response_data)
 {
   return export_many (connection, "override", credentials, params,
                       response_data);
@@ -9021,8 +9053,9 @@ export_overrides_gmp (gvm_connection_t *connection, credentials_t *credentials,
  *         error.
  */
 char *
-export_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                      params_t *params, cmd_response_data_t *response_data)
+export_port_list_gmp (gvm_connection_t *connection,
+                      gsad_credentials_t *credentials, params_t *params,
+                      cmd_response_data_t *response_data)
 {
   return export_resource (connection, "port_list", credentials, params,
                           response_data);
@@ -9040,8 +9073,9 @@ export_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
  *         on error.
  */
 char *
-export_port_lists_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+export_port_lists_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       cmd_response_data_t *response_data)
 {
   return export_many (connection, "port_list", credentials, params,
                       response_data);
@@ -9059,7 +9093,7 @@ export_port_lists_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 export_preference_file_gmp (gvm_connection_t *connection,
-                            credentials_t *credentials, params_t *params,
+                            gsad_credentials_t *credentials, params_t *params,
                             cmd_response_data_t *response_data)
 {
   GString *xml;
@@ -9156,7 +9190,7 @@ export_preference_file_gmp (gvm_connection_t *connection,
  */
 char *
 export_report_config_gmp (gvm_connection_t *connection,
-                          credentials_t *credentials, params_t *params,
+                          gsad_credentials_t *credentials, params_t *params,
                           cmd_response_data_t *response_data)
 {
   return export_resource (connection, "report_config", credentials, params,
@@ -9176,7 +9210,7 @@ export_report_config_gmp (gvm_connection_t *connection,
  */
 char *
 export_report_configs_gmp (gvm_connection_t *connection,
-                           credentials_t *credentials, params_t *params,
+                           gsad_credentials_t *credentials, params_t *params,
                            cmd_response_data_t *response_data)
 {
   return export_many (connection, "report_config", credentials, params,
@@ -9196,7 +9230,7 @@ export_report_configs_gmp (gvm_connection_t *connection,
  */
 char *
 export_report_format_gmp (gvm_connection_t *connection,
-                          credentials_t *credentials, params_t *params,
+                          gsad_credentials_t *credentials, params_t *params,
                           cmd_response_data_t *response_data)
 {
   return export_resource (connection, "report_format", credentials, params,
@@ -9216,7 +9250,7 @@ export_report_format_gmp (gvm_connection_t *connection,
  */
 char *
 export_report_formats_gmp (gvm_connection_t *connection,
-                           credentials_t *credentials, params_t *params,
+                           gsad_credentials_t *credentials, params_t *params,
                            cmd_response_data_t *response_data)
 {
   return export_many (connection, "report_format", credentials, params,
@@ -9234,8 +9268,9 @@ export_report_formats_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-delete_report_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+delete_report_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   return delete_resource (connection, "report", credentials, params, TRUE,
                           response_data);
@@ -9253,7 +9288,7 @@ delete_report_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Report.
  */
 char *
-get_report (gvm_connection_t *connection, credentials_t *credentials,
+get_report (gvm_connection_t *connection, gsad_credentials_t *credentials,
             params_t *params, const char *extra_xml,
             cmd_response_data_t *response_data)
 {
@@ -9652,7 +9687,7 @@ get_report (gvm_connection_t *connection, credentials_t *credentials,
  * @return Report.
  */
 char *
-get_report_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_report_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   return get_report (connection, credentials, params, NULL, response_data);
@@ -9669,7 +9704,7 @@ get_report_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-report_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
+report_alert_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   entity_t entity;
@@ -9771,7 +9806,7 @@ report_alert_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_reports_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_reports_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   const gchar *filter, *filter_id, *details, *usage_type;
@@ -9831,8 +9866,9 @@ get_reports_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return SSL Certificate.
  */
 char *
-download_ssl_cert (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+download_ssl_cert (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   const char *ssl_cert;
   gchar *cert;
@@ -9871,7 +9907,7 @@ download_ssl_cert (gvm_connection_t *connection, credentials_t *credentials,
  * @return CA Certificate.
  */
 char *
-download_ca_pub (gvm_connection_t *connection, credentials_t *credentials,
+download_ca_pub (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   const char *ca_pub;
@@ -9903,7 +9939,7 @@ download_ca_pub (gvm_connection_t *connection, credentials_t *credentials,
  * @return Certificate.
  */
 char *
-download_key_pub (gvm_connection_t *connection, credentials_t *credentials,
+download_key_pub (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   const char *key_pub;
@@ -9937,8 +9973,9 @@ download_key_pub (gvm_connection_t *connection, credentials_t *credentials,
  *         on error.
  */
 char *
-export_result_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+export_result_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   return export_resource (connection, "result", credentials, params,
                           response_data);
@@ -9956,8 +9993,9 @@ export_result_gmp (gvm_connection_t *connection, credentials_t *credentials,
  *         on error.
  */
 char *
-export_results_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                    params_t *params, cmd_response_data_t *response_data)
+export_results_gmp (gvm_connection_t *connection,
+                    gsad_credentials_t *credentials, params_t *params,
+                    cmd_response_data_t *response_data)
 {
   return export_many (connection, "result", credentials, params, response_data);
 }
@@ -9973,7 +10011,7 @@ export_results_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_results_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_results_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   const gchar *_and_report_id;
@@ -10005,7 +10043,7 @@ get_results_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_result_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_result_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   return get_one (connection, "result", credentials, params, NULL, NULL,
@@ -10023,7 +10061,7 @@ get_result_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_notes_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_notes_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   return get_many (connection, "notes", credentials, params, NULL,
@@ -10042,7 +10080,7 @@ get_notes_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 static char *
-get_note (gvm_connection_t *connection, credentials_t *credentials,
+get_note (gvm_connection_t *connection, gsad_credentials_t *credentials,
           params_t *params, const char *extra_xml,
           cmd_response_data_t *response_data)
 {
@@ -10066,7 +10104,7 @@ get_note (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_note_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_note_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
               params_t *params, cmd_response_data_t *response_data)
 {
   return get_note (connection, credentials, params, NULL, response_data);
@@ -10209,7 +10247,7 @@ get_result_id_from_params (params_t *params)
  * @return Enveloped XML object.
  */
 char *
-create_note_gmp (gvm_connection_t *connection, credentials_t *credentials,
+create_note_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   char *ret;
@@ -10307,7 +10345,7 @@ create_note_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-delete_note_gmp (gvm_connection_t *connection, credentials_t *credentials,
+delete_note_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "note", credentials, params,
@@ -10325,7 +10363,7 @@ delete_note_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_note_gmp (gvm_connection_t *connection, credentials_t *credentials,
+save_note_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   gchar *response;
@@ -10424,8 +10462,9 @@ save_note_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_overrides_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+get_overrides_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   return get_many (connection, "overrides", credentials, params, NULL,
                    response_data);
@@ -10443,7 +10482,7 @@ get_overrides_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 static char *
-get_override (gvm_connection_t *connection, credentials_t *credentials,
+get_override (gvm_connection_t *connection, gsad_credentials_t *credentials,
               params_t *params, const char *extra_xml,
               cmd_response_data_t *response_data)
 {
@@ -10467,7 +10506,7 @@ get_override (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_override_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_override_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   return get_override (connection, credentials, params, NULL, response_data);
@@ -10484,8 +10523,9 @@ get_override_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-create_override_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                     params_t *params, cmd_response_data_t *response_data)
+create_override_gmp (gvm_connection_t *connection,
+                     gsad_credentials_t *credentials, params_t *params,
+                     cmd_response_data_t *response_data)
 {
   char *ret;
   gchar *response;
@@ -10607,8 +10647,9 @@ create_override_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-delete_override_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                     params_t *params, cmd_response_data_t *response_data)
+delete_override_gmp (gvm_connection_t *connection,
+                     gsad_credentials_t *credentials, params_t *params,
+                     cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "override", credentials, params,
                                  response_data);
@@ -10625,8 +10666,9 @@ delete_override_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_override_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+save_override_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   gchar *response;
   entity_t entity;
@@ -10735,7 +10777,7 @@ save_override_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_scanners_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_scanners_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   return get_many (connection, "scanners", credentials, params, NULL,
@@ -10754,7 +10796,7 @@ get_scanners_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 static char *
-get_scanner (gvm_connection_t *connection, credentials_t *credentials,
+get_scanner (gvm_connection_t *connection, gsad_credentials_t *credentials,
              params_t *params, const char *extra_xml,
              cmd_response_data_t *response_data)
 {
@@ -10773,7 +10815,7 @@ get_scanner (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_scanner_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   return get_scanner (connection, credentials, params, NULL, response_data);
@@ -10790,8 +10832,9 @@ get_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Scanner XML on success.  Enveloped XML on error.
  */
 char *
-export_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                    params_t *params, cmd_response_data_t *response_data)
+export_scanner_gmp (gvm_connection_t *connection,
+                    gsad_credentials_t *credentials, params_t *params,
+                    cmd_response_data_t *response_data)
 {
   return export_resource (connection, "scanner", credentials, params,
                           response_data);
@@ -10808,8 +10851,9 @@ export_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Scanners XML on success. Enveloped XML on error.
  */
 char *
-export_scanners_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                     params_t *params, cmd_response_data_t *response_data)
+export_scanners_gmp (gvm_connection_t *connection,
+                     gsad_credentials_t *credentials, params_t *params,
+                     cmd_response_data_t *response_data)
 {
   return export_many (connection, "scanner", credentials, params,
                       response_data);
@@ -10826,8 +10870,9 @@ export_scanners_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-verify_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                    params_t *params, cmd_response_data_t *response_data)
+verify_scanner_gmp (gvm_connection_t *connection,
+                    gsad_credentials_t *credentials, params_t *params,
+                    cmd_response_data_t *response_data)
 {
   gchar *html;
   const char *scanner_id;
@@ -10890,8 +10935,9 @@ verify_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-create_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                    params_t *params, cmd_response_data_t *response_data)
+create_scanner_gmp (gvm_connection_t *connection,
+                    gsad_credentials_t *credentials, params_t *params,
+                    cmd_response_data_t *response_data)
 {
   int ret;
   char *html;
@@ -10989,8 +11035,9 @@ create_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-delete_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                    params_t *params, cmd_response_data_t *response_data)
+delete_scanner_gmp (gvm_connection_t *connection,
+                    gsad_credentials_t *credentials, params_t *params,
+                    cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "scanner", credentials, params,
                                  response_data);
@@ -11007,7 +11054,7 @@ delete_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
+save_scanner_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   GString *xml = NULL;
@@ -11117,7 +11164,7 @@ save_scanner_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 static char *
-get_schedule (gvm_connection_t *connection, credentials_t *credentials,
+get_schedule (gvm_connection_t *connection, gsad_credentials_t *credentials,
               params_t *params, const char *extra_xml,
               cmd_response_data_t *response_data)
 {
@@ -11141,7 +11188,7 @@ get_schedule (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_schedule_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_schedule_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   return get_schedule (connection, credentials, params, NULL, response_data);
@@ -11158,8 +11205,9 @@ get_schedule_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_schedules_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+get_schedules_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   return get_many (connection, "schedules", credentials, params, NULL,
                    response_data);
@@ -11176,8 +11224,9 @@ get_schedules_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-create_schedule_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                     params_t *params, cmd_response_data_t *response_data)
+create_schedule_gmp (gvm_connection_t *connection,
+                     gsad_credentials_t *credentials, params_t *params,
+                     cmd_response_data_t *response_data)
 {
   char *ret;
   gchar *response;
@@ -11256,8 +11305,9 @@ create_schedule_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-delete_schedule_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                     params_t *params, cmd_response_data_t *response_data)
+delete_schedule_gmp (gvm_connection_t *connection,
+                     gsad_credentials_t *credentials, params_t *params,
+                     cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "schedule", credentials, params,
                                  response_data);
@@ -11275,7 +11325,7 @@ delete_schedule_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 get_system_reports_gmp (gvm_connection_t *connection,
-                        credentials_t *credentials, params_t *params,
+                        gsad_credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
   GString *xml;
@@ -11334,8 +11384,9 @@ get_system_reports_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-get_system_report_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+get_system_report_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       cmd_response_data_t *response_data)
 {
   GString *xml;
 
@@ -11428,8 +11479,8 @@ get_system_report_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 get_system_report_gmp_from_url (gvm_connection_t *connection,
-                                credentials_t *credentials, const char *url,
-                                params_t *params,
+                                gsad_credentials_t *credentials,
+                                const char *url, params_t *params,
                                 cmd_response_data_t *response_data)
 {
   entity_t entity;
@@ -11554,9 +11605,9 @@ get_system_report_gmp_from_url (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 static char *
-get_report_config (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, const char *extra_xml,
-                   cmd_response_data_t *response_data)
+get_report_config (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   const char *extra_xml, cmd_response_data_t *response_data)
 {
   return get_one (connection, "report_config", credentials, params, extra_xml,
                   NULL, response_data);
@@ -11573,8 +11624,9 @@ get_report_config (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_report_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+get_report_config_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       cmd_response_data_t *response_data)
 {
   return get_report_config (connection, credentials, params, NULL,
                             response_data);
@@ -11592,7 +11644,7 @@ get_report_config_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 get_report_configs_gmp (gvm_connection_t *connection,
-                        credentials_t *credentials, params_t *params,
+                        gsad_credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
   return get_many (connection, "report_configs", credentials, params, NULL,
@@ -11718,7 +11770,7 @@ buffer_report_config_params (GString *string, GHashTable *config_params,
  */
 char *
 create_report_config_gmp (gvm_connection_t *connection,
-                          credentials_t *credentials, params_t *params,
+                          gsad_credentials_t *credentials, params_t *params,
                           cmd_response_data_t *response_data)
 {
   int ret;
@@ -11809,7 +11861,7 @@ create_report_config_gmp (gvm_connection_t *connection,
  */
 char *
 delete_report_config_gmp (gvm_connection_t *connection,
-                          credentials_t *credentials, params_t *params,
+                          gsad_credentials_t *credentials, params_t *params,
                           cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "report_config", credentials,
@@ -11828,7 +11880,7 @@ delete_report_config_gmp (gvm_connection_t *connection,
  */
 char *
 save_report_config_gmp (gvm_connection_t *connection,
-                        credentials_t *credentials, params_t *params,
+                        gsad_credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
   int ret;
@@ -11919,9 +11971,9 @@ save_report_config_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 static char *
-get_report_format (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, const char *extra_xml,
-                   cmd_response_data_t *response_data)
+get_report_format (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   const char *extra_xml, cmd_response_data_t *response_data)
 {
   gmp_arguments_t *arguments;
   arguments = gmp_arguments_new ();
@@ -11945,8 +11997,9 @@ get_report_format (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_report_format_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+get_report_format_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       cmd_response_data_t *response_data)
 {
   return get_report_format (connection, credentials, params, NULL,
                             response_data);
@@ -11964,7 +12017,7 @@ get_report_format_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 get_report_formats_gmp (gvm_connection_t *connection,
-                        credentials_t *credentials, params_t *params,
+                        gsad_credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
   return get_many (connection, "report_formats", credentials, params, NULL,
@@ -11983,7 +12036,7 @@ get_report_formats_gmp (gvm_connection_t *connection,
  */
 char *
 delete_report_format_gmp (gvm_connection_t *connection,
-                          credentials_t *credentials, params_t *params,
+                          gsad_credentials_t *credentials, params_t *params,
                           cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "report_format", credentials,
@@ -12002,7 +12055,7 @@ delete_report_format_gmp (gvm_connection_t *connection,
  */
 char *
 import_report_format_gmp (gvm_connection_t *connection,
-                          credentials_t *credentials, params_t *params,
+                          gsad_credentials_t *credentials, params_t *params,
                           cmd_response_data_t *response_data)
 {
   gchar *command, *html;
@@ -12074,7 +12127,7 @@ import_report_format_gmp (gvm_connection_t *connection,
  */
 char *
 save_report_format_gmp (gvm_connection_t *connection,
-                        credentials_t *credentials, params_t *params,
+                        gsad_credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
   int ret;
@@ -12345,7 +12398,7 @@ save_report_format_gmp (gvm_connection_t *connection,
  */
 char *
 get_resource_names_gmp (gvm_connection_t *connection,
-                        credentials_t *credentials, params_t *params,
+                        gsad_credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
   const gchar *type;
@@ -12374,7 +12427,7 @@ get_resource_names_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-run_wizard_gmp (gvm_connection_t *connection, credentials_t *credentials,
+run_wizard_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   const char *name;
@@ -12508,8 +12561,9 @@ run_wizard_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_trash_alerts_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                      params_t *params, cmd_response_data_t *response_data)
+get_trash_alerts_gmp (gvm_connection_t *connection,
+                      gsad_credentials_t *credentials, params_t *params,
+                      cmd_response_data_t *response_data)
 {
   GString *xml;
 
@@ -12535,8 +12589,9 @@ get_trash_alerts_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_trash_configs_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+get_trash_configs_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       cmd_response_data_t *response_data)
 {
   GString *xml;
 
@@ -12563,7 +12618,7 @@ get_trash_configs_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 get_trash_credentials_gmp (gvm_connection_t *connection,
-                           credentials_t *credentials, params_t *params,
+                           gsad_credentials_t *credentials, params_t *params,
                            cmd_response_data_t *response_data)
 {
   GString *xml;
@@ -12590,8 +12645,9 @@ get_trash_credentials_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-get_trash_filters_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+get_trash_filters_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       cmd_response_data_t *response_data)
 {
   GString *xml;
 
@@ -12617,8 +12673,9 @@ get_trash_filters_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_trash_groups_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                      params_t *params, cmd_response_data_t *response_data)
+get_trash_groups_gmp (gvm_connection_t *connection,
+                      gsad_credentials_t *credentials, params_t *params,
+                      cmd_response_data_t *response_data)
 {
   GString *xml;
 
@@ -12644,8 +12701,9 @@ get_trash_groups_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_trash_notes_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                     params_t *params, cmd_response_data_t *response_data)
+get_trash_notes_gmp (gvm_connection_t *connection,
+                     gsad_credentials_t *credentials, params_t *params,
+                     cmd_response_data_t *response_data)
 {
   GString *xml;
 
@@ -12672,7 +12730,8 @@ get_trash_notes_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 get_trash_oci_image_targets_gmp (gvm_connection_t *connection,
-                                 credentials_t *credentials, params_t *params,
+                                 gsad_credentials_t *credentials,
+                                 params_t *params,
                                  cmd_response_data_t *response_data)
 {
   GString *xml = g_string_new ("<get_trash>");
@@ -12699,7 +12758,7 @@ get_trash_oci_image_targets_gmp (gvm_connection_t *connection,
  */
 char *
 get_trash_overrides_gmp (gvm_connection_t *connection,
-                         credentials_t *credentials, params_t *params,
+                         gsad_credentials_t *credentials, params_t *params,
                          cmd_response_data_t *response_data)
 {
   GString *xml;
@@ -12727,7 +12786,7 @@ get_trash_overrides_gmp (gvm_connection_t *connection,
  */
 char *
 get_trash_permissions_gmp (gvm_connection_t *connection,
-                           credentials_t *credentials, params_t *params,
+                           gsad_credentials_t *credentials, params_t *params,
                            cmd_response_data_t *response_data)
 {
   GString *xml;
@@ -12755,7 +12814,7 @@ get_trash_permissions_gmp (gvm_connection_t *connection,
  */
 char *
 get_trash_port_lists_gmp (gvm_connection_t *connection,
-                          credentials_t *credentials, params_t *params,
+                          gsad_credentials_t *credentials, params_t *params,
                           cmd_response_data_t *response_data)
 {
   GString *xml;
@@ -12783,7 +12842,7 @@ get_trash_port_lists_gmp (gvm_connection_t *connection,
  */
 char *
 get_trash_report_configs_gmp (gvm_connection_t *connection,
-                              credentials_t *credentials, params_t *params,
+                              gsad_credentials_t *credentials, params_t *params,
                               cmd_response_data_t *response_data)
 {
   GString *xml;
@@ -12812,7 +12871,7 @@ get_trash_report_configs_gmp (gvm_connection_t *connection,
  */
 char *
 get_trash_report_formats_gmp (gvm_connection_t *connection,
-                              credentials_t *credentials, params_t *params,
+                              gsad_credentials_t *credentials, params_t *params,
                               cmd_response_data_t *response_data)
 {
   GString *xml;
@@ -12840,8 +12899,9 @@ get_trash_report_formats_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-get_trash_roles_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                     params_t *params, cmd_response_data_t *response_data)
+get_trash_roles_gmp (gvm_connection_t *connection,
+                     gsad_credentials_t *credentials, params_t *params,
+                     cmd_response_data_t *response_data)
 {
   GString *xml;
 
@@ -12868,7 +12928,7 @@ get_trash_roles_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 get_trash_scanners_gmp (gvm_connection_t *connection,
-                        credentials_t *credentials, params_t *params,
+                        gsad_credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
   GString *xml;
@@ -12896,7 +12956,7 @@ get_trash_scanners_gmp (gvm_connection_t *connection,
  */
 char *
 get_trash_schedules_gmp (gvm_connection_t *connection,
-                         credentials_t *credentials, params_t *params,
+                         gsad_credentials_t *credentials, params_t *params,
                          cmd_response_data_t *response_data)
 {
   GString *xml;
@@ -12923,8 +12983,9 @@ get_trash_schedules_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-get_trash_tags_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                    params_t *params, cmd_response_data_t *response_data)
+get_trash_tags_gmp (gvm_connection_t *connection,
+                    gsad_credentials_t *credentials, params_t *params,
+                    cmd_response_data_t *response_data)
 {
   GString *xml;
 
@@ -12950,8 +13011,9 @@ get_trash_tags_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_trash_targets_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+get_trash_targets_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       cmd_response_data_t *response_data)
 {
   GString *xml;
 
@@ -12977,8 +13039,9 @@ get_trash_targets_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_trash_tasks_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                     params_t *params, cmd_response_data_t *response_data)
+get_trash_tasks_gmp (gvm_connection_t *connection,
+                     gsad_credentials_t *credentials, params_t *params,
+                     cmd_response_data_t *response_data)
 {
   GString *xml;
 
@@ -13004,8 +13067,9 @@ get_trash_tasks_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_trash_tickets_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+get_trash_tickets_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       cmd_response_data_t *response_data)
 {
   GString *xml;
 
@@ -13032,7 +13096,7 @@ get_trash_tickets_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 get_trash_agent_group_gmp (gvm_connection_t *connection,
-                           credentials_t *credentials, params_t *params,
+                           gsad_credentials_t *credentials, params_t *params,
                            cmd_response_data_t *response_data)
 {
   GString *xml;
@@ -13133,8 +13197,9 @@ send_settings_filters (gvm_connection_t *connection, params_t *data,
  * @return Enveloped XML object.
  */
 char *
-save_my_settings_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                      params_t *params, const gchar *accept_language,
+save_my_settings_gmp (gvm_connection_t *connection,
+                      gsad_credentials_t *credentials, params_t *params,
+                      const gchar *accept_language,
                       cmd_response_data_t *response_data)
 {
   const char *lang, *text, *old_passwd, *passwd, *max;
@@ -13148,7 +13213,7 @@ save_my_settings_gmp (gvm_connection_t *connection, credentials_t *credentials,
   const char *changed_value;
   gboolean user_changed = 0;
 
-  user_t *user = credentials_get_user (credentials);
+  user_t *user = gsad_credentials_get_user (credentials);
 
   changed = params_values (params, "settings_changed:");
 
@@ -13925,7 +13990,7 @@ save_my_settings_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 static char *
-get_group (gvm_connection_t *connection, credentials_t *credentials,
+get_group (gvm_connection_t *connection, gsad_credentials_t *credentials,
            params_t *params, const char *extra_xml,
            cmd_response_data_t *response_data)
 {
@@ -13944,7 +14009,7 @@ get_group (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_group_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   return get_group (connection, credentials, params, NULL, response_data);
@@ -13961,7 +14026,7 @@ get_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_groups_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_groups_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   return get_many (connection, "groups", credentials, params, NULL,
@@ -13979,7 +14044,7 @@ get_groups_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-delete_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
+delete_group_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "group", credentials, params,
@@ -13997,7 +14062,7 @@ delete_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-create_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
+create_group_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   gchar *html, *command, *specials_element;
@@ -14095,7 +14160,7 @@ create_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Group XML on success.  Enveloped XML on error.
  */
 char *
-export_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
+export_group_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   return export_resource (connection, "group", credentials, params,
@@ -14114,8 +14179,9 @@ export_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
  *         on error.
  */
 char *
-export_groups_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+export_groups_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   return export_many (connection, "group", credentials, params, response_data);
 }
@@ -14131,7 +14197,7 @@ export_groups_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
+save_group_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   int ret;
@@ -14213,7 +14279,7 @@ save_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_permission (gvm_connection_t *connection, credentials_t *credentials,
+get_permission (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, const char *extra_xml,
                 cmd_response_data_t *response_data)
 {
@@ -14237,8 +14303,9 @@ get_permission (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                    params_t *params, cmd_response_data_t *response_data)
+get_permission_gmp (gvm_connection_t *connection,
+                    gsad_credentials_t *credentials, params_t *params,
+                    cmd_response_data_t *response_data)
 {
   return get_permission (connection, credentials, params, NULL, response_data);
 }
@@ -14254,8 +14321,9 @@ get_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_permissions_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                     params_t *params, cmd_response_data_t *response_data)
+get_permissions_gmp (gvm_connection_t *connection,
+                     gsad_credentials_t *credentials, params_t *params,
+                     cmd_response_data_t *response_data)
 {
   return get_many (connection, "permissions", credentials, params, NULL,
                    response_data);
@@ -14272,8 +14340,9 @@ get_permissions_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-delete_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+delete_permission_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "permission", credentials, params,
                                  response_data);
@@ -14290,8 +14359,9 @@ delete_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-create_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+create_permission_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       cmd_response_data_t *response_data)
 {
   int ret;
   gchar *html;
@@ -14444,7 +14514,7 @@ create_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 create_permissions_gmp (gvm_connection_t *connection,
-                        credentials_t *credentials, params_t *params,
+                        gsad_credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
   int ret;
@@ -14792,8 +14862,9 @@ create_permissions_gmp (gvm_connection_t *connection,
  * @return Permission XML on success.  Enveloped XML on error.
  */
 char *
-export_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+export_permission_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       cmd_response_data_t *response_data)
 {
   return export_resource (connection, "permission", credentials, params,
                           response_data);
@@ -14812,7 +14883,7 @@ export_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 export_permissions_gmp (gvm_connection_t *connection,
-                        credentials_t *credentials, params_t *params,
+                        gsad_credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
   return export_many (connection, "permission", credentials, params,
@@ -14830,8 +14901,9 @@ export_permissions_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-save_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                     params_t *params, cmd_response_data_t *response_data)
+save_permission_gmp (gvm_connection_t *connection,
+                     gsad_credentials_t *credentials, params_t *params,
+                     cmd_response_data_t *response_data)
 {
   gchar *html;
   const char *permission_id, *name, *comment, *resource_id, *resource_type;
@@ -14933,8 +15005,9 @@ save_permission_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-create_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                      params_t *params, cmd_response_data_t *response_data)
+create_port_list_gmp (gvm_connection_t *connection,
+                      gsad_credentials_t *credentials, params_t *params,
+                      cmd_response_data_t *response_data)
 {
   gchar *html;
   const char *name, *comment, *port_range, *from_file;
@@ -15012,8 +15085,9 @@ create_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-create_port_range_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+create_port_range_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       cmd_response_data_t *response_data)
 {
   int ret;
   gchar *html;
@@ -15093,7 +15167,7 @@ create_port_range_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 static char *
-get_port_list (gvm_connection_t *connection, credentials_t *credentials,
+get_port_list (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, const char *extra_xml,
                cmd_response_data_t *response_data)
 {
@@ -15118,8 +15192,9 @@ get_port_list (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+get_port_list_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   return get_port_list (connection, credentials, params, NULL, response_data);
 }
@@ -15135,8 +15210,9 @@ get_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_port_lists_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                    params_t *params, cmd_response_data_t *response_data)
+get_port_lists_gmp (gvm_connection_t *connection,
+                    gsad_credentials_t *credentials, params_t *params,
+                    cmd_response_data_t *response_data)
 {
   return get_many (connection, "port_lists", credentials, params, NULL,
                    response_data);
@@ -15153,8 +15229,9 @@ get_port_lists_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                    params_t *params, cmd_response_data_t *response_data)
+save_port_list_gmp (gvm_connection_t *connection,
+                    gsad_credentials_t *credentials, params_t *params,
+                    cmd_response_data_t *response_data)
 {
   int ret;
   gchar *html;
@@ -15229,8 +15306,9 @@ save_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-delete_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                      params_t *params, cmd_response_data_t *response_data)
+delete_port_list_gmp (gvm_connection_t *connection,
+                      gsad_credentials_t *credentials, params_t *params,
+                      cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "port_list", credentials, params,
                                  response_data);
@@ -15247,8 +15325,9 @@ delete_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-delete_port_range_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                       params_t *params, cmd_response_data_t *response_data)
+delete_port_range_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       cmd_response_data_t *response_data)
 {
   return delete_resource (connection, "port_range", credentials, params, TRUE,
                           response_data);
@@ -15265,8 +15344,9 @@ delete_port_range_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-import_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                      params_t *params, cmd_response_data_t *response_data)
+import_port_list_gmp (gvm_connection_t *connection,
+                      gsad_credentials_t *credentials, params_t *params,
+                      cmd_response_data_t *response_data)
 {
   gchar *command, *html;
   entity_t entity;
@@ -15335,7 +15415,7 @@ import_port_list_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-delete_role_gmp (gvm_connection_t *connection, credentials_t *credentials,
+delete_role_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "role", credentials, params,
@@ -15353,7 +15433,7 @@ delete_role_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-create_role_gmp (gvm_connection_t *connection, credentials_t *credentials,
+create_role_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   char *ret;
@@ -15428,7 +15508,7 @@ create_role_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 static char *
-get_role (gvm_connection_t *connection, credentials_t *credentials,
+get_role (gvm_connection_t *connection, gsad_credentials_t *credentials,
           params_t *params, const char *extra_xml,
           cmd_response_data_t *response_data)
 {
@@ -15447,7 +15527,7 @@ get_role (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_role_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_role_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
               params_t *params, cmd_response_data_t *response_data)
 {
   return get_role (connection, credentials, params, NULL, response_data);
@@ -15464,7 +15544,7 @@ get_role_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_roles_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_roles_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   return get_many (connection, "roles", credentials, params, NULL,
@@ -15482,7 +15562,7 @@ get_roles_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Role XML on success.  Enveloped XML on error.
  */
 char *
-export_role_gmp (gvm_connection_t *connection, credentials_t *credentials,
+export_role_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   return export_resource (connection, "role", credentials, params,
@@ -15501,7 +15581,7 @@ export_role_gmp (gvm_connection_t *connection, credentials_t *credentials,
  *         on error.
  */
 char *
-export_roles_gmp (gvm_connection_t *connection, credentials_t *credentials,
+export_roles_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   return export_many (connection, "role", credentials, params, response_data);
@@ -15518,7 +15598,7 @@ export_roles_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_role_gmp (gvm_connection_t *connection, credentials_t *credentials,
+save_role_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   int ret;
@@ -15599,7 +15679,7 @@ save_role_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_feeds_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_feeds_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   entity_t entity;
@@ -15666,7 +15746,7 @@ get_feeds_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 static char *
-sync_feed (gvm_connection_t *connection, credentials_t *credentials,
+sync_feed (gvm_connection_t *connection, gsad_credentials_t *credentials,
            params_t *params, const char *sync_cmd, const char *action,
            const char *feed_name, cmd_response_data_t *response_data)
 {
@@ -15722,7 +15802,7 @@ sync_feed (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-sync_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
+sync_agents_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   entity_t entity;
@@ -15775,7 +15855,7 @@ sync_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-sync_feed_gmp (gvm_connection_t *connection, credentials_t *credentials,
+sync_feed_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   return sync_feed (connection, credentials, params, "sync_feed",
@@ -15793,7 +15873,7 @@ sync_feed_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-sync_scap_gmp (gvm_connection_t *connection, credentials_t *credentials,
+sync_scap_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   return sync_feed (connection, credentials, params, "sync_scap",
@@ -15811,7 +15891,7 @@ sync_scap_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-sync_cert_gmp (gvm_connection_t *connection, credentials_t *credentials,
+sync_cert_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   return sync_feed (connection, credentials, params, "sync_cert",
@@ -15832,7 +15912,7 @@ sync_cert_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_filter (gvm_connection_t *connection, credentials_t *credentials,
+get_filter (gvm_connection_t *connection, gsad_credentials_t *credentials,
             params_t *params, const char *extra_xml,
             cmd_response_data_t *response_data)
 {
@@ -15856,7 +15936,7 @@ get_filter (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_filter_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_filter_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   return get_filter (connection, credentials, params, NULL, response_data);
@@ -15873,7 +15953,7 @@ get_filter_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_filters_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_filters_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   return get_many (connection, "filters", credentials, params, NULL,
@@ -15891,8 +15971,9 @@ get_filters_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-create_filter_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+create_filter_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   gchar *html;
   const char *name, *comment, *term, *type;
@@ -15965,8 +16046,9 @@ create_filter_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-delete_filter_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+delete_filter_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "filter", credentials, params,
                                  response_data);
@@ -15983,8 +16065,9 @@ delete_filter_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Filter XML on success.  Enveloped XML on error.
  */
 char *
-export_filter_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+export_filter_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   return export_resource (connection, "filter", credentials, params,
                           response_data);
@@ -16002,8 +16085,9 @@ export_filter_gmp (gvm_connection_t *connection, credentials_t *credentials,
  *         on error.
  */
 char *
-export_filters_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                    params_t *params, cmd_response_data_t *response_data)
+export_filters_gmp (gvm_connection_t *connection,
+                    gsad_credentials_t *credentials, params_t *params,
+                    cmd_response_data_t *response_data)
 {
   return export_many (connection, "filter", credentials, params, response_data);
 }
@@ -16019,7 +16103,7 @@ export_filters_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_filter_gmp (gvm_connection_t *connection, credentials_t *credentials,
+save_filter_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   entity_t entity;
@@ -16100,8 +16184,9 @@ save_filter_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Schedule XML on success.  Enveloped XML on error.
  */
 char *
-export_schedule_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                     params_t *params, cmd_response_data_t *response_data)
+export_schedule_gmp (gvm_connection_t *connection,
+                     gsad_credentials_t *credentials, params_t *params,
+                     cmd_response_data_t *response_data)
 {
   return export_resource (connection, "schedule", credentials, params,
                           response_data);
@@ -16118,8 +16203,9 @@ export_schedule_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Schedules XML on success. Enveloped XML on error.
  */
 char *
-export_schedules_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                      params_t *params, cmd_response_data_t *response_data)
+export_schedules_gmp (gvm_connection_t *connection,
+                      gsad_credentials_t *credentials, params_t *params,
+                      cmd_response_data_t *response_data)
 {
   return export_many (connection, "schedule", credentials, params,
                       response_data);
@@ -16136,8 +16222,9 @@ export_schedules_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_schedule_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+save_schedule_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   entity_t entity;
   const char *schedule_id, *name, *comment, *timezone, *icalendar;
@@ -16216,7 +16303,7 @@ save_schedule_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-delete_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
+delete_user_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "user", credentials, params,
@@ -16235,7 +16322,7 @@ delete_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_user (gvm_connection_t *connection, credentials_t *credentials,
+get_user (gvm_connection_t *connection, gsad_credentials_t *credentials,
           params_t *params, const char *extra_xml,
           cmd_response_data_t *response_data)
 {
@@ -16305,7 +16392,7 @@ get_user (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_user_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
               params_t *params, cmd_response_data_t *response_data)
 {
   return get_user (connection, credentials, params, NULL, response_data);
@@ -16322,7 +16409,7 @@ get_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_users_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_users_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   return get_many (connection, "users", credentials, params, NULL,
@@ -16340,7 +16427,7 @@ get_users_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-create_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
+create_user_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   const char *name, *password, *hosts, *hosts_allow;
@@ -16504,7 +16591,7 @@ create_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_vulns_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_vulns_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   return get_many (connection, "vulns", credentials, params, NULL,
@@ -16512,8 +16599,9 @@ get_vulns_gmp (gvm_connection_t *connection, credentials_t *credentials,
 }
 
 char *
-auth_settings_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+auth_settings_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   GString *xml;
   gchar *buf;
@@ -16586,7 +16674,7 @@ auth_settings_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
+save_user_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   int ret;
@@ -16639,7 +16727,7 @@ save_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
   g_string_append (command, buf);
   g_free (buf);
 
-  current_user = credentials_get_user (credentials);
+  current_user = gsad_credentials_get_user (credentials);
 
   if (login
       /* gvmd forbids users from modifying their own names. */
@@ -16814,7 +16902,7 @@ save_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Note XML on success.  Enveloped XML on error.
  */
 char *
-export_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
+export_user_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   return export_resource (connection, "user", credentials, params,
@@ -16833,14 +16921,14 @@ export_user_gmp (gvm_connection_t *connection, credentials_t *credentials,
  *         on error.
  */
 char *
-export_users_gmp (gvm_connection_t *connection, credentials_t *credentials,
+export_users_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   return export_many (connection, "user", credentials, params, response_data);
 }
 
 char *
-cvss_calculator (gvm_connection_t *connection, credentials_t *credentials,
+cvss_calculator (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   GString *xml;
@@ -16940,7 +17028,7 @@ cvss_calculator (gvm_connection_t *connection, credentials_t *credentials,
  * @return XML enveloped list of users and configuration.
  */
 char *
-save_auth_gmp (gvm_connection_t *connection, credentials_t *credentials,
+save_auth_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   int ret;
@@ -17072,7 +17160,7 @@ save_auth_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_settings_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_settings_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   GString *xml;
@@ -17145,7 +17233,7 @@ get_settings_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return An action response.
  */
 char *
-save_setting_gmp (gvm_connection_t *connection, credentials_t *credentials,
+save_setting_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   const gchar *setting_value = params_value (params, "setting_value");
@@ -17237,7 +17325,7 @@ save_setting_gmp (gvm_connection_t *connection, credentials_t *credentials,
 }
 
 char *
-get_setting_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_setting_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   const gchar *setting_id = params_value (params, "setting_id");
@@ -17292,7 +17380,7 @@ get_setting_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-wizard (gvm_connection_t *connection, credentials_t *credentials,
+wizard (gvm_connection_t *connection, gsad_credentials_t *credentials,
         params_t *params, const char *extra_xml,
         cmd_response_data_t *response_data)
 {
@@ -17392,7 +17480,7 @@ wizard (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-wizard_gmp (gvm_connection_t *connection, credentials_t *credentials,
+wizard_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
             params_t *params, cmd_response_data_t *response_data)
 {
   return wizard (connection, credentials, params, NULL, response_data);
@@ -17410,7 +17498,7 @@ wizard_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-wizard_get (gvm_connection_t *connection, credentials_t *credentials,
+wizard_get (gvm_connection_t *connection, gsad_credentials_t *credentials,
             params_t *params, const char *extra_xml,
             cmd_response_data_t *response_data)
 {
@@ -17517,7 +17605,7 @@ wizard_get (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-wizard_get_gmp (gvm_connection_t *connection, credentials_t *credentials,
+wizard_get_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   return wizard_get (connection, credentials, params, NULL, response_data);
@@ -17534,7 +17622,7 @@ wizard_get_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-bulk_delete_gmp (gvm_connection_t *connection, credentials_t *credentials,
+bulk_delete_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   const char *type;
@@ -17658,7 +17746,7 @@ bulk_delete_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-bulk_export_gmp (gvm_connection_t *connection, credentials_t *credentials,
+bulk_export_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   const gchar *type, *filter, *bulk_select;
@@ -17712,7 +17800,7 @@ bulk_export_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-create_host_gmp (gvm_connection_t *connection, credentials_t *credentials,
+create_host_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   int ret;
@@ -17796,7 +17884,7 @@ create_host_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return XML enveloped asset response or error message.
  */
 char *
-get_asset (gvm_connection_t *connection, credentials_t *credentials,
+get_asset (gvm_connection_t *connection, gsad_credentials_t *credentials,
            params_t *params, const char *extra_xml,
            cmd_response_data_t *response_data)
 {
@@ -17841,7 +17929,7 @@ get_asset (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_asset_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   return get_asset (connection, credentials, params, NULL, response_data);
@@ -17858,7 +17946,7 @@ get_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return XML enveloped assets response or error message.
  */
 char *
-get_assets_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_assets_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   gmp_arguments_t *arguments;
@@ -17893,7 +17981,7 @@ get_assets_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-create_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
+create_asset_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   char *ret;
@@ -17963,7 +18051,7 @@ create_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-delete_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
+delete_asset_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   gchar *html, *resource_id;
@@ -18049,7 +18137,7 @@ delete_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Asset XML on success.  Enveloped XML on error.
  */
 char *
-export_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
+export_asset_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   return export_resource (connection, "asset", credentials, params,
@@ -18068,8 +18156,9 @@ export_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
  *         on error.
  */
 char *
-export_assets_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+export_assets_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   return export_many (connection, "asset", credentials, params, response_data);
 }
@@ -18085,7 +18174,7 @@ export_assets_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
+save_asset_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   int ret;
@@ -18158,7 +18247,7 @@ save_asset_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_tickets_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_tickets_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   return get_many (connection, "tickets", credentials, params, NULL,
@@ -18176,7 +18265,7 @@ get_tickets_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_ticket_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_ticket_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   return get_one (connection, "ticket", credentials, params, NULL, NULL,
@@ -18194,8 +18283,9 @@ get_ticket_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-create_ticket_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+create_ticket_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   entity_t entity = NULL;
   const gchar *result_id, *user_id, *note;
@@ -18267,7 +18357,7 @@ create_ticket_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_ticket_gmp (gvm_connection_t *connection, credentials_t *credentials,
+save_ticket_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   entity_t entity = NULL;
@@ -18347,8 +18437,9 @@ save_ticket_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-delete_ticket_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+delete_ticket_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "ticket", credentials, params,
                                  response_data);
@@ -18365,8 +18456,9 @@ delete_ticket_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_timezones_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+get_timezones_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   entity_t entity = NULL;
   GString *xml;
@@ -18432,7 +18524,7 @@ get_timezones_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 get_tls_certificates_gmp (gvm_connection_t *connection,
-                          credentials_t *credentials, params_t *params,
+                          gsad_credentials_t *credentials, params_t *params,
                           cmd_response_data_t *response_data)
 {
   gmp_arguments_t *arguments = gmp_arguments_new ();
@@ -18463,7 +18555,7 @@ get_tls_certificates_gmp (gvm_connection_t *connection,
  */
 char *
 get_tls_certificate_gmp (gvm_connection_t *connection,
-                         credentials_t *credentials, params_t *params,
+                         gsad_credentials_t *credentials, params_t *params,
                          cmd_response_data_t *response_data)
 {
   gmp_arguments_t *arguments = gmp_arguments_new ();
@@ -18494,7 +18586,7 @@ get_tls_certificate_gmp (gvm_connection_t *connection,
  */
 char *
 create_tls_certificate_gmp (gvm_connection_t *connection,
-                            credentials_t *credentials, params_t *params,
+                            gsad_credentials_t *credentials, params_t *params,
                             cmd_response_data_t *response_data)
 {
   entity_t entity = NULL;
@@ -18577,7 +18669,7 @@ create_tls_certificate_gmp (gvm_connection_t *connection,
  */
 char *
 save_tls_certificate_gmp (gvm_connection_t *connection,
-                          credentials_t *credentials, params_t *params,
+                          gsad_credentials_t *credentials, params_t *params,
                           cmd_response_data_t *response_data)
 {
   entity_t entity = NULL;
@@ -18662,7 +18754,7 @@ save_tls_certificate_gmp (gvm_connection_t *connection,
  */
 char *
 delete_tls_certificate_gmp (gvm_connection_t *connection,
-                            credentials_t *credentials, params_t *params,
+                            gsad_credentials_t *credentials, params_t *params,
                             cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "tls_certificate", credentials,
@@ -18681,7 +18773,7 @@ delete_tls_certificate_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 static char *
-get_license (gvm_connection_t *connection, credentials_t *credentials,
+get_license (gvm_connection_t *connection, gsad_credentials_t *credentials,
              params_t *params, const char *extra_xml,
              cmd_response_data_t *response_data)
 {
@@ -18700,7 +18792,7 @@ get_license (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_license_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_license_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                  params_t *params, cmd_response_data_t *response_data)
 {
   return get_license (connection, credentials, params, NULL, response_data);
@@ -18717,7 +18809,7 @@ get_license_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-save_license_gmp (gvm_connection_t *connection, credentials_t *credentials,
+save_license_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   entity_t entity;
@@ -18793,8 +18885,9 @@ save_license_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return An action response.
  */
 char *
-change_password_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                     params_t *params, cmd_response_data_t *response_data)
+change_password_gmp (gvm_connection_t *connection,
+                     gsad_credentials_t *credentials, params_t *params,
+                     cmd_response_data_t *response_data)
 {
   const char *old_passwd, *passwd;
   gchar *passwd_64 = NULL;
@@ -18803,7 +18896,7 @@ change_password_gmp (gvm_connection_t *connection, credentials_t *credentials,
   user_t *user = NULL;
   gmp_authenticate_info_opts_t auth_opts;
 
-  user = credentials_get_user (credentials);
+  user = gsad_credentials_get_user (credentials);
 
   old_passwd = params_value (params, "old_password");
   passwd = params_value (params, "password");
@@ -18905,7 +18998,7 @@ change_password_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 get_agent_installers_gmp (gvm_connection_t *connection,
-                          credentials_t *credentials, params_t *params,
+                          gsad_credentials_t *credentials, params_t *params,
                           cmd_response_data_t *response_data)
 {
   return get_many (connection, "agent_installers", credentials, params, NULL,
@@ -18924,7 +19017,7 @@ get_agent_installers_gmp (gvm_connection_t *connection,
  */
 char *
 get_agent_installer_gmp (gvm_connection_t *connection,
-                         credentials_t *credentials, params_t *params,
+                         gsad_credentials_t *credentials, params_t *params,
                          cmd_response_data_t *response_data)
 {
   return get_one (connection, "agent_installer", credentials, params, NULL,
@@ -18943,7 +19036,7 @@ get_agent_installer_gmp (gvm_connection_t *connection,
  */
 char *
 get_agent_installer_file_gmp (gvm_connection_t *connection,
-                              credentials_t *credentials, params_t *params,
+                              gsad_credentials_t *credentials, params_t *params,
                               cmd_response_data_t *response_data)
 {
   const gchar *id = params_value (params, "agent_installer_id");
@@ -19068,7 +19161,7 @@ get_agent_installer_file_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-get_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_agent_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, cmd_response_data_t *response_data)
 {
   return get_one (connection, "agent", credentials, params, NULL, NULL,
@@ -19086,7 +19179,7 @@ get_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_agents_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 params_t *params, cmd_response_data_t *response_data)
 {
   return get_many (connection, "agents", credentials, params, NULL,
@@ -19104,7 +19197,7 @@ get_agents_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
+modify_agent_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   gchar *xml, *format, *update_to_latest_tag;
@@ -19327,7 +19420,7 @@ modify_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
-                                      credentials_t *credentials,
+                                      gsad_credentials_t *credentials,
                                       params_t *params,
                                       cmd_response_data_t *response_data)
 {
@@ -19488,7 +19581,7 @@ modify_agent_control_scan_config_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-delete_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
+delete_agent_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   gchar *xml, *format;
@@ -19580,8 +19673,9 @@ delete_agent_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_agent_groups_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                      params_t *params, cmd_response_data_t *response_data)
+get_agent_groups_gmp (gvm_connection_t *connection,
+                      gsad_credentials_t *credentials, params_t *params,
+                      cmd_response_data_t *response_data)
 {
   return get_many (connection, "agent_groups", credentials, params, NULL,
                    response_data);
@@ -19598,8 +19692,9 @@ get_agent_groups_gmp (gvm_connection_t *connection, credentials_t *credentials,
  * @return Enveloped XML object.
  */
 char *
-get_agent_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                     params_t *params, cmd_response_data_t *response_data)
+get_agent_group_gmp (gvm_connection_t *connection,
+                     gsad_credentials_t *credentials, params_t *params,
+                     cmd_response_data_t *response_data)
 {
   return get_one (connection, "agent_group", credentials, params, NULL, NULL,
                   response_data);
@@ -19617,7 +19712,7 @@ get_agent_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 create_agent_group_gmp (gvm_connection_t *connection,
-                        credentials_t *credentials, params_t *params,
+                        gsad_credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
   gchar *command = NULL, *html = NULL;
@@ -19729,8 +19824,9 @@ create_agent_group_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-save_agent_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                      params_t *params, cmd_response_data_t *response_data)
+save_agent_group_gmp (gvm_connection_t *connection,
+                      gsad_credentials_t *credentials, params_t *params,
+                      cmd_response_data_t *response_data)
 {
   gchar *html = NULL, *format = NULL;
   const char *agent_group_id = NULL, *name = NULL, *comment = NULL;
@@ -19831,7 +19927,7 @@ save_agent_group_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 delete_agent_group_gmp (gvm_connection_t *connection,
-                        credentials_t *credentials, params_t *params,
+                        gsad_credentials_t *credentials, params_t *params,
                         cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "agent_group", credentials, params,
@@ -19839,13 +19935,13 @@ delete_agent_group_gmp (gvm_connection_t *connection,
 }
 
 char *
-renew_session_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                   params_t *params, cmd_response_data_t *response_data)
+renew_session_gmp (gvm_connection_t *connection,
+                   gsad_credentials_t *credentials, params_t *params,
+                   cmd_response_data_t *response_data)
 {
   gchar *html;
   gchar *message;
-  user_t *user = credentials_get_user (credentials);
-
+  user_t *user = gsad_credentials_get_user (credentials);
   session_renew_user (user_get_token (user));
 
   message = g_strdup_printf ("%ld", user_get_session_timeout (user));
@@ -19868,7 +19964,7 @@ renew_session_gmp (gvm_connection_t *connection, credentials_t *credentials,
  */
 char *
 get_oci_image_target_gmp (gvm_connection_t *connection,
-                          credentials_t *credentials, params_t *params,
+                          gsad_credentials_t *credentials, params_t *params,
                           cmd_response_data_t *response_data)
 {
   gmp_arguments_t *arguments;
@@ -19892,7 +19988,7 @@ get_oci_image_target_gmp (gvm_connection_t *connection,
  */
 char *
 get_oci_image_targets_gmp (gvm_connection_t *connection,
-                           credentials_t *credentials, params_t *params,
+                           gsad_credentials_t *credentials, params_t *params,
                            cmd_response_data_t *response_data)
 {
   return get_many (connection, "oci_image_targets", credentials, params, NULL,
@@ -19912,7 +20008,7 @@ get_oci_image_targets_gmp (gvm_connection_t *connection,
  */
 char *
 export_oci_image_target_gmp (gvm_connection_t *connection,
-                             credentials_t *credentials, params_t *params,
+                             gsad_credentials_t *credentials, params_t *params,
                              cmd_response_data_t *response_data)
 {
   return export_resource (connection, "oci_image_target", credentials, params,
@@ -19932,7 +20028,7 @@ export_oci_image_target_gmp (gvm_connection_t *connection,
  */
 char *
 export_oci_image_targets_gmp (gvm_connection_t *connection,
-                              credentials_t *credentials, params_t *params,
+                              gsad_credentials_t *credentials, params_t *params,
                               cmd_response_data_t *response_data)
 {
   return export_many (connection, "oci_image_target", credentials, params,
@@ -19951,7 +20047,7 @@ export_oci_image_targets_gmp (gvm_connection_t *connection,
  */
 char *
 create_oci_image_target_gmp (gvm_connection_t *connection,
-                             credentials_t *credentials, params_t *params,
+                             gsad_credentials_t *credentials, params_t *params,
                              cmd_response_data_t *response_data)
 {
   int ret;
@@ -20091,7 +20187,7 @@ create_oci_image_target_gmp (gvm_connection_t *connection,
  */
 char *
 delete_oci_image_target_gmp (gvm_connection_t *connection,
-                             credentials_t *credentials, params_t *params,
+                             gsad_credentials_t *credentials, params_t *params,
                              cmd_response_data_t *response_data)
 {
   return move_resource_to_trash (connection, "oci_image_target", credentials,
@@ -20110,7 +20206,7 @@ delete_oci_image_target_gmp (gvm_connection_t *connection,
  */
 char *
 save_oci_image_target_gmp (gvm_connection_t *connection,
-                           credentials_t *credentials, params_t *params,
+                           gsad_credentials_t *credentials, params_t *params,
                            cmd_response_data_t *response_data)
 {
   entity_t entity;
@@ -20297,7 +20393,7 @@ save_oci_image_target_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-ping_gmp (gvm_connection_t *connection, credentials_t *credentials,
+ping_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
           params_t *params, cmd_response_data_t *response_data)
 {
   return action_result (connection, credentials, params, response_data, "ping",
@@ -20305,8 +20401,9 @@ ping_gmp (gvm_connection_t *connection, credentials_t *credentials,
 }
 
 char *
-get_capabilities_gmp (gvm_connection_t *connection, credentials_t *credentials,
-                      params_t *params, cmd_response_data_t *response_data)
+get_capabilities_gmp (gvm_connection_t *connection,
+                      gsad_credentials_t *credentials, params_t *params,
+                      cmd_response_data_t *response_data)
 {
   entity_t entity = NULL;
   GString *xml;
@@ -20365,7 +20462,7 @@ get_capabilities_gmp (gvm_connection_t *connection, credentials_t *credentials,
 }
 
 char *
-get_features_gmp (gvm_connection_t *connection, credentials_t *credentials,
+get_features_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, cmd_response_data_t *response_data)
 {
   entity_t entity = NULL;
@@ -20718,7 +20815,7 @@ login (gsad_http_connection_t *con, params_t *params,
 {
   int ret, status;
   gsad_authentication_reason_t auth_reason;
-  credentials_t *credentials;
+  gsad_credentials_t *credentials;
   gchar *timezone;
   gchar *role;
   gchar *capabilities;
@@ -20788,7 +20885,7 @@ login (gsad_http_connection_t *con, params_t *params,
           g_message ("Authentication success for '%s' from %s", login ?: "",
                      client_address);
 
-          credentials = credentials_new (user, language);
+          credentials = gsad_credentials_new (user, language);
 
           gchar *data =
             envelope_gmp (NULL, credentials, params, NULL, response_data);
@@ -20798,7 +20895,7 @@ login (gsad_http_connection_t *con, params_t *params,
 
           user_free (user);
 
-          credentials_free (credentials);
+          gsad_credentials_free (credentials);
 
           g_free (timezone);
           g_free (capabilities);
@@ -20829,7 +20926,7 @@ login (gsad_http_connection_t *con, params_t *params,
  *         3 on timeout, 4 failed to connect, -1 on error
  */
 int
-manager_connect (credentials_t *credentials, gvm_connection_t *connection)
+manager_connect (gsad_credentials_t *credentials, gvm_connection_t *connection)
 {
   gmp_authenticate_info_opts_t auth_opts;
 
@@ -20838,7 +20935,7 @@ manager_connect (credentials_t *credentials, gvm_connection_t *connection)
       return 4;
     }
 
-  user_t *user = credentials_get_user (credentials);
+  user_t *user = gsad_credentials_get_user (credentials);
 
   auth_opts = gmp_authenticate_info_opts_defaults;
   auth_opts.username = user_get_username (user);

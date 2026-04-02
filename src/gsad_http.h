@@ -195,14 +195,15 @@ attach_remove_sid (gsad_http_response_t *response, const gchar *sid);
 /* exec_gmp functions are still in gsad.c */
 gsad_http_result_t
 exec_gmp_get (gsad_http_connection_t *connection,
-              gsad_connection_info_t *con_info, credentials_t *credentials);
+              gsad_connection_info_t *con_info,
+              gsad_credentials_t *credentials);
 
 gsad_http_result_t
 exec_gmp_post (gsad_http_connection_t *connection,
                gsad_connection_info_t *con_info, const gchar *client_address);
 
 gchar *
-gsad_message (credentials_t *, const gchar *, const gchar *, int, const gchar *,
-              cmd_response_data_t *);
+gsad_message (gsad_credentials_t *, const gchar *, const gchar *, int,
+              const gchar *, cmd_response_data_t *);
 
 #endif /* _GSAD_HTTP_H */

@@ -32,6 +32,9 @@ macro(add_unit_test _baseName ${ARGN})
     ${GLIB_LDFLAGS}
     ${LIBGVM_UTIL_LDFLAGS}
     ${LIBMICROHTTPD_LDFLAGS}
+    ${LIBXML_LDFLAGS}
+    ${LIBGVM_BASE_LDFLAGS}
+    ${LIBGVM_GMP_LDFLAGS}
   )
   set_target_properties(${_testName} PROPERTIES LINKER_LANGUAGE C)
   if(NOT CMAKE_BUILD_TYPE MATCHES "Release")
