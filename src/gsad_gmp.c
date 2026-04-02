@@ -337,11 +337,8 @@ static char *
 envelope_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
               params_t *params, gchar *xml, cmd_response_data_t *response_data)
 {
-  time_t now;
   gchar *res;
   GString *string;
-  char ctime_now[200];
-  struct timeval tv;
 
   assert (credentials);
 
@@ -349,23 +346,18 @@ envelope_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
   const gchar *timezone = user_get_timezone (user);
   const gchar *jwt = user_get_jwt (user);
 
-  now = time (NULL);
-  ctime_r_strip_newline (&now, ctime_now);
-
   string = g_string_new ("");
 
-  gettimeofday (&tv, NULL);
   res = g_markup_printf_escaped (
     "<envelope>"
     "<version>%s</version>"
     "<token>%s</token>"
-    "<time>%s</time>"
     "<timezone>%s</timezone>"
     "<login>%s</login>"
     "<session>%ld</session>"
     "<i18n>%s</i18n>"
     "<client_address>%s</client_address>",
-    GSAD_VERSION, user_get_token (user), ctime_now, timezone ? timezone : "",
+    GSAD_VERSION, user_get_token (user), timezone ? timezone : "",
     user_get_username (user), user_get_session_timeout (user),
     gsad_credentials_get_language (credentials),
     user_get_client_address (user));
