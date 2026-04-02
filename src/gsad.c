@@ -279,8 +279,6 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
 
   credentials = gsad_credentials_new (user, language);
 
-  gsad_credentials_start_cmd (credentials);
-
   new_sid = g_strdup (user_get_cookie (user));
 
   /* Set the timezone. */
@@ -857,8 +855,6 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     }
 
   /* Set page display settings */
-
-  gsad_credentials_start_cmd (credentials);
 
   if (gsad_settings_get_client_watch_interval (gsad_global_settings))
     {

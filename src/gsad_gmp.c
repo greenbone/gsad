@@ -368,14 +368,12 @@ envelope_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
     "<session>%ld</session>"
     "<role>%s</role>"
     "<i18n>%s</i18n>"
-    "<client_address>%s</client_address>"
-    "<backend_operation>%.2f</backend_operation>",
+    "<client_address>%s</client_address>",
     GSAD_VERSION, gsad_settings_get_vendor_version (gsad_global_settings),
     user_get_token (user), ctime_now, timezone ? timezone : "",
     user_get_username (user), user_get_session_timeout (user),
     user_get_role (user), gsad_credentials_get_language (credentials),
-    user_get_client_address (user),
-    gsad_credentials_get_cmd_duration (credentials));
+    user_get_client_address (user));
 
   g_string_append (string, res);
   g_free (res);
