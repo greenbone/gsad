@@ -21,13 +21,14 @@
 void
 gsad_user_session_logout (gsad_user_t *user)
 {
-  gsad_user_t *fuser = session_get_user_by_id (user->token);
+  gsad_user_t *fuser = gsad_session_get_user_by_id (user->token);
 
   if (fuser)
     {
       if (fuser->username && fuser->password)
         logout_gmp (fuser->username, fuser->password);
-      session_remove_user (fuser->token);
+
+      gsad_session_remove_user (fuser->token);
       gsad_user_free (fuser);
     }
 }
@@ -74,7 +75,7 @@ gsad_user_session_add (const gchar *username, const gchar *password,
   gsad_user_t *user;
   int session_count = 0;
 
-  user_list = current_user_item = session_get_users_by_username (username);
+  user_list = current_user_item = gsad_session_get_users_by_username (username);
   while (current_user_item)
     {
       user = current_user_item->data;
@@ -82,7 +83,7 @@ gsad_user_session_add (const gchar *username, const gchar *password,
         {
           if (user->username && user->password)
             logout_gmp (user->username, user->password);
-          session_remove_user (user->token);
+          gsad_session_remove_user (user->token);
         }
       else
         session_count++;
@@ -101,7 +102,7 @@ gsad_user_session_add (const gchar *username, const gchar *password,
   user = gsad_user_new_with_data (username, password, timezone, capabilities,
                                   language, address, jwt);
 
-  session_add_user (user->token, user);
+  gsad_session_add_user (user->token, user);
 
   return user;
 }
@@ -132,7 +133,7 @@ gsad_user_session_find (const gchar *cookie, const gchar *token,
   if (token == NULL)
     return USER_BAD_MISSING_TOKEN;
 
-  user = session_get_user_by_id (token);
+  user = gsad_session_get_user_by_id (token);
 
   if (user)
     {
@@ -140,7 +141,7 @@ gsad_user_session_find (const gchar *cookie, const gchar *token,
         {
           if (user->username && user->password)
             logout_gmp (user->username, user->password);
-          session_remove_user (user->token);
+          gsad_session_remove_user (user->token);
           gsad_user_free (user);
           return USER_EXPIRED_TOKEN;
         }
@@ -159,7 +160,7 @@ gsad_user_session_find (const gchar *cookie, const gchar *token,
         }
       else
         {
-          session_add_user (user->token, user);
+          gsad_session_renew_user (user->token);
 
           *user_return = user;
           return USER_OK;
@@ -192,7 +193,7 @@ gsad_user_session_get_timeout (gsad_user_t *user)
  * @param[in] user User whose session is to be renewed.
  */
 void
-gsad_user_session_renew (gsad_user_t *user)
+gsad_user_session_renew_timeout (gsad_user_t *user)
 {
   user->time = time (NULL);
 }

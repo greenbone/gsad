@@ -12,7 +12,7 @@
 
 #include "gsad_gmp_auth.h"
 #include "gsad_user.h"         /* for gsad_user_t */
-#include "gsad_user_session.h" /* for gsad_user_session_renew */
+#include "gsad_user_session.h" /* for gsad_user_session_timeout */
 #include "gsad_utils.h"        /* for str_equal */
 
 #undef G_LOG_DOMAIN
@@ -31,8 +31,15 @@ GPtrArray *users = NULL;
  */
 static GMutex *mutex = NULL;
 
+/**
+ * @brief Find a user by a session identifier without locking the mutex.
+ *
+ * @param[in]  id  Unique identifier.
+ *
+ * @return Return the user or NULL if not found
+ */
 gsad_user_t *
-session_get_user_by_id_internal (const gchar *id)
+gsad_session_get_user_by_id_internal (const gchar *id)
 {
   int index;
   for (index = 0; index < users->len; index++)
@@ -49,10 +56,15 @@ session_get_user_by_id_internal (const gchar *id)
   return NULL;
 }
 
+/**
+ * @brief Remove a user from the session "database" without locking the mutex.
+ *
+ * @param[in]  id  Unique identifier (token).
+ */
 void
-session_remove_user_internal (const gchar *id)
+gsad_session_remove_user_internal (const gchar *id)
 {
-  gsad_user_t *user = session_get_user_by_id_internal (id);
+  gsad_user_t *user = gsad_session_get_user_by_id_internal (id);
 
   if (user)
     {
@@ -62,14 +74,22 @@ session_remove_user_internal (const gchar *id)
     }
 }
 
+/**
+ * @brief Add user to the session "database" without locking the mutex.
+ *
+ * @param[in]  user  User to add.
+ */
 void
-session_add_user_internal (gsad_user_t *user)
+gsad_session_add_user_internal (gsad_user_t *user)
 {
   g_ptr_array_add (users, (gpointer) gsad_user_copy (user));
 }
 
+/**
+ * @brief Initialize the session handling.
+ */
 void
-session_init ()
+gsad_session_init ()
 {
   mutex = g_malloc (sizeof (GMutex));
   g_mutex_init (mutex);
@@ -79,16 +99,18 @@ session_init ()
 /**
  * Find a user by a session identifier
  *
+ * @param[in]  id  Unique identifier (token).
+ *
  * @return Return a copy of the user or NULL if not found
  */
 gsad_user_t *
-session_get_user_by_id (const gchar *id)
+gsad_session_get_user_by_id (const gchar *id)
 {
   gsad_user_t *user;
 
   g_mutex_lock (mutex);
 
-  user = gsad_user_copy (session_get_user_by_id_internal (id));
+  user = gsad_user_copy (gsad_session_get_user_by_id_internal (id));
 
   g_mutex_unlock (mutex);
 
@@ -98,10 +120,12 @@ session_get_user_by_id (const gchar *id)
 /**
  * Find all users with the given username
  *
+ * @param[in]  username  Username to search for.
+ *
  * @return Return a list with copies of the users or NULL if not found
  */
 GList *
-session_get_users_by_username (const gchar *username)
+gsad_session_get_users_by_username (const gchar *username)
 {
   int index;
   GList *list = NULL;
@@ -129,17 +153,17 @@ session_get_users_by_username (const gchar *username)
 /**
  * @brief Add user to the session "database"
  *
- * @param[in]  id     Unique identifier.
+ * @param[in]  id     Unique identifier (token).
  * @param[in]  user   User.
  */
 void
-session_add_user (const gchar *id, gsad_user_t *user)
+gsad_session_add_user (const gchar *id, gsad_user_t *user)
 {
   g_mutex_lock (mutex);
 
-  session_remove_user_internal (id);
+  gsad_session_remove_user_internal (id);
 
-  session_add_user_internal (user);
+  gsad_session_add_user_internal (user);
 
   g_mutex_unlock (mutex);
 }
@@ -150,11 +174,11 @@ session_add_user (const gchar *id, gsad_user_t *user)
  * @param[in]  id  Unique identifier.
  */
 void
-session_remove_user (const gchar *id)
+gsad_session_remove_user (const gchar *id)
 {
   g_mutex_lock (mutex);
 
-  session_remove_user_internal (id);
+  gsad_session_remove_user_internal (id);
 
   g_mutex_unlock (mutex);
 }
@@ -167,7 +191,7 @@ session_remove_user (const gchar *id)
  *
  */
 void
-session_remove_other_sessions (const gchar *keep_id, const gchar *username)
+gsad_session_remove_other_sessions (const gchar *keep_id, const gchar *username)
 {
   int index;
 
@@ -207,14 +231,14 @@ session_remove_other_sessions (const gchar *keep_id, const gchar *username)
  * @param[in] id  ID of the session
  */
 void
-session_renew_user (const gchar *id)
+gsad_session_renew_user (const gchar *id)
 {
   g_mutex_lock (mutex);
 
-  gsad_user_t *user = session_get_user_by_id_internal (id);
+  gsad_user_t *user = gsad_session_get_user_by_id_internal (id);
   if (user)
     {
-      gsad_user_session_renew (user);
+      gsad_user_session_renew_timeout (user);
     }
 
   g_mutex_unlock (mutex);

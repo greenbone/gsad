@@ -33,6 +33,6 @@ const time_t
 gsad_user_session_get_timeout (gsad_user_t *user);
 
 void
-gsad_user_session_renew (gsad_user_t *user);
+gsad_user_session_renew_timeout (gsad_user_t *user);
 
 #endif /* _GSAD_USER_SESSION_H */
