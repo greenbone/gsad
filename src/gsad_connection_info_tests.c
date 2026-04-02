@@ -144,8 +144,6 @@ int
 main (int argc, char **argv)
 {
   TestSuite *suite = create_test_suite ();
-  int ret = run_test_suite (suite, create_text_reporter ());
-
   add_test_with_context (suite, gsad_connection_info,
                          should_allow_to_create_connection_info_for_post);
   add_test_with_context (suite, gsad_connection_info,
@@ -162,6 +160,8 @@ main (int argc, char **argv)
                          should_allow_to_get_params);
   add_test_with_context (suite, gsad_connection_info,
                          should_allow_to_free_null_connection_info);
+
+  int ret = run_test_suite (suite, create_text_reporter ());
 
   destroy_test_suite (suite);
   return ret;
