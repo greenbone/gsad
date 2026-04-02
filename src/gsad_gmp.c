@@ -280,8 +280,8 @@ int
 command_enabled (gsad_credentials_t *credentials, const gchar *name)
 {
   /* TODO Hack.  Fails if command named in summary of another command. */
-  user_t *user =
-    gsad_credentials_get_user (credentials); // TODO pass user_t directly
+  gsad_user_t *user =
+    gsad_credentials_get_user (credentials); // TODO pass gsad_user_t directly
   return strstr (gsad_user_get_capabilities (user), name) ? 1 : 0;
 }
 
@@ -343,7 +343,7 @@ envelope_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
 
   assert (credentials);
 
-  user_t *user = gsad_credentials_get_user (credentials);
+  gsad_user_t *user = gsad_credentials_get_user (credentials);
   const gchar *timezone = gsad_user_get_timezone (user);
   const gchar *jwt = gsad_user_get_jwt (user);
 
@@ -1197,7 +1197,7 @@ format_file_name (gchar *fname_format, gsad_credentials_t *credentials,
       format_name = NULL;
     }
 
-  user_t *user = gsad_credentials_get_user (credentials);
+  gsad_user_t *user = gsad_credentials_get_user (credentials);
   ret = gvm_export_file_name (fname_format, gsad_user_get_username (user), type,
                               uuid, creation_time, modification_time, name,
                               format_name);
@@ -13188,7 +13188,7 @@ save_my_settings_gmp (gvm_connection_t *connection,
   const char *changed_value;
   gboolean user_changed = 0;
 
-  user_t *user = gsad_credentials_get_user (credentials);
+  gsad_user_t *user = gsad_credentials_get_user (credentials);
 
   changed = params_values (params, "settings_changed:");
 
@@ -16659,7 +16659,7 @@ save_user_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
   entity_t entity;
   GString *command, *group_elements, *role_elements;
   params_t *groups, *roles;
-  user_t *current_user;
+  gsad_user_t *current_user;
 
   /* List of hosts user has/lacks access rights. */
   hosts = params_value (params, "access_hosts");
@@ -18868,7 +18868,7 @@ change_password_gmp (gvm_connection_t *connection,
   gchar *passwd_64 = NULL;
   gchar *html = NULL;
   entity_t entity = NULL;
-  user_t *user = NULL;
+  gsad_user_t *user = NULL;
   gmp_authenticate_info_opts_t auth_opts;
 
   user = gsad_credentials_get_user (credentials);
@@ -19916,7 +19916,7 @@ renew_session_gmp (gvm_connection_t *connection,
 {
   gchar *html;
   gchar *message;
-  user_t *user = gsad_credentials_get_user (credentials);
+  gsad_user_t *user = gsad_credentials_get_user (credentials);
   session_renew_user (gsad_user_get_token (user));
 
   message = g_strdup_printf ("%ld", gsad_user_session_get_timeout (user));
@@ -20829,7 +20829,7 @@ login (gsad_http_connection_t *con, params_t *params,
         }
       else
         {
-          user_t *user;
+          gsad_user_t *user;
           user = gsad_user_session_add (login, password, timezone, capabilities,
                                         language, client_address, jwt);
 
@@ -20901,7 +20901,7 @@ manager_connect (gsad_credentials_t *credentials, gvm_connection_t *connection)
       return 4;
     }
 
-  user_t *user = gsad_credentials_get_user (credentials);
+  gsad_user_t *user = gsad_credentials_get_user (credentials);
 
   auth_opts = gmp_authenticate_info_opts_defaults;
   auth_opts.username = gsad_user_get_username (user);
