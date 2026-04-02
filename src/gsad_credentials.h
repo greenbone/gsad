@@ -15,27 +15,24 @@
 
 #include <glib.h>
 
-typedef struct credentials credentials_t;
+typedef struct gsad_credentials gsad_credentials_t;
 
-credentials_t *
-credentials_new (user_t *user, const gchar *language);
+gsad_credentials_t *
+gsad_credentials_new (user_t *user, const gchar *language);
 
 void
-credentials_free (credentials_t *creds);
+gsad_credentials_free (gsad_credentials_t *creds);
 
 user_t *
-credentials_get_user (credentials_t *creds);
+gsad_credentials_get_user (gsad_credentials_t *creds);
 
 const gchar *
-credentials_get_current_page (credentials_t *creds);
-
-const gchar *
-credentials_get_language (credentials_t *creds);
+gsad_credentials_get_language (gsad_credentials_t *creds);
 
 void
-credentials_start_cmd (credentials_t *creds);
+gsad_credentials_start_cmd (gsad_credentials_t *creds);
 
 double
-credentials_get_cmd_duration (credentials_t *creds);
+gsad_credentials_get_cmd_duration (gsad_credentials_t *creds);
 
 #endif /* _GSAD_CREDENTIALS_H */

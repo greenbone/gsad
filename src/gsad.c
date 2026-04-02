@@ -177,7 +177,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
 {
   int ret;
   user_t *user;
-  credentials_t *credentials = NULL;
+  gsad_credentials_t *credentials = NULL;
   gchar *res = NULL, *new_sid = NULL;
   const gchar *cmd, *caller, *language;
   gvm_connection_t connection;
@@ -277,9 +277,9 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   language =
     user_get_language (user) ?: gsad_connection_info_get_language (con_info) ?: DEFAULT_GSAD_LANGUAGE;
 
-  credentials = credentials_new (user, language);
+  credentials = gsad_credentials_new (user, language);
 
-  credentials_start_cmd (credentials);
+  gsad_credentials_start_cmd (credentials);
 
   new_sid = g_strdup (user_get_cookie (user));
 
@@ -486,7 +486,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ret = gsad_http_create_response (con, res, response_data, new_sid);
 
   user_free (user);
-  credentials_free (credentials);
+  gsad_credentials_free (credentials);
   gvm_connection_close (&connection);
   g_free (new_sid);
 
@@ -752,7 +752,7 @@ compress_response_brotli (const size_t res_len, const gchar *res,
  */
 gsad_http_result_t
 exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
-              credentials_t *credentials)
+              gsad_credentials_t *credentials)
 {
   const gchar *cmd = NULL;
   const int CMD_MAX_SIZE = 27; /* delete_trash_lsc_credential */
@@ -792,7 +792,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
 
   /* Set the timezone. */
 
-  user_t *user = credentials_get_user (credentials);
+  user_t *user = gsad_credentials_get_user (credentials);
   const gchar *timezone = user_get_timezone (user);
 
   if (timezone)
@@ -858,7 +858,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
 
   /* Set page display settings */
 
-  credentials_start_cmd (credentials);
+  gsad_credentials_start_cmd (credentials);
 
   if (gsad_settings_get_client_watch_interval (gsad_global_settings))
     {

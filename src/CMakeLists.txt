@@ -125,7 +125,6 @@ target_link_libraries(
   ${LIBGVM_BASE_LDFLAGS}
   ${LIBGVM_UTIL_LDFLAGS}
   ${LIBGVM_GMP_LDFLAGS}
-  ${LIBGVM_GMP_LDFLAGS}
   ${CMAKE_THREAD_LIBS_INIT}
   ${LINKER_HARDENING_FLAGS}
 )
@@ -237,6 +236,26 @@ if(BUILD_TESTING)
     gsad_validator.c
     validator.c
   )
+  add_unit_test(
+    gsad-credentials
+    gsad_credentials.c
+    gsad_args.c
+    gsad_base.c
+    gsad_cmd.c
+    gsad_connection_info.c
+    gsad_gmp_arguments.c
+    gsad_gmp_request.c
+    gsad_gmp.c
+    gsad_http.c
+    gsad_params_mhd.c
+    gsad_params.c
+    gsad_session.c
+    gsad_settings.c
+    gsad_user.c
+    gsad_utils.c
+    gsad_validator.c
+    validator.c
+  )
   add_custom_target(
     tests
     DEPENDS
@@ -249,6 +268,7 @@ if(BUILD_TESTING)
       gsad-http-url-handler-test
       gsad-http-method-handler-test
       gsad-params-mhd-test
+      gsad-credentials-test
   )
 endif(BUILD_TESTING)
 

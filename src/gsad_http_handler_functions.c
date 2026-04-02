@@ -306,7 +306,7 @@ gsad_http_handle_setup_credentials (gsad_http_handler_t *handler_next,
 {
   user_t *user = (user_t *) data;
   const gchar *accept_language;
-  credentials_t *credentials;
+  gsad_credentials_t *credentials;
   char client_address[INET6_ADDRSTRLEN];
 
   get_client_address (connection, client_address);
@@ -327,11 +327,11 @@ gsad_http_handle_setup_credentials (gsad_http_handler_t *handler_next,
           return MHD_YES;
         }
       language = accept_language_to_env_fmt (accept_language);
-      credentials = credentials_new (user, language);
+      credentials = gsad_credentials_new (user, language);
     }
   else
     {
-      credentials = credentials_new (user, language);
+      credentials = gsad_credentials_new (user, language);
     }
 
   user_free (user);
@@ -400,11 +400,11 @@ gsad_http_handle_gmp_get (gsad_http_handler_t *handler_next, void *handler_data,
                           gsad_connection_info_t *con_info, void *data)
 {
   /* URL requests to run GMP command. */
-  credentials_t *credentials = (credentials_t *) data;
+  gsad_credentials_t *credentials = (gsad_credentials_t *) data;
 
   int ret = exec_gmp_get (connection, con_info, credentials);
 
-  credentials_free (credentials);
+  gsad_credentials_free (credentials);
   return ret;
 }
 
@@ -488,7 +488,7 @@ gsad_http_handle_system_report (gsad_http_handler_t *handler_next,
                                 gsad_connection_info_t *con_info, void *data)
 {
   params_t *params = params_new ();
-  credentials_t *credentials = (credentials_t *) data;
+  gsad_credentials_t *credentials = (gsad_credentials_t *) data;
   const gchar *url = gsad_connection_info_get_url (con_info);
   const char *slave_id;
   gchar *res;
@@ -507,7 +507,7 @@ gsad_http_handle_system_report (gsad_http_handler_t *handler_next,
 
   if (slave_id && gvm_validate (http_validator, "slave_id", slave_id))
     {
-      credentials_free (credentials);
+      gsad_credentials_free (credentials);
       g_warning ("%s: failed to validate slave_id, dropping request", __func__);
       return MHD_NO;
     }
@@ -546,7 +546,7 @@ gsad_http_handle_system_report (gsad_http_handler_t *handler_next,
       break;
     case 2: /* authentication failed */
       cmd_response_data_free (response_data);
-      credentials_free (credentials);
+      gsad_credentials_free (credentials);
       return gsad_http_send_reauthentication (connection, MHD_HTTP_UNAUTHORIZED,
                                               LOGIN_FAILED);
 
@@ -582,14 +582,14 @@ gsad_http_handle_system_report (gsad_http_handler_t *handler_next,
 
   if (res == NULL)
     {
-      credentials_free (credentials);
+      gsad_credentials_free (credentials);
       g_warning ("%s: failed to get system reports, dropping request",
                  __func__);
       cmd_response_data_free (response_data);
       return MHD_NO;
     }
 
-  credentials_free (credentials);
+  gsad_credentials_free (credentials);
 
   return gsad_http_create_response (connection, res, response_data, NULL);
 }

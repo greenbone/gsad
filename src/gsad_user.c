@@ -14,6 +14,7 @@
 #include "gsad_gmp_auth.h"
 #include "gsad_session.h"
 #include "gsad_settings.h"
+#include "gsad_user_internal.h"
 #include "gsad_utils.h"
 
 #include <assert.h>             /* for asset */
@@ -54,7 +55,7 @@ user_new ()
   return user;
 }
 
-static user_t *
+user_t *
 user_new_with_data (const gchar *username, const gchar *password,
                     const gchar *timezone, const gchar *role,
                     const gchar *capabilities, const gchar *language,

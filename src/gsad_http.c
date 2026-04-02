@@ -975,7 +975,7 @@ serve_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,
  * @return An XML document as a newly allocated string.
  */
 gchar *
-gsad_message (credentials_t *credentials, const char *title,
+gsad_message (gsad_credentials_t *credentials, const char *title,
               const char *function, int line, const char *msg,
               cmd_response_data_t *response_data)
 {
@@ -998,7 +998,7 @@ gsad_message (credentials_t *credentials, const char *title,
       gchar *pre;
       time_t now;
       char ctime_now[200];
-      user_t *user = credentials_get_user (credentials);
+      user_t *user = gsad_credentials_get_user (credentials);
 
       now = time (NULL);
       ctime_r_strip_newline (&now, ctime_now);
@@ -1015,7 +1015,7 @@ gsad_message (credentials_t *credentials, const char *title,
         "<client_address>%s</client_address>",
         GSAD_VERSION, gsad_settings_get_vendor_version (gsad_global_settings),
         user_get_token (user), ctime_now, user_get_username (user),
-        user_get_role (user), credentials_get_language (credentials),
+        user_get_role (user), gsad_credentials_get_language (credentials),
         user_get_client_address (user));
 
       xml = g_strdup_printf ("%s"

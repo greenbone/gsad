@@ -17,27 +17,40 @@
 /**
  *  @brief Structure of credential related information.
  */
-struct credentials
+struct gsad_credentials
 {
   struct timeval cmd_start; ///< Seconds since command page handler started.
   gchar *language;          ///< Language for this request
   user_t *user;             ///< Current user
 };
 
-credentials_t *
-credentials_new (user_t *user, const gchar *language)
+/**
+ * @brief Create a new credential from user and language
+ *
+ * @param[in] user     User to set for the credential
+ * @param[in] language Language to use for the credential
+ *
+ * @return A new credential instance. The caller is responsible for freeing it
+ */
+gsad_credentials_t *
+gsad_credentials_new (user_t *user, const gchar *language)
 {
-  credentials_t *credentials;
+  gsad_credentials_t *credentials;
 
-  credentials = g_malloc0 (sizeof (credentials_t));
+  credentials = g_malloc0 (sizeof (gsad_credentials_t));
   credentials->user = user_copy (user);
   credentials->language = g_strdup (language);
 
   return credentials;
 }
 
+/**
+ * @brief Free the credential and its associated resources
+ *
+ * @param[in] creds Credential to free. If NULL, the function does nothing.
+ */
 void
-credentials_free (credentials_t *creds)
+gsad_credentials_free (gsad_credentials_t *creds)
 {
   if (!creds)
     return;
@@ -49,26 +62,55 @@ credentials_free (credentials_t *creds)
   g_free (creds);
 }
 
+/**
+ * @brief Get the user associated with the credential
+ *
+ * @param[in] cred Credential to get the user from
+ *
+ * @return The user associated with the credential. The caller should not free
+ * this user, as it is owned by the credential.
+ */
 user_t *
-credentials_get_user (credentials_t *cred)
+gsad_credentials_get_user (gsad_credentials_t *cred)
 {
   return cred->user;
 }
 
+/**
+ * @brief Get the language associated with the credential
+ *
+ * @param[in] cred Credential to get the language from
+ *
+ * @return The language associated with the credential. The caller should not
+ * free this string, as it is owned by the credential.
+ */
 const gchar *
-credentials_get_language (credentials_t *cred)
+gsad_credentials_get_language (gsad_credentials_t *cred)
 {
   return cred->language;
 }
 
+/**
+ * @brief Start the command timer for the credential
+ *
+ * @param[in] creds Credential to start the command timer for
+ */
 void
-credentials_start_cmd (credentials_t *creds)
+gsad_credentials_start_cmd (gsad_credentials_t *creds)
 {
   gettimeofday (&creds->cmd_start, NULL);
 }
 
+/**
+ * @brief Get the duration in seconds since the command timer was started for
+ * the credential
+ *
+ * @param[in] cred Credential to get the command duration for
+ *
+ * @return The duration in seconds since the command timer was started
+ */
 double
-credentials_get_cmd_duration (credentials_t *cred)
+gsad_credentials_get_cmd_duration (gsad_credentials_t *cred)
 {
   struct timeval tv;
   gettimeofday (&tv, NULL);
