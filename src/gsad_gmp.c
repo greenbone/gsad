@@ -20,33 +20,19 @@
 #include "gsad_gmp_request.h"   /* for gmp_request() */
 #include "gsad_http.h"          /* for gsad_message */
 #include "gsad_i18n.h"
+#include "gsad_manager.h" /* for gsad_manager_connect_with_username_password */
 #include "gsad_params.h"
 #include "gsad_session.h"
 #include "gsad_settings.h" /* for gsad_settings_is_jwt_requested */
 #include "gsad_user_session.h" /* for gsad_user_session_find and gsad_user_session_add */
 #include "gsad_utils.h"
 
-#include <arpa/inet.h>
 #include <assert.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <glib.h>
-#include <gvm/base/cvss.h>
+#include <gvm/base/cvss.h> /* for get_cvss_score_from_base_metrics */
 #include <gvm/gmp/gmp.h>
-#include <gvm/util/fileutils.h>
-#include <gvm/util/serverutils.h> /* for gvm_connection_t */
-#include <gvm/util/xmlutils.h> /* for xml_string_append, read_string_c, ... */
-#include <microhttpd.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <sys/time.h>
-#include <sys/un.h>
-#include <time.h>
-#include <unistd.h>
+#include <gvm/util/fileutils.h> /* for gvm_export_file_name */
+#include <gvm/util/xmlutils.h>  /* for xml_string_append, read_string_c, ... */
 
 #undef G_LOG_DOMAIN
 /**
@@ -148,21 +134,6 @@
                               " characters or the following: - _ \\ . @",     \
                               op_name);                                       \
     }
-
-/**
- * @brief Whether to use TLS for Manager connections.
- */
-int manager_use_tls = 0;
-
-/**
- * @brief The address the manager is on.
- */
-gchar *manager_address = NULL;
-
-/**
- * @brief The port the manager is on.
- */
-int manager_port = 9390;
 
 #define XML_REPORT_FORMAT_ID "a994b278-1f62-11e1-96ac-406186ea4fc5"
 #define ANONXML_REPORT_FORMAT_ID "5057e5cc-b825-11e4-9d0e-28d24461215b"
@@ -283,35 +254,6 @@ command_enabled (gsad_credentials_t *credentials, const gchar *name)
   gsad_user_t *user =
     gsad_credentials_get_user (credentials); // TODO pass gsad_user_t directly
   return strstr (gsad_user_get_capabilities (user), name) ? 1 : 0;
-}
-
-/**
- * @brief Init the GSA GMP library.
- *
- * @param[in]  manager_address_unix  Manager address when using UNIX socket.
- * @param[in]  manager_address_tls   Manager address when using TLS-TCP.
- * @param[in]  port_manager          Manager port.
- */
-void
-gmp_init (const gchar *manager_address_unix, const gchar *manager_address_tls,
-          int port_manager)
-{
-  if (manager_address_unix)
-    {
-      manager_address = g_strdup (manager_address_unix);
-      manager_use_tls = 0;
-    }
-  else if (manager_address_tls)
-    {
-      manager_address = g_strdup (manager_address_tls);
-      manager_use_tls = 1;
-    }
-  else
-    {
-      manager_address = g_build_filename (GVMD_RUN_DIR, "gvmd.sock", NULL);
-      manager_use_tls = 0;
-    }
-  manager_port = port_manager;
 }
 
 /**
@@ -20493,78 +20435,6 @@ get_features_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                        g_string_free (xml, FALSE), response_data);
 }
 
-/* Manager communication. */
-
-/**
- * @brief Connect to Greenbone Vulnerability Manager daemon.
- *
- * @param[in]  path  Path to the Manager socket.
- *
- * @return Socket, or -1 on error.
- */
-int
-connect_unix (const gchar *path)
-{
-  struct sockaddr_un address;
-  int sock;
-
-  /* Make socket. */
-
-  sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  if (sock == -1)
-    {
-      g_warning ("Failed to create server socket");
-      return -1;
-    }
-
-  /* Connect to server. */
-
-  address.sun_family = AF_UNIX;
-  strncpy (address.sun_path, path, sizeof (address.sun_path) - 1);
-  if (connect (sock, (struct sockaddr *) &address, sizeof (address)) == -1)
-    {
-      g_warning ("Failed to connect to server at %s: %s", path,
-                 strerror (errno));
-      close (sock);
-      return -1;
-    }
-
-  return sock;
-}
-
-/**
- * @brief Connect to an address.
- *
- * @param[out]  connection  Connection.
- * @param[out]  address     Address.
- * @param[out]  port        Port.
- *
- * @return 0 success, -1 failed to connect.
- */
-int
-gvm_connection_open (gvm_connection_t *connection, const gchar *address,
-                     int port)
-{
-  if (address == NULL)
-    return -1;
-
-  connection->tls = manager_use_tls;
-
-  if (manager_use_tls)
-    {
-      connection->socket =
-        gvm_server_open (&connection->session, address, port);
-      connection->credentials = NULL;
-    }
-  else
-    connection->socket = connect_unix (address);
-
-  if (connection->socket == -1)
-    return -1;
-
-  return 0;
-}
-
 /**
  * @brief Check authentication credentials.
  *
@@ -20583,17 +20453,9 @@ authenticate_gmp (const gchar *username, const gchar *password,
                   gchar **timezone, gchar **capabilities, gchar **language,
                   gchar **jwt)
 {
-  gvm_connection_t connection;
-  int auth;
-  gmp_authenticate_info_opts_t auth_opts;
-
-  if (gvm_connection_open (&connection, manager_address, manager_port))
-    {
-      g_debug ("%s failed to acquire socket!\n", __func__);
-      return 1;
-    }
-
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
+  gvm_connection_t connection;
+  gmp_authenticate_info_opts_t auth_opts;
 
   auth_opts = gmp_authenticate_info_opts_defaults;
   auth_opts.username = username;
@@ -20603,7 +20465,7 @@ authenticate_gmp (const gchar *username, const gchar *password,
     gsad_settings_is_jwt_requested (gsad_global_settings);
   auth_opts.jwt = jwt;
 
-  auth = gmp_authenticate_info_ext_c (&connection, auth_opts);
+  int auth = gsad_manager_connect (&connection, auth_opts);
   if (auth == 0)
     {
       entity_t entity;
@@ -20685,6 +20547,7 @@ authenticate_gmp (const gchar *username, const gchar *password,
         case 1: /* manager closed connection */
         case 2: /* auth failed */
         case 3: /* timeout */
+        case 4: /* failed to connect */
           return auth;
         default:
           return -1;
@@ -20704,26 +20567,11 @@ int
 logout_gmp (const gchar *username, const gchar *password)
 {
   gvm_connection_t connection;
-  int ret;
-  gmp_authenticate_info_opts_t auth_opts;
-
   entity_t entity;
   const char *status;
 
-  if (gvm_connection_open (&connection, manager_address, manager_port))
-    {
-      g_debug ("%s failed to acquire socket!\n", __func__);
-      return 1;
-    }
-
-  auth_opts = gmp_authenticate_info_opts_defaults;
-  auth_opts.username = username;
-  auth_opts.password = password;
-  auth_opts.role = NULL;
-  auth_opts.timezone = NULL;
-  auth_opts.pw_warning = NULL;
-
-  ret = gmp_authenticate_info_ext_c (&connection, auth_opts);
+  int ret = gsad_manager_connect_with_username_password (&connection, username,
+                                                         password);
   if (ret)
     {
       gvm_connection_close (&connection);
@@ -20880,50 +20728,4 @@ login (gsad_http_connection_t *con, params_t *params,
       return gsad_http_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
                                               LOGIN_FAILED);
     }
-}
-
-/**
- * @brief Connect to Greenbone Vulnerability Manager daemon.
- *
- * @param[in]   credentials  Username and password for authentication.
- * @param[out]  connection   Connection to Manager on success.
- *
- * @return 0 success, 1 if manager closed connection, 2 if auth failed,
- *         3 on timeout, 4 failed to connect, -1 on error
- */
-int
-manager_connect (gsad_credentials_t *credentials, gvm_connection_t *connection)
-{
-  gmp_authenticate_info_opts_t auth_opts;
-
-  if (gvm_connection_open (connection, manager_address, manager_port))
-    {
-      return 4;
-    }
-
-  gsad_user_t *user = gsad_credentials_get_user (credentials);
-
-  auth_opts = gmp_authenticate_info_opts_defaults;
-  auth_opts.username = gsad_user_get_username (user);
-  auth_opts.password = gsad_user_get_password (user);
-
-  int ret = gmp_authenticate_info_ext_c (connection, auth_opts);
-
-  if (ret)
-    {
-      gvm_connection_close (connection);
-      return ret;
-    }
-
-#ifdef DEBUG
-  /* Enable this if you need the CGI to sleep after launch. This can be useful
-   * if you need to attach to manager process the CGI is talking to for
-   * debugging purposes.
-   *
-   * An easier method is to run gsad under gdb and set a breakpoint here.
-   */
-  g_debug ("Sleeping!");
-  sleep (10);
-#endif
-  return 0;
 }

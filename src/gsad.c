@@ -63,6 +63,7 @@
 #include "gsad_http_handle_request.h" /* for gsad_http_handle_request */
 #include "gsad_i18n.h"
 #include "gsad_logging.h" /* for gsad_logging_init and gsad_logging_cleanup */
+#include "gsad_manager.h" /* for gsad_manager_connect_with_credentials */
 #include "gsad_params.h"
 #include "gsad_params_mhd.h"
 #include "gsad_session.h" /* for gsad_session_init */
@@ -297,7 +298,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     }
 
   /* Connect to manager */
-  switch (manager_connect (credentials, &connection))
+  switch (gsad_manager_connect_with_credentials (&connection, credentials))
     {
     case 0:
       break;
@@ -806,7 +807,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     }
 
   /* Connect to manager */
-  switch (manager_connect (credentials, &connection))
+  switch (gsad_manager_connect_with_credentials (&connection, credentials))
     {
     case 0:
       break;
@@ -1951,6 +1952,20 @@ main (int argc, char **argv)
   gsad_settings_set_user_session_limit (
     gsad_global_settings, gsad_args_get_user_session_limit (gsad_args));
 
+  const gchar *manager_address =
+    gsad_args_get_manager_unix_socket_path (gsad_args);
+  if (!manager_address)
+    {
+      manager_address = gsad_args_get_manager_address (gsad_args);
+    }
+  if (!manager_address)
+    {
+      manager_address = g_build_filename (GVMD_RUN_DIR, "gvmd.sock", NULL);
+    }
+  gsad_settings_set_manager_address (gsad_global_settings, manager_address);
+  gsad_settings_set_manager_port (gsad_global_settings,
+                                  gsad_args_get_manager_port (gsad_args));
+
   if (!gsad_args_is_run_in_foreground_enabled (gsad_args))
     {
       /* Fork into the background. */
@@ -2056,10 +2071,6 @@ main (int argc, char **argv)
     {
       /* Start the unix socket server. */
 
-      gmp_init (gsad_args_get_manager_unix_socket_path (gsad_args),
-                gsad_args_get_manager_address (gsad_args),
-                gsad_args_get_manager_port (gsad_args));
-
       gsad_daemon =
         start_unix_http_daemon (gsad_args_get_unix_socket_path (gsad_args),
                                 gsad_args_get_unix_socket_owner (gsad_args),
@@ -2076,10 +2087,6 @@ main (int argc, char **argv)
   else
     {
       /* Start the real server. */
-
-      gmp_init (gsad_args_get_manager_unix_socket_path (gsad_args),
-                gsad_args_get_manager_address (gsad_args),
-                gsad_args_get_manager_port (gsad_args));
 
       if (!gsad_args_is_https_enabled (gsad_args))
         {
