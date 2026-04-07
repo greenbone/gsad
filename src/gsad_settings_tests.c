@@ -25,7 +25,7 @@ Ensure (gsad_settings, should_use_defaults)
   assert_that (gsad_settings_is_http_x_real_ip_enabled (settings), is_true);
   assert_that (gsad_settings_get_per_ip_connection_limit (settings),
                is_equal_to (DEFAULT_PER_IP_CONNECTION_LIMIT));
-  assert_that (gsad_settings_is_unix_socket_enabled (settings), is_false);
+  assert_that (gsad_settings_is_http_unix_socket_enabled (settings), is_false);
   assert_that (gsad_settings_get_user_session_limit (settings),
                is_equal_to (DEFAULT_USER_SESSION_LIMIT));
   assert_that (gsad_settings_get_session_timeout (settings),
@@ -98,13 +98,13 @@ Ensure (gsad_settings, should_unix_socket_be_enabled)
 {
   gsad_settings_t *settings = gsad_settings_new ();
 
-  assert_that (gsad_settings_is_unix_socket_enabled (settings), is_false);
+  assert_that (gsad_settings_is_http_unix_socket_enabled (settings), is_false);
 
-  gsad_settings_set_unix_socket (settings, 5);
-  assert_that (gsad_settings_is_unix_socket_enabled (settings), is_true);
+  gsad_settings_set_http_unix_socket (settings, 5);
+  assert_that (gsad_settings_is_http_unix_socket_enabled (settings), is_true);
 
-  gsad_settings_set_unix_socket (settings, -1);
-  assert_that (gsad_settings_is_unix_socket_enabled (settings), is_false);
+  gsad_settings_set_http_unix_socket (settings, -1);
+  assert_that (gsad_settings_is_http_unix_socket_enabled (settings), is_false);
 
   gsad_settings_free (settings);
 }
@@ -308,13 +308,13 @@ Ensure (gsad_settings, should_set_unix_socket)
 {
   gsad_settings_t *settings = gsad_settings_new ();
 
-  assert_that (gsad_settings_is_unix_socket_enabled (settings), is_false);
+  assert_that (gsad_settings_is_http_unix_socket_enabled (settings), is_false);
 
-  gsad_settings_set_unix_socket (settings, 5);
-  assert_that (gsad_settings_is_unix_socket_enabled (settings), is_true);
+  gsad_settings_set_http_unix_socket (settings, 5);
+  assert_that (gsad_settings_is_http_unix_socket_enabled (settings), is_true);
 
-  gsad_settings_set_unix_socket (settings, -1);
-  assert_that (gsad_settings_is_unix_socket_enabled (settings), is_false);
+  gsad_settings_set_http_unix_socket (settings, -1);
+  assert_that (gsad_settings_is_http_unix_socket_enabled (settings), is_false);
 
   gsad_settings_free (settings);
 }

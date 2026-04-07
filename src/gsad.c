@@ -1515,7 +1515,7 @@ start_unix_http_daemon (
 
   int unix_socket = socket (AF_UNIX, SOCK_STREAM, 0);
 
-  gsad_settings_set_unix_socket (gsad_global_settings, unix_socket);
+  gsad_settings_set_http_unix_socket (gsad_global_settings, unix_socket);
 
   if (unix_socket == -1)
     {

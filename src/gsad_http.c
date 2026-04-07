@@ -908,7 +908,7 @@ get_client_address (gsad_http_connection_t *conn, char *client_address)
   else if (gsad_settings_is_http_x_real_ip_enabled (gsad_global_settings)
            && x_real_ip != NULL)
     strncpy (client_address, x_real_ip, INET6_ADDRSTRLEN);
-  else if (gsad_settings_is_unix_socket_enabled (gsad_global_settings))
+  else if (gsad_settings_is_http_unix_socket_enabled (gsad_global_settings))
     strncpy (client_address, "unix_socket", INET6_ADDRSTRLEN);
   else
     {

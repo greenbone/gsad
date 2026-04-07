@@ -131,7 +131,7 @@ int
 gsad_settings_get_per_ip_connection_limit (const gsad_settings_t *);
 
 void
-gsad_settings_set_unix_socket (gsad_settings_t *, int);
+gsad_settings_set_http_unix_socket (gsad_settings_t *, int);
 
 void
 gsad_settings_set_user_session_limit (gsad_settings_t *, int);
@@ -146,7 +146,7 @@ int
 gsad_settings_get_client_watch_interval (const gsad_settings_t *);
 
 gboolean
-gsad_settings_is_unix_socket_enabled (const gsad_settings_t *);
+gsad_settings_is_http_unix_socket_enabled (const gsad_settings_t *);
 
 gboolean
 gsad_settings_is_http_x_real_ip_enabled (const gsad_settings_t *);
