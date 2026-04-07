@@ -57,31 +57,19 @@ connect_unix (const gchar *path)
 /**
  * @brief Connect to an address.
  *
- * @param[out]  connection  Connection.
- * @param[out]  address     Address.
- * @param[out]  port        Port.
+ * @param[out]  connection       Connection.
+ * @param[in]   unix_socket_path Path to the Unix socket.
  *
  * @return 0 success, -1 failed to connect.
  */
 static int
-gvm_connection_open (gvm_connection_t *connection, const gchar *address,
-                     int port)
+gvm_connection_open (gvm_connection_t *connection,
+                     const gchar *unix_socket_path)
 {
-  if (address == NULL)
+  if (unix_socket_path == NULL)
     return -1;
 
-  gboolean manager_use_tls = port > 0;
-
-  connection->tls = manager_use_tls;
-
-  if (manager_use_tls)
-    {
-      connection->socket =
-        gvm_server_open (&connection->session, address, port);
-      connection->credentials = NULL;
-    }
-  else
-    connection->socket = connect_unix (address);
+  connection->socket = connect_unix (unix_socket_path);
 
   if (connection->socket == -1)
     return -1;
@@ -149,8 +137,7 @@ gsad_manager_connect (gvm_connection_t *connection,
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
 
   if (gvm_connection_open (
-        connection, gsad_settings_get_manager_address (gsad_global_settings),
-        gsad_settings_get_manager_port (gsad_global_settings)))
+        connection, gsad_settings_get_manager_address (gsad_global_settings)))
     {
       return 4;
     }

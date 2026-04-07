@@ -45,9 +45,6 @@ Ensure (gsad_settings, should_use_defaults)
   assert_that (gsad_settings_get_log_config_filename (settings), is_null);
   assert_that (gsad_settings_is_jwt_requested (settings), is_false);
   assert_that (gsad_settings_get_manager_address (settings), is_null);
-  assert_that (gsad_settings_get_manager_port (settings), is_equal_to (-1));
-  assert_that (gsad_settings_is_manager_unix_socket_enabled (settings),
-               is_true);
 
   gsad_settings_free (settings);
 }
@@ -419,27 +416,6 @@ Ensure (gsad_settings, should_set_manager_address)
   gsad_settings_free (settings);
 }
 
-Ensure (gsad_settings, should_set_manager_port)
-{
-  gsad_settings_t *settings = gsad_settings_new ();
-
-  assert_that (gsad_settings_get_manager_port (settings), is_equal_to (-1));
-  assert_that (gsad_settings_is_manager_unix_socket_enabled (settings),
-               is_true);
-
-  gsad_settings_set_manager_port (settings, 9390);
-  assert_that (gsad_settings_get_manager_port (settings), is_equal_to (9390));
-  assert_that (gsad_settings_is_manager_unix_socket_enabled (settings),
-               is_false);
-
-  gsad_settings_set_manager_port (settings, -1);
-  assert_that (gsad_settings_get_manager_port (settings), is_equal_to (-1));
-  assert_that (gsad_settings_is_manager_unix_socket_enabled (settings),
-               is_true);
-
-  gsad_settings_free (settings);
-}
-
 int
 main (int argc, char **argv)
 {
@@ -475,7 +451,6 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_settings, should_set_api_only);
   add_test_with_context (suite, gsad_settings, should_set_jwt_requested);
   add_test_with_context (suite, gsad_settings, should_set_manager_address);
-  add_test_with_context (suite, gsad_settings, should_set_manager_port);
 
   int ret = run_test_suite (suite, create_text_reporter ());
 

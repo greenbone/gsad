@@ -181,13 +181,4 @@ gsad_settings_set_manager_address (gsad_settings_t *, const gchar *);
 const gchar *
 gsad_settings_get_manager_address (const gsad_settings_t *);
 
-void
-gsad_settings_set_manager_port (gsad_settings_t *, int);
-
-int
-gsad_settings_get_manager_port (const gsad_settings_t *);
-
-gboolean
-gsad_settings_is_manager_unix_socket_enabled (const gsad_settings_t *);
-
 #endif /* _GSAD_SETTINGS_H */

@@ -148,9 +148,6 @@ int
 gsad_args_validate_port (const gsad_args_t *);
 
 int
-gsad_args_validate_manager_port (const gsad_args_t *);
-
-int
 gsad_args_validate_redirect_port (const gsad_args_t *);
 
 gsad_args_file_validation_result_t
@@ -176,9 +173,6 @@ gsad_args_get_client_watch_interval (const gsad_args_t *);
 
 int
 gsad_args_get_session_timeout (const gsad_args_t *);
-
-int
-gsad_args_get_manager_port (const gsad_args_t *);
 
 int
 gsad_args_get_user_session_limit (const gsad_args_t *);
@@ -224,9 +218,6 @@ gsad_args_get_listen_addresses (const gsad_args_t *);
 
 const gchar *
 gsad_args_get_manager_unix_socket_path (const gsad_args_t *);
-
-const gchar *
-gsad_args_get_manager_address (const gsad_args_t *);
 
 const gchar *
 gsad_args_get_unix_socket_path (const gsad_args_t *);
