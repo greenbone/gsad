@@ -30,8 +30,7 @@ struct gsad_args
   gchar *drop;                     ///< User to drop privileges to.
   gchar *gnutls_priorities;        ///< GnuTLS priorities string.
   gchar *gsad_log_config_filename; ///< Filename for logging configuration.
-  gchar *gsad_manager_address_string;   ///< Address for manager interface.
-  gchar *manager_unix_socket_path;      ///< Path for manager Unix socket.
+  gchar *manager_unix_socket_path; ///< Path for manager Unix socket.
   gchar *gsad_static_content_directory; ///< Directory for static content.
   gchar *gsad_pid_filename;             ///< Filename for PID file.
   gchar *gsad_vendor_version_string;    ///< Vendor version string.
@@ -50,7 +49,6 @@ struct gsad_args
   int client_watch_interval;       ///< Interval in seconds to check if client
                                    ///< connection was closed.
   int debug_tls;                   ///< TLS debug level.
-  int gsad_manager_port;           ///< Port for manager interface.
   int gsad_port;                   ///< Port for gsad to listen on.
   int gsad_redirect_port;          ///< Port for HTTP to HTTPS redirection.
   int user_session_limit; ///< Limit for number of concurrent user sessions. A

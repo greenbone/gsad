@@ -36,6 +36,10 @@ AfterEach (gsad_args)
 Ensure (gsad_args, gsad_args_new)
 {
   gsad_args_t *args = gsad_args_new ();
+
+  const gchar *manager_unix_socket_default_path =
+    g_build_filename (GVMD_RUN_DIR, "gvmd.sock", NULL);
+
   assert_that (args, is_not_null);
   assert_that (args->api_only, is_false);
   assert_that (args->client_watch_interval,
@@ -49,9 +53,8 @@ Ensure (gsad_args, gsad_args_new)
   assert_that (args->gsad_address_string, is_null);
   assert_that (args->gsad_log_config_filename,
                is_equal_to_string (GSAD_CONFIG_DIR "gsad_log.conf"));
-  assert_that (args->gsad_manager_address_string, is_null);
-  assert_that (args->gsad_manager_port, is_equal_to (PORT_NOT_SET));
-  assert_that (args->manager_unix_socket_path, is_null);
+  assert_that (args->manager_unix_socket_path,
+               is_equal_to_string (manager_unix_socket_default_path));
   assert_that (args->gsad_port, is_equal_to (PORT_NOT_SET));
   assert_that (args->gsad_redirect_port, is_equal_to (PORT_NOT_SET));
   assert_that (args->user_session_limit, is_equal_to (0));
@@ -287,47 +290,6 @@ Ensure (gsad_args, should_parse_gsad_address_strings_multiple)
   gsad_args_free (args);
 }
 
-Ensure (gsad_args, should_parse_gsad_manager_address_string)
-{
-  gsad_args_t *args = gsad_args_new ();
-  char *argv[] = {"gsad", "--mlisten", "127.0.0.1"};
-  gsad_args_parse (3, argv, args);
-
-  assert_that (gsad_args_get_manager_address (args),
-               is_equal_to_string ("127.0.0.1"));
-  gsad_args_free (args);
-}
-
-Ensure (gsad_args, should_parse_gsad_manager_address_string_default)
-{
-  gsad_args_t *args = gsad_args_new ();
-  char *argv[] = {"gsad"};
-  gsad_args_parse (1, argv, args);
-
-  assert_that (gsad_args_get_manager_address (args), is_null);
-  gsad_args_free (args);
-}
-
-Ensure (gsad_args, should_parse_gsad_manager_port)
-{
-  gsad_args_t *args = gsad_args_new ();
-  char *argv[] = {"gsad", "--mport", "9390"};
-  gsad_args_parse (3, argv, args);
-
-  assert_that (gsad_args_get_manager_port (args), is_equal_to (9390));
-  gsad_args_free (args);
-}
-
-Ensure (gsad_args, should_parse_gsad_manager_port_default)
-{
-  gsad_args_t *args = gsad_args_new ();
-  char *argv[] = {"gsad"};
-  gsad_args_parse (1, argv, args);
-
-  assert_that (gsad_args_get_manager_port (args), is_equal_to (PORT_NOT_SET));
-  gsad_args_free (args);
-}
-
 Ensure (gsad_args, should_parse_gsad_manager_unix_socket_path)
 {
   gsad_args_t *args = gsad_args_new ();
@@ -342,10 +304,13 @@ Ensure (gsad_args, should_parse_gsad_manager_unix_socket_path)
 Ensure (gsad_args, should_parse_gsad_manager_unix_socket_path_default)
 {
   gsad_args_t *args = gsad_args_new ();
+  const gchar *manager_unix_socket_default_path =
+    g_build_filename (GVMD_RUN_DIR, "gvmd.sock", NULL);
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
-  assert_that (gsad_args_get_manager_unix_socket_path (args), is_null);
+  assert_that (gsad_args_get_manager_unix_socket_path (args),
+               is_equal_to_string (manager_unix_socket_default_path));
   gsad_args_free (args);
 }
 
@@ -989,27 +954,6 @@ Ensure (gsad_args, should_validate_port)
   gsad_args_free (args);
 }
 
-Ensure (gsad_args, should_validate_manager_port)
-{
-  gsad_args_t *args = gsad_args_new ();
-
-  assert_that (args->gsad_manager_port, is_equal_to (PORT_NOT_SET));
-  assert_that (gsad_args_validate_manager_port (args), is_equal_to (0));
-
-  args->gsad_manager_port = 0;
-  assert_that (gsad_args_validate_manager_port (args), is_equal_to (1));
-
-  args->gsad_manager_port = 65536;
-  assert_that (gsad_args_validate_manager_port (args), is_equal_to (1));
-
-  args->gsad_manager_port = 8080;
-  assert_that (gsad_args_validate_manager_port (args), is_equal_to (0));
-
-  args->gsad_manager_port = -1234;
-  assert_that (gsad_args_validate_manager_port (args), is_equal_to (1));
-  gsad_args_free (args);
-}
-
 Ensure (gsad_args, should_validate_redirect_port)
 {
   gsad_args_t *args = gsad_args_new ();
@@ -1073,19 +1017,6 @@ Ensure (gsad_args, should_get_redirect_port)
   args->no_redirect = FALSE;
   assert_that (gsad_args_get_redirect_port (args),
                is_equal_to (DEFAULT_GSAD_HTTP_PORT));
-
-  gsad_args_free (args);
-}
-
-Ensure (gsad_args, should_get_manager_port)
-{
-  gsad_args_t *args = gsad_args_new ();
-
-  args->gsad_manager_port = 1234;
-  assert_that (gsad_args_get_manager_port (args), is_equal_to (1234));
-
-  args->gsad_manager_port = PORT_NOT_SET;
-  assert_that (gsad_args_get_manager_port (args), is_equal_to (PORT_NOT_SET));
 
   gsad_args_free (args);
 }
@@ -1332,24 +1263,13 @@ Ensure (gsad_args, should_get_listen_addresses)
   assert_that (listen_addresses[1], is_equal_to_string ("::1"));
 }
 
-Ensure (gsad_args, should_get_manager_address)
-{
-  gsad_args_t *args = gsad_args_new ();
-  assert_that (gsad_args_get_manager_address (args), is_null);
-
-  args->gsad_manager_address_string = "127.0.0.1";
-  assert_that (gsad_args_get_manager_address (args),
-               is_equal_to_string ("127.0.0.1"));
-  args->gsad_manager_address_string = NULL;
-  assert_that (gsad_args_get_manager_address (args), is_null);
-
-  gsad_args_free (args);
-}
-
 Ensure (gsad_args, should_get_manager_unix_socket_path)
 {
   gsad_args_t *args = gsad_args_new ();
-  assert_that (gsad_args_get_manager_unix_socket_path (args), is_null);
+  const gchar *manager_unix_socket_default_path =
+    g_build_filename (GVMD_RUN_DIR, "gvmd.sock", NULL);
+  assert_that (gsad_args_get_manager_unix_socket_path (args),
+               is_equal_to_string (manager_unix_socket_default_path));
 
   args->manager_unix_socket_path = "/var/run/gsad_manager.sock";
   assert_that (gsad_args_get_manager_unix_socket_path (args),
@@ -1721,13 +1641,6 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_args,
                          should_parse_gsad_address_strings_multiple);
   add_test_with_context (suite, gsad_args,
-                         should_parse_gsad_manager_address_string);
-  add_test_with_context (suite, gsad_args,
-                         should_parse_gsad_manager_address_string_default);
-  add_test_with_context (suite, gsad_args, should_parse_gsad_manager_port);
-  add_test_with_context (suite, gsad_args,
-                         should_parse_gsad_manager_port_default);
-  add_test_with_context (suite, gsad_args,
                          should_parse_gsad_manager_unix_socket_path);
   add_test_with_context (suite, gsad_args,
                          should_parse_gsad_manager_unix_socket_path_default);
@@ -1822,14 +1735,12 @@ main (int argc, char **argv)
 
   add_test_with_context (suite, gsad_args, should_validate_session_timout);
   add_test_with_context (suite, gsad_args, should_validate_port);
-  add_test_with_context (suite, gsad_args, should_validate_manager_port);
   add_test_with_context (suite, gsad_args, should_validate_redirect_port);
   add_test_with_context (suite, gsad_args, should_validate_tls_private_key);
   add_test_with_context (suite, gsad_args, should_validate_tls_certificate);
 
   add_test_with_context (suite, gsad_args, should_get_port);
   add_test_with_context (suite, gsad_args, should_get_redirect_port);
-  add_test_with_context (suite, gsad_args, should_get_manager_port);
   add_test_with_context (suite, gsad_args,
                          should_get_http_strict_transport_security_max_age);
   add_test_with_context (suite, gsad_args, should_get_per_ip_connection_limit);
@@ -1847,7 +1758,6 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_args, should_get_tls_debug_level);
   add_test_with_context (suite, gsad_args, should_get_user_session_limit);
   add_test_with_context (suite, gsad_args, should_get_listen_addresses);
-  add_test_with_context (suite, gsad_args, should_get_manager_address);
   add_test_with_context (suite, gsad_args, should_get_manager_unix_socket_path);
   add_test_with_context (suite, gsad_args, should_get_unix_socket_path);
   add_test_with_context (suite, gsad_args, should_get_unix_socket_owner);

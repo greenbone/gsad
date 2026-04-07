@@ -1836,12 +1836,6 @@ main (int argc, char **argv)
                   gsad_args_get_port (gsad_args));
       goto error;
     }
-  if (gsad_args_validate_manager_port (gsad_args))
-    {
-      g_critical ("Invalid gvmd port value: %d.",
-                  gsad_args_get_manager_port (gsad_args));
-      goto error;
-    }
   if (gsad_args_validate_redirect_port (gsad_args))
     {
       g_critical ("Invalid redirect port value: %d.",
@@ -1955,18 +1949,7 @@ main (int argc, char **argv)
 
   const gchar *manager_address =
     gsad_args_get_manager_unix_socket_path (gsad_args);
-  if (!manager_address)
-    {
-      manager_address = gsad_args_get_manager_address (gsad_args);
-    }
-  if (!manager_address)
-    {
-      manager_address = g_build_filename (GVMD_RUN_DIR, "gvmd.sock", NULL);
-    }
   gsad_settings_set_manager_address (gsad_global_settings, manager_address);
-  gsad_settings_set_manager_port (gsad_global_settings,
-                                  gsad_args_get_manager_port (gsad_args));
-
   if (!gsad_args_is_run_in_foreground_enabled (gsad_args))
     {
       /* Fork into the background. */

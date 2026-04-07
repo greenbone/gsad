@@ -30,12 +30,8 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
      "Serve HTTP only, without SSL. Implies --no-redirect.", NULL},
     {"listen", '\0', 0, G_OPTION_ARG_STRING_ARRAY, &args->gsad_address_string,
      "Listen on <address>.", "<address>"},
-    {"mlisten", '\0', 0, G_OPTION_ARG_STRING,
-     &args->gsad_manager_address_string, "Manager address.", "<address>"},
     {"port", 'p', 0, G_OPTION_ARG_INT, &args->gsad_port,
      "Use port number <number>.", "<number>"},
-    {"mport", 'm', 0, G_OPTION_ARG_INT, &args->gsad_manager_port,
-     "Use manager port number <number>.", "<number>"},
     {"rport", 'r', 0, G_OPTION_ARG_INT, &args->gsad_redirect_port,
      "Redirect HTTP from this port number <number>.", "<number>"},
     {"no-redirect", '\0', 0, G_OPTION_ARG_NONE, &args->no_redirect,
@@ -178,9 +174,8 @@ gsad_args_new ()
   args->gsad_address_string = NULL;
   args->gsad_log_config_filename =
     g_build_filename (GSAD_CONFIG_DIR, "gsad_log.conf", NULL);
-  args->gsad_manager_address_string = NULL;
-  args->gsad_manager_port = PORT_NOT_SET;
-  args->manager_unix_socket_path = NULL;
+  args->manager_unix_socket_path =
+    g_build_filename (GVMD_RUN_DIR, "gvmd.sock", NULL);
   args->gsad_pid_filename = g_strdup (DEFAULT_GSAD_PID_FILE);
   args->gsad_port = PORT_NOT_SET;
   args->gsad_static_content_directory =
@@ -226,7 +221,6 @@ gsad_args_free (gsad_args_t *args)
       if (args->gsad_address_string)
         g_strfreev (args->gsad_address_string);
       g_free (args->gsad_log_config_filename);
-      g_free (args->gsad_manager_address_string);
       g_free (args->manager_unix_socket_path);
       g_free (args->gsad_pid_filename);
       g_free (args->gsad_static_content_directory);
@@ -365,19 +359,6 @@ int
 gsad_args_validate_port (const gsad_args_t *args)
 {
   return gsad_validate_port (args->gsad_port, "gsad");
-}
-
-/**
- * @brief Validate the manager port number.
- *
- * @param[in] args The parsed command-line arguments.
- *
- * @return 0 if the manager port number is valid, non-zero otherwise.
- */
-int
-gsad_args_validate_manager_port (const gsad_args_t *args)
-{
-  return gsad_validate_port (args->gsad_manager_port, "gvmd");
 }
 
 /**
@@ -631,19 +612,6 @@ gsad_args_get_session_timeout (const gsad_args_t *args)
 }
 
 /**
- * @brief Get the manager port number from the command-line arguments.
- *
- * @param[in] args The parsed command-line arguments.
- *
- * @return The manager port number, or PORT_NOT_SET if not specified.
- */
-int
-gsad_args_get_manager_port (const gsad_args_t *args)
-{
-  return args->gsad_manager_port;
-}
-
-/**
  * @brief Get the TLS private key filename from the command-line arguments.
  *
  * @param[in] args The parsed command-line arguments.
@@ -861,23 +829,6 @@ gchar **
 gsad_args_get_listen_addresses (const gsad_args_t *args)
 {
   return args->gsad_address_string;
-}
-
-/**
- * @brief Get the manager address from the command-line arguments.
- *
- * The manager address is specified using the --mlisten option.
- *
- * @param[in] args The parsed command-line arguments.
- *
- * @return The manager address specified in the command-line arguments,
- * or NULL if not specified. The returned string is owned by the gsad args
- * structure and should not be modified or freed by the caller.
- */
-const gchar *
-gsad_args_get_manager_address (const gsad_args_t *args)
-{
-  return args->gsad_manager_address_string;
 }
 
 /**
