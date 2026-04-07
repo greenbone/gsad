@@ -19,12 +19,6 @@
 #include <glib.h>                 /* for gboolean */
 #include <gvm/util/serverutils.h> /* for gvm_connection_t */
 
-void
-gmp_init (const gchar *, const gchar *, int);
-
-int
-manager_connect (gsad_credentials_t *, gvm_connection_t *);
-
 char *
 clone_gmp (gvm_connection_t *, gsad_credentials_t *, params_t *,
            cmd_response_data_t *);

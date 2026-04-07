@@ -5,6 +5,7 @@
 #include "gsad_gmp.h" /* for manager_connect */
 #include "gsad_http_handler.h"
 #include "gsad_i18n.h"       /* for accept_language_to_env_fmt */
+#include "gsad_manager.h"    /* for gsad_manager_connect_with_credentials */
 #include "gsad_params_mhd.h" /* for params_mhd_add */
 #include "gsad_user_session.h" /* for gsad_user_session_find and gsad_user_session_logout */
 #include "validator.h" /* for gvm_validate */
@@ -517,7 +518,7 @@ gsad_http_handle_system_report (gsad_http_handler_t *handler_next,
   response_data = cmd_response_data_new ();
 
   /* Connect to manager */
-  switch (manager_connect (credentials, &con))
+  switch (gsad_manager_connect_with_credentials (&con, credentials))
     {
     case 0: /* success */
       res = get_system_report_gmp_from_url (
