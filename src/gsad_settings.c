@@ -37,13 +37,15 @@ struct gsad_settings
   gchar *http_guest_chart_x_frame_options;
   gchar *http_strict_transport_security;
   gchar *http_x_frame_options;
+  gchar *manager_address;
   gchar *pid_filename;
   int client_watch_interval;
+  int http_unix_socket;
+  int jwt_requested;
+  int manager_port;
   int per_ip_connection_limit;
   int session_timeout;
-  int http_unix_socket;
   int user_session_limit;
-  int jwt_requested;
 };
 
 static gsad_settings_t *settings = NULL;
@@ -89,6 +91,8 @@ gsad_settings_new ()
   settings->http_unix_socket = 0;
   settings->user_session_limit = DEFAULT_USER_SESSION_LIMIT;
   settings->jwt_requested = 0;
+  settings->manager_address = NULL;
+  settings->manager_port = -1;
   return settings;
 }
 
@@ -109,6 +113,7 @@ gsad_settings_free (gsad_settings_t *settings)
       g_free (settings->http_guest_chart_x_frame_options);
       g_free (settings->http_strict_transport_security);
       g_free (settings->http_x_frame_options);
+      g_free (settings->manager_address);
       g_free (settings->pid_filename);
       g_free (settings);
     }
@@ -747,4 +752,75 @@ int
 gsad_settings_is_jwt_requested (const gsad_settings_t *settings)
 {
   return settings->jwt_requested;
+}
+
+/**
+ * @brief Set the manager address.
+ *
+ * @param[in]  settings        The settings instance to modify.
+ * @param[in]  manager_address The manager address to set. The caller is
+ * responsible for freeing the passed string if it is dynamically allocated. The
+ * settings will copy the string and free it when the settings instance is
+ * freed.
+ */
+void
+gsad_settings_set_manager_address (gsad_settings_t *settings,
+                                   const gchar *manager_address)
+{
+  g_debug ("Setting manager address to: %s", null_or_value (manager_address));
+  g_free (settings->manager_address);
+  settings->manager_address = g_strdup (manager_address);
+}
+
+/**
+ * @brief Get the manager address.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return The manager address. The value is owned by the settings and should
+ * not be modified or freed by the caller.
+ */
+const gchar *
+gsad_settings_get_manager_address (const gsad_settings_t *settings)
+{
+  return settings->manager_address;
+}
+
+/**
+ * @brief Set the manager port.
+ *
+ * @param[in]  settings        The settings instance to modify.
+ * @param[in]  manager_port    The manager port to set.
+ */
+void
+gsad_settings_set_manager_port (gsad_settings_t *settings, int manager_port)
+{
+  g_debug ("Setting manager port to: %d", manager_port);
+  settings->manager_port = manager_port;
+}
+
+/**
+ * @brief Get the manager port.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return The manager port.
+ */
+int
+gsad_settings_get_manager_port (const gsad_settings_t *settings)
+{
+  return settings->manager_port;
+}
+
+/**
+ * @brief Check if the connection to the manager is using a Unix socket.
+ *
+ * @param[in]  settings  The settings instance to query.
+ *
+ * @return TRUE if the manager is using a Unix socket, FALSE otherwise.
+ */
+gboolean
+gsad_settings_is_manager_unix_socket_enabled (const gsad_settings_t *settings)
+{
+  return settings->manager_port == -1;
 }
