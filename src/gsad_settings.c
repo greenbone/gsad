@@ -41,7 +41,7 @@ struct gsad_settings
   int client_watch_interval;
   int per_ip_connection_limit;
   int session_timeout;
-  int unix_socket;
+  int http_unix_socket;
   int user_session_limit;
   int jwt_requested;
 };
@@ -86,7 +86,7 @@ gsad_settings_new ()
   settings->client_watch_interval = DEFAULT_CLIENT_WATCH_INTERVAL;
   settings->per_ip_connection_limit = DEFAULT_PER_IP_CONNECTION_LIMIT;
   settings->session_timeout = DEFAULT_SESSION_TIMEOUT;
-  settings->unix_socket = 0;
+  settings->http_unix_socket = 0;
   settings->user_session_limit = DEFAULT_USER_SESSION_LIMIT;
   settings->jwt_requested = 0;
   return settings;
@@ -194,29 +194,30 @@ gsad_settings_is_http_x_real_ip_enabled (const gsad_settings_t *settings)
 }
 
 /**
- * @brief Set the Unix socket for using communication of unix domain sockets.
+ * @brief Set the Unix socket for using HTTP communication over unix domain
+ * sockets.
  *
  * @param[in]  settings  The settings instance to modify.
  * @param[in]  socket    Unix socket fd.
  */
 void
-gsad_settings_set_unix_socket (gsad_settings_t *settings, int socket)
+gsad_settings_set_http_unix_socket (gsad_settings_t *settings, int socket)
 {
-  settings->unix_socket = socket;
+  settings->http_unix_socket = socket;
 }
 
 /**
- * @brief Check if using a Unix socket communication is enabled.
+ * @brief Check if using a Unix socket for HTTP communication is enabled.
  *
  * @param[in]  settings  The settings instance to query.
  *
- * @return TRUE if using a Unix socket communication is enabled, FALSE
+ * @return TRUE if using a Unix socket for HTTP communication is enabled, FALSE
  * otherwise.
  */
 gboolean
-gsad_settings_is_unix_socket_enabled (const gsad_settings_t *settings)
+gsad_settings_is_http_unix_socket_enabled (const gsad_settings_t *settings)
 {
-  return settings->unix_socket > 0;
+  return settings->http_unix_socket > 0;
 }
 
 /**
