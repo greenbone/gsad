@@ -70,6 +70,7 @@ gvm_connection_open (gvm_connection_t *connection,
     return -1;
 
   connection->socket = connect_unix (unix_socket_path);
+  connection->tls = 0;
 
   if (connection->socket == -1)
     return -1;
