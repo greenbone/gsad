@@ -10,11 +10,12 @@
 
 #include "gsad_http.h"
 
-#include "gsad_base.h"       /* for ctime_r_strip_newline */
-#include "gsad_i18n.h"       /* for accept_language_to_env_fmt */
-#include "gsad_params_mhd.h" /* for params_mhd_append */
-#include "gsad_settings.h"
-#include "gsad_utils.h" /* for str_equal */
+#include "gsad_base.h"         /* for ctime_r_strip_newline */
+#include "gsad_i18n.h"         /* for accept_language_to_env_fmt */
+#include "gsad_params_mhd.h"   /* for params_mhd_append */
+#include "gsad_settings.h"     /* for gsad_settings_get_global_settings */
+#include "gsad_user_session.h" /* for gsad_user_session_timeout */
+#include "gsad_utils.h"        /* for str_equal */
 
 #include <assert.h>              /* for asset */
 #include <gvm/base/networking.h> /* for sockaddr_as_str */
@@ -961,6 +962,62 @@ serve_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,
 }
 
 /**
+ * @brief Wrap some XML in an envelope.
+ *
+ * @param[in]  credentials    Credentials to get user information from.
+ * @param[in]  xml            XML string. Freed before exit.
+ * @param[out] response_data  Extra data return for the HTTP response or NULL.
+ *
+ * @return Enveloped GMP XML object.
+ */
+char *
+gsad_envelope (gsad_credentials_t *credentials, gchar *xml,
+               cmd_response_data_t *response_data)
+{
+  assert (credentials);
+
+  gsad_user_t *user = gsad_credentials_get_user (credentials);
+  const gchar *timezone = gsad_user_get_timezone (user);
+  const gchar *jwt = gsad_user_get_jwt (user);
+
+  GString *string = g_string_new ("");
+
+  xml_string_append (
+    string,
+    "<envelope>"
+    "<version>%s</version>"
+    "<token>%s</token>"
+    "<timezone>%s</timezone>"
+    "<login>%s</login>"
+    "<session>%ld</session>"
+    "<i18n>%s</i18n>"
+    "<client_address>%s</client_address>",
+    GSAD_VERSION, gsad_user_get_token (user), timezone ? timezone : "",
+    gsad_user_get_username (user), gsad_user_session_get_timeout (user),
+    gsad_user_get_language (user), gsad_user_get_client_address (user));
+
+  if (jwt)
+    {
+      gchar *jwt_elem = g_markup_printf_escaped ("<jwt>"
+                                                 "%s"
+                                                 "</jwt>",
+                                                 jwt);
+      g_string_append (string, jwt_elem);
+      g_free (jwt_elem);
+    }
+  g_string_append (string, xml);
+  g_string_append (string, "</envelope>");
+  g_free (xml);
+
+  gchar *envelope = g_string_free (string, FALSE);
+
+  cmd_response_data_set_content_length (response_data, strlen (envelope));
+  cmd_response_data_set_content_type (response_data, GSAD_CONTENT_TYPE_APP_XML);
+
+  return envelope;
+}
+
+/**
  * @brief Handles fatal errors.
  *
  * @todo Make it accept formatted strings.
@@ -979,64 +1036,26 @@ gsad_message (gsad_credentials_t *credentials, const char *title,
               const char *function, int line, const char *msg,
               cmd_response_data_t *response_data)
 {
-  gchar *xml, *xmltitle;
-
-  if (function)
-    {
-      xmltitle = g_strdup_printf ("<title>%s: %s:%i (GSA %s)</title>", title,
-                                  function, line, GSAD_VERSION);
-    }
-  else
-    {
-      xmltitle =
-        g_strdup_printf ("<title>%s (GSA %s)</title>", title, GSAD_VERSION);
-    }
+  gchar *gsad_response = g_markup_printf_escaped ("<gsad_response>"
+                                                  "<message>%s</message>"
+                                                  "</gsad_response>",
+                                                  msg ? msg : "");
 
   if (credentials)
     {
-      gchar *pre;
-      gsad_user_t *user = gsad_credentials_get_user (credentials);
-
-      pre = g_markup_printf_escaped (
-        "<envelope>"
-        "<version>%s</version>"
-        "<token>%s</token>"
-        "<login>%s</login>"
-        "<i18n>%s</i18n>"
-        "<client_address>%s</client_address>",
-        GSAD_VERSION, gsad_user_get_token (user), gsad_user_get_username (user),
-        gsad_credentials_get_language (credentials),
-        gsad_user_get_client_address (user));
-
-      xml = g_strdup_printf ("%s"
-                             "<gsad_response>"
-                             "%s"
-                             "<message>%s</message>"
-                             "</gsad_response>"
-                             "<capabilities>%s</capabilities>"
-                             "</envelope>",
-                             pre, xmltitle, msg ? msg : "",
-                             gsad_user_get_capabilities (user));
-
-      g_free (pre);
-    }
-  else
-    {
-      xml = g_strdup_printf ("<envelope>"
-                             "<version>%s</version>"
-                             "<gsad_response>"
-                             "%s"
-                             "<message>%s</message>"
-                             "<token></token>"
-                             "</gsad_response>"
-                             "</envelope>",
-                             GSAD_VERSION, xmltitle, msg ? msg : "");
+      return gsad_envelope (credentials, gsad_response, response_data);
     }
 
-  g_free (xmltitle);
+  gchar *envelope = g_strdup_printf ("<envelope>"
+                                     "<version>%s</version>"
+                                     "<token></token>"
+                                     "%s"
+                                     "</envelope>",
+                                     GSAD_VERSION, gsad_response);
+  g_free (gsad_response);
 
+  cmd_response_data_set_content_length (response_data, strlen (envelope));
   cmd_response_data_set_content_type (response_data, GSAD_CONTENT_TYPE_APP_XML);
-  cmd_response_data_set_content_length (response_data, strlen (xml));
 
-  return xml;
+  return envelope;
 }
