@@ -19,9 +19,8 @@
  */
 struct gsad_credentials
 {
-  struct timeval cmd_start; ///< Seconds since command page handler started.
-  gchar *language;          ///< Language for this request
-  gsad_user_t *user;        ///< Current user
+  gchar *language;   ///< Language for this request
+  gsad_user_t *user; ///< Current user
 };
 
 /**
@@ -88,33 +87,4 @@ const gchar *
 gsad_credentials_get_language (gsad_credentials_t *cred)
 {
   return cred->language;
-}
-
-/**
- * @brief Start the command timer for the credential
- *
- * @param[in] creds Credential to start the command timer for
- */
-void
-gsad_credentials_start_cmd (gsad_credentials_t *creds)
-{
-  gettimeofday (&creds->cmd_start, NULL);
-}
-
-/**
- * @brief Get the duration in seconds since the command timer was started for
- * the credential
- *
- * @param[in] cred Credential to get the command duration for
- *
- * @return The duration in seconds since the command timer was started
- */
-double
-gsad_credentials_get_cmd_duration (gsad_credentials_t *cred)
-{
-  struct timeval tv;
-  gettimeofday (&tv, NULL);
-  return (double) ((tv.tv_sec - cred->cmd_start.tv_sec) * 1000000L + tv.tv_usec
-                   - cred->cmd_start.tv_usec)
-         / 1000000.0;
 }
