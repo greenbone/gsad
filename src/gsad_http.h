@@ -206,4 +206,7 @@ gchar *
 gsad_message (gsad_credentials_t *, const gchar *, const gchar *, int,
               const gchar *, cmd_response_data_t *);
 
+gchar *
+gsad_envelope (gsad_credentials_t *, gchar *, cmd_response_data_t *);
+
 #endif /* _GSAD_HTTP_H */

@@ -280,50 +280,7 @@ static char *
 envelope_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
               params_t *params, gchar *xml, cmd_response_data_t *response_data)
 {
-  gchar *res;
-  GString *string;
-
-  assert (credentials);
-
-  gsad_user_t *user = gsad_credentials_get_user (credentials);
-  const gchar *timezone = gsad_user_get_timezone (user);
-  const gchar *jwt = gsad_user_get_jwt (user);
-
-  string = g_string_new ("");
-
-  res = g_markup_printf_escaped (
-    "<envelope>"
-    "<version>%s</version>"
-    "<token>%s</token>"
-    "<timezone>%s</timezone>"
-    "<login>%s</login>"
-    "<session>%ld</session>"
-    "<i18n>%s</i18n>"
-    "<client_address>%s</client_address>",
-    GSAD_VERSION, gsad_user_get_token (user), timezone ? timezone : "",
-    gsad_user_get_username (user), gsad_user_session_get_timeout (user),
-    gsad_credentials_get_language (credentials),
-    gsad_user_get_client_address (user));
-
-  g_string_append (string, res);
-  g_free (res);
-
-  if (jwt)
-    {
-      gchar *jwt_elem;
-      jwt_elem = g_markup_printf_escaped ("<jwt>"
-                                          "%s"
-                                          "</jwt>",
-                                          jwt);
-      g_string_append (string, jwt_elem);
-      g_free (jwt_elem);
-    }
-
-  g_string_append_printf (string, "%s</envelope>", xml);
-  g_free (xml);
-
-  cmd_response_data_set_content_type (response_data, GSAD_CONTENT_TYPE_APP_XML);
-  return g_string_free (string, FALSE);
+  return gsad_envelope (credentials, xml, response_data);
 }
 
 /**
