@@ -964,11 +964,11 @@ serve_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,
 /**
  * @brief Wrap some XML in an envelope.
  *
- * @param[in]  credentials    Credentials to get user information from.
- * @param[in]  xml            XML string. Freed before exit.
- * @param[out] response_data  Extra data return for the HTTP response or NULL.
+ * @param[in]     credentials    Credentials to get user information from.
+ * @param[in]     xml            XML string. Freed before exit.
+ * @param[in,out] response_data  Extra data return for the HTTP response.
  *
- * @return Enveloped GMP XML object.
+ * @return Enveloped GMP XML.
  */
 char *
 gsad_envelope (gsad_credentials_t *credentials, gchar *xml,
