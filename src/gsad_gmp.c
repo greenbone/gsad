@@ -268,13 +268,13 @@ typedef struct
 /**
  * @brief Wrap some XML in an envelope.
  *
- * @param[in]  connection     Connection to manager
- * @param[in]  credentials    Username and password for authentication.
- * @param[in]  params         HTTP request params (UNUSED)
- * @param[in]  xml            XML string.  Freed before exit.
- * @param[out] response_data  Extra data return for the HTTP response or NULL.
+ * @param[in]     connection     Connection to manager
+ * @param[in]     credentials    Username and password for authentication.
+ * @param[in]     params         HTTP request params (UNUSED)
+ * @param[in]     xml            XML string.  Freed before exit.
+ * @param[in,out] response_data  Extra data return for the HTTP response.
  *
- * @return Enveloped GMP XML object.
+ * @return Enveloped GMP XML.
  */
 static char *
 envelope_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
