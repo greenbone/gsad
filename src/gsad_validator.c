@@ -176,6 +176,7 @@ gsad_init_validator ()
                      "|(get_report)"
                      "|(get_report_hosts)"
                      "|(get_report_ports)"
+                     "|(get_report_tls_certificates)"
                      "|(get_reports)"
                      "|(get_report_config)"
                      "|(get_report_configs)"
