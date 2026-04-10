@@ -2147,6 +2147,8 @@ create_task_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
           ret = gmp (connection, credentials, NULL, &tag_entity, response_data,
                      tag_command);
 
+          g_free (tag_command);
+
           switch (ret)
             {
             case 0:
@@ -2396,6 +2398,8 @@ create_agent_group_task_gmp (gvm_connection_t *connection,
           ret = gmp (connection, credentials, NULL, &tag_entity, response_data,
                      tag_command);
 
+          g_free (tag_command);
+
           switch (ret)
             {
             case 0:
@@ -2644,6 +2648,8 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
 
           ret = gmp (connection, credentials, NULL, &tag_entity, response_data,
                      tag_command);
+
+          g_free (tag_command);
 
           switch (ret)
             {
@@ -6707,6 +6713,7 @@ create_target_gmp (gvm_connection_t *connection,
   g_free (ssh_credentials_element);
   g_free (ssh_elevate_credentials_element);
   g_free (smb_credentials_element);
+  g_free (snmp_credentials_element);
   g_free (esxi_credentials_element);
   g_free (krb5_credentials_element);
   g_free (asset_hosts_element);
@@ -15008,6 +15015,9 @@ create_permissions_gmp (gvm_connection_t *connection,
 
   html = action_result (connection, credentials, params, response_data,
                         "Create Permissions", summary_response, NULL, NULL);
+
+  g_free (summary_response);
+
   return html;
 }
 
@@ -17839,6 +17849,7 @@ bulk_delete_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
           if (gvm_connection_sendf_xml (connection, command) == -1)
             {
               g_free (command);
+              g_free (extra_attribs);
               cmd_response_data_set_status_code (
                 response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
               return gsad_message (
@@ -17853,6 +17864,7 @@ bulk_delete_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
           entity = NULL;
           if (read_entity_c (connection, &entity))
             {
+              g_free (extra_attribs);
               cmd_response_data_set_status_code (
                 response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
               return gsad_message (
@@ -17871,6 +17883,7 @@ bulk_delete_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
           free_entity (entity);
         }
     }
+  g_free (extra_attribs);
 
   /* Cleanup, and return transformed XML. */
 
