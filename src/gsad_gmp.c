@@ -20854,8 +20854,8 @@ login (gsad_http_connection_t *con, params_t *params,
 
           // xml must not be NULL: gsad_envelope() expects a valid string
           // and passing NULL would trigger a GLib critical
-          gchar *data = envelope_gmp (NULL, credentials, params, g_strdup (""),
-                                      response_data);
+          gchar *data =
+            gsad_envelope (credentials, g_strdup (""), response_data);
 
           ret = gsad_http_create_response (con, data, response_data,
                                            gsad_user_get_cookie (user));
