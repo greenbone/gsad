@@ -20818,7 +20818,7 @@ authenticate_gmp (const gchar *username, const gchar *password,
     gsad_settings_is_jwt_requested (gsad_global_settings);
   auth_opts.jwt = jwt;
 
-  int auth = gsad_manager_connect (&connection, auth_opts);
+  int auth = gsad_manager_connect_with_auth_opts (&connection, auth_opts);
   if (auth == 0)
     {
       entity_t entity;
