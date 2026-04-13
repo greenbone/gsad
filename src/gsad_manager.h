@@ -26,7 +26,7 @@ gsad_manager_connect_with_username_password (gvm_connection_t *connection,
                                              const gchar *password);
 
 int
-gsad_manager_connect (gvm_connection_t *connection,
-                      gmp_authenticate_info_opts_t auth_opts);
+gsad_manager_connect_with_auth_opts (gvm_connection_t *connection,
+                                     gmp_authenticate_info_opts_t auth_opts);
 
 #endif /* _GSAD_MANAGER_H */

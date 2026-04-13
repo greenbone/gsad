@@ -980,11 +980,10 @@ gsad_envelope (gsad_credentials_t *credentials, gchar *xml,
   const gchar *timezone = gsad_user_get_timezone (user);
   const gchar *jwt = gsad_user_get_jwt (user);
 
-  GString *string = g_string_new ("");
+  GString *string = g_string_new ("<envelope>");
 
   xml_string_append (
     string,
-    "<envelope>"
     "<version>%s</version>"
     "<token>%s</token>"
     "<timezone>%s</timezone>"

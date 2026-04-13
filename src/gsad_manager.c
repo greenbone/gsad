@@ -18,40 +18,102 @@
 #define G_LOG_DOMAIN "gsad manager"
 
 /**
- * @brief Connect to Greenbone Vulnerability Manager daemon.
+ * @brief Authenticate with the manager using XML.
  *
- * @param[in]  path  Path to the Manager socket.
+ * @param[in]  connection  Connection
+ * @param[in]  xml         XML to authenticate with
  *
- * @return Socket, or -1 on error.
+ * @return 0 on success, 1 if manager closed connection, 2 if auth failed,
+ *         3 on timeout, -1 on error.
  */
 static int
-connect_unix (const gchar *path)
+gmp_authenticate_with_xml (gvm_connection_t *connection, const gchar *xml)
 {
-  struct sockaddr_un address;
-  int sock;
+  entity_t entity = NULL;
+  const char *status;
+  char first;
+  int ret;
 
-  /* Make socket. */
+  /* Send the auth request. */
+  ret = gvm_connection_sendf (connection,
+                              "<authenticate>"
+                              "<credentials>%s</credentials>"
+                              "</authenticate>",
+                              xml);
+  if (ret)
+    return ret;
 
-  sock = socket (AF_UNIX, SOCK_STREAM, 0);
-  if (sock == -1)
+  /* Read the response. */
+  switch (try_read_entity_c (connection, 0, &entity))
     {
-      g_warning ("Failed to create server socket");
+    case 0:
+      break;
+    case -4:
+      return 3;
+    default:
       return -1;
     }
 
-  /* Connect to server. */
+  /* Check the response. */
 
-  address.sun_family = AF_UNIX;
-  strncpy (address.sun_path, path, sizeof (address.sun_path) - 1);
-  if (connect (sock, (struct sockaddr *) &address, sizeof (address)) == -1)
+  status = entity_attribute (entity, "status");
+  if (status == NULL)
     {
-      g_warning ("Failed to connect to server via unix socket at %s: %s", path,
-                 strerror (errno));
-      close (sock);
+      free_entity (entity);
       return -1;
     }
+  if (strlen (status) == 0)
+    {
+      free_entity (entity);
+      return -1;
+    }
+  first = status[0];
+  if (first != '2')
+    {
+      free_entity (entity);
+      return 2;
+    }
+  free_entity (entity);
+  return 0;
+}
 
-  return sock;
+/**
+ * @brief Authenticate with the manager using a JWT.
+ *
+ * @param[in]  connection  Connection
+ * @param[in]  token       Token to authenticate with
+ *
+ * @return 0 on success, 1 if manager closed connection, 2 if auth failed,
+ *         3 on timeout, -1 on error.
+ */
+static int
+gmp_authenticate_with_jwt (gvm_connection_t *connection, const gchar *token)
+{
+  const gchar *xml = g_markup_printf_escaped ("<token>%s</token>", token);
+  int ret = gmp_authenticate_with_xml (connection, xml);
+  g_free (xml);
+  return ret;
+}
+
+/**
+ * @brief Authenticate with the manager using a token.
+ *
+ * @param[in]  connection  Connection
+ * @param[in]  token       Token to authenticate with
+ *
+ * @return 0 on success, 1 if manager closed connection, 2 if auth failed,
+ *         3 on timeout, -1 on error.
+ */
+static int
+gmp_authenticate_with_username_password (gvm_connection_t *connection,
+                                         const gchar *username,
+                                         const gchar *password)
+{
+  const gchar *xml = g_markup_printf_escaped (
+    "<username>%s</username><password>%s</password>", username, password);
+  int ret = gmp_authenticate_with_xml (connection, xml);
+  g_free (xml);
+  return ret;
 }
 
 /**
@@ -63,17 +125,32 @@ connect_unix (const gchar *path)
  * @return 0 success, -1 failed to connect.
  */
 static int
-gvm_connection_open (gvm_connection_t *connection,
-                     const gchar *unix_socket_path)
+gsad_manager_open_unix_socket_connection (gvm_connection_t *connection,
+                                          const gchar *unix_socket_path)
 {
   if (unix_socket_path == NULL)
     return -1;
 
-  connection->socket = connect_unix (unix_socket_path);
+  int sock = socket (AF_UNIX, SOCK_STREAM, 0);
+  if (sock == -1)
+    {
+      g_warning ("Failed to create server socket");
+      return -1;
+    }
+
+  connection->socket = sock;
   connection->tls = 0;
 
-  if (connection->socket == -1)
-    return -1;
+  struct sockaddr_un address;
+  address.sun_family = AF_UNIX;
+  strncpy (address.sun_path, unix_socket_path, sizeof (address.sun_path) - 1);
+  if (connect (sock, (struct sockaddr *) &address, sizeof (address)) == -1)
+    {
+      g_warning ("Failed to connect to server via unix socket at %s: %s",
+                 unix_socket_path, strerror (errno));
+      close (sock);
+      return -1;
+    }
 
   return 0;
 }
@@ -112,11 +189,46 @@ gsad_manager_connect_with_username_password (gvm_connection_t *connection,
                                              const gchar *username,
                                              const gchar *password)
 {
-  gmp_authenticate_info_opts_t auth_opts;
-  auth_opts = gmp_authenticate_info_opts_defaults;
-  auth_opts.username = username;
-  auth_opts.password = password;
-  return gsad_manager_connect (connection, auth_opts);
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
+  if (gsad_manager_open_unix_socket_connection (
+        connection, gsad_settings_get_manager_address (gsad_global_settings)))
+    {
+      return 4;
+    }
+  int ret =
+    gmp_authenticate_with_username_password (connection, username, password);
+  if (ret)
+    {
+      gvm_connection_close (connection);
+    }
+  return ret;
+}
+
+/**
+ * @brief Connect and authenticate to Greenbone Vulnerability Manager daemon
+ * using a JWT.
+ *
+ * @param[out]  connection   Connection to Manager on success.
+ * @param[in]   token        JWT for authentication.
+ *
+ * @return 0 success, 1 if manager closed connection, 2 if auth failed,
+ *         3 on timeout, 4 failed to connect, -1 on error
+ */
+int
+gsad_manager_connect_with_jwt (gvm_connection_t *connection, const gchar *token)
+{
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
+  if (gsad_manager_open_unix_socket_connection (
+        connection, gsad_settings_get_manager_address (gsad_global_settings)))
+    {
+      return 4;
+    }
+  int ret = gmp_authenticate_with_jwt (connection, token);
+  if (ret)
+    {
+      gvm_connection_close (connection);
+    }
+  return ret;
 }
 
 /**
@@ -132,12 +244,12 @@ gsad_manager_connect_with_username_password (gvm_connection_t *connection,
  *         3 on timeout, 4 failed to connect, -1 on error
  */
 int
-gsad_manager_connect (gvm_connection_t *connection,
-                      gmp_authenticate_info_opts_t auth_opts)
+gsad_manager_connect_with_auth_opts (gvm_connection_t *connection,
+                                     gmp_authenticate_info_opts_t auth_opts)
 {
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
 
-  if (gvm_connection_open (
+  if (gsad_manager_open_unix_socket_connection (
         connection, gsad_settings_get_manager_address (gsad_global_settings)))
     {
       return 4;
