@@ -82,6 +82,29 @@ Ensure (gsad_user, should_copy_user)
 
   assert_that (copy, is_not_null);
   assert_that (copy, is_not_equal_to (user));
+
+  /* ensure deep copy */
+  assert_that (gsad_user_get_username (copy),
+               is_not_equal_to (gsad_user_get_username (user)));
+  assert_that (gsad_user_get_password (copy),
+               is_not_equal_to (gsad_user_get_password (user)));
+  assert_that (gsad_user_get_timezone (copy),
+               is_not_equal_to (gsad_user_get_timezone (user)));
+  assert_that (gsad_user_get_capabilities (copy),
+               is_not_equal_to (gsad_user_get_capabilities (user)));
+  assert_that (gsad_user_get_language (copy),
+               is_not_equal_to (gsad_user_get_language (user)));
+  assert_that (gsad_user_get_client_address (copy),
+               is_not_equal_to (gsad_user_get_client_address (user)));
+  assert_that (gsad_user_get_jwt (copy),
+               is_not_equal_to (gsad_user_get_jwt (user)));
+  assert_that (gsad_user_get_token (copy),
+               is_not_equal_to (gsad_user_get_token (user)));
+  assert_that (gsad_user_get_cookie (copy),
+               is_not_equal_to (gsad_user_get_cookie (user)));
+  assert_that (gsad_user_get_time (copy),
+               is_equal_to (gsad_user_get_time (user)));
+
   assert_that (gsad_user_get_username (copy), is_equal_to_string (username));
   assert_that (gsad_user_get_password (copy), is_equal_to_string (password));
   assert_that (gsad_user_get_timezone (copy), is_equal_to_string (timezone));
