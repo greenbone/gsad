@@ -29,7 +29,7 @@
 typedef struct gsad_user gsad_user_t;
 
 gsad_user_t *
-gsad_user_new ();
+gsad_user_new (void);
 
 gsad_user_t *
 gsad_user_new_with_data (const gchar *username, const gchar *password,
