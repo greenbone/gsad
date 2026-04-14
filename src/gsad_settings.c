@@ -10,17 +10,13 @@
 
 #include "gsad_settings.h"
 
+#include "gsad_utils.h" /* for null_or_value */
+
 #undef G_LOG_DOMAIN
 /**
  * @brief GLib log domain.
  */
 #define G_LOG_DOMAIN "gsad settings"
-
-static const gchar *
-null_or_value (const gchar *value)
-{
-  return value ? value : "NULL";
-}
 
 struct gsad_settings
 {

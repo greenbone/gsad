@@ -22,4 +22,7 @@ capitalize (const char *);
 gboolean
 credential_username_is_valid (const gchar *);
 
+const gchar *
+null_or_value (const gchar *);
+
 #endif /* not _GSAD_UTILS_H */
