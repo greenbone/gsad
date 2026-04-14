@@ -30,7 +30,7 @@
  * @return A new user with all fields initialized to NULL
  */
 gsad_user_t *
-gsad_user_new ()
+gsad_user_new (void)
 {
   gsad_user_t *user = g_malloc0 (sizeof (gsad_user_t));
   return user;
@@ -140,7 +140,8 @@ gsad_user_copy (gsad_user_t *user)
  *
  * @param[in] user User whose username is to be retrieved.
  *
- * @return The username of the user
+ * @return The username of the user. The caller should not modify or free the
+ * returned string, as it is owned by the user object.
  */
 const gchar *
 gsad_user_get_username (gsad_user_t *user)
@@ -153,7 +154,8 @@ gsad_user_get_username (gsad_user_t *user)
  *
  * @param[in] user User whose language is to be retrieved.
  *
- * @return The language of the user
+ * @return The language of the user. The caller should not modify or free the
+ * returned string, as it is owned by the user object.
  */
 const gchar *
 gsad_user_get_language (gsad_user_t *user)
@@ -166,7 +168,8 @@ gsad_user_get_language (gsad_user_t *user)
  *
  * @param[in] user User whose cookie token is to be retrieved.
  *
- * @return The cookie token of the user
+ * @return The cookie token of the user. The caller should not modify or free
+ * the returned string, as it is owned by the user object.
  */
 const gchar *
 gsad_user_get_cookie (gsad_user_t *user)
@@ -179,7 +182,8 @@ gsad_user_get_cookie (gsad_user_t *user)
  *
  * @param[in] user User whose session token is to be retrieved.
  *
- * @return The session token of the user
+ * @return The session token of the user. The caller should not modify or free
+ * the returned string, as it is owned by the user object.
  */
 const gchar *
 gsad_user_get_token (gsad_user_t *user)
@@ -192,7 +196,8 @@ gsad_user_get_token (gsad_user_t *user)
  *
  * @param[in] user User whose capabilities are to be retrieved.
  *
- * @return The capabilities of the user
+ * @return The capabilities of the user. The caller should not modify or free
+ * the returned string, as it is owned by the user object.
  */
 const gchar *
 gsad_user_get_capabilities (gsad_user_t *user)
@@ -205,7 +210,8 @@ gsad_user_get_capabilities (gsad_user_t *user)
  *
  * @param[in] user User whose JWT token value is to be retrieved.
  *
- * @return The JWT token value of the user
+ * @return The JWT token value of the user. The caller should not modify or free
+ * the returned string, as it is owned by the user object.
  */
 const gchar *
 gsad_user_get_jwt (gsad_user_t *user)
@@ -218,7 +224,8 @@ gsad_user_get_jwt (gsad_user_t *user)
  *
  * @param[in] user User whose timezone is to be retrieved.
  *
- * @return The timezone of the user
+ * @return The timezone of the user. The caller should not modify or free the
+ * returned string, as it is owned by the user object.
  */
 const gchar *
 gsad_user_get_timezone (gsad_user_t *user)
@@ -231,7 +238,8 @@ gsad_user_get_timezone (gsad_user_t *user)
  *
  * @param[in] user User whose client IP address is to be retrieved.
  *
- * @return The client IP address of the user
+ * @return The client IP address of the user. The caller should not modify or
+ * free the returned string, as it is owned by the user object.
  */
 const gchar *
 gsad_user_get_client_address (gsad_user_t *user)
@@ -244,7 +252,8 @@ gsad_user_get_client_address (gsad_user_t *user)
  *
  * @param[in] user User whose password is to be retrieved.
  *
- * @return The password of the user
+ * @return The password of the user. The caller should not modify or free the
+ * returned string, as it is owned by the user object.
  */
 const gchar *
 gsad_user_get_password (gsad_user_t *user)
@@ -269,7 +278,10 @@ gsad_user_get_time (gsad_user_t *user)
  * @brief Set timezone of user.
  *
  * @param[in]   user      User.
- * @param[in]   timezone  Timezone.
+ * @param[in]   timezone  Timezone to be set. The caller retains ownership of
+ * the timezone string and is responsible for freeing it. The user object will
+ * make a copy of the string, so the caller can safely free or modify the
+ * original string after calling this function.
  *
  */
 void
@@ -284,8 +296,10 @@ gsad_user_set_timezone (gsad_user_t *user, const gchar *timezone)
  * @brief Set password of user.
  *
  * @param[in]   user      User.
- * @param[in]   password  Password.
- *
+ * @param[in]   password  Password to be set. The caller retains ownership of
+ * the password string and is responsible for freeing it. The user object will
+ * make a copy of the string, so the caller can safely free or modify the
+ * original string after calling this function.
  */
 void
 gsad_user_set_password (gsad_user_t *user, const gchar *password)
@@ -299,8 +313,10 @@ gsad_user_set_password (gsad_user_t *user, const gchar *password)
  * @brief Set language of user.
  *
  * @param[in]   user      User.
- * @param[in]   language  Language.
- *
+ * @param[in]   language  Language to be set. The caller retains ownership of
+ * the language string and is responsible for freeing it. The user object will
+ * make a copy of the string, so the caller can safely free or modify the
+ * original string after calling this function.
  */
 void
 gsad_user_set_language (gsad_user_t *user, const gchar *language)
@@ -321,8 +337,10 @@ gsad_user_set_language (gsad_user_t *user, const gchar *language)
  * @brief Set username of user.
  *
  * @param[in]   user      User.
- * @param[in]   username  Username.
- *
+ * @param[in]   username  Username to be set. The caller retains ownership of
+ * the username string and is responsible for freeing it. The user object will
+ * make a copy of the string, so the caller can safely free or modify the
+ * original string after calling this function.
  */
 void
 gsad_user_set_username (gsad_user_t *user, const gchar *username)
