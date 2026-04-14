@@ -34,6 +34,9 @@ void
 gsad_session_renew_user (const gchar *id);
 
 void
-gsad_session_init ();
+gsad_session_init (void);
+
+void
+gsad_session_cleanup (void);
 
 #endif

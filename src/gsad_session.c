@@ -32,6 +32,17 @@ GPtrArray *users = NULL;
 static GMutex *mutex = NULL;
 
 /**
+ * @brief Internal function to get the number of users in the session.
+ *
+ * This function does not lock the mutex.
+ */
+int
+gsad_session_get_user_count (void)
+{
+  return users->len;
+}
+
+/**
  * @brief Find a user by a session identifier without locking the mutex.
  *
  * @param[in]  id  Unique identifier.
@@ -41,6 +52,11 @@ static GMutex *mutex = NULL;
 gsad_user_t *
 gsad_session_get_user_by_id_internal (const gchar *id)
 {
+  if (!id)
+    {
+      return NULL;
+    }
+
   int index;
   for (index = 0; index < users->len; index++)
     {
@@ -68,16 +84,19 @@ gsad_session_remove_user_internal (const gchar *id)
 
   if (user)
     {
+      // user is freed by the free function of the users array, so we only need
+      // to remove it
       g_ptr_array_remove (users, (gpointer) user);
-
-      gsad_user_free (user);
     }
 }
 
 /**
  * @brief Add user to the session "database" without locking the mutex.
  *
- * @param[in]  user  User to add.
+ * @param[in]  user  User to add. The session will make a copy of the user, so
+ * the caller retains ownership of the user object and is responsible for
+ * freeing it. The session will free the user object when it is removed from the
+ * session.
  */
 void
 gsad_session_add_user_internal (gsad_user_t *user)
@@ -89,11 +108,24 @@ gsad_session_add_user_internal (gsad_user_t *user)
  * @brief Initialize the session handling.
  */
 void
-gsad_session_init ()
+gsad_session_init (void)
 {
   mutex = g_malloc (sizeof (GMutex));
   g_mutex_init (mutex);
-  users = g_ptr_array_new ();
+  users = g_ptr_array_new_with_free_func ((GDestroyNotify) gsad_user_free);
+}
+
+/**
+ * @brief Clean up the session handling.
+ */
+void
+gsad_session_cleanup (void)
+{
+  g_mutex_lock (mutex);
+  g_ptr_array_free (users, TRUE);
+  g_mutex_unlock (mutex);
+  g_mutex_clear (mutex);
+  g_free (mutex);
 }
 
 /**
@@ -122,13 +154,19 @@ gsad_session_get_user_by_id (const gchar *id)
  *
  * @param[in]  username  Username to search for.
  *
- * @return Return a list with copies of the users or NULL if not found
+ * @return Return a list with copies of the users or NULL if not found. The
+ * caller is responsible for freeing the returned list and the users in it.
  */
 GList *
 gsad_session_get_users_by_username (const gchar *username)
 {
   int index;
   GList *list = NULL;
+
+  if (!username)
+    {
+      return NULL;
+    }
 
   g_mutex_lock (mutex);
 
@@ -154,7 +192,10 @@ gsad_session_get_users_by_username (const gchar *username)
  * @brief Add user to the session "database"
  *
  * @param[in]  id     Unique identifier (token).
- * @param[in]  user   User.
+ * @param[in]  user   User to add. The session will make a copy of the user, so
+ * the caller retains ownership of the user object and is responsible for
+ * freeing it. The session will free the user object when it is removed from the
+ * session.
  */
 void
 gsad_session_add_user (const gchar *id, gsad_user_t *user)
@@ -214,9 +255,8 @@ gsad_session_remove_other_sessions (const gchar *keep_id, const gchar *username)
           if (itemname && itempassword)
             logout_gmp (itemname, itempassword);
 
+          /* user is freed by g_ptr_array_remove via the free function */
           g_ptr_array_remove (users, (gpointer) item);
-
-          gsad_user_free (item);
 
           index--;
         }
