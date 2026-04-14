@@ -20992,7 +20992,7 @@ login (gsad_http_connection_t *con, params_t *params,
   gchar *timezone;
   gchar *capabilities;
   gchar *language;
-  gchar *jwt;
+  gchar *jwt = NULL;
 
   const char *password = params_value (params, "password");
   const char *login = params_value (params, "login");
@@ -21054,7 +21054,9 @@ login (gsad_http_connection_t *con, params_t *params,
           g_message ("Authentication success for '%s' from %s", login ?: "",
                      client_address);
 
-          credentials = gsad_credentials_new (user, language);
+          credentials = gsad_credentials_new ();
+          gsad_credentials_set_user (credentials, user);
+          gsad_credentials_set_jwt (credentials, jwt);
 
           // xml must not be NULL: gsad_envelope() expects a valid string
           // and passing NULL would trigger a GLib critical

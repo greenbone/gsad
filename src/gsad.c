@@ -280,7 +280,9 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   language =
     gsad_user_get_language (user) ?: gsad_connection_info_get_language (con_info) ?: DEFAULT_GSAD_LANGUAGE;
 
-  credentials = gsad_credentials_new (user, language);
+  credentials = gsad_credentials_new ();
+  gsad_credentials_set_user (credentials, user);
+  gsad_credentials_set_jwt (credentials, gsad_user_get_jwt (user));
 
   new_sid = g_strdup (gsad_user_get_cookie (user));
 
