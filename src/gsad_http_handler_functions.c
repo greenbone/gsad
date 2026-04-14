@@ -312,45 +312,12 @@ gsad_http_handle_setup_credentials (gsad_http_handler_t *handler_next,
                                     void *data)
 {
   gsad_user_t *user = (gsad_user_t *) data;
-  const gchar *accept_language;
-  gsad_credentials_t *credentials;
-  char client_address[INET6_ADDRSTRLEN];
+  gsad_credentials_t *credentials = gsad_credentials_new ();
+  const gchar *jwt_token = user ? gsad_user_get_jwt (user) : NULL;
 
-  get_client_address (connection, client_address);
-
-  gchar *language = g_strdup (gsad_user_get_language (user));
-
-  if (!language)
-    /* Accept-Language: de; q=1.0, en; q=0.5 */
-    {
-      accept_language = MHD_lookup_connection_value (
-        connection, MHD_HEADER_KIND, "Accept-Language");
-      if (accept_language
-          && g_utf8_validate (accept_language, -1, NULL) == FALSE)
-        {
-          gsad_http_send_response_for_content (
-            connection, UTF8_ERROR_PAGE ("'Accept-Language' header"),
-            MHD_HTTP_BAD_REQUEST, NULL, GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
-          return MHD_YES;
-        }
-      language = accept_language_to_env_fmt (accept_language);
-      credentials = gsad_credentials_new ();
-      const gchar *jwt_token = user ? gsad_user_get_jwt (user) : NULL;
-
-      gsad_credentials_set_user (credentials, user);
-      gsad_credentials_set_jwt (credentials, jwt_token);
-    }
-  else
-    {
-      credentials = gsad_credentials_new ();
-      const gchar *jwt_token = user ? gsad_user_get_jwt (user) : NULL;
-
-      gsad_credentials_set_user (credentials, user);
-      gsad_credentials_set_jwt (credentials, jwt_token);
-    }
-
+  gsad_credentials_set_user (credentials, user);
+  gsad_credentials_set_jwt (credentials, jwt_token);
   gsad_user_free (user);
-  g_free (language);
 
   return gsad_http_handler_call (handler_next, connection, con_info,
                                  credentials);
