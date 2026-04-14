@@ -2,7 +2,11 @@
  *
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-#include "gsad_gmp.h" /* for manager_connect */
+
+#include "gsad_http_handler_functions.h"
+
+#include "gsad_credentials.h" /* for gsad_credentials_t and related functions */
+#include "gsad_gmp.h"         /* for manager_connect */
 #include "gsad_http_handler.h"
 #include "gsad_i18n.h"       /* for accept_language_to_env_fmt */
 #include "gsad_manager.h"    /* for gsad_manager_connect_with_credentials */
@@ -330,11 +334,19 @@ gsad_http_handle_setup_credentials (gsad_http_handler_t *handler_next,
           return MHD_YES;
         }
       language = accept_language_to_env_fmt (accept_language);
-      credentials = gsad_credentials_new (user, language);
+      credentials = gsad_credentials_new ();
+      const gchar *jwt_token = user ? gsad_user_get_jwt (user) : NULL;
+
+      gsad_credentials_set_user (credentials, user);
+      gsad_credentials_set_jwt (credentials, jwt_token);
     }
   else
     {
-      credentials = gsad_credentials_new (user, language);
+      credentials = gsad_credentials_new ();
+      const gchar *jwt_token = user ? gsad_user_get_jwt (user) : NULL;
+
+      gsad_credentials_set_user (credentials, user);
+      gsad_credentials_set_jwt (credentials, jwt_token);
     }
 
   gsad_user_free (user);

@@ -89,7 +89,7 @@ gmp_authenticate_with_xml (gvm_connection_t *connection, const gchar *xml)
 static int
 gmp_authenticate_with_jwt (gvm_connection_t *connection, const gchar *token)
 {
-  const gchar *xml = g_markup_printf_escaped ("<token>%s</token>", token);
+  gchar *xml = g_markup_printf_escaped ("<token>%s</token>", token);
   int ret = gmp_authenticate_with_xml (connection, xml);
   g_free (xml);
   return ret;
@@ -109,7 +109,7 @@ gmp_authenticate_with_username_password (gvm_connection_t *connection,
                                          const gchar *username,
                                          const gchar *password)
 {
-  const gchar *xml = g_markup_printf_escaped (
+  gchar *xml = g_markup_printf_escaped (
     "<username>%s</username><password>%s</password>", username, password);
   int ret = gmp_authenticate_with_xml (connection, xml);
   g_free (xml);
