@@ -88,3 +88,16 @@ credential_username_is_valid (const gchar *username)
 
   return TRUE;
 }
+
+/**
+ * @brief Return the input string or "NULL" if the input is NULL.
+ *
+ * @param[in]  value The input string.
+ *
+ * @return The input string or "NULL" if the input is NULL.
+ */
+const gchar *
+null_or_value (const gchar *value)
+{
+  return value ? value : "NULL";
+}

@@ -209,7 +209,7 @@ if(BUILD_TESTING)
   add_unit_test(gsad-utils)
   add_unit_test(gsad-validator validator.c)
   add_unit_test(gsad-args)
-  add_unit_test(gsad-settings)
+  add_unit_test(gsad-settings gsad_utils.c)
   add_unit_test(gsad-connection-info gsad_params.c)
   add_unit_test(
     gsad-http-handler
@@ -245,7 +245,7 @@ if(BUILD_TESTING)
     gsad_user.c
     gsad_utils.c
   )
-  add_unit_test(gsad-user gsad_user.c gsad_utils.c)
+  add_unit_test(gsad-user gsad_utils.c)
   add_custom_target(
     tests
     DEPENDS
