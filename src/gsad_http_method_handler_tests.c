@@ -320,7 +320,7 @@ Ensure (gsad_http_method_handler, should_set_next_on_all_leaves)
   assert_that (post_handler1->next, is_equal_to (next_handler));
   assert_that (get_handler2->next, is_equal_to (next_handler));
 
-  gsad_http_handler_free (method_handler1);
+  gsad_http_handler_free (method_handler3);
 }
 
 int
