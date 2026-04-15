@@ -22,8 +22,6 @@
 #include <gvm/util/uuidutils.h> /* for gvm_uuid_make */
 #include <string.h>             /* for strcmp */
 
-#define BROWSER_LANGUAGE "Browser Language"
-
 /**
  * @brief Create a new user
  *

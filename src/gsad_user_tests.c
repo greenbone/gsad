@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 #include "gsad_user.h"
+#include "gsad_user_internal.h"
 
 #include <cgreen/cgreen.h>
 
@@ -177,6 +178,36 @@ Ensure (gsad_user, should_set_username)
   gsad_user_free (user);
 }
 
+Ensure (gsad_user, should_set_language_to_browser_language)
+{
+  gsad_user_t *user = gsad_user_new ();
+
+  gsad_user_set_language (user, BROWSER_LANGUAGE);
+
+  assert_that (gsad_user_get_language (user), is_null);
+
+  gsad_user_free (user);
+}
+
+Ensure (gsad_user, should_set_language_to_null)
+{
+  gsad_user_t *user = gsad_user_new ();
+
+  const gchar *language = "en";
+  gsad_user_set_language (user, language);
+  assert_that (gsad_user_get_language (user), is_equal_to_string (language));
+
+  gsad_user_set_language (user, NULL);
+  assert_that (gsad_user_get_language (user), is_null);
+
+  gsad_user_free (user);
+}
+
+Ensure (gsad_user, should_free_null_user)
+{
+  gsad_user_free (NULL);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -192,6 +223,10 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_user, should_set_password);
   add_test_with_context (suite, gsad_user, should_set_language);
   add_test_with_context (suite, gsad_user, should_set_username);
+  add_test_with_context (suite, gsad_user,
+                         should_set_language_to_browser_language);
+  add_test_with_context (suite, gsad_user, should_set_language_to_null);
+  add_test_with_context (suite, gsad_user, should_free_null_user);
 
   if (argc > 1)
     ret = run_single_test (suite, argv[1], create_text_reporter ());
