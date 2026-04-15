@@ -8,6 +8,8 @@
 
 #include "gsad_user.h"
 
+#define BROWSER_LANGUAGE "Browser Language"
+
 /**
  * @brief User information structure, for sessions.
  */
