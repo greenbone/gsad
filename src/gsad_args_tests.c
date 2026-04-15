@@ -37,7 +37,7 @@ Ensure (gsad_args, gsad_args_new)
 {
   gsad_args_t *args = gsad_args_new ();
 
-  const gchar *manager_unix_socket_default_path =
+  gchar *manager_unix_socket_default_path =
     g_build_filename (GVMD_RUN_DIR, "gvmd.sock", NULL);
 
   assert_that (args, is_not_null);
@@ -88,6 +88,7 @@ Ensure (gsad_args, gsad_args_new)
   assert_that (args->verbose, is_false);
 
   gsad_args_free (args);
+  g_free (manager_unix_socket_default_path);
 }
 
 Ensure (gsad_args, should_parse_api_only)
@@ -304,13 +305,15 @@ Ensure (gsad_args, should_parse_gsad_manager_unix_socket_path)
 Ensure (gsad_args, should_parse_gsad_manager_unix_socket_path_default)
 {
   gsad_args_t *args = gsad_args_new ();
-  const gchar *manager_unix_socket_default_path =
+  gchar *manager_unix_socket_default_path =
     g_build_filename (GVMD_RUN_DIR, "gvmd.sock", NULL);
   char *argv[] = {"gsad"};
   gsad_args_parse (1, argv, args);
 
   assert_that (gsad_args_get_manager_unix_socket_path (args),
                is_equal_to_string (manager_unix_socket_default_path));
+
+  g_free (manager_unix_socket_default_path);
   gsad_args_free (args);
 }
 
@@ -1266,8 +1269,9 @@ Ensure (gsad_args, should_get_listen_addresses)
 Ensure (gsad_args, should_get_manager_unix_socket_path)
 {
   gsad_args_t *args = gsad_args_new ();
-  const gchar *manager_unix_socket_default_path =
+  gchar *manager_unix_socket_default_path =
     g_build_filename (GVMD_RUN_DIR, "gvmd.sock", NULL);
+
   assert_that (gsad_args_get_manager_unix_socket_path (args),
                is_equal_to_string (manager_unix_socket_default_path));
 
@@ -1277,6 +1281,7 @@ Ensure (gsad_args, should_get_manager_unix_socket_path)
   args->manager_unix_socket_path = NULL;
   assert_that (gsad_args_get_manager_unix_socket_path (args), is_null);
 
+  g_free (manager_unix_socket_default_path);
   gsad_args_free (args);
 }
 
