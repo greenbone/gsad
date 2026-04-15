@@ -206,6 +206,7 @@ Ensure (gsad_http_method_handler, should_call_get_handler_for_get_method)
   assert_that (call->con_info, is_equal_to (con_info));
   assert_that (call->data, is_null);
 
+  gsad_connection_info_free (con_info);
   gsad_http_handler_free (method_handler);
 }
 
@@ -230,6 +231,7 @@ Ensure (gsad_http_method_handler, should_call_post_handler_for_post_method)
   assert_that (call->con_info, is_equal_to (con_info));
   assert_that (call->data, is_null);
 
+  gsad_connection_info_free (con_info);
   gsad_http_handler_free (method_handler);
 }
 
@@ -247,6 +249,7 @@ Ensure (gsad_http_method_handler, should_not_call_handlers_for_other_methods)
   assert_that (result, is_equal_to (MHD_NO));
   assert_that (get_call_count (), is_equal_to (0));
 
+  gsad_connection_info_free (con_info);
   gsad_http_handler_free (method_handler);
 }
 
@@ -275,6 +278,7 @@ Ensure (gsad_http_method_handler, should_call_next_handler_for_other_methods)
   assert_that (call->con_info, is_equal_to (con_info));
   assert_that (call->data, is_null);
 
+  gsad_connection_info_free (con_info);
   gsad_http_handler_free (method_handler);
 }
 
