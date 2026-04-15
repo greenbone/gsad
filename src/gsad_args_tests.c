@@ -1615,6 +1615,8 @@ Ensure (gsad_args, should_parse_jwt_requested_default)
 int
 main (int argc, char **argv)
 {
+  int ret;
+
   TestSuite *suite = create_test_suite ();
 
   add_test_with_context (suite, gsad_args, gsad_args_new);
@@ -1771,7 +1773,12 @@ main (int argc, char **argv)
 
   add_test_with_context (suite, gsad_args, should_free_gsad_args);
 
-  int ret = run_test_suite (suite, create_text_reporter ());
+  if (argc > 1)
+    ret = run_single_test (suite, argv[1], create_text_reporter ());
+  else
+    ret = run_test_suite (suite, create_text_reporter ());
+
   destroy_test_suite (suite);
+
   return ret;
 }

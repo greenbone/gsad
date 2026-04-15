@@ -125,7 +125,10 @@ Ensure (gsad_connection_info, should_set_and_get_language)
 int
 main (int argc, char **argv)
 {
+  int ret;
+
   TestSuite *suite = create_test_suite ();
+
   add_test_with_context (suite, gsad_connection_info,
                          should_allow_to_create_connection_info_for_post);
   add_test_with_context (suite, gsad_connection_info,
@@ -141,8 +144,12 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_connection_info,
                          should_allow_to_free_null_connection_info);
 
-  int ret = run_test_suite (suite, create_text_reporter ());
+  if (argc > 1)
+    ret = run_single_test (suite, argv[1], create_text_reporter ());
+  else
+    ret = run_test_suite (suite, create_text_reporter ());
 
   destroy_test_suite (suite);
+
   return ret;
 }

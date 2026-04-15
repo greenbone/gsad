@@ -419,6 +419,8 @@ Ensure (gsad_settings, should_set_manager_address)
 int
 main (int argc, char **argv)
 {
+  int ret;
+
   TestSuite *suite = create_test_suite ();
 
   add_test_with_context (suite, gsad_settings, should_use_defaults);
@@ -452,8 +454,12 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_settings, should_set_jwt_requested);
   add_test_with_context (suite, gsad_settings, should_set_manager_address);
 
-  int ret = run_test_suite (suite, create_text_reporter ());
+  if (argc > 1)
+    ret = run_single_test (suite, argv[1], create_text_reporter ());
+  else
+    ret = run_test_suite (suite, create_text_reporter ());
 
   destroy_test_suite (suite);
+
   return ret;
 }
