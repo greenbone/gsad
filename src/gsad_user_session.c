@@ -6,7 +6,7 @@
 #include "gsad_user_session.h"
 
 #include "gsad_gmp_auth.h" /* for logout_gmp */
-#include "gsad_session.h"
+#include "gsad_session.h" /* for gsad_session_get_user_by_id, gsad_session_remove_user, gsad_session_add_user, gsad_session_get_users_by_username */
 #include "gsad_settings.h" /* for gsad_settings_get_session_timeout  */
 #include "gsad_user_internal.h"
 #include "gsad_utils.h" /* for str_equal */
@@ -51,60 +51,43 @@ gsad_user_session_is_expired (gsad_user_t *user)
 /**
  * @brief Add a user to the session store.
  *
- * Creates and initializes a user object with given parameters
+ * @param[in]  user      User to add.
  *
- * It's up to the caller to free the returned user.
- *
- * @param[in]  username      Name of user.
- * @param[in]  password      Password for user.
- * @param[in]  timezone      Timezone of user.
- * @param[in]  capabilities  Capabilities of manager.
- * @param[in]  language      User Interface Language (language name or code)
- * @param[in]  address       Client's IP address.
- * @param[in]  jwt           JWT token value, NULL if not requested.
- *
- * @return Added user.
+ * @return 0 success, 1 if session limit exceeded
  */
-gsad_user_t *
-gsad_user_session_add (const gchar *username, const gchar *password,
-                       const gchar *timezone, const gchar *capabilities,
-                       const gchar *language, const char *address,
-                       const gchar *jwt)
+int
+gsad_user_session_add (gsad_user_t *user)
 {
   GList *current_user_item, *user_list;
-  gsad_user_t *user;
   int session_count = 0;
+  gsad_user_t *current_user = NULL;
 
-  user_list = current_user_item = gsad_session_get_users_by_username (username);
+  user_list = current_user_item =
+    gsad_session_get_users_by_username (gsad_user_get_username (user));
   while (current_user_item)
     {
-      user = current_user_item->data;
-      if (gsad_user_session_is_expired (user))
+      current_user = current_user_item->data;
+      if (gsad_user_session_is_expired (current_user))
         {
-          if (user->username && user->password)
-            logout_gmp (user->username, user->password);
-          gsad_session_remove_user (user->token);
+          if (current_user->username && current_user->password)
+            logout_gmp (current_user->username, current_user->password);
+          gsad_session_remove_user (current_user->token);
         }
       else
         session_count++;
-      gsad_user_free (user);
       current_user_item = current_user_item->next;
     }
-  g_list_free (user_list);
+  g_list_free_full (user_list, (GDestroyNotify) gsad_user_free);
 
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
   int session_limit =
     gsad_settings_get_user_session_limit (gsad_global_settings);
   if (session_limit && (session_count >= session_limit))
-
-    return NULL;
-
-  user = gsad_user_new_with_data (username, password, timezone, capabilities,
-                                  language, address, jwt);
+    return 1;
 
   gsad_session_add_user (user->token, user);
 
-  return user;
+  return 0;
 }
 
 /**
