@@ -785,5 +785,6 @@ gsad_get_validator ()
 void
 gsad_reset_validator ()
 {
+  gvm_validator_free (validator);
   validator = NULL;
 }
