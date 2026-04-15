@@ -30,7 +30,7 @@ BeforeEach (gsad_http_method_handler)
 
 AfterEach (gsad_http_method_handler)
 {
-  g_list_free (calls);
+  g_list_free_full (calls, g_free);
 }
 
 void
