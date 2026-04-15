@@ -21030,11 +21030,12 @@ login (gsad_http_connection_t *con, params_t *params,
         }
       else
         {
-          gsad_user_t *user;
-          user = gsad_user_session_add (login, password, timezone, capabilities,
-                                        language, client_address, jwt);
+          gsad_user_t *user =
+            gsad_user_new_with_data (login, password, timezone, capabilities,
+                                     language, client_address, jwt);
 
-          if (user == NULL)
+          int add_user = gsad_user_session_add (user);
+          if (add_user)
             {
               status = MHD_HTTP_FORBIDDEN;
               auth_reason = TOO_MANY_USER_SESSIONS;

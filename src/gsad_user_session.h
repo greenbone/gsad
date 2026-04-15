@@ -20,11 +20,8 @@ int
 gsad_user_session_find (const gchar *cookie, const gchar *token,
                         const char *address, gsad_user_t **user_return);
 
-gsad_user_t *
-gsad_user_session_add (const gchar *username, const gchar *password,
-                       const gchar *timezone, const gchar *capabilities,
-                       const gchar *language, const char *address,
-                       const gchar *jwt);
+int
+gsad_user_session_add (gsad_user_t *user);
 
 gboolean
 gsad_user_session_is_expired (gsad_user_t *user);

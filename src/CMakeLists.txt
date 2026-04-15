@@ -247,6 +247,13 @@ if(BUILD_TESTING)
   )
   add_unit_test(gsad-user gsad_utils.c)
   add_unit_test(gsad-session gsad_user.c gsad_utils.c)
+  add_unit_test(
+    gsad-user-session
+    gsad_session.c
+    gsad_utils.c
+    gsad_settings.c
+    gsad_user.c
+  )
   add_custom_target(
     tests
     DEPENDS
@@ -262,6 +269,7 @@ if(BUILD_TESTING)
       gsad-credentials-test
       gsad-user-test
       gsad-session-test
+      gsad-user-session-test
   )
 endif(BUILD_TESTING)
 
