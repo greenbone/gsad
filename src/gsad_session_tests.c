@@ -210,6 +210,8 @@ Ensure (gsad_session, should_remove_other_sessions)
 
 Ensure (gsad_session, should_renew_user)
 {
+  gsad_user_t *retrieved_user;
+
   gsad_user_t *user =
     gsad_user_new_with_data ("username1", "password1", "timezone1",
                              "capabilities1", "language1", "address1", "jwt1");
@@ -218,20 +220,22 @@ Ensure (gsad_session, should_renew_user)
   time_t timeout = gsad_user_get_time (user);
   gsad_session_add_user (token, user);
 
-  gsad_user_t *retrieved_user = gsad_session_get_user_by_id (token);
   assert_that (gsad_session_get_user_count (), is_equal_to (1));
+  retrieved_user = gsad_session_get_user_by_id (token);
   assert_that (gsad_user_get_time (retrieved_user), is_equal_to (timeout));
+  gsad_user_free (retrieved_user);
 
   gsad_session_renew_user (token);
 
   assert_that (gsad_session_get_user_count (), is_equal_to (1));
-  assert_that (gsad_user_get_time (gsad_session_get_user_by_id (token)),
-               is_not_equal_to (timeout));
-  assert_that (gsad_user_get_time (gsad_session_get_user_by_id (token)),
-               is_equal_to (0));
+  retrieved_user = gsad_session_get_user_by_id (token);
+  assert_that (gsad_user_get_time (retrieved_user), is_not_equal_to (timeout));
+  gsad_user_free (retrieved_user);
+  retrieved_user = gsad_session_get_user_by_id (token);
+  assert_that (gsad_user_get_time (retrieved_user), is_equal_to (0));
+  gsad_user_free (retrieved_user);
 
   gsad_user_free (user);
-  gsad_user_free (retrieved_user);
 }
 
 int
