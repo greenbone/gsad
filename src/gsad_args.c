@@ -23,6 +23,8 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
   gchar *drop, *gnutls_priorities, *http_frame_opts, *http_csp;
   gchar *unix_socket_owner, *unix_socket_group, *unix_socket_mode;
   gchar *http_coep, *http_coop, *http_corp, *http_cors;
+  // String arrays
+  gchar **gsad_address_string;
   // Filenames
   gchar *manager_unix_socket_path;
   gchar *ssl_private_key_filename, *ssl_certificate_filename;
@@ -42,6 +44,8 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
   http_corp = NULL;
   http_cors = NULL;
 
+  gsad_address_string = NULL;
+
   manager_unix_socket_path = NULL;
   ssl_private_key_filename = NULL;
   ssl_certificate_filename = NULL;
@@ -60,7 +64,7 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
      "Run in foreground.", NULL},
     {"http-only", 0, 0, G_OPTION_ARG_NONE, &args->http_only,
      "Serve HTTP only, without SSL. Implies --no-redirect.", NULL},
-    {"listen", 0, 0, G_OPTION_ARG_STRING_ARRAY, &args->gsad_address_string,
+    {"listen", 0, 0, G_OPTION_ARG_STRING_ARRAY, &gsad_address_string,
      "Listen on <address>.", "<address>"},
     {"port", 'p', 0, G_OPTION_ARG_INT, &args->gsad_port,
      "Use port number <number>.", "<number>"},
@@ -274,6 +278,11 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
   if (gsad_static_content_directory) {
     g_free (args->gsad_static_content_directory);
     args->gsad_static_content_directory = gsad_static_content_directory;
+  }
+
+  if (gsad_address_string) {
+    g_strfreev (args->gsad_address_string);
+    args->gsad_address_string = gsad_address_string;
   }
 
   return 0;
