@@ -69,9 +69,12 @@ gsad_user_session_add (gsad_user_t *user)
 }
 
 /**
- * @brief Find a user in the session, given a token and cookie.
+ * @brief Find a user in the session, given a token, cookie and client address.
  *
- * If a user is returned it's up to the caller to free the user.
+ * It is checked if the token is valid and not expired, if the cookie and the
+ * client address matches the ones stored in the session. If all checks are
+ * passed, a copy of the user is returned. The caller is responsible for freeing
+ * the returned user.
  *
  * @param[in]   cookie       Token in cookie.
  * @param[in]   token        Token request parameter.
