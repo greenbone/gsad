@@ -39,7 +39,7 @@ Ensure (gsad_session, should_add_and_get_user)
                              "capabilities1", "language1", "address1", "jwt1");
 
   const gchar *token = gsad_user_get_token (user);
-  gsad_session_add_user (token, user);
+  gsad_session_add_user (user);
 
   assert_that (gsad_session_get_user_count (), is_equal_to (1));
 
@@ -70,9 +70,9 @@ Ensure (gsad_session, should_allow_to_add_user_twice)
                              "capabilities1", "language1", "address1", "jwt1");
   gsad_user_t *user_copy = gsad_user_copy (user);
 
-  gsad_session_add_user (gsad_user_get_token (user), user);
+  gsad_session_add_user (user);
   assert_that (gsad_session_get_user_count (), is_equal_to (1));
-  gsad_session_add_user (gsad_user_get_token (user_copy), user_copy);
+  gsad_session_add_user (user_copy);
   assert_that (gsad_session_get_user_count (), is_equal_to (1));
 
   gsad_user_t *retrieved_user =
@@ -84,7 +84,7 @@ Ensure (gsad_session, should_allow_to_add_user_twice)
   gsad_user_t *user2 =
     gsad_user_new_with_data ("username1", "password1", "timezone1",
                              "capabilities1", "language1", "address1", "jwt1");
-  gsad_session_add_user (gsad_user_get_token (user2), user2);
+  gsad_session_add_user (user2);
 
   assert_that (gsad_session_get_user_count (), is_equal_to (2));
   retrieved_user = gsad_session_get_user_by_id (gsad_user_get_token (user2));
@@ -94,6 +94,12 @@ Ensure (gsad_session, should_allow_to_add_user_twice)
   gsad_user_free (user_copy);
   gsad_user_free (user2);
   gsad_user_free (user);
+}
+
+Ensure (gsad_session, should_allow_to_add_null_user)
+{
+  gsad_session_add_user (NULL);
+  assert_that (gsad_session_get_user_count (), is_equal_to (0));
 }
 
 Ensure (gsad_session, should_allow_to_get_users_by_username)
@@ -108,9 +114,9 @@ Ensure (gsad_session, should_allow_to_get_users_by_username)
     gsad_user_new_with_data ("username2", "password3", "timezone3",
                              "capabilities3", "language3", "address3", "jwt3");
 
-  gsad_session_add_user (gsad_user_get_token (user1), user1);
-  gsad_session_add_user (gsad_user_get_token (user2), user2);
-  gsad_session_add_user (gsad_user_get_token (user3), user3);
+  gsad_session_add_user (user1);
+  gsad_session_add_user (user2);
+  gsad_session_add_user (user3);
 
   GList *users = gsad_session_get_users_by_username ("username1");
   assert_that (g_list_length (users), is_equal_to (2));
@@ -157,12 +163,11 @@ Ensure (gsad_session, should_allow_to_remove_user)
     gsad_user_new_with_data ("username1", "password1", "timezone1",
                              "capabilities1", "language1", "address1", "jwt1");
 
-  const gchar *token = gsad_user_get_token (user);
-  gsad_session_add_user (token, user);
+  gsad_session_add_user (user);
 
   assert_that (gsad_session_get_user_count (), is_equal_to (1));
 
-  gsad_session_remove_user (token);
+  gsad_session_remove_user (user);
 
   assert_that (gsad_session_get_user_count (), is_equal_to (0));
 
@@ -187,9 +192,9 @@ Ensure (gsad_session, should_remove_other_sessions)
     gsad_user_new_with_data ("username1", "password3", "timezone3",
                              "capabilities3", "language3", "address3", "jwt3");
 
-  gsad_session_add_user (gsad_user_get_token (user1), user1);
-  gsad_session_add_user (gsad_user_get_token (user2), user2);
-  gsad_session_add_user (gsad_user_get_token (user3), user3);
+  gsad_session_add_user (user1);
+  gsad_session_add_user (user2);
+  gsad_session_add_user (user3);
 
   assert_that (gsad_session_get_user_count (), is_equal_to (3));
 
@@ -219,10 +224,10 @@ Ensure (gsad_session, should_replace_user)
   assert_string_equal (gsad_user_get_token (user1),
                        gsad_user_get_token (user2));
 
-  gsad_session_add_user (gsad_user_get_token (user1), user1);
+  gsad_session_add_user (user1);
   assert_that (gsad_session_get_user_count (), is_equal_to (1));
 
-  gsad_session_replace_user_if_exists (gsad_user_get_token (user1), user2);
+  gsad_session_replace_user_if_exists (user2);
   assert_that (gsad_session_get_user_count (), is_equal_to (1));
 
   gsad_user_t *retrieved_user =
@@ -248,13 +253,13 @@ Ensure (gsad_session, should_not_replace_user_if_not_exists)
   assert_string_not_equal (gsad_user_get_token (user1),
                            gsad_user_get_token (user2));
 
-  gsad_session_replace_user_if_exists (gsad_user_get_token (user1), user1);
+  gsad_session_replace_user_if_exists (user1);
   assert_that (gsad_session_get_user_count (), is_equal_to (0));
 
-  gsad_session_add_user (gsad_user_get_token (user1), user1);
+  gsad_session_add_user (user1);
   assert_that (gsad_session_get_user_count (), is_equal_to (1));
 
-  gsad_session_replace_user_if_exists (gsad_user_get_token (user2), user2);
+  gsad_session_replace_user_if_exists (user2);
   assert_that (gsad_session_get_user_count (), is_equal_to (1));
 
   gsad_user_t *retrieved_user;
@@ -280,6 +285,7 @@ main (int argc, char **argv)
 
   add_test_with_context (suite, gsad_session, should_add_and_get_user);
   add_test_with_context (suite, gsad_session, should_allow_to_add_user_twice);
+  add_test_with_context (suite, gsad_session, should_allow_to_add_null_user);
   add_test_with_context (suite, gsad_session,
                          should_allow_to_get_users_by_username);
   add_test_with_context (

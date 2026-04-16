@@ -28,7 +28,7 @@ gsad_user_session_logout (gsad_user_t *user)
       if (fuser->username && fuser->password)
         logout_gmp (fuser->username, fuser->password);
 
-      gsad_session_remove_user (fuser->token);
+      gsad_session_remove_user (fuser);
       gsad_user_free (fuser);
     }
 }
@@ -71,7 +71,7 @@ gsad_user_session_add (gsad_user_t *user)
         {
           if (current_user->username && current_user->password)
             logout_gmp (current_user->username, current_user->password);
-          gsad_session_remove_user (current_user->token);
+          gsad_session_remove_user (current_user);
         }
       else
         session_count++;
@@ -85,7 +85,7 @@ gsad_user_session_add (gsad_user_t *user)
   if (session_limit && (session_count >= session_limit))
     return 1;
 
-  gsad_session_add_user (user->token, user);
+  gsad_session_add_user (user);
 
   return 0;
 }
@@ -123,7 +123,7 @@ gsad_user_session_find (const gchar *cookie, const gchar *token,
         {
           if (user->username && user->password)
             logout_gmp (user->username, user->password);
-          gsad_session_remove_user (user->token);
+          gsad_session_remove_user (user);
           gsad_user_free (user);
           return USER_EXPIRED_TOKEN;
         }

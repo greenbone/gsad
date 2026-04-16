@@ -197,18 +197,22 @@ gsad_session_get_users_by_username (const gchar *username)
  * If a user with the same token already exists, it is removed before adding the
  * new user.
  *
- * @param[in]  id     Unique identifier (token).
- * @param[in]  user   User to add. The session will make a copy of the user, so
+ * @param[in]  user User to add. The session will make a copy of the user, so
  * the caller retains ownership of the user object and is responsible for
  * freeing it. The session will free the user object when it is removed from the
  * session.
  */
 void
-gsad_session_add_user (const gchar *id, gsad_user_t *user)
+gsad_session_add_user (gsad_user_t *user)
 {
+  if (!user)
+    {
+      return;
+    }
+
   g_mutex_lock (mutex);
 
-  gsad_session_remove_user_internal (id);
+  gsad_session_remove_user_internal (gsad_user_get_token (user));
 
   gsad_session_add_user_internal (user);
 
@@ -218,17 +222,23 @@ gsad_session_add_user (const gchar *id, gsad_user_t *user)
 /**
  * @brief Remove a user from the session "database"
  *
- * If the id is NULL or no user with the given id exists, this function does
- * nothing.
+ * If the user is NULL or no user with the given token exists, this function
+ * does nothing.
  *
- * @param[in]  id  Unique identifier.
+ * @param[in]  user  User to remove. The user is identified by the token of the
+ * user object.
  */
 void
-gsad_session_remove_user (const gchar *id)
+gsad_session_remove_user (gsad_user_t *user)
 {
+  if (!user)
+    {
+      return;
+    }
+
   g_mutex_lock (mutex);
 
-  gsad_session_remove_user_internal (id);
+  gsad_session_remove_user_internal (gsad_user_get_token (user));
 
   g_mutex_unlock (mutex);
 }
@@ -237,18 +247,18 @@ gsad_session_remove_user (const gchar *id)
  * @brief Replace a user in the session "database" if it exists, otherwise the
  * user is discarded and not added to the session.
  *
- * @param[in]  id     Unique identifier (token).
- * @param[in]  user   User to add. The session will make a copy of the user, so
+ * @param[in]  user  User to replace. The user is identified by the token of the
+ * user object. The session will make a copy of the user, so
  * the caller retains ownership of the user object and is responsible for
  * freeing it. The session will free the user object when it is removed from the
  * session.
  */
 void
-gsad_session_replace_user_if_exists (const gchar *id, gsad_user_t *user)
+gsad_session_replace_user_if_exists (gsad_user_t *user)
 {
   g_mutex_lock (mutex);
 
-  if (gsad_session_remove_user_internal (id))
+  if (gsad_session_remove_user_internal (gsad_user_get_token (user)))
     {
       gsad_session_add_user_internal (user);
     }
