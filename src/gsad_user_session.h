@@ -13,9 +13,6 @@
 
 #include "gsad_user.h"
 
-void
-gsad_user_session_logout (gsad_user_t *user);
-
 int
 gsad_user_session_find (const gchar *cookie, const gchar *token,
                         const char *address, gsad_user_t **user_return);

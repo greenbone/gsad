@@ -276,6 +276,45 @@ Ensure (gsad_session, should_not_replace_user_if_not_exists)
   gsad_user_free (user2);
 }
 
+Ensure (gsad_session, should_allow_to_logout_with_unknown_user)
+{
+  gsad_user_t *user1 =
+    gsad_user_new_with_data ("username1", "password1", "timezone1",
+                             "capabilities1", "language1", "address1", "jwt1");
+  gsad_user_t *user2 =
+    gsad_user_new_with_data ("username1", "password1", "timezone1",
+                             "capabilities1", "language1", "address1", "jwt1");
+
+  gsad_session_add_user (user1);
+  assert_that (gsad_session_get_user_count (), is_equal_to (1));
+
+  gsad_session_logout_user (user2);
+  assert_that (gsad_session_get_user_count (), is_equal_to (1));
+
+  gsad_user_free (user1);
+  gsad_user_free (user2);
+}
+
+Ensure (gsad_session, should_allow_to_logout_user)
+{
+  gsad_user_t *user =
+    gsad_user_new_with_data ("username1", "password1", "timezone1",
+                             "capabilities1", "language1", "address1", "jwt1");
+  gsad_session_add_user (user);
+  assert_that (gsad_session_get_user_count (), is_equal_to (1));
+
+  gsad_session_logout_user (user);
+  assert_that (gsad_session_get_user_count (), is_equal_to (0));
+
+  gsad_user_free (user);
+}
+
+Ensure (gsad_session, should_allow_to_logout_null_user)
+{
+  gsad_session_logout_user (NULL);
+  assert_that (gsad_session_get_user_count (), is_equal_to (0));
+}
+
 int
 main (int argc, char **argv)
 {
@@ -304,6 +343,10 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_session, should_replace_user);
   add_test_with_context (suite, gsad_session,
                          should_not_replace_user_if_not_exists);
+  add_test_with_context (suite, gsad_session,
+                         should_allow_to_logout_with_unknown_user);
+  add_test_with_context (suite, gsad_session, should_allow_to_logout_user);
+  add_test_with_context (suite, gsad_session, should_allow_to_logout_null_user);
 
   if (argc > 1)
     ret = run_single_test (suite, argv[1], create_text_reporter ());

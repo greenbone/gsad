@@ -8,11 +8,12 @@
 #include "gsad_credentials.h" /* for gsad_credentials_t and related functions */
 #include "gsad_gmp.h"         /* for manager_connect */
 #include "gsad_http_handler.h"
-#include "gsad_i18n.h"       /* for accept_language_to_env_fmt */
-#include "gsad_manager.h"    /* for gsad_manager_connect_with_credentials */
-#include "gsad_params_mhd.h" /* for params_mhd_add */
-#include "gsad_user_session.h" /* for gsad_user_session_find and gsad_user_session_logout */
-#include "validator.h" /* for gvm_validate */
+#include "gsad_i18n.h"         /* for accept_language_to_env_fmt */
+#include "gsad_manager.h"      /* for gsad_manager_connect_with_credentials */
+#include "gsad_params_mhd.h"   /* for params_mhd_add */
+#include "gsad_session.h"      /* for gsad_session_logout_user */
+#include "gsad_user_session.h" /* for gsad_user_session_find */
+#include "validator.h"         /* for gvm_validate */
 
 #include <gvm/base/networking.h>  /* for INET6_ADDRSTRLEN */
 #include <gvm/util/serverutils.h> /* for gvm_connection_t */
@@ -347,9 +348,9 @@ gsad_http_handle_logout (gsad_http_handler_t *handler_next, void *handler_data,
 {
   gsad_user_t *user = (gsad_user_t *) data;
 
-  if (user != NULL)
+  if (user)
     {
-      gsad_user_session_logout (user);
+      gsad_session_logout_user (user);
 
       g_debug ("Logged out user %s\n", gsad_user_get_username (user));
 

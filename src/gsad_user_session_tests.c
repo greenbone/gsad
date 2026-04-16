@@ -333,39 +333,6 @@ Ensure (gsad_user_session, should_allow_to_find_user)
   gsad_user_free (user);
 }
 
-Ensure (gsad_user_session, should_allow_to_logout_with_unknown_user)
-{
-  gsad_user_t *user1 =
-    gsad_user_new_with_data ("username1", "password1", "timezone1",
-                             "capabilities1", "language1", "address1", "jwt1");
-  gsad_user_t *user2 =
-    gsad_user_new_with_data ("username1", "password1", "timezone1",
-                             "capabilities1", "language1", "address1", "jwt1");
-
-  gsad_user_session_add (user1);
-  assert_that (gsad_session_get_user_count (), is_equal_to (1));
-
-  gsad_user_session_logout (user2);
-  assert_that (gsad_session_get_user_count (), is_equal_to (1));
-
-  gsad_user_free (user1);
-  gsad_user_free (user2);
-}
-
-Ensure (gsad_user_session, should_allow_to_logout_user)
-{
-  gsad_user_t *user =
-    gsad_user_new_with_data ("username1", "password1", "timezone1",
-                             "capabilities1", "language1", "address1", "jwt1");
-  gsad_user_session_add (user);
-  assert_that (gsad_session_get_user_count (), is_equal_to (1));
-
-  gsad_user_session_logout (user);
-  assert_that (gsad_session_get_user_count (), is_equal_to (0));
-
-  gsad_user_free (user);
-}
-
 int
 main (int argc, char **argv)
 {
@@ -405,9 +372,6 @@ main (int argc, char **argv)
     suite, gsad_user_session,
     should_return_ip_address_missmatch_for_user_find_with_ip_address_mismatch);
   add_test_with_context (suite, gsad_user_session, should_allow_to_find_user);
-  add_test_with_context (suite, gsad_user_session,
-                         should_allow_to_logout_with_unknown_user);
-  add_test_with_context (suite, gsad_user_session, should_allow_to_logout_user);
 
   int ret = run_test_suite (suite, create_text_reporter ());
   destroy_test_suite (suite);

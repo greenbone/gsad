@@ -12,28 +12,6 @@
 #include "gsad_utils.h" /* for str_equal */
 
 /**
- * @brief Logout a user and remove the session of the user.
- *
- * @param[in]  user  User to logout.
- *
- * @return 0 success, -1 error.
- */
-void
-gsad_user_session_logout (gsad_user_t *user)
-{
-  gsad_user_t *fuser = gsad_session_get_user_by_id (user->token);
-
-  if (fuser)
-    {
-      if (fuser->username && fuser->password)
-        logout_gmp (fuser->username, fuser->password);
-
-      gsad_session_remove_user (fuser);
-      gsad_user_free (fuser);
-    }
-}
-
-/**
  * @brief Check if a user's session has expired
  *
  * @param[in] user User to check for session expiration.
