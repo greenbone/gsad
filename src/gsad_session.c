@@ -264,22 +264,3 @@ gsad_session_remove_other_sessions (const gchar *keep_id, const gchar *username)
 
   g_mutex_unlock (mutex);
 }
-
-/**
- * @brief Update timestamp of given user to now
- *
- * @param[in] id  ID of the session
- */
-void
-gsad_session_renew_user (const gchar *id)
-{
-  g_mutex_lock (mutex);
-
-  gsad_user_t *user = gsad_session_get_user_by_id_internal (id);
-  if (user)
-    {
-      gsad_user_session_renew_timeout (user);
-    }
-
-  g_mutex_unlock (mutex);
-}

@@ -93,8 +93,7 @@ gsad_user_session_add (gsad_user_t *user)
 /**
  * @brief Find a user in the session, given a token and cookie.
  *
- * If a user is returned, the session of the user is renewed and it's up to the
- * caller to free the user.
+ * If a user is returned it's up to the caller to free the user.
  *
  * @param[in]   cookie       Token in cookie.
  * @param[in]   token        Token request parameter.
@@ -143,8 +142,6 @@ gsad_user_session_find (const gchar *cookie, const gchar *token,
         }
       else
         {
-          gsad_session_renew_user (user->token);
-
           *user_return = user;
           return USER_OK;
         }
@@ -171,7 +168,11 @@ gsad_user_session_get_timeout (gsad_user_t *user)
 }
 
 /**
- * @brief Renew a user's session by updating the login time to the current time.
+ * @brief Renew the session timeout by updating the login time to the current
+ * time.
+ *
+ * To make this change permanent, the user must be added again to the session
+ * store after calling this function.
  *
  * @param[in] user User whose session is to be renewed.
  */
