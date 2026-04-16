@@ -76,8 +76,10 @@ gsad_session_get_user_by_id_internal (const gchar *id)
  * @brief Remove a user from the session "database" without locking the mutex.
  *
  * @param[in]  id  Unique identifier (token).
+ *
+ * @return TRUE if a user was removed, FALSE otherwise.
  */
-void
+gboolean
 gsad_session_remove_user_internal (const gchar *id)
 {
   gsad_user_t *user = gsad_session_get_user_by_id_internal (id);
@@ -86,8 +88,9 @@ gsad_session_remove_user_internal (const gchar *id)
     {
       // user is freed by the free function of the users array, so we only need
       // to remove it
-      g_ptr_array_remove (users, (gpointer) user);
+      return g_ptr_array_remove (users, (gpointer) user);
     }
+  return FALSE;
 }
 
 /**
@@ -191,6 +194,9 @@ gsad_session_get_users_by_username (const gchar *username)
 /**
  * @brief Add user to the session "database"
  *
+ * If a user with the same token already exists, it is removed before adding the
+ * new user.
+ *
  * @param[in]  id     Unique identifier (token).
  * @param[in]  user   User to add. The session will make a copy of the user, so
  * the caller retains ownership of the user object and is responsible for
@@ -212,6 +218,9 @@ gsad_session_add_user (const gchar *id, gsad_user_t *user)
 /**
  * @brief Remove a user from the session "database"
  *
+ * If the id is NULL or no user with the given id exists, this function does
+ * nothing.
+ *
  * @param[in]  id  Unique identifier.
  */
 void
@@ -220,6 +229,29 @@ gsad_session_remove_user (const gchar *id)
   g_mutex_lock (mutex);
 
   gsad_session_remove_user_internal (id);
+
+  g_mutex_unlock (mutex);
+}
+
+/**
+ * @brief Replace a user in the session "database" if it exists, otherwise the
+ * user is discarded and not added to the session.
+ *
+ * @param[in]  id     Unique identifier (token).
+ * @param[in]  user   User to add. The session will make a copy of the user, so
+ * the caller retains ownership of the user object and is responsible for
+ * freeing it. The session will free the user object when it is removed from the
+ * session.
+ */
+void
+gsad_session_replace_user_if_exists (const gchar *id, gsad_user_t *user)
+{
+  g_mutex_lock (mutex);
+
+  if (gsad_session_remove_user_internal (id))
+    {
+      gsad_session_add_user_internal (user);
+    }
 
   g_mutex_unlock (mutex);
 }

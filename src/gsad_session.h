@@ -19,6 +19,9 @@ void
 gsad_session_add_user (const gchar *id, gsad_user_t *user);
 
 void
+gsad_session_replace_user_if_exists (const gchar *id, gsad_user_t *user);
+
+void
 gsad_session_remove_user (const gchar *id);
 
 gsad_user_t *
