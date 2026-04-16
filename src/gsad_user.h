@@ -85,4 +85,7 @@ gsad_user_get_capabilities (gsad_user_t *user);
 time_t
 gsad_user_get_time (gsad_user_t *user);
 
+void
+gsad_user_renew_time (gsad_user_t *user);
+
 #endif /* _GSAD_USER_H_ */

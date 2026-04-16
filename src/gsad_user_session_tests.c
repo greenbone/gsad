@@ -142,21 +142,6 @@ Ensure (gsad_user_session, should_check_session_expiration)
   gsad_user_free (user);
 }
 
-Ensure (gsad_user_session, should_allow_to_renew_session_timeout)
-{
-  gsad_user_t *user =
-    gsad_user_new_with_data ("username1", "password1", "timezone1",
-                             "capabilities1", "language1", "address1", "jwt1");
-  user->time = 0;
-  assert_equal (gsad_user_get_time (user), 0);
-
-  gsad_user_session_renew_timeout (user);
-
-  assert_that (gsad_user_get_time (user), is_not_equal_to (0));
-
-  gsad_user_free (user);
-}
-
 Ensure (gsad_user_session, should_allow_to_get_the_timeout)
 {
   int timeout_in_minutes = 10;
@@ -333,6 +318,40 @@ Ensure (gsad_user_session, should_allow_to_find_user)
   gsad_user_free (user);
 }
 
+Ensure (gsad_user_session, should_allow_to_renew_timeout_with_null_user)
+{
+  gsad_user_session_renew_timeout (NULL);
+  assert_that (gsad_session_get_user_count (), is_equal_to (0));
+}
+
+Ensure (gsad_user_session, should_allow_to_renew_timeout)
+{
+  gsad_user_t *user =
+    gsad_user_new_with_data ("username1", "password1", "timezone1",
+                             "capabilities1", "language1", "address1", "jwt1");
+  user->time = 0;
+  assert_equal (gsad_user_get_time (user), 0);
+  gsad_session_add_user (user);
+
+  gsad_user_t *retrieved_user;
+  retrieved_user = gsad_session_get_user_by_id (gsad_user_get_token (user));
+  assert_that (retrieved_user, is_not_null);
+  assert_that (gsad_user_get_time (retrieved_user), is_equal_to (0));
+
+  gsad_user_free (retrieved_user);
+
+  gsad_user_session_renew_timeout (user);
+
+  assert_that (gsad_user_get_time (user), is_not_equal_to (0));
+
+  retrieved_user = gsad_session_get_user_by_id (gsad_user_get_token (user));
+  assert_that (retrieved_user, is_not_null);
+  assert_that (gsad_user_get_time (retrieved_user), is_not_equal_to (0));
+
+  gsad_user_free (retrieved_user);
+  gsad_user_free (user);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -346,8 +365,6 @@ main (int argc, char **argv)
                          should_remove_expired_sessions);
   add_test_with_context (suite, gsad_user_session,
                          should_check_session_expiration);
-  add_test_with_context (suite, gsad_user_session,
-                         should_allow_to_renew_session_timeout);
   add_test_with_context (suite, gsad_user_session,
                          should_allow_to_get_the_timeout);
   add_test_with_context (
@@ -372,6 +389,10 @@ main (int argc, char **argv)
     suite, gsad_user_session,
     should_return_ip_address_missmatch_for_user_find_with_ip_address_mismatch);
   add_test_with_context (suite, gsad_user_session, should_allow_to_find_user);
+  add_test_with_context (suite, gsad_user_session,
+                         should_allow_to_renew_timeout_with_null_user);
+  add_test_with_context (suite, gsad_user_session,
+                         should_allow_to_renew_timeout);
 
   int ret = run_test_suite (suite, create_text_reporter ());
   destroy_test_suite (suite);

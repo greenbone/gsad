@@ -16,12 +16,6 @@ logout_gmp (const gchar *username, const gchar *password)
   return 0;
 }
 
-void
-gsad_user_session_renew_timeout (gsad_user_t *user)
-{
-  user->time = 0;
-}
-
 Describe (gsad_session);
 BeforeEach (gsad_session)
 {
