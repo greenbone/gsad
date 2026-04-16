@@ -20212,7 +20212,9 @@ renew_session_gmp (gvm_connection_t *connection,
   gchar *html;
   gchar *message;
   gsad_user_t *user = gsad_credentials_get_user (credentials);
-  gsad_session_renew_user (gsad_user_get_token (user));
+
+  gsad_user_session_renew_timeout (user);
+  gsad_session_add_user (gsad_user_get_token (user), user);
 
   message = g_strdup_printf ("%ld", gsad_user_session_get_timeout (user));
 

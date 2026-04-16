@@ -294,9 +294,14 @@ Ensure (
 
 Ensure (gsad_user_session, should_allow_to_find_user)
 {
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
+  gsad_settings_set_session_timeout (gsad_global_settings, 600);
   gsad_user_t *user =
     gsad_user_new_with_data ("username1", "password1", "timezone1",
                              "capabilities1", "language1", "address1", "jwt1");
+  // set the user time to 10 seconds ago to test
+  // that the session of the retrieved user is not renewed when found
+  user->time = user->time - 10;
   gsad_user_session_add (user);
   assert_that (gsad_session_get_user_count (), is_equal_to (1));
 
@@ -321,6 +326,8 @@ Ensure (gsad_user_session, should_allow_to_find_user)
   assert_that (gsad_user_get_client_address (user_return),
                is_equal_to_string ("address1"));
   assert_that (gsad_user_get_jwt (user_return), is_equal_to_string ("jwt1"));
+  assert_that (gsad_user_get_time (user_return),
+               is_equal_to (gsad_user_get_time (user)));
 
   gsad_user_free (user_return);
   gsad_user_free (user);

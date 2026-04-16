@@ -31,9 +31,6 @@ void
 gsad_session_remove_other_sessions (const gchar *id, const gchar *user);
 
 void
-gsad_session_renew_user (const gchar *id);
-
-void
 gsad_session_init (void);
 
 void

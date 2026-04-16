@@ -208,36 +208,6 @@ Ensure (gsad_session, should_remove_other_sessions)
   gsad_user_free (user3);
 }
 
-Ensure (gsad_session, should_renew_user)
-{
-  gsad_user_t *retrieved_user;
-
-  gsad_user_t *user =
-    gsad_user_new_with_data ("username1", "password1", "timezone1",
-                             "capabilities1", "language1", "address1", "jwt1");
-
-  const gchar *token = gsad_user_get_token (user);
-  time_t timeout = gsad_user_get_time (user);
-  gsad_session_add_user (token, user);
-
-  assert_that (gsad_session_get_user_count (), is_equal_to (1));
-  retrieved_user = gsad_session_get_user_by_id (token);
-  assert_that (gsad_user_get_time (retrieved_user), is_equal_to (timeout));
-  gsad_user_free (retrieved_user);
-
-  gsad_session_renew_user (token);
-
-  assert_that (gsad_session_get_user_count (), is_equal_to (1));
-  retrieved_user = gsad_session_get_user_by_id (token);
-  assert_that (gsad_user_get_time (retrieved_user), is_not_equal_to (timeout));
-  gsad_user_free (retrieved_user);
-  retrieved_user = gsad_session_get_user_by_id (token);
-  assert_that (gsad_user_get_time (retrieved_user), is_equal_to (0));
-  gsad_user_free (retrieved_user);
-
-  gsad_user_free (user);
-}
-
 int
 main (int argc, char **argv)
 {
@@ -262,7 +232,6 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_session,
                          should_allow_to_remove_user_with_null);
   add_test_with_context (suite, gsad_session, should_remove_other_sessions);
-  add_test_with_context (suite, gsad_session, should_renew_user);
 
   if (argc > 1)
     ret = run_single_test (suite, argv[1], create_text_reporter ());
