@@ -1103,6 +1103,7 @@ Ensure (gsad_args, should_get_tls_certificate_filename)
   assert_that (gsad_args_get_tls_certificate_filename (args),
                is_equal_to_string (DEFAULT_GSAD_TLS_CERTIFICATE));
 
+  g_free (args->ssl_certificate_filename);
   args->ssl_certificate_filename = "/path/to/cert.pem";
   assert_that (gsad_args_get_tls_certificate_filename (args),
                is_equal_to_string ("/path/to/cert.pem"));
@@ -1119,6 +1120,7 @@ Ensure (gsad_args, should_get_tls_private_key_filename)
   assert_that (gsad_args_get_tls_private_key_filename (args),
                is_equal_to_string (DEFAULT_GSAD_TLS_PRIVATE_KEY));
 
+  g_free (args->ssl_private_key_filename);
   args->ssl_private_key_filename = "/path/to/key.pem";
   assert_that (gsad_args_get_tls_private_key_filename (args),
                is_equal_to_string ("/path/to/key.pem"));
@@ -1135,6 +1137,7 @@ Ensure (gsad_args, should_get_http_x_frame_options)
   assert_that (gsad_args_get_http_x_frame_options (args),
                is_equal_to_string (DEFAULT_GSAD_X_FRAME_OPTIONS));
 
+  g_free (args->http_frame_opts);
   args->http_frame_opts = "DENY";
   assert_that (gsad_args_get_http_x_frame_options (args),
                is_equal_to_string ("DENY"));
@@ -1151,6 +1154,7 @@ Ensure (gsad_args, should_get_http_content_security_policy)
   assert_that (gsad_args_get_http_content_security_policy (args),
                is_equal_to_string (DEFAULT_GSAD_CONTENT_SECURITY_POLICY));
 
+  g_free (args->http_csp);
   args->http_csp = "default-src 'self'";
   assert_that (gsad_args_get_http_content_security_policy (args),
                is_equal_to_string ("default-src 'self'"));
@@ -1166,6 +1170,7 @@ Ensure (gsad_args, should_get_http_coep)
   gsad_args_t *args = gsad_args_new ();
   assert_that (gsad_args_get_http_coep (args), is_null);
 
+  g_free (args->http_coep);
   args->http_coep = "require-corp";
   assert_that (gsad_args_get_http_coep (args),
                is_equal_to_string ("require-corp"));
@@ -1181,6 +1186,7 @@ Ensure (gsad_args, should_get_http_coop)
   gsad_args_t *args = gsad_args_new ();
   assert_that (gsad_args_get_http_coop (args), is_null);
 
+  g_free (args->http_coop);
   args->http_coop = "same-origin";
   assert_that (gsad_args_get_http_coop (args),
                is_equal_to_string ("same-origin"));
@@ -1196,6 +1202,7 @@ Ensure (gsad_args, should_get_http_corp)
   gsad_args_t *args = gsad_args_new ();
   assert_that (gsad_args_get_http_corp (args), is_null);
 
+  g_free (args->http_corp);
   args->http_corp = "same-origin";
   assert_that (gsad_args_get_http_corp (args),
                is_equal_to_string ("same-origin"));
@@ -1211,6 +1218,7 @@ Ensure (gsad_args, should_get_http_cors_origin)
   gsad_args_t *args = gsad_args_new ();
   assert_that (gsad_args_get_http_cors_origin (args), is_null);
 
+  g_free (args->http_cors);
   args->http_cors = "https://example.com";
   assert_that (gsad_args_get_http_cors_origin (args),
                is_equal_to_string ("https://example.com"));
@@ -1275,6 +1283,7 @@ Ensure (gsad_args, should_get_manager_unix_socket_path)
   assert_that (gsad_args_get_manager_unix_socket_path (args),
                is_equal_to_string (manager_unix_socket_default_path));
 
+  g_free (args->manager_unix_socket_path);
   args->manager_unix_socket_path = "/var/run/gsad_manager.sock";
   assert_that (gsad_args_get_manager_unix_socket_path (args),
                is_equal_to_string ("/var/run/gsad_manager.sock"));
@@ -1290,6 +1299,7 @@ Ensure (gsad_args, should_get_unix_socket_path)
   gsad_args_t *args = gsad_args_new ();
   assert_that (gsad_args_get_unix_socket_path (args), is_null);
 
+  g_free (args->unix_socket_path);
   args->unix_socket_path = "/var/run/gsad.sock";
   assert_that (gsad_args_get_unix_socket_path (args),
                is_equal_to_string ("/var/run/gsad.sock"));
@@ -1304,6 +1314,7 @@ Ensure (gsad_args, should_get_unix_socket_owner)
   gsad_args_t *args = gsad_args_new ();
   assert_that (gsad_args_get_unix_socket_owner (args), is_null);
 
+  g_free (args->unix_socket_owner);
   args->unix_socket_owner = "gsaduser";
   assert_that (gsad_args_get_unix_socket_owner (args),
                is_equal_to_string ("gsaduser"));
@@ -1318,6 +1329,7 @@ Ensure (gsad_args, should_get_unix_socket_group)
   gsad_args_t *args = gsad_args_new ();
   assert_that (gsad_args_get_unix_socket_group (args), is_null);
 
+  g_free (args->unix_socket_group);
   args->unix_socket_group = "gsadgroup";
   assert_that (gsad_args_get_unix_socket_group (args),
                is_equal_to_string ("gsadgroup"));
@@ -1332,6 +1344,7 @@ Ensure (gsad_args, should_get_unix_socket_mode)
   gsad_args_t *args = gsad_args_new ();
   assert_that (gsad_args_get_unix_socket_mode (args), is_null);
 
+  g_free (args->unix_socket_mode);
   args->unix_socket_mode = "0660";
   assert_that (gsad_args_get_unix_socket_mode (args),
                is_equal_to_string ("0660"));
@@ -1346,6 +1359,7 @@ Ensure (gsad_args, should_get_dh_params_filename)
   gsad_args_t *args = gsad_args_new ();
   assert_that (gsad_args_get_dh_params_filename (args), is_null);
 
+  g_free (args->dh_params_filename);
   args->dh_params_filename = "/path/to/dhparams.pem";
   assert_that (gsad_args_get_dh_params_filename (args),
                is_equal_to_string ("/path/to/dhparams.pem"));
@@ -1361,6 +1375,7 @@ Ensure (gsad_args, should_get_gnutls_priorities)
   gsad_args_t *args = gsad_args_new ();
   assert_that (gsad_args_get_gnutls_priorities (args), is_null);
 
+  g_free (args->gnutls_priorities);
   args->gnutls_priorities = "NORMAL:-VERS-ALL:+VERS-TLS1.3";
   assert_that (gsad_args_get_gnutls_priorities (args),
                is_equal_to_string ("NORMAL:-VERS-ALL:+VERS-TLS1.3"));
@@ -1376,6 +1391,7 @@ Ensure (gsad_args, should_get_drop_privileges)
   gsad_args_t *args = gsad_args_new ();
   assert_that (gsad_args_get_drop_privileges (args), is_null);
 
+  g_free (args->drop);
   args->drop = "someuser";
   assert_that (gsad_args_get_drop_privileges (args),
                is_equal_to_string ("someuser"));
@@ -1389,6 +1405,7 @@ Ensure (gsad_args, should_is_unix_socket_enabled)
 {
   gsad_args_t *args = gsad_args_new ();
 
+  g_free (args->unix_socket_path);
   args->unix_socket_path = "/var/run/gsad.sock";
   assert_that (gsad_args_is_unix_socket_enabled (args), is_true);
 
@@ -1545,6 +1562,7 @@ Ensure (gsad_args, should_validate_tls_private_key)
 {
   gsad_args_t *args = gsad_args_new ();
   args->http_only = TRUE;
+  g_free (args->ssl_private_key_filename);
   args->ssl_private_key_filename = NULL;
   assert_that (gsad_args_validate_tls_private_key (args), is_equal_to (0));
 
@@ -1553,6 +1571,7 @@ Ensure (gsad_args, should_validate_tls_private_key)
   assert_that (gsad_args_validate_tls_private_key (args), is_equal_to (1));
 
   args->http_only = FALSE;
+  g_free (args->ssl_private_key_filename);
   args->ssl_private_key_filename = "/path/to/key.pem";
   assert_that (gsad_args_validate_tls_private_key (args), is_equal_to (2));
 
@@ -1568,6 +1587,7 @@ Ensure (gsad_args, should_validate_tls_certificate)
 {
   gsad_args_t *args = gsad_args_new ();
   args->http_only = TRUE;
+  g_free (args->ssl_certificate_filename);
   args->ssl_certificate_filename = NULL;
   assert_that (gsad_args_validate_tls_certificate (args), is_equal_to (0));
 
@@ -1576,6 +1596,7 @@ Ensure (gsad_args, should_validate_tls_certificate)
   assert_that (gsad_args_validate_tls_certificate (args), is_equal_to (1));
 
   args->http_only = FALSE;
+  g_free (args->ssl_certificate_filename);
   args->ssl_certificate_filename = "/path/to/cert.pem";
   assert_that (gsad_args_validate_tls_certificate (args), is_equal_to (2));
 
