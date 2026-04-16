@@ -208,6 +208,21 @@ Ensure (gsad_user, should_free_null_user)
   gsad_user_free (NULL);
 }
 
+Ensure (gsad_user, should_allow_to_renew_time)
+{
+  gsad_user_t *user =
+    gsad_user_new_with_data ("username1", "password1", "timezone1",
+                             "capabilities1", "language1", "address1", "jwt1");
+  user->time = 0;
+  assert_equal (gsad_user_get_time (user), 0);
+
+  gsad_user_renew_time (user);
+
+  assert_that (gsad_user_get_time (user), is_not_equal_to (0));
+
+  gsad_user_free (user);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -227,6 +242,7 @@ main (int argc, char **argv)
                          should_set_language_to_browser_language);
   add_test_with_context (suite, gsad_user, should_set_language_to_null);
   add_test_with_context (suite, gsad_user, should_free_null_user);
+  add_test_with_context (suite, gsad_user, should_allow_to_renew_time);
 
   if (argc > 1)
     ret = run_single_test (suite, argv[1], create_text_reporter ());

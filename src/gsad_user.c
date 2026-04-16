@@ -346,3 +346,19 @@ gsad_user_set_username (gsad_user_t *user, const gchar *username)
   g_free (user->username);
   user->username = g_strdup (username);
 }
+
+/**
+ * @brief Renew the login time of the user to the current time.
+ *
+ * To extend the a session timeout, the login time of the user can be renewed to
+ * the current time. This function does not update the session store with the
+ * renewed login time, so after calling this function the user should be
+ * replaced in the session store.
+ *
+ * @param[in] user User whose login time is to be renewed.
+ */
+void
+gsad_user_renew_time (gsad_user_t *user)
+{
+  user->time = time (NULL);
+}

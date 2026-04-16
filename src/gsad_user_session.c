@@ -146,16 +146,20 @@ gsad_user_session_get_timeout (gsad_user_t *user)
 }
 
 /**
- * @brief Renew the session timeout by updating the login time to the current
- * time.
+ * @brief Renew the session timeout of a user by updating the login time to the
+ * current time and replacing the user in the session store with the updated
+ * user.
  *
- * To make this change permanent, the user must be added again to the session
- * store after calling this function.
- *
- * @param[in] user User whose session is to be renewed.
+ * This function should be called when the session timeout of a user needs to be
+ * extended.
  */
 void
 gsad_user_session_renew_timeout (gsad_user_t *user)
 {
-  user->time = time (NULL);
+  if (!user)
+    {
+      return;
+    }
+  gsad_user_renew_time (user);
+  gsad_session_replace_user_if_exists (user);
 }
