@@ -104,8 +104,8 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
      "<number>"},
     {"debug-tls", 0, 0, G_OPTION_ARG_INT, &args->debug_tls,
      "Enable TLS debugging at <level>", "<level>"},
-    {"gnutls-priorities", 0, 0, G_OPTION_ARG_STRING,
-     &gnutls_priorities, "GnuTLS priorities string.", "<string>"},
+    {"gnutls-priorities", 0, 0, G_OPTION_ARG_STRING, &gnutls_priorities,
+     "GnuTLS priorities string.", "<string>"},
     {"http-frame-opts", 0, 0, G_OPTION_ARG_STRING, &http_frame_opts,
      "X-Frame-Options HTTP header.  Defaults to "
      "\"" DEFAULT_GSAD_X_FRAME_OPTIONS "\".",
@@ -130,14 +130,14 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
     {"unix-socket", 0, 0, G_OPTION_ARG_FILENAME, &unix_socket_path,
      "Path to unix socket to listen on. Set to listen on a unix socket.",
      "<file>"},
-    {"unix-socket-owner", 0, 0, G_OPTION_ARG_STRING,
-     &unix_socket_owner, "Owner of the unix socket", "<string>"},
-    {"unix-socket-group", 0, 0, G_OPTION_ARG_STRING,
-     &unix_socket_group, "Group of the unix socket", "<string>"},
+    {"unix-socket-owner", 0, 0, G_OPTION_ARG_STRING, &unix_socket_owner,
+     "Owner of the unix socket", "<string>"},
+    {"unix-socket-group", 0, 0, G_OPTION_ARG_STRING, &unix_socket_group,
+     "Group of the unix socket", "<string>"},
     {"unix-socket-mode", 0, 0, G_OPTION_ARG_STRING, &unix_socket_mode,
      "File mode of the unix socket", "<string>"},
-    {"munix-socket", 0, 0, G_OPTION_ARG_FILENAME,
-     &manager_unix_socket_path, "Path to Manager unix socket", "<file>"},
+    {"munix-socket", 0, 0, G_OPTION_ARG_FILENAME, &manager_unix_socket_path,
+     "Path to Manager unix socket", "<file>"},
     {"http-coep", 0, 0, G_OPTION_ARG_STRING, &http_coep,
      "Set Cross-Origin-Embedder-Policy (COEP) http header ", "<coep>"},
     {"http-coop", 0, 0, G_OPTION_ARG_STRING, &http_coop,
@@ -151,8 +151,7 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
      "Set maximum number of active sessions per user. 0 for unlimited. "
      "Defaults to 0.",
      "<max-sessions>"},
-    {"log-config", 0, 0, G_OPTION_ARG_FILENAME,
-     &gsad_log_config_filename,
+    {"log-config", 0, 0, G_OPTION_ARG_FILENAME, &gsad_log_config_filename,
      "Path to logging configuration file. Defaults to " GSAD_CONFIG_DIR
      "gsad_log.conf",
      "<file>"},
@@ -185,105 +184,125 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
 
   g_option_context_free (option_context);
 
-  if (drop) {
-    g_free (args->drop);
-    args->drop = drop;
-  }
+  if (drop)
+    {
+      g_free (args->drop);
+      args->drop = drop;
+    }
 
-  if (gnutls_priorities) {
-    g_free (args->gnutls_priorities);
-    args->gnutls_priorities = gnutls_priorities;
-  }
+  if (gnutls_priorities)
+    {
+      g_free (args->gnutls_priorities);
+      args->gnutls_priorities = gnutls_priorities;
+    }
 
-  if (http_frame_opts) {
-    g_free (args->http_frame_opts);
-    args->http_frame_opts = http_frame_opts;
-  }
+  if (http_frame_opts)
+    {
+      g_free (args->http_frame_opts);
+      args->http_frame_opts = http_frame_opts;
+    }
 
-  if (http_csp) {
-    g_free (args->http_csp);
-    args->http_csp = http_csp;
-  }
+  if (http_csp)
+    {
+      g_free (args->http_csp);
+      args->http_csp = http_csp;
+    }
 
-  if (unix_socket_owner) {
-    g_free (args->unix_socket_owner);
-    args->unix_socket_owner = unix_socket_owner;
-  }
+  if (unix_socket_owner)
+    {
+      g_free (args->unix_socket_owner);
+      args->unix_socket_owner = unix_socket_owner;
+    }
 
-  if (unix_socket_group) {
-    g_free (args->unix_socket_group);
-    args->unix_socket_group = unix_socket_group;
-  }
+  if (unix_socket_group)
+    {
+      g_free (args->unix_socket_group);
+      args->unix_socket_group = unix_socket_group;
+    }
 
-  if (unix_socket_mode) {
-    g_free (args->unix_socket_mode);
-    args->unix_socket_mode = unix_socket_mode;
-  }
+  if (unix_socket_mode)
+    {
+      g_free (args->unix_socket_mode);
+      args->unix_socket_mode = unix_socket_mode;
+    }
 
-  if (manager_unix_socket_path) {
-    g_free (args->manager_unix_socket_path);
-    args->manager_unix_socket_path = manager_unix_socket_path;
-  }
+  if (manager_unix_socket_path)
+    {
+      g_free (args->manager_unix_socket_path);
+      args->manager_unix_socket_path = manager_unix_socket_path;
+    }
 
-  if (http_coep) {
-    g_free (args->http_coep);
-    args->http_coep = http_coep;
-  }
+  if (http_coep)
+    {
+      g_free (args->http_coep);
+      args->http_coep = http_coep;
+    }
 
-  if (http_coop) {
-    g_free (args->http_coop);
-    args->http_coop = http_coop;
-  }
+  if (http_coop)
+    {
+      g_free (args->http_coop);
+      args->http_coop = http_coop;
+    }
 
-  if (http_corp) {
-    g_free (args->http_corp);
-    args->http_corp = http_corp;
-  }
+  if (http_corp)
+    {
+      g_free (args->http_corp);
+      args->http_corp = http_corp;
+    }
 
-  if (http_cors) {
-    g_free (args->http_cors);
-    args->http_cors = http_cors;
-  }
+  if (http_cors)
+    {
+      g_free (args->http_cors);
+      args->http_cors = http_cors;
+    }
 
-  if (ssl_private_key_filename) {
-    g_free (args->ssl_private_key_filename);
-    args->ssl_private_key_filename = ssl_private_key_filename;
-  }
+  if (ssl_private_key_filename)
+    {
+      g_free (args->ssl_private_key_filename);
+      args->ssl_private_key_filename = ssl_private_key_filename;
+    }
 
-  if (ssl_certificate_filename) {
-    g_free (args->ssl_certificate_filename);
-    args->ssl_certificate_filename = ssl_certificate_filename;
-  }
+  if (ssl_certificate_filename)
+    {
+      g_free (args->ssl_certificate_filename);
+      args->ssl_certificate_filename = ssl_certificate_filename;
+    }
 
-  if (dh_params_filename) {
-    g_free (args->dh_params_filename);
-    args->dh_params_filename = dh_params_filename;
-  }
+  if (dh_params_filename)
+    {
+      g_free (args->dh_params_filename);
+      args->dh_params_filename = dh_params_filename;
+    }
 
-  if (unix_socket_path) {
-    g_free (args->unix_socket_path);
-    args->unix_socket_path = unix_socket_path;
-  }
+  if (unix_socket_path)
+    {
+      g_free (args->unix_socket_path);
+      args->unix_socket_path = unix_socket_path;
+    }
 
-  if (gsad_log_config_filename) {
-    g_free (args->gsad_log_config_filename);
-    args->gsad_log_config_filename = gsad_log_config_filename;
-  }
+  if (gsad_log_config_filename)
+    {
+      g_free (args->gsad_log_config_filename);
+      args->gsad_log_config_filename = gsad_log_config_filename;
+    }
 
-  if (gsad_pid_filename) {
-    g_free (args->gsad_pid_filename);
-    args->gsad_pid_filename = gsad_pid_filename;
-  }
+  if (gsad_pid_filename)
+    {
+      g_free (args->gsad_pid_filename);
+      args->gsad_pid_filename = gsad_pid_filename;
+    }
 
-  if (gsad_static_content_directory) {
-    g_free (args->gsad_static_content_directory);
-    args->gsad_static_content_directory = gsad_static_content_directory;
-  }
+  if (gsad_static_content_directory)
+    {
+      g_free (args->gsad_static_content_directory);
+      args->gsad_static_content_directory = gsad_static_content_directory;
+    }
 
-  if (gsad_address_string) {
-    g_strfreev (args->gsad_address_string);
-    args->gsad_address_string = gsad_address_string;
-  }
+  if (gsad_address_string)
+    {
+      g_strfreev (args->gsad_address_string);
+      args->gsad_address_string = gsad_address_string;
+    }
 
   return 0;
 }
