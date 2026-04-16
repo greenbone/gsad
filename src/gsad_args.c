@@ -19,10 +19,42 @@
 int
 gsad_args_parse (int argc, char **argv, gsad_args_t *args)
 {
+  // Strings
+  gchar *drop, *gnutls_priorities, *http_frame_opts, *http_csp;
+  gchar *unix_socket_owner, *unix_socket_group, *unix_socket_mode;
+  gchar *http_coep, *http_coop, *http_corp, *http_cors;
+  // Filenames
+  gchar *manager_unix_socket_path;
+  gchar *ssl_private_key_filename, *ssl_certificate_filename;
+  gchar *dh_params_filename, *unix_socket_path;
+  gchar *gsad_log_config_filename, *gsad_pid_filename;
+  gchar *gsad_static_content_directory;
+
+  drop = NULL;
+  gnutls_priorities = NULL;
+  http_frame_opts = NULL;
+  http_csp = NULL;
+  unix_socket_owner = NULL;
+  unix_socket_group = NULL;
+  unix_socket_mode = NULL;
+  http_coep = NULL;
+  http_coop = NULL;
+  http_corp = NULL;
+  http_cors = NULL;
+
+  manager_unix_socket_path = NULL;
+  ssl_private_key_filename = NULL;
+  ssl_certificate_filename = NULL;
+  dh_params_filename = NULL;
+  unix_socket_path = NULL;
+  gsad_log_config_filename = NULL;
+  gsad_pid_filename = NULL;
+  gsad_static_content_directory = NULL;
+
   GError *error = NULL;
   GOptionContext *option_context;
   GOptionEntry option_entries[] = {
-    {"drop-privileges", 0, 0, G_OPTION_ARG_STRING, &args->drop,
+    {"drop-privileges", 0, 0, G_OPTION_ARG_STRING, &drop,
      "Drop privileges to <user>.", "<user>"},
     {"foreground", 'f', 0, G_OPTION_ARG_NONE, &args->foreground,
      "Run in foreground.", NULL},
@@ -41,16 +73,16 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
     {"version", 'V', 0, G_OPTION_ARG_NONE, &args->print_version,
      "Print version and exit.", NULL},
     {"ssl-private-key", 'k', 0, G_OPTION_ARG_FILENAME,
-     &args->ssl_private_key_filename,
+     &ssl_private_key_filename,
      "Use <file> as the private key for HTTPS. Defaults "
      "to " DEFAULT_GSAD_TLS_PRIVATE_KEY,
      "<file>"},
     {"ssl-certificate", 'c', 0, G_OPTION_ARG_FILENAME,
-     &args->ssl_certificate_filename,
+     &ssl_certificate_filename,
      "Use <file> as the certificate for HTTPS. Defaults "
      "to " DEFAULT_GSAD_TLS_CERTIFICATE,
      "<file>"},
-    {"dh-params", 0, 0, G_OPTION_ARG_FILENAME, &args->dh_params_filename,
+    {"dh-params", 0, 0, G_OPTION_ARG_FILENAME, &dh_params_filename,
      "Diffie-Hellman parameters file", "<file>"},
     {"do-chroot", 0, 0, G_OPTION_ARG_NONE, &args->do_chroot,
      "Do chroot into the static content directory.", NULL},
@@ -69,12 +101,12 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
     {"debug-tls", 0, 0, G_OPTION_ARG_INT, &args->debug_tls,
      "Enable TLS debugging at <level>", "<level>"},
     {"gnutls-priorities", 0, 0, G_OPTION_ARG_STRING,
-     &args->gnutls_priorities, "GnuTLS priorities string.", "<string>"},
-    {"http-frame-opts", 0, 0, G_OPTION_ARG_STRING, &args->http_frame_opts,
+     &gnutls_priorities, "GnuTLS priorities string.", "<string>"},
+    {"http-frame-opts", 0, 0, G_OPTION_ARG_STRING, &http_frame_opts,
      "X-Frame-Options HTTP header.  Defaults to "
      "\"" DEFAULT_GSAD_X_FRAME_OPTIONS "\".",
      "<frame-opts>"},
-    {"http-csp", 0, 0, G_OPTION_ARG_STRING, &args->http_csp,
+    {"http-csp", 0, 0, G_OPTION_ARG_STRING, &http_csp,
      "Content-Security-Policy HTTP header.  Defaults to "
      "\"" DEFAULT_GSAD_CONTENT_SECURITY_POLICY "\".",
      "<csp>"},
@@ -91,24 +123,24 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
      "Sets the maximum number of connections per ip. Use 0 for unlimited. "
      "Default is " G_STRINGIFY (DEFAULT_GSAD_PER_IP_CONNECTION_LIMIT) ".",
      "<number>"},
-    {"unix-socket", 0, 0, G_OPTION_ARG_FILENAME, &args->unix_socket_path,
+    {"unix-socket", 0, 0, G_OPTION_ARG_FILENAME, &unix_socket_path,
      "Path to unix socket to listen on. Set to listen on a unix socket.",
      "<file>"},
     {"unix-socket-owner", 0, 0, G_OPTION_ARG_STRING,
-     &args->unix_socket_owner, "Owner of the unix socket", "<string>"},
+     &unix_socket_owner, "Owner of the unix socket", "<string>"},
     {"unix-socket-group", 0, 0, G_OPTION_ARG_STRING,
-     &args->unix_socket_group, "Group of the unix socket", "<string>"},
-    {"unix-socket-mode", 0, 0, G_OPTION_ARG_STRING, &args->unix_socket_mode,
+     &unix_socket_group, "Group of the unix socket", "<string>"},
+    {"unix-socket-mode", 0, 0, G_OPTION_ARG_STRING, &unix_socket_mode,
      "File mode of the unix socket", "<string>"},
     {"munix-socket", 0, 0, G_OPTION_ARG_FILENAME,
-     &args->manager_unix_socket_path, "Path to Manager unix socket", "<file>"},
-    {"http-coep", 0, 0, G_OPTION_ARG_STRING, &args->http_coep,
+     &manager_unix_socket_path, "Path to Manager unix socket", "<file>"},
+    {"http-coep", 0, 0, G_OPTION_ARG_STRING, &http_coep,
      "Set Cross-Origin-Embedder-Policy (COEP) http header ", "<coep>"},
-    {"http-coop", 0, 0, G_OPTION_ARG_STRING, &args->http_coop,
+    {"http-coop", 0, 0, G_OPTION_ARG_STRING, &http_coop,
      "Set Cross-Origin-Resource-Policy (COOP) http header ", "<coop>"},
-    {"http-corp", 0, 0, G_OPTION_ARG_STRING, &args->http_corp,
+    {"http-corp", 0, 0, G_OPTION_ARG_STRING, &http_corp,
      "Set Cross-Origin-Resource-Policy (CORP) http header ", "<corp>"},
-    {"http-cors", 0, 0, G_OPTION_ARG_STRING, &args->http_cors,
+    {"http-cors", 0, 0, G_OPTION_ARG_STRING, &http_cors,
      "Set Cross-Origin Resource Sharing (CORS) allow origin http header ",
      "<cors>"},
     {"user-session-limit", 0, 0, G_OPTION_ARG_INT, &args->user_session_limit,
@@ -116,14 +148,14 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
      "Defaults to 0.",
      "<max-sessions>"},
     {"log-config", 0, 0, G_OPTION_ARG_FILENAME,
-     &args->gsad_log_config_filename,
+     &gsad_log_config_filename,
      "Path to logging configuration file. Defaults to " GSAD_CONFIG_DIR
      "gsad_log.conf",
      "<file>"},
-    {"pid-file", 0, 0, G_OPTION_ARG_FILENAME, &args->gsad_pid_filename,
+    {"pid-file", 0, 0, G_OPTION_ARG_FILENAME, &gsad_pid_filename,
      "Path to PID file. Defaults to " DEFAULT_GSAD_PID_FILE, "<file>"},
     {"static-content", 0, 0, G_OPTION_ARG_FILENAME,
-     &args->gsad_static_content_directory,
+     &gsad_static_content_directory,
      "Path to static content directory. Defaults "
      "to " DEFAULT_GSAD_STATIC_CONTENT_DIRECTORY,
      "<directory>"},
@@ -146,7 +178,104 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
       g_option_context_free (option_context);
       return 1;
     }
+
   g_option_context_free (option_context);
+
+  if (drop) {
+    g_free (args->drop);
+    args->drop = drop;
+  }
+
+  if (gnutls_priorities) {
+    g_free (args->gnutls_priorities);
+    args->gnutls_priorities = gnutls_priorities;
+  }
+
+  if (http_frame_opts) {
+    g_free (args->http_frame_opts);
+    args->http_frame_opts = http_frame_opts;
+  }
+
+  if (http_csp) {
+    g_free (args->http_csp);
+    args->http_csp = http_csp;
+  }
+
+  if (unix_socket_owner) {
+    g_free (args->unix_socket_owner);
+    args->unix_socket_owner = unix_socket_owner;
+  }
+
+  if (unix_socket_group) {
+    g_free (args->unix_socket_group);
+    args->unix_socket_group = unix_socket_group;
+  }
+
+  if (unix_socket_mode) {
+    g_free (args->unix_socket_mode);
+    args->unix_socket_mode = unix_socket_mode;
+  }
+
+  if (manager_unix_socket_path) {
+    g_free (args->manager_unix_socket_path);
+    args->manager_unix_socket_path = manager_unix_socket_path;
+  }
+
+  if (http_coep) {
+    g_free (args->http_coep);
+    args->http_coep = http_coep;
+  }
+
+  if (http_coop) {
+    g_free (args->http_coop);
+    args->http_coop = http_coop;
+  }
+
+  if (http_corp) {
+    g_free (args->http_corp);
+    args->http_corp = http_corp;
+  }
+
+  if (http_cors) {
+    g_free (args->http_cors);
+    args->http_cors = http_cors;
+  }
+
+  if (ssl_private_key_filename) {
+    g_free (args->ssl_private_key_filename);
+    args->ssl_private_key_filename = ssl_private_key_filename;
+  }
+
+  if (ssl_certificate_filename) {
+    g_free (args->ssl_certificate_filename);
+    args->ssl_certificate_filename = ssl_certificate_filename;
+  }
+
+  if (dh_params_filename) {
+    g_free (args->dh_params_filename);
+    args->dh_params_filename = dh_params_filename;
+  }
+
+  if (unix_socket_path) {
+    g_free (args->unix_socket_path);
+    args->unix_socket_path = unix_socket_path;
+  }
+
+  if (gsad_log_config_filename) {
+    g_free (args->gsad_log_config_filename);
+    args->gsad_log_config_filename = gsad_log_config_filename;
+  }
+
+  if (gsad_pid_filename) {
+    g_free (args->gsad_pid_filename);
+    args->gsad_pid_filename = gsad_pid_filename;
+  }
+
+  if (gsad_static_content_directory) {
+    g_free (args->gsad_static_content_directory);
+    args->gsad_static_content_directory = gsad_static_content_directory;
+  }
+
   return 0;
 }
 
