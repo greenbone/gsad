@@ -224,6 +224,9 @@ gsad_args_free (gsad_args_t *args)
       g_free (args->manager_unix_socket_path);
       g_free (args->gsad_pid_filename);
       g_free (args->gsad_static_content_directory);
+      g_free (args->http_coep);
+      g_free (args->http_coop);
+      g_free (args->http_corp);
       g_free (args->http_cors);
       g_free (args->http_csp);
       g_free (args->http_frame_opts);
