@@ -306,3 +306,31 @@ gsad_session_remove_other_sessions (const gchar *keep_id, const gchar *username)
 
   g_mutex_unlock (mutex);
 }
+
+/**
+ * @brief Logout a user and remove the session of the user.
+ *
+ * @param[in] user User to logout.
+ */
+void
+gsad_session_logout_user (gsad_user_t *user)
+{
+  if (!user)
+    {
+      return;
+    }
+
+  gsad_user_t *fuser = gsad_session_get_user_by_id (gsad_user_get_token (user));
+
+  if (fuser)
+    {
+      const gchar *username = gsad_user_get_username (fuser);
+      const gchar *password = gsad_user_get_password (fuser);
+
+      if (username && password)
+        logout_gmp (username, password);
+
+      gsad_session_remove_user (fuser);
+      gsad_user_free (fuser);
+    }
+}

@@ -24,6 +24,9 @@ gsad_session_replace_user_if_exists (gsad_user_t *);
 void
 gsad_session_remove_user (gsad_user_t *);
 
+void
+gsad_session_logout_user (gsad_user_t *);
+
 gsad_user_t *
 gsad_session_get_user_by_id (const gchar *);
 
