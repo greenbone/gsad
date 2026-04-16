@@ -1267,11 +1267,14 @@ Ensure (gsad_args, should_get_listen_addresses)
   gsad_args_t *args = gsad_args_new ();
   assert_that (gsad_args_get_listen_addresses (args), is_null);
 
+  g_strfreev (args->gsad_address_string);
   args->gsad_address_string = (char *[]){"127.0.0.1", "::1"};
   char **listen_addresses = gsad_args_get_listen_addresses (args);
   assert_that (listen_addresses, is_not_null);
   assert_that (listen_addresses[0], is_equal_to_string ("127.0.0.1"));
   assert_that (listen_addresses[1], is_equal_to_string ("::1"));
+  args->gsad_address_string = NULL;
+  gsad_args_free (args);
 }
 
 Ensure (gsad_args, should_get_manager_unix_socket_path)
