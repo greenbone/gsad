@@ -14233,7 +14233,7 @@ save_my_settings_gmp (gvm_connection_t *connection,
 
   if (user_changed)
     {
-      gsad_session_replace_user_if_exists (gsad_user_get_token (user), user);
+      gsad_session_replace_user_if_exists (user);
     }
 
   return envelope_gmp (connection, credentials, params,
@@ -19247,7 +19247,7 @@ change_password_gmp (gvm_connection_t *connection,
       gsad_user_set_password (user, passwd);
       gsad_session_remove_other_sessions (gsad_user_get_token (user),
                                           gsad_user_get_username (user));
-      gsad_session_replace_user_if_exists (gsad_user_get_token (user), user);
+      gsad_session_replace_user_if_exists (user);
     }
 
   cmd_response_data_set_content_type (response_data, GSAD_CONTENT_TYPE_APP_XML);
@@ -20214,7 +20214,7 @@ renew_session_gmp (gvm_connection_t *connection,
   gsad_user_t *user = gsad_credentials_get_user (credentials);
 
   gsad_user_session_renew_timeout (user);
-  gsad_session_replace_user_if_exists (gsad_user_get_token (user), user);
+  gsad_session_replace_user_if_exists (user);
 
   message = g_strdup_printf ("%ld", gsad_user_session_get_timeout (user));
 
