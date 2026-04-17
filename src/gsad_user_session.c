@@ -11,6 +11,12 @@
 #include "gsad_user_internal.h"
 #include "gsad_utils.h" /* for str_equal */
 
+#undef G_LOG_DOMAIN
+/**
+ * @brief GLib log domain.
+ */
+#define G_LOG_DOMAIN "gsad user session"
+
 /**
  * @brief Check if a user's session has expired
  *
@@ -100,8 +106,14 @@ gsad_user_session_find (const gchar *cookie, const gchar *token,
 
   if (user)
     {
+      g_debug ("Found user '%s' in session (time %ld)",
+               gsad_user_get_username (user), gsad_user_get_time (user));
+
       if (gsad_user_session_is_expired (user))
         {
+          g_debug ("Session expired for user '%s'",
+                   gsad_user_get_username (user));
+
           if (user->username && user->password)
             logout_gmp (user->username, user->password);
           gsad_session_remove_user (user);
@@ -111,6 +123,9 @@ gsad_user_session_find (const gchar *cookie, const gchar *token,
 
       else if ((cookie == NULL) || !str_equal (user->cookie, cookie))
         {
+          g_debug ("Cookie mismatch for user '%s': expected '%s', got '%s'",
+                   gsad_user_get_username (user), null_or_value (user->cookie),
+                   null_or_value (cookie));
           gsad_user_free (user);
           return USER_BAD_MISSING_COOKIE;
         }
@@ -118,6 +133,9 @@ gsad_user_session_find (const gchar *cookie, const gchar *token,
       /* Verify that the user address matches the client's address. */
       else if (address == NULL || !str_equal (address, user->address))
         {
+          g_debug ("IP address mismatch for user '%s': expected '%s', got '%s'",
+                   gsad_user_get_username (user), null_or_value (user->address),
+                   null_or_value (address));
           gsad_user_free (user);
           return USER_IP_ADDRESS_MISSMATCH;
         }
@@ -130,6 +148,7 @@ gsad_user_session_find (const gchar *cookie, const gchar *token,
 
   /* should it be really USER_EXPIRED_TOKEN?
    * No user has been found therefore the token couldn't even expire */
+  g_debug ("No user found for token");
   return USER_EXPIRED_TOKEN;
 }
 
