@@ -172,8 +172,8 @@ gsad_http_get_session_cookie_from_connection (
  * that occurred while getting the user information.
  */
 static int
-get_user_from_connection (gsad_http_connection_t *connection,
-                          gsad_user_t **user)
+gsad_http_get_user_from_connection (gsad_http_connection_t *connection,
+                                    gsad_user_t **user)
 {
   const gchar *cookie;
   const gchar *token;
@@ -229,7 +229,7 @@ gsad_http_handle_get_user (gsad_http_handler_t *handler_next,
                            gsad_connection_info_t *con_info, void *data)
 {
   gsad_user_t *user = NULL;
-  get_user_from_connection (connection, &user);
+  gsad_http_get_user_from_connection (connection, &user);
   return gsad_http_handler_call (handler_next, connection, con_info, user);
 }
 
@@ -265,7 +265,7 @@ gsad_http_handle_setup_user (gsad_http_handler_t *handler_next,
 
   gsad_user_t *user;
 
-  ret = get_user_from_connection (connection, &user);
+  ret = gsad_http_get_user_from_connection (connection, &user);
 
   if (ret == USER_GMP_DOWN)
     {
