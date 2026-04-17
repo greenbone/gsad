@@ -35,6 +35,174 @@
 #define G_LOG_DOMAIN "gsad http"
 
 /**
+ * @brief Internal function to attach expired SID cookie to response.
+ *
+ * @param[in]  response  Response.
+ *
+ * @return MHD_NO in case of problems. MHD_YES if all is OK.
+ */
+static gsad_http_result_t
+gsad_http_remove_sid (gsad_http_response_t *response)
+{
+  int ret;
+  gchar *value;
+  gchar *locale;
+  char expires[EXPIRES_LENGTH + 1];
+  struct tm expire_time_broken;
+  time_t expire_time;
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
+
+  /* Set up the expires param. */
+  locale = g_strdup (setlocale (LC_ALL, NULL));
+  setlocale (LC_ALL, "C");
+
+  expire_time = time (NULL);
+  if (localtime_r (&expire_time, &expire_time_broken) == NULL)
+    abort ();
+  ret = strftime (expires, EXPIRES_LENGTH, "%a, %d %b %Y %T GMT",
+                  &expire_time_broken);
+  if (ret == 0)
+    abort ();
+
+  setlocale (LC_ALL, locale);
+  g_free (locale);
+
+  /* Add the cookie.
+   *
+   * Tim Brown's suggested cookie included a domain attribute.  How would
+   * we get the domain in here?  Maybe a --domain option. */
+
+  value = g_strdup_printf (
+    SID_COOKIE_NAME "=0; expires=%s; path=/; %sHTTPonly; SameSite=strict",
+    expires,
+    (gsad_settings_enable_secure_cookie (gsad_global_settings) ? "secure; "
+                                                               : ""));
+  ret = MHD_add_response_header (response, "Set-Cookie", value);
+  g_free (value);
+  return ret;
+}
+
+/**
+ * @brief Internal function to attach SID cookie to a response, resetting
+ * "expire" arg.
+ *
+ * @param[in]  response  Response.
+ * @param[in]  sid       Session ID.
+ *
+ * @return MHD_NO in case of problems. MHD_YES if all is OK.
+ */
+static gsad_http_result_t
+gsad_http_attach_sid (gsad_http_response_t *response, const char *sid)
+{
+  int ret, timeout;
+  gchar *value;
+  gchar *locale;
+  char expires[EXPIRES_LENGTH + 1];
+  struct tm expire_time_broken;
+  time_t now, expire_time;
+  gchar *tz;
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
+
+  /* Set up the expires param. */
+
+  /* Store current TZ, switch to GMT. */
+  tz = getenv ("TZ") ? g_strdup (getenv ("TZ")) : NULL;
+  if (setenv ("TZ", "GMT", 1) == -1)
+    {
+      g_critical ("%s: failed to set TZ\n", __func__);
+      g_free (tz);
+      exit (EXIT_FAILURE);
+    }
+  tzset ();
+
+  locale = g_strdup (setlocale (LC_ALL, NULL));
+  setlocale (LC_ALL, "C");
+
+  timeout = gsad_settings_get_session_timeout (gsad_global_settings) * 60 + 30;
+
+  now = time (NULL);
+  expire_time = now + timeout;
+  if (localtime_r (&expire_time, &expire_time_broken) == NULL)
+    abort ();
+  ret = strftime (expires, EXPIRES_LENGTH, "%a, %d %b %Y %T GMT",
+                  &expire_time_broken);
+  if (ret == 0)
+    abort ();
+
+  setlocale (LC_ALL, locale);
+  g_free (locale);
+
+  /* Revert to stored TZ. */
+  if (tz)
+    {
+      if (setenv ("TZ", tz, 1) == -1)
+        {
+          g_warning ("%s: Failed to switch to original TZ", __func__);
+          g_free (tz);
+          exit (EXIT_FAILURE);
+        }
+    }
+  else
+    unsetenv ("TZ");
+  g_free (tz);
+
+  /* Add the cookie.
+   *
+   * Tim Brown's suggested cookie included a domain attribute.  How would
+   * we get the domain in here?  Maybe a --domain option. */
+
+  value = g_strdup_printf (
+    SID_COOKIE_NAME
+    "=%s; expires=%s; max-age=%d; path=/; %sHTTPonly; SameSite=strict",
+    sid, expires, timeout,
+    (gsad_settings_enable_secure_cookie (gsad_global_settings) ? "secure; "
+                                                               : ""));
+  ret = MHD_add_response_header (response, "Set-Cookie", value);
+  g_free (value);
+  return ret;
+}
+
+/**
+ * Internal function to attach or remove session id
+ *
+ * If sid is "0" the session id will be removed. Otherwise if the sid is not
+ * NULL the sid will be attached to the response.
+ *
+ * @param[in]  response  HTTP response
+ * @param[in]  sid       Session ID
+ *
+ * @return MHD_YES on success, MHD_NO on failure
+ */
+static gsad_http_result_t
+gsad_http_attach_remove_sid (gsad_http_response_t *response, const gchar *sid)
+{
+  if (sid)
+    {
+      if (str_equal (sid, REMOVE_SID))
+        {
+          if (gsad_http_remove_sid (response) == MHD_NO)
+            {
+              MHD_destroy_response (response);
+              g_warning ("%s: failed to remove SID, dropping request",
+                         __func__);
+              return MHD_NO;
+            }
+        }
+      else
+        {
+          if (gsad_http_attach_sid (response, sid) == MHD_NO)
+            {
+              MHD_destroy_response (response);
+              g_warning ("%s: failed to attach SID, dropping request",
+                         __func__);
+              return MHD_NO;
+            }
+        }
+    }
+  return MHD_YES;
+}
+
+/**
  * @brief Guess a content type from a file extension
  *
  * @param[in]  path  filename with extension
@@ -201,7 +369,7 @@ gsad_http_send_redirect_to_uri (gsad_http_connection_t *connection,
       return MHD_NO;
     }
 
-  if (attach_remove_sid (response, sid) == MHD_NO)
+  if (gsad_http_attach_remove_sid (response, sid) == MHD_NO)
     {
       MHD_destroy_response (response);
       g_warning ("%s: failed to attach SID, dropping request", __func__);
@@ -261,7 +429,7 @@ gsad_http_send_response_for_content (gsad_http_connection_t *connection,
     MHD_add_response_header (response, "Content-Disposition",
                              content_disposition);
 
-  if (attach_remove_sid (response, sid) == MHD_NO)
+  if (gsad_http_attach_remove_sid (response, sid) == MHD_NO)
     {
       return MHD_NO;
     }
@@ -296,7 +464,7 @@ gsad_http_send_response (gsad_http_connection_t *connection,
   content_type_t content_type;
   int status_code;
 
-  if (attach_remove_sid (response, sid) == MHD_NO)
+  if (gsad_http_attach_remove_sid (response, sid) == MHD_NO)
     {
       cmd_response_data_free (response_data);
       MHD_destroy_response (response);
@@ -480,173 +648,6 @@ gsad_http_send_reauthentication (gsad_http_connection_t *connection,
   return gsad_http_create_response (connection, xml, response_data, REMOVE_SID);
 }
 
-/**
- * @brief Internal function to attach expired SID cookie to response.
- *
- * @param[in]  response  Response.
- *
- * @return MHD_NO in case of problems. MHD_YES if all is OK.
- */
-static gsad_http_result_t
-gsad_http_remove_sid (gsad_http_response_t *response)
-{
-  int ret;
-  gchar *value;
-  gchar *locale;
-  char expires[EXPIRES_LENGTH + 1];
-  struct tm expire_time_broken;
-  time_t expire_time;
-  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
-
-  /* Set up the expires param. */
-  locale = g_strdup (setlocale (LC_ALL, NULL));
-  setlocale (LC_ALL, "C");
-
-  expire_time = time (NULL);
-  if (localtime_r (&expire_time, &expire_time_broken) == NULL)
-    abort ();
-  ret = strftime (expires, EXPIRES_LENGTH, "%a, %d %b %Y %T GMT",
-                  &expire_time_broken);
-  if (ret == 0)
-    abort ();
-
-  setlocale (LC_ALL, locale);
-  g_free (locale);
-
-  /* Add the cookie.
-   *
-   * Tim Brown's suggested cookie included a domain attribute.  How would
-   * we get the domain in here?  Maybe a --domain option. */
-
-  value = g_strdup_printf (
-    SID_COOKIE_NAME "=0; expires=%s; path=/; %sHTTPonly; SameSite=strict",
-    expires,
-    (gsad_settings_enable_secure_cookie (gsad_global_settings) ? "secure; "
-                                                               : ""));
-  ret = MHD_add_response_header (response, "Set-Cookie", value);
-  g_free (value);
-  return ret;
-}
-
-/**
- * @brief Internal function to attach SID cookie to a response, resetting
- * "expire" arg.
- *
- * @param[in]  response  Response.
- * @param[in]  sid       Session ID.
- *
- * @return MHD_NO in case of problems. MHD_YES if all is OK.
- */
-static gsad_http_result_t
-gsad_http_attach_sid (gsad_http_response_t *response, const char *sid)
-{
-  int ret, timeout;
-  gchar *value;
-  gchar *locale;
-  char expires[EXPIRES_LENGTH + 1];
-  struct tm expire_time_broken;
-  time_t now, expire_time;
-  gchar *tz;
-  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
-
-  /* Set up the expires param. */
-
-  /* Store current TZ, switch to GMT. */
-  tz = getenv ("TZ") ? g_strdup (getenv ("TZ")) : NULL;
-  if (setenv ("TZ", "GMT", 1) == -1)
-    {
-      g_critical ("%s: failed to set TZ\n", __func__);
-      g_free (tz);
-      exit (EXIT_FAILURE);
-    }
-  tzset ();
-
-  locale = g_strdup (setlocale (LC_ALL, NULL));
-  setlocale (LC_ALL, "C");
-
-  timeout = gsad_settings_get_session_timeout (gsad_global_settings) * 60 + 30;
-
-  now = time (NULL);
-  expire_time = now + timeout;
-  if (localtime_r (&expire_time, &expire_time_broken) == NULL)
-    abort ();
-  ret = strftime (expires, EXPIRES_LENGTH, "%a, %d %b %Y %T GMT",
-                  &expire_time_broken);
-  if (ret == 0)
-    abort ();
-
-  setlocale (LC_ALL, locale);
-  g_free (locale);
-
-  /* Revert to stored TZ. */
-  if (tz)
-    {
-      if (setenv ("TZ", tz, 1) == -1)
-        {
-          g_warning ("%s: Failed to switch to original TZ", __func__);
-          g_free (tz);
-          exit (EXIT_FAILURE);
-        }
-    }
-  else
-    unsetenv ("TZ");
-  g_free (tz);
-
-  /* Add the cookie.
-   *
-   * Tim Brown's suggested cookie included a domain attribute.  How would
-   * we get the domain in here?  Maybe a --domain option. */
-
-  value = g_strdup_printf (
-    SID_COOKIE_NAME
-    "=%s; expires=%s; max-age=%d; path=/; %sHTTPonly; SameSite=strict",
-    sid, expires, timeout,
-    (gsad_settings_enable_secure_cookie (gsad_global_settings) ? "secure; "
-                                                               : ""));
-  ret = MHD_add_response_header (response, "Set-Cookie", value);
-  g_free (value);
-  return ret;
-}
-
-/**
- * Attach or remove session id
- *
- * If sid is "0" the session id will be removed. Otherwise if the sid is not
- * NULL the sid will be attached to the response.
- *
- * @param[in]  response  HTTP response
- * @param[in]  sid       Session ID
- *
- * @return MHD_YES on success, MHD_NO on failure
- */
-gsad_http_result_t
-attach_remove_sid (gsad_http_response_t *response, const gchar *sid)
-{
-  if (sid)
-    {
-      if (str_equal (sid, REMOVE_SID))
-        {
-          if (gsad_http_remove_sid (response) == MHD_NO)
-            {
-              MHD_destroy_response (response);
-              g_warning ("%s: failed to remove SID, dropping request",
-                         __func__);
-              return MHD_NO;
-            }
-        }
-      else
-        {
-          if (gsad_http_attach_sid (response, sid) == MHD_NO)
-            {
-              MHD_destroy_response (response);
-              g_warning ("%s: failed to attach SID, dropping request",
-                         __func__);
-              return MHD_NO;
-            }
-        }
-    }
-  return MHD_YES;
-}
 /**
  * @brief Reads from a file.
  *

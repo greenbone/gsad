@@ -183,9 +183,6 @@ serve_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,
             const char *transfer_encoding, const char *data, uint64_t off,
             size_t size);
 
-gsad_http_result_t
-attach_remove_sid (gsad_http_response_t *response, const gchar *sid);
-
 /* exec_gmp functions are still in gsad.c */
 gsad_http_result_t
 exec_gmp_get (gsad_http_connection_t *connection,
