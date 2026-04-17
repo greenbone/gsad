@@ -280,7 +280,7 @@ static char *
 envelope_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
               params_t *params, gchar *xml, cmd_response_data_t *response_data)
 {
-  return gsad_envelope (credentials, xml, response_data);
+  return gsad_http_create_envelope (credentials, xml, response_data);
 }
 
 /**
@@ -21060,10 +21060,10 @@ login (gsad_http_connection_t *con, params_t *params,
           gsad_credentials_set_user (credentials, user);
           gsad_credentials_set_jwt (credentials, jwt);
 
-          // xml must not be NULL: gsad_envelope() expects a valid string
-          // and passing NULL would trigger a GLib critical
-          gchar *data =
-            gsad_envelope (credentials, g_strdup (""), response_data);
+          // xml must not be NULL: gsad_http_create_envelope() expects a valid
+          // string and passing NULL would trigger a GLib critical
+          gchar *data = gsad_http_create_envelope (credentials, g_strdup (""),
+                                                   response_data);
 
           ret = gsad_http_create_response (con, data, response_data,
                                            gsad_user_get_cookie (user));
