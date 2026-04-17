@@ -187,9 +187,6 @@ gsad_http_result_t
 remove_sid (gsad_http_response_t *response);
 
 gsad_http_result_t
-attach_sid (gsad_http_response_t *response, const char *sid);
-
-gsad_http_result_t
 attach_remove_sid (gsad_http_response_t *response, const gchar *sid);
 
 /* exec_gmp functions are still in gsad.c */
