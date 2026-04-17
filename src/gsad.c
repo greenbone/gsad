@@ -194,10 +194,11 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     {
       cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
 
-      res = gsad_message (credentials, "Internal error", __func__, __LINE__,
-                          "An internal error occurred inside GSA daemon. "
-                          "Diagnostics: Invalid command.",
-                          response_data);
+      res = gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred inside GSA daemon. "
+        "Diagnostics: Invalid command.",
+        response_data);
       return gsad_http_create_response (con, res, response_data, new_sid);
     }
 
@@ -215,15 +216,17 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
       cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
 
       if (params_given (params, "token") == 0)
-        res = gsad_message (NULL, "Internal error", __func__, __LINE__,
-                            "An internal error occurred inside GSA daemon. "
-                            "Diagnostics: Token missing.",
-                            response_data);
+        res = gsad_http_create_gsad_message (
+          NULL,
+          "An internal error occurred inside GSA daemon. "
+          "Diagnostics: Token missing.",
+          response_data);
       else
-        res = gsad_message (NULL, "Internal error", __func__, __LINE__,
-                            "An internal error occurred inside GSA daemon. "
-                            "Diagnostics: Token bad.",
-                            response_data);
+        res = gsad_http_create_gsad_message (
+          NULL,
+          "An internal error occurred inside GSA daemon. "
+          "Diagnostics: Token bad.",
+          response_data);
 
       return gsad_http_create_response (con, res, response_data, NULL);
     }
@@ -234,10 +237,11 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   if (ret == USER_BAD_TOKEN)
     {
       cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
-      res = gsad_message (NULL, "Internal error", __func__, __LINE__,
-                          "An internal error occurred inside GSA daemon. "
-                          "Diagnostics: Bad token.",
-                          response_data);
+      res = gsad_http_create_gsad_message (
+        NULL,
+        "An internal error occurred inside GSA daemon. "
+        "Diagnostics: Bad token.",
+        response_data);
       return gsad_http_create_response (con, res, response_data, NULL);
     }
 
@@ -306,11 +310,12 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     case 1: /* manager closed connection */
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
-      res = gsad_message (credentials, "Internal error", __func__, __LINE__,
-                          "An internal error occurred. "
-                          "Diagnostics: Could not connect to manager daemon. "
-                          "Manager closed the connection.",
-                          response_data);
+      res = gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred. "
+        "Diagnostics: Could not connect to manager daemon. "
+        "Manager closed the connection.",
+        response_data);
       break;
     case 2: /* auth failed */
       cmd_response_data_free (response_data);
@@ -319,29 +324,32 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     case 3: /* timeout */
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
-      res = gsad_message (credentials, "Internal error", __func__, __LINE__,
-                          "An internal error occurred. "
-                          "Diagnostics: Could not connect to manager daemon. "
-                          "Connection timeout.",
-                          response_data);
+      res = gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred. "
+        "Diagnostics: Could not connect to manager daemon. "
+        "Connection timeout.",
+        response_data);
       break;
     case 4: /* can't connect to manager */
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_SERVICE_UNAVAILABLE);
-      res = gsad_message (credentials, "Internal error", __func__, __LINE__,
-                          "An internal error occurred. "
-                          "Diagnostics: Could not connect to manager daemon. "
-                          "Could not open a connection.",
-                          response_data);
+      res = gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred. "
+        "Diagnostics: Could not connect to manager daemon. "
+        "Could not open a connection.",
+        response_data);
       break;
     default: /* unknown error */
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
-      res = gsad_message (credentials, "Internal error", __func__, __LINE__,
-                          "An internal error occurred. "
-                          "Diagnostics: Could not connect to manager daemon. "
-                          "Unknown error.",
-                          response_data);
+      res = gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred. "
+        "Diagnostics: Could not connect to manager daemon. "
+        "Unknown error.",
+        response_data);
     }
 
   if (res)
@@ -479,10 +487,11 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   else
   {
     cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
-    res = gsad_message (credentials, "Internal error", __func__, __LINE__,
-                        "An internal error occurred inside GSA daemon. "
-                        "Diagnostics: Unknown command.",
-                        response_data);
+    res = gsad_http_create_gsad_message (
+      credentials,
+      "An internal error occurred inside GSA daemon. "
+      "Diagnostics: Unknown command.",
+      response_data);
   }
 
   ret = gsad_http_create_response (con, res, response_data, new_sid);
@@ -785,10 +794,11 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   else
     {
       cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
-      res = gsad_message (credentials, "Internal error", __func__, __LINE__,
-                          "An internal error occurred inside GSA daemon. "
-                          "Diagnostics: No valid command for gmp.",
-                          response_data);
+      res = gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred inside GSA daemon. "
+        "Diagnostics: No valid command for gmp.",
+        response_data);
       return gsad_http_create_response (con, res, response_data, NULL);
     }
 
@@ -815,11 +825,12 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     case 1: /* manager closed connection */
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
-      res = gsad_message (credentials, "Internal error", __func__, __LINE__,
-                          "An internal error occurred. "
-                          "Diagnostics: Could not connect to manager daemon. "
-                          "Manager closed the connection.",
-                          response_data);
+      res = gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred. "
+        "Diagnostics: Could not connect to manager daemon. "
+        "Manager closed the connection.",
+        response_data);
       break;
     case 2: /* auth failed */
       cmd_response_data_free (response_data);
@@ -828,29 +839,32 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     case 3: /* timeout */
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
-      res = gsad_message (credentials, "Internal error", __func__, __LINE__,
-                          "An internal error occurred. "
-                          "Diagnostics: Could not connect to manager daemon. "
-                          "Connection timeout.",
-                          response_data);
+      res = gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred. "
+        "Diagnostics: Could not connect to manager daemon. "
+        "Connection timeout.",
+        response_data);
       break;
     case 4: /* can't connect to manager */
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_SERVICE_UNAVAILABLE);
-      res = gsad_message (credentials, "Internal error", __func__, __LINE__,
-                          "An internal error occurred. "
-                          "Diagnostics: Could not connect to manager daemon. "
-                          "Could not open a connection.",
-                          response_data);
+      res = gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred. "
+        "Diagnostics: Could not connect to manager daemon. "
+        "Could not open a connection.",
+        response_data);
       break;
     default: /* unknown error */
       cmd_response_data_set_status_code (response_data,
                                          MHD_HTTP_INTERNAL_SERVER_ERROR);
-      res = gsad_message (credentials, "Internal error", __func__, __LINE__,
-                          "An internal error occurred. "
-                          "Diagnostics: Could not connect to manager daemon. "
-                          "Unknown error.",
-                          response_data);
+      res = gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred. "
+        "Diagnostics: Could not connect to manager daemon. "
+        "Unknown error.",
+        response_data);
     }
 
   if (res)
@@ -1068,10 +1082,11 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   else
   {
     cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
-    res = gsad_message (credentials, "Internal error", __func__, __LINE__,
-                        "An internal error occurred inside GSA daemon. "
-                        "Diagnostics: Unknown command.",
-                        response_data);
+    res = gsad_http_create_gsad_message (
+      credentials,
+      "An internal error occurred inside GSA daemon. "
+      "Diagnostics: Unknown command.",
+      response_data);
   }
 
   res_len = cmd_response_data_get_content_length (response_data);

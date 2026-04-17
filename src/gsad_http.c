@@ -642,8 +642,7 @@ gsad_http_send_reauthentication (gsad_http_connection_t *connection,
   cmd_response_data_t *response_data = cmd_response_data_new ();
   cmd_response_data_set_status_code (response_data, http_status_code);
 
-  gchar *xml = gsad_message (NULL, "Authentication required", __func__,
-                             __LINE__, msg, response_data);
+  gchar *xml = gsad_http_create_gsad_message (NULL, msg, response_data);
 
   return gsad_http_create_response (connection, xml, response_data, REMOVE_SID);
 }
@@ -1020,28 +1019,23 @@ gsad_http_create_envelope (gsad_credentials_t *credentials, gchar *xml,
 }
 
 /**
- * @brief Handles fatal errors.
+ * @brief Create a <gsad_message> response XML
  *
- * @todo Make it accept formatted strings.
- *
- * @param[in]  credentials     User authentication information.
- * @param[in]  title           The title for the message.
- * @param[in]  function        The function in which the error occurred.
- * @param[in]  line            The line number at which the error occurred.
- * @param[in]  msg             The response message.
+ * @param[in]  credentials     User authentication information, if available.
+ * @param[in]  message         The response message.
  * @param[out] response_data   Extra data return for the HTTP response.
  *
  * @return An XML document as a newly allocated string.
  */
 gchar *
-gsad_message (gsad_credentials_t *credentials, const char *title,
-              const char *function, int line, const char *msg,
-              cmd_response_data_t *response_data)
+gsad_http_create_gsad_message (gsad_credentials_t *credentials,
+                               const char *message,
+                               cmd_response_data_t *response_data)
 {
   gchar *gsad_response = g_markup_printf_escaped ("<gsad_response>"
                                                   "<message>%s</message>"
                                                   "</gsad_response>",
-                                                  msg ? msg : "");
+                                                  message ? message : "");
 
   if (credentials)
     {
