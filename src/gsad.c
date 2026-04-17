@@ -201,6 +201,8 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
       return gsad_http_create_response (con, res, response_data, new_sid);
     }
 
+  g_debug ("Handling GMP command '%s' for HTTP POST", cmd);
+
   if (str_equal (cmd, "login"))
     {
       return login (con, params, response_data, client_address);
@@ -778,7 +780,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
 
   if ((cmd != NULL) && (strlen (cmd) <= CMD_MAX_SIZE))
     {
-      g_debug ("cmd: [%s]\n", cmd);
+      g_debug ("Handling GMP command '%s' for HTTP GET", cmd);
     }
   else
     {
