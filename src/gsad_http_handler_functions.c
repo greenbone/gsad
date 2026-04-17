@@ -132,7 +132,38 @@ gsad_http_handle_invalid_method (gsad_http_handler_t *handler_next,
 }
 
 /**
- * Internal function for getting user information from the connection.
+ * @brief Internal function for getting the token from the connection.
+ *
+ * @param[in] connection The HTTP connection for which the request was made
+ *
+ * @return The token from the connection or NULL if the token is not present or
+ * invalid
+ */
+static const gchar *
+gsad_http_get_token_from_connection (gsad_http_connection_t *connection)
+{
+  return MHD_lookup_connection_value (connection, MHD_GET_ARGUMENT_KIND,
+                                      "token");
+}
+
+/**
+ * @brief Internal function for getting the session cookie from the connection.
+ *
+ * @param[in] connection The HTTP connection for which the request was made
+ *
+ * @return The session cookie from the connection or NULL if the session cookie
+ * is not present or invalid
+ */
+static const gchar *
+gsad_http_get_session_cookie_from_connection (
+  gsad_http_connection_t *connection)
+{
+  return MHD_lookup_connection_value (connection, MHD_COOKIE_KIND,
+                                      SID_COOKIE_NAME);
+}
+
+/**
+ * @brief Internal function for getting user information from the connection.
  *
  * @param[in] connection The HTTP connection for which the request was made
  * @param[out] user The user information retrieved from the connection
@@ -148,8 +179,7 @@ get_user_from_connection (gsad_http_connection_t *connection,
   const gchar *token;
   gchar client_address[INET6_ADDRSTRLEN];
 
-  token =
-    MHD_lookup_connection_value (connection, MHD_GET_ARGUMENT_KIND, "token");
+  token = gsad_http_get_token_from_connection (connection);
   if (token == NULL)
     {
       return USER_BAD_MISSING_TOKEN;
@@ -160,9 +190,7 @@ get_user_from_connection (gsad_http_connection_t *connection,
       return USER_BAD_MISSING_TOKEN;
     }
 
-  cookie =
-    MHD_lookup_connection_value (connection, MHD_COOKIE_KIND, SID_COOKIE_NAME);
-
+  cookie = gsad_http_get_session_cookie_from_connection (connection);
   if (gvm_validate (http_validator, "token", cookie))
     {
       return USER_BAD_MISSING_COOKIE;
@@ -413,8 +441,7 @@ gsad_http_handle_gmp_post (gsad_http_handler_t *handler_next,
   const gchar *sid, *accept_language;
   char client_address[INET6_ADDRSTRLEN];
 
-  sid =
-    MHD_lookup_connection_value (connection, MHD_COOKIE_KIND, SID_COOKIE_NAME);
+  sid = gsad_http_get_session_cookie_from_connection (connection);
 
   if (gvm_validate (http_validator, "token", sid))
     gsad_connection_info_set_cookie (con_info, NULL);
