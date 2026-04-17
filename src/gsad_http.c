@@ -974,8 +974,8 @@ serve_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,
  * @return Enveloped GMP XML.
  */
 char *
-gsad_envelope (gsad_credentials_t *credentials, gchar *xml,
-               cmd_response_data_t *response_data)
+gsad_http_create_envelope (gsad_credentials_t *credentials, gchar *xml,
+                           cmd_response_data_t *response_data)
 {
   assert (credentials);
 
@@ -1045,7 +1045,8 @@ gsad_message (gsad_credentials_t *credentials, const char *title,
 
   if (credentials)
     {
-      return gsad_envelope (credentials, gsad_response, response_data);
+      return gsad_http_create_envelope (credentials, gsad_response,
+                                        response_data);
     }
 
   gchar *envelope = g_strdup_printf ("<envelope>"
