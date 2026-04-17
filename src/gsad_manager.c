@@ -171,9 +171,22 @@ int
 gsad_manager_connect_with_credentials (gvm_connection_t *connection,
                                        gsad_credentials_t *credentials)
 {
+  const gchar *jwt = gsad_credentials_get_jwt (credentials);
+  if (jwt)
+    {
+      return gsad_manager_connect_with_jwt (connection, jwt);
+    }
+
   gsad_user_t *user = gsad_credentials_get_user (credentials);
-  return gsad_manager_connect_with_username_password (
-    connection, gsad_user_get_username (user), gsad_user_get_password (user));
+  if (user)
+    {
+      return gsad_manager_connect_with_username_password (
+        connection, gsad_user_get_username (user),
+        gsad_user_get_password (user));
+    }
+  g_critical ("Credentials must have either a JWT token or a user with "
+              "username and password");
+  return -1;
 }
 
 /**
