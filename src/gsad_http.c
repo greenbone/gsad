@@ -481,14 +481,14 @@ gsad_http_send_reauthentication (gsad_http_connection_t *connection,
 }
 
 /**
- * @brief Attach expired SID cookie to response.
+ * @brief Internal function to attach expired SID cookie to response.
  *
  * @param[in]  response  Response.
  *
  * @return MHD_NO in case of problems. MHD_YES if all is OK.
  */
-gsad_http_result_t
-remove_sid (gsad_http_response_t *response)
+static gsad_http_result_t
+gsad_http_remove_sid (gsad_http_response_t *response)
 {
   int ret;
   gchar *value;
@@ -626,7 +626,7 @@ attach_remove_sid (gsad_http_response_t *response, const gchar *sid)
     {
       if (str_equal (sid, REMOVE_SID))
         {
-          if (remove_sid (response) == MHD_NO)
+          if (gsad_http_remove_sid (response) == MHD_NO)
             {
               MHD_destroy_response (response);
               g_warning ("%s: failed to remove SID, dropping request",
