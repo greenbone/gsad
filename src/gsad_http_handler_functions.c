@@ -280,7 +280,7 @@ gsad_http_handle_setup_user (gsad_http_handler_t *handler_next,
                                               UNKNOWN_ERROR);
     }
 
-  g_debug ("Found user %s\n", gsad_user_get_username (user));
+  g_debug ("Setting up user %s\n", gsad_user_get_username (user));
 
   return gsad_http_handler_call (handler_next, connection, con_info, user);
 }
