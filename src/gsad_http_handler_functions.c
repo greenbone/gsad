@@ -132,6 +132,26 @@ gsad_http_handle_invalid_method (gsad_http_handler_t *handler_next,
 }
 
 /**
+ * @brief Internal function for getting the JWT token from the connection.
+ *
+ * @param[in] connection The HTTP connection for which the request was made
+ *
+ * @return The JWT from the connection or NULL if the token is not present or
+ * invalid
+ */
+static const gchar *
+gsad_http_get_jwt_from_connection (gsad_http_connection_t *connection)
+{
+  const gchar *bearer =
+    MHD_lookup_connection_value (connection, MHD_HEADER_KIND, "Authorization");
+  if (bearer && g_str_has_prefix (bearer, "Bearer "))
+    {
+      return bearer + strlen ("Bearer ");
+    }
+  return NULL;
+}
+
+/**
  * @brief Internal function for getting the token from the connection.
  *
  * @param[in] connection The HTTP connection for which the request was made
