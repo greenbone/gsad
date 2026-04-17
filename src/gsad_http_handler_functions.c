@@ -359,11 +359,11 @@ gsad_http_handle_setup_credentials (gsad_http_handler_t *handler_next,
                                     void *data)
 {
   gsad_user_t *user = (gsad_user_t *) data;
-  gsad_credentials_t *credentials = gsad_credentials_new ();
-  const gchar *jwt_token = user ? gsad_user_get_jwt (user) : NULL;
+  const gchar *jwt = gsad_http_get_jwt_from_connection (connection);
 
+  gsad_credentials_t *credentials = gsad_credentials_new ();
   gsad_credentials_set_user (credentials, user);
-  gsad_credentials_set_jwt (credentials, jwt_token);
+  gsad_credentials_set_jwt (credentials, jwt);
   gsad_user_free (user);
 
   return gsad_http_handler_call (handler_next, connection, con_info,
