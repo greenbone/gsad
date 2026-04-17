@@ -194,8 +194,8 @@ exec_gmp_post (gsad_http_connection_t *connection,
                gsad_connection_info_t *con_info, const gchar *client_address);
 
 gchar *
-gsad_message (gsad_credentials_t *, const gchar *, const gchar *, int,
-              const gchar *, cmd_response_data_t *);
+gsad_http_create_gsad_message (gsad_credentials_t *, const gchar *,
+                               cmd_response_data_t *);
 
 gchar *
 gsad_http_create_envelope (gsad_credentials_t *, gchar *,
