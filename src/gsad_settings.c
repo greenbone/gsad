@@ -116,7 +116,7 @@ gsad_settings_free (gsad_settings_t *settings)
 }
 
 /**
- * @brief Set the per-IP connection limit.
+ * @brief Set the session timeout in minutes.
  *
  * @param[in]  settings  The settings instance to modify.
  * @param[in]  timeout   Session timeout in minutes.
