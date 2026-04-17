@@ -175,7 +175,7 @@ gsad_http_create_not_found_response (cmd_response_data_t *);
 
 /* helper functions required in gsad_http */
 int
-get_client_address (gsad_http_connection_t *conn, char *client_address);
+gsad_http_get_client_address (gsad_http_connection_t *, gchar *);
 
 gsad_http_result_t
 serve_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,

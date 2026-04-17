@@ -147,7 +147,6 @@ get_user_from_connection (gsad_http_connection_t *connection,
   const gchar *cookie;
   const gchar *token;
   gchar client_address[INET6_ADDRSTRLEN];
-  int ret;
 
   token =
     MHD_lookup_connection_value (connection, MHD_GET_ARGUMENT_KIND, "token");
@@ -169,8 +168,7 @@ get_user_from_connection (gsad_http_connection_t *connection,
       return USER_BAD_MISSING_COOKIE;
     }
 
-  ret = get_client_address (connection, client_address);
-  if (ret == 1)
+  if (gsad_http_get_client_address (connection, client_address))
     {
       return USER_IP_ADDRESS_MISSMATCH;
     }
@@ -436,7 +434,7 @@ gsad_http_handle_gmp_post (gsad_http_handler_t *handler_next,
   gsad_connection_info_set_language (
     con_info, accept_language_to_env_fmt (accept_language));
 
-  if (get_client_address (connection, client_address))
+  if (gsad_http_get_client_address (connection, client_address))
     {
       gsad_http_send_response_for_content (
         connection, UTF8_ERROR_PAGE ("'X-Real-IP' header"),

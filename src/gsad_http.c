@@ -894,7 +894,8 @@ gsad_http_add_forbid_caching_headers (gsad_http_response_t *response)
  * @return  0 success, 1 invalid UTF-8 in X-Real-IP header
  */
 int
-get_client_address (gsad_http_connection_t *conn, char *client_address)
+gsad_http_get_client_address (gsad_http_connection_t *conn,
+                              gchar *client_address)
 {
   const char *x_real_ip;
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
