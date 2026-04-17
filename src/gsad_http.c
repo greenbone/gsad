@@ -529,15 +529,16 @@ remove_sid (gsad_http_response_t *response)
 }
 
 /**
- * @brief Attach SID cookie to a response, resetting "expire" arg.
+ * @brief Internal function to attach SID cookie to a response, resetting
+ * "expire" arg.
  *
  * @param[in]  response  Response.
  * @param[in]  sid       Session ID.
  *
  * @return MHD_NO in case of problems. MHD_YES if all is OK.
  */
-gsad_http_result_t
-attach_sid (gsad_http_response_t *response, const char *sid)
+static gsad_http_result_t
+gsad_http_attach_sid (gsad_http_response_t *response, const char *sid)
 {
   int ret, timeout;
   gchar *value;
@@ -635,7 +636,7 @@ attach_remove_sid (gsad_http_response_t *response, const gchar *sid)
         }
       else
         {
-          if (attach_sid (response, sid) == MHD_NO)
+          if (gsad_http_attach_sid (response, sid) == MHD_NO)
             {
               MHD_destroy_response (response);
               g_warning ("%s: failed to attach SID, dropping request",
