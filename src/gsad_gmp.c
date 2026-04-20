@@ -1246,7 +1246,8 @@ export_resource (gvm_connection_t *connection, const char *type,
   if (file_name == NULL)
     file_name = g_strdup_printf ("%s-%s", type, resource_id);
 
-  cmd_response_data_set_content_type (response_data, GSAD_CONTENT_TYPE_APP_XML);
+  gsad_command_response_data_set_content_type (response_data,
+                                               GSAD_CONTENT_TYPE_APP_XML);
   cmd_response_data_set_content_disposition (
     response_data,
     g_strdup_printf ("attachment; filename=\"%s.xml\"", file_name));
@@ -1423,7 +1424,8 @@ export_many (gvm_connection_t *connection, const char *type,
 
   g_free (type_many);
 
-  cmd_response_data_set_content_type (response_data, GSAD_CONTENT_TYPE_APP_XML);
+  gsad_command_response_data_set_content_type (response_data,
+                                               GSAD_CONTENT_TYPE_APP_XML);
   cmd_response_data_set_content_disposition (
     response_data,
     g_strdup_printf ("attachment; filename=\"%s.xml\"", file_name));
@@ -4298,7 +4300,7 @@ download_credential_gmp (gvm_connection_t *connection,
 
   cmd_response_data_set_content_disposition (response_data,
                                              content_disposition);
-  cmd_response_data_set_content_type (response_data, content_type);
+  gsad_command_response_data_set_content_type (response_data, content_type);
 
   free_entity (entity);
   g_free (login);
@@ -9042,8 +9044,8 @@ export_preference_file_gmp (gvm_connection_t *connection,
       && (value_entity = entity_child (preference_entity, "value")))
     {
       char *content = strdup (entity_text (value_entity));
-      cmd_response_data_set_content_type (response_data,
-                                          GSAD_CONTENT_TYPE_OCTET_STREAM);
+      gsad_command_response_data_set_content_type (
+        response_data, GSAD_CONTENT_TYPE_OCTET_STREAM);
       cmd_response_data_set_content_disposition (
         response_data,
         g_strdup_printf ("attachment; filename=\"pref_file.bin\""));
@@ -9336,7 +9338,7 @@ get_report (gvm_connection_t *connection, gsad_credentials_t *credentials,
               if (file_name == NULL)
                 file_name = g_strdup_printf ("%s-%s", "report", report_id);
 
-              cmd_response_data_set_content_type_string (
+              gsad_command_response_data_set_content_type_string (
                 response_data, g_strdup (requested_content_type));
               cmd_response_data_set_content_disposition (
                 response_data,
@@ -9449,7 +9451,7 @@ get_report (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   if (file_name == NULL)
                     file_name = g_strdup_printf ("%s-%s", "report", id);
 
-                  cmd_response_data_set_content_type_string (
+                  gsad_command_response_data_set_content_type_string (
                     response_data, g_strdup (requested_content_type));
                   cmd_response_data_set_content_disposition (
                     response_data,
@@ -11844,12 +11846,12 @@ get_system_report_gmp_from_url (gvm_connection_t *connection,
               if (strcmp (entity_attribute (report_entity, "format"), "png")
                   == 0)
                 {
-                  cmd_response_data_set_content_type (
+                  gsad_command_response_data_set_content_type (
                     response_data, GSAD_CONTENT_TYPE_IMAGE_PNG);
                 }
               else
                 {
-                  cmd_response_data_set_content_type (
+                  gsad_command_response_data_set_content_type (
                     response_data, GSAD_CONTENT_TYPE_TEXT_PLAIN);
                 }
                 //*content_disposition = g_strdup_printf ("attachment;
@@ -17556,7 +17558,8 @@ save_setting_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
 
   xml_string_append (xml, "</modify_setting>");
 
-  cmd_response_data_set_content_type (response_data, GSAD_CONTENT_TYPE_APP_XML);
+  gsad_command_response_data_set_content_type (response_data,
+                                               GSAD_CONTENT_TYPE_APP_XML);
 
   ret = gmp (connection, credentials, NULL, &entity, response_data, xml->str);
 
@@ -19266,7 +19269,8 @@ change_password_gmp (gvm_connection_t *connection,
       gsad_session_replace_user_if_exists (user);
     }
 
-  cmd_response_data_set_content_type (response_data, GSAD_CONTENT_TYPE_APP_XML);
+  gsad_command_response_data_set_content_type (response_data,
+                                               GSAD_CONTENT_TYPE_APP_XML);
   html = response_from_entity (connection, credentials, params, entity,
                                "Change Password", response_data);
   return html;
@@ -19416,13 +19420,13 @@ get_agent_installer_file_gmp (gvm_connection_t *connection,
 
   if (!content_type || strlen (content_type) == 0)
     {
-      cmd_response_data_set_content_type (response_data,
-                                          GSAD_CONTENT_TYPE_OCTET_STREAM);
+      gsad_command_response_data_set_content_type (
+        response_data, GSAD_CONTENT_TYPE_OCTET_STREAM);
     }
   else
     {
-      cmd_response_data_set_content_type_string (response_data,
-                                                 g_strdup (content_type));
+      gsad_command_response_data_set_content_type_string (
+        response_data, g_strdup (content_type));
     }
 
   cmd_response_data_set_content_disposition (

@@ -110,8 +110,8 @@ gsad_command_response_data_is_allow_caching (gsad_command_response_data_t *data)
  * @param[in]  content_type  Content Type to set
  */
 void
-cmd_response_data_set_content_type (gsad_command_response_data_t *data,
-                                    content_type_t content_type)
+gsad_command_response_data_set_content_type (gsad_command_response_data_t *data,
+                                             content_type_t content_type)
 {
   data->content_type = content_type;
 }
@@ -124,7 +124,7 @@ cmd_response_data_set_content_type (gsad_command_response_data_t *data,
  * @return The content type
  */
 content_type_t
-cmd_response_data_get_content_type (gsad_command_response_data_t *data)
+gsad_command_response_data_get_content_type (gsad_command_response_data_t *data)
 {
   return data->content_type;
 }
@@ -217,8 +217,8 @@ cmd_response_data_get_content_disposition (gsad_command_response_data_t *data)
  * @param[in]  content_type_string   Content type as string
  */
 void
-cmd_response_data_set_content_type_string (gsad_command_response_data_t *data,
-                                           gchar *content_type_string)
+gsad_command_response_data_set_content_type_string (
+  gsad_command_response_data_t *data, gchar *content_type_string)
 {
   data->content_type = GSAD_CONTENT_TYPE_STRING;
   data->content_type_string = content_type_string;
@@ -231,7 +231,8 @@ cmd_response_data_set_content_type_string (gsad_command_response_data_t *data,
  * @return Content type string if set
  */
 const gchar *
-cmd_response_data_get_content_type_string (gsad_command_response_data_t *data)
+gsad_command_response_data_get_content_type_string (
+  gsad_command_response_data_t *data)
 {
   return data->content_type_string;
 }

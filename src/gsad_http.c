@@ -472,13 +472,13 @@ gsad_http_send_response (gsad_http_connection_t *connection,
       return MHD_NO;
     }
 
-  content_type = cmd_response_data_get_content_type (response_data);
+  content_type = gsad_command_response_data_get_content_type (response_data);
 
   if (content_type == GSAD_CONTENT_TYPE_STRING)
     {
       MHD_add_response_header (
         response, MHD_HTTP_HEADER_CONTENT_TYPE,
-        cmd_response_data_get_content_type_string (response_data));
+        gsad_command_response_data_get_content_type_string (response_data));
     }
   else
     {
@@ -580,8 +580,8 @@ gsad_http_create_not_found_response (
     "</body>"
     "</html>";
 
-  cmd_response_data_set_content_type (response_data,
-                                      GSAD_CONTENT_TYPE_TEXT_HTML);
+  gsad_command_response_data_set_content_type (response_data,
+                                               GSAD_CONTENT_TYPE_TEXT_HTML);
 
   cmd_response_data_set_content_length (response_data, strlen (msg));
 
@@ -714,8 +714,8 @@ gsad_http_create_file_content_response (
     }
 
   /* Guess content type. */
-  cmd_response_data_set_content_type (response_data,
-                                      gsad_http_guess_content_type (path));
+  gsad_command_response_data_set_content_type (
+    response_data, gsad_http_guess_content_type (path));
 
   if (stat (path, &buf))
     {
@@ -1017,7 +1017,8 @@ gsad_http_create_envelope (gsad_credentials_t *credentials, gchar *xml,
   gchar *envelope = g_string_free (string, FALSE);
 
   cmd_response_data_set_content_length (response_data, strlen (envelope));
-  cmd_response_data_set_content_type (response_data, GSAD_CONTENT_TYPE_APP_XML);
+  gsad_command_response_data_set_content_type (response_data,
+                                               GSAD_CONTENT_TYPE_APP_XML);
 
   return envelope;
 }
@@ -1056,7 +1057,8 @@ gsad_http_create_gsad_message (gsad_credentials_t *credentials,
   g_free (gsad_response);
 
   cmd_response_data_set_content_length (response_data, strlen (envelope));
-  cmd_response_data_set_content_type (response_data, GSAD_CONTENT_TYPE_APP_XML);
+  gsad_command_response_data_set_content_type (response_data,
+                                               GSAD_CONTENT_TYPE_APP_XML);
 
   return envelope;
 }

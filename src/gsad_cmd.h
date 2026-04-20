@@ -32,11 +32,12 @@ gsad_command_response_data_is_allow_caching (
   gsad_command_response_data_t *data);
 
 void
-cmd_response_data_set_content_type (gsad_command_response_data_t *data,
-                                    content_type_t content_type);
+gsad_command_response_data_set_content_type (gsad_command_response_data_t *data,
+                                             content_type_t content_type);
 
 content_type_t
-cmd_response_data_get_content_type (gsad_command_response_data_t *data);
+gsad_command_response_data_get_content_type (
+  gsad_command_response_data_t *data);
 
 void
 cmd_response_data_set_status_code (gsad_command_response_data_t *data,
@@ -60,9 +61,10 @@ const gchar *
 cmd_response_data_get_content_disposition (gsad_command_response_data_t *data);
 
 void
-cmd_response_data_set_content_type_string (gsad_command_response_data_t *data,
-                                           gchar *content_type_string);
+gsad_command_response_data_set_content_type_string (
+  gsad_command_response_data_t *data, gchar *content_type_string);
 
 const gchar *
-cmd_response_data_get_content_type_string (gsad_command_response_data_t *data);
+gsad_command_response_data_get_content_type_string (
+  gsad_command_response_data_t *data);
 #endif /* not _GSAD_CMD_H */
