@@ -26,7 +26,4 @@ gsad_base_cleanup ();
 void
 set_chroot_state (int);
 
-char *
-ctime_r_strip_newline (time_t *, char *);
-
 #endif /* not _GSAD_BASE_H */

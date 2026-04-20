@@ -68,25 +68,3 @@ set_chroot_state (int state)
 {
   chroot_state = state;
 }
-
-/**
- * @brief Return string from ctime_r with newline replaces with terminator.
- *
- * @param[in]  time    Time.
- * @param[out] string  Time string.
- *
- * @return Return from ctime_r applied to time, with newline stripped off.
- */
-char *
-ctime_r_strip_newline (time_t *time, char *string)
-{
-  struct tm tm;
-
-  if (localtime_r (time, &tm) == NULL
-      || (strftime (string, 199, "%c %Z", &tm) == 0))
-    {
-      string[0] = '\0';
-      return string;
-    }
-  return string;
-}
