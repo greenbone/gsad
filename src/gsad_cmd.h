@@ -15,7 +15,7 @@
 
 #include <glib.h>
 
-typedef struct cmd_response_data cmd_response_data_t;
+typedef struct gsad_command_response_data cmd_response_data_t;
 
 cmd_response_data_t *
 cmd_response_data_new ();

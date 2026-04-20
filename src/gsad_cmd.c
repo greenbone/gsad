@@ -15,7 +15,7 @@
 /**
  * @brief Response information for commands.
  */
-struct cmd_response_data
+struct gsad_command_response_data
 {
   gboolean allow_caching;      ///> Whether the response may be cached.
   int http_status_code;        ///> HTTP status code.
