@@ -1252,7 +1252,7 @@ export_resource (gvm_connection_t *connection, const char *type,
 
   gsad_command_response_data_set_content_type (response_data,
                                                GSAD_CONTENT_TYPE_APP_XML);
-  cmd_response_data_set_content_disposition (
+  gsad_command_response_data_set_content_disposition (
     response_data,
     g_strdup_printf ("attachment; filename=\"%s.xml\"", file_name));
   gsad_command_response_data_set_content_length (response_data,
@@ -1431,7 +1431,7 @@ export_many (gvm_connection_t *connection, const char *type,
 
   gsad_command_response_data_set_content_type (response_data,
                                                GSAD_CONTENT_TYPE_APP_XML);
-  cmd_response_data_set_content_disposition (
+  gsad_command_response_data_set_content_disposition (
     response_data,
     g_strdup_printf ("attachment; filename=\"%s.xml\"", file_name));
   gsad_command_response_data_set_content_length (response_data,
@@ -4307,8 +4307,8 @@ download_credential_gmp (gvm_connection_t *connection,
                      (strcmp (format, "key") == 0 ? "pub" : format));
   content_type_from_format_string (&content_type, format);
 
-  cmd_response_data_set_content_disposition (response_data,
-                                             content_disposition);
+  gsad_command_response_data_set_content_disposition (response_data,
+                                                      content_disposition);
   gsad_command_response_data_set_content_type (response_data, content_type);
 
   free_entity (entity);
@@ -9056,7 +9056,7 @@ export_preference_file_gmp (gvm_connection_t *connection,
       char *content = strdup (entity_text (value_entity));
       gsad_command_response_data_set_content_type (
         response_data, GSAD_CONTENT_TYPE_OCTET_STREAM);
-      cmd_response_data_set_content_disposition (
+      gsad_command_response_data_set_content_disposition (
         response_data,
         g_strdup_printf ("attachment; filename=\"pref_file.bin\""));
       gsad_command_response_data_set_content_length (response_data,
@@ -9351,7 +9351,7 @@ get_report (gvm_connection_t *connection, gsad_credentials_t *credentials,
 
               gsad_command_response_data_set_content_type_string (
                 response_data, g_strdup (requested_content_type));
-              cmd_response_data_set_content_disposition (
+              gsad_command_response_data_set_content_disposition (
                 response_data,
                 g_strdup_printf ("attachment; filename=\"%s.%s\"", file_name,
                                  extension));
@@ -9464,7 +9464,7 @@ get_report (gvm_connection_t *connection, gsad_credentials_t *credentials,
 
                   gsad_command_response_data_set_content_type_string (
                     response_data, g_strdup (requested_content_type));
-                  cmd_response_data_set_content_disposition (
+                  gsad_command_response_data_set_content_disposition (
                     response_data,
                     g_strdup_printf ("attachment; filename=\"%s.%s\"",
                                      file_name, extension));
@@ -19458,7 +19458,7 @@ get_agent_installer_file_gmp (gvm_connection_t *connection,
         response_data, g_strdup (content_type));
     }
 
-  cmd_response_data_set_content_disposition (
+  gsad_command_response_data_set_content_disposition (
     response_data,
     g_strdup_printf ("attachment; filename=%s.%s", name, format));
   gsad_command_response_data_set_content_length (response_data, content_length);

@@ -189,8 +189,8 @@ gsad_command_response_data_get_content_length (
  * @param[in]  content_disposition  Content disposition
  */
 void
-cmd_response_data_set_content_disposition (gsad_command_response_data_t *data,
-                                           gchar *content_disposition)
+gsad_command_response_data_set_content_disposition (
+  gsad_command_response_data_t *data, gchar *content_disposition)
 {
   data->content_disposition = content_disposition;
 }
@@ -203,7 +203,8 @@ cmd_response_data_set_content_disposition (gsad_command_response_data_t *data,
  * @return  Size of the response
  */
 const gchar *
-cmd_response_data_get_content_disposition (gsad_command_response_data_t *data)
+gsad_command_response_data_get_content_disposition (
+  gsad_command_response_data_t *data)
 {
   return data->content_disposition;
 }

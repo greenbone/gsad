@@ -486,7 +486,7 @@ gsad_http_send_response (gsad_http_connection_t *connection,
     }
 
   content_disposition =
-    cmd_response_data_get_content_disposition (response_data);
+    gsad_command_response_data_get_content_disposition (response_data);
 
   if (content_disposition != NULL)
     {
