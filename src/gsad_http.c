@@ -499,7 +499,7 @@ gsad_http_send_response (gsad_http_connection_t *connection,
   gsad_http_add_security_headers (response);
   gsad_http_add_cors_headers (response);
 
-  status_code = cmd_response_data_get_status_code (response_data);
+  status_code = gsad_command_response_data_get_status_code (response_data);
 
   gsad_command_response_data_free (response_data);
 
@@ -562,7 +562,8 @@ gsad_http_create_not_found_response (
   gsad_http_response_t *response;
   int len;
 
-  cmd_response_data_set_status_code (response_data, MHD_HTTP_NOT_FOUND);
+  gsad_command_response_data_set_status_code (response_data,
+                                              MHD_HTTP_NOT_FOUND);
 
   gchar *msg =
     "<!DOCTYPE html>"
@@ -644,7 +645,7 @@ gsad_http_send_reauthentication (gsad_http_connection_t *connection,
 
   gsad_command_response_data_t *response_data =
     gsad_command_response_data_new ();
-  cmd_response_data_set_status_code (response_data, http_status_code);
+  gsad_command_response_data_set_status_code (response_data, http_status_code);
 
   gchar *xml = gsad_http_create_gsad_message (NULL, msg, response_data);
 
@@ -693,7 +694,7 @@ gsad_http_create_file_content_response (
   FILE *file;
   struct stat buf;
 
-  cmd_response_data_set_status_code (response_data, MHD_HTTP_OK);
+  gsad_command_response_data_set_status_code (response_data, MHD_HTTP_OK);
 
   if (!str_equal (path, "index.html") && !gvm_file_exists (path))
     {
@@ -702,7 +703,8 @@ gsad_http_create_file_content_response (
       g_debug ("File %s not found. Return index.html", path);
 
       path = "index.html";
-      cmd_response_data_set_status_code (response_data, MHD_HTTP_NOT_FOUND);
+      gsad_command_response_data_set_status_code (response_data,
+                                                  MHD_HTTP_NOT_FOUND);
     }
 
   file = fopen (path, "r"); /* this file is just read and sent */

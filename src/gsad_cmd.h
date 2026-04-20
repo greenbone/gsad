@@ -40,11 +40,11 @@ gsad_command_response_data_get_content_type (
   gsad_command_response_data_t *data);
 
 void
-cmd_response_data_set_status_code (gsad_command_response_data_t *data,
-                                   int http_status_code);
+gsad_command_response_data_set_status_code (gsad_command_response_data_t *data,
+                                            int http_status_code);
 
 int
-cmd_response_data_get_status_code (gsad_command_response_data_t *data);
+gsad_command_response_data_get_status_code (gsad_command_response_data_t *data);
 
 void
 cmd_response_data_set_content_length (gsad_command_response_data_t *data,
