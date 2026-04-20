@@ -494,7 +494,7 @@ gsad_http_send_response (gsad_http_connection_t *connection,
                                content_disposition);
     }
 
-  if (cmd_response_data_is_allow_caching (response_data) == FALSE)
+  if (gsad_command_response_data_is_allow_caching (response_data) == FALSE)
     gsad_http_add_forbid_caching_headers (response);
   gsad_http_add_security_headers (response);
   gsad_http_add_cors_headers (response);
