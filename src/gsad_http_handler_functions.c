@@ -540,7 +540,7 @@ gsad_http_handle_system_report (gsad_http_handler_t *handler_next,
       return MHD_NO;
     }
 
-  response_data = cmd_response_data_new ();
+  response_data = gsad_command_response_data_new ();
 
   /* Connect to manager */
   switch (gsad_manager_connect_with_credentials (&con, credentials))
@@ -574,7 +574,7 @@ gsad_http_handle_system_report (gsad_http_handler_t *handler_next,
         response_data);
       break;
     case 2: /* authentication failed */
-      cmd_response_data_free (response_data);
+      gsad_command_response_data_free (response_data);
       gsad_credentials_free (credentials);
       return gsad_http_send_reauthentication (connection, MHD_HTTP_UNAUTHORIZED,
                                               LOGIN_FAILED);
@@ -617,7 +617,7 @@ gsad_http_handle_system_report (gsad_http_handler_t *handler_next,
       gsad_credentials_free (credentials);
       g_warning ("%s: failed to get system reports, dropping request",
                  __func__);
-      cmd_response_data_free (response_data);
+      gsad_command_response_data_free (response_data);
       return MHD_NO;
     }
 
@@ -650,7 +650,7 @@ gsad_http_handle_index (gsad_http_handler_t *handler_next, void *handler_data,
   gsad_http_response_t *response;
   gsad_command_response_data_t *response_data;
 
-  response_data = cmd_response_data_new ();
+  response_data = gsad_command_response_data_new ();
   cmd_response_data_set_allow_caching (response_data, FALSE);
 
   const gchar *url = gsad_connection_info_get_url (con_info);
@@ -712,7 +712,7 @@ gsad_http_handle_static_file (gsad_http_handler_t *handler_next,
 
   g_debug ("Requesting url %s for static path %s", url, path);
 
-  response_data = cmd_response_data_new ();
+  response_data = gsad_command_response_data_new ();
   cmd_response_data_set_allow_caching (response_data, TRUE);
 
   response = gsad_http_create_file_content_response (connection, url, path,
@@ -777,7 +777,7 @@ gsad_http_handle_static_content (gsad_http_handler_t *handler_next,
           response =
             MHD_create_response_from_buffer (0, NULL, MHD_RESPMEM_PERSISTENT);
           MHD_add_response_header (response, "Location", new_url);
-          response_data = cmd_response_data_new ();
+          response_data = gsad_command_response_data_new ();
           cmd_response_data_set_status_code (response_data,
                                              MHD_HTTP_MOVED_PERMANENTLY);
           g_free (path);
@@ -791,7 +791,7 @@ gsad_http_handle_static_content (gsad_http_handler_t *handler_next,
       g_free (old_path);
     }
 
-  response_data = cmd_response_data_new ();
+  response_data = gsad_command_response_data_new ();
   cmd_response_data_set_allow_caching (response_data, TRUE);
 
   response = gsad_http_create_file_content_response (connection, url, path,
@@ -839,7 +839,7 @@ gsad_http_handle_static_config (gsad_http_handler_t *handler_next,
 
   g_debug ("Requesting url %s for static config path %s", url, path);
 
-  response_data = cmd_response_data_new ();
+  response_data = gsad_command_response_data_new ();
 
   // don't cache config file
   cmd_response_data_set_allow_caching (response_data, FALSE);
@@ -887,7 +887,8 @@ gsad_http_handle_not_found (gsad_http_handler_t *handler_next,
 
   g_debug ("Returning not found for url %s", url);
 
-  gsad_command_response_data_t *response_data = cmd_response_data_new ();
+  gsad_command_response_data_t *response_data =
+    gsad_command_response_data_new ();
   gsad_http_response_t *response =
     gsad_http_create_not_found_response (response_data);
   return gsad_http_send_response (connection, response, response_data, NULL);

@@ -31,7 +31,7 @@ struct gsad_command_response_data
  * @param[in]  data  The gsad_commad_response_data_t struct to initialize
  */
 static void
-cmd_response_data_init (gsad_command_response_data_t *data)
+gsad_command_response_data_init (gsad_command_response_data_t *data)
 {
   data->allow_caching = FALSE;
   data->http_status_code = MHD_HTTP_OK;
@@ -48,11 +48,11 @@ cmd_response_data_init (gsad_command_response_data_t *data)
  * @return Pointer to the newly allocated gsad_command_response_data_t struct
  */
 gsad_command_response_data_t *
-cmd_response_data_new ()
+gsad_command_response_data_new ()
 {
   gsad_command_response_data_t *data =
     g_malloc0 (sizeof (gsad_command_response_data_t));
-  cmd_response_data_init (data);
+  gsad_command_response_data_init (data);
   return data;
 }
 
@@ -65,7 +65,7 @@ cmd_response_data_new ()
  * @param[in] data The gsad_commad_response_data_t struct to free
  */
 void
-cmd_response_data_free (gsad_command_response_data_t *data)
+gsad_command_response_data_free (gsad_command_response_data_t *data)
 {
   if (!data)
     {
