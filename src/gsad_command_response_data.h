@@ -8,8 +8,8 @@
  * @brief Headers for Response Data struct
  */
 
-#ifndef _GSAD_CMD_H
-#define _GSAD_CMD_H
+#ifndef _GSAD_COMMAND_RESPONSE_DATA_H
+#define _GSAD_COMMAND_RESPONSE_DATA_H
 
 #include "gsad_content_type.h" /* for content_type_t */
 
@@ -69,4 +69,5 @@ gsad_command_response_data_set_content_type_string (
 const gchar *
 gsad_command_response_data_get_content_type_string (
   gsad_command_response_data_t *data);
-#endif /* not _GSAD_CMD_H */
+
+#endif /* _GSAD_COMMAND_RESPONSE_DATA_H */

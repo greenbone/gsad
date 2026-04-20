@@ -4,11 +4,11 @@
  */
 
 /**
- * @file gsad_cmd.c
+ * @file gsad_command_response_data.c
  * @brief Response data handling
  */
 
-#include "gsad_cmd.h"
+#include "gsad_command_response_data.h"
 
 #include <microhttpd.h> /* for MHD_HTTP_OK */
 

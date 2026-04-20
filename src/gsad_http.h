@@ -11,11 +11,11 @@
 #ifndef _GSAD_HTTP_H
 #define _GSAD_HTTP_H
 
-#include "gsad_cmd.h"             /* for gsad_commad_response_data_t */
-#include "gsad_connection_info.h" /* for gsad_connection_info_t */
-#include "gsad_content_type.h"    /* for content_type_t */
-#include "gsad_credentials.h"     /* for credentials_t */
-#include "gsad_user.h"            /* for gsad_user_t */
+#include "gsad_command_response_data.h" /* for gsad_command_response_data_t */
+#include "gsad_connection_info.h"       /* for gsad_connection_info_t */
+#include "gsad_content_type.h"          /* for content_type_t */
+#include "gsad_credentials.h"           /* for credentials_t */
+#include "gsad_user.h"                  /* for gsad_user_t */
 
 #include <glib.h>
 #include <microhttpd.h>
