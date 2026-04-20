@@ -47,11 +47,12 @@ int
 gsad_command_response_data_get_status_code (gsad_command_response_data_t *data);
 
 void
-cmd_response_data_set_content_length (gsad_command_response_data_t *data,
-                                      gsize content_length);
+gsad_command_response_data_set_content_length (
+  gsad_command_response_data_t *data, gsize content_length);
 
 gsize
-cmd_response_data_get_content_length (gsad_command_response_data_t *data);
+gsad_command_response_data_get_content_length (
+  gsad_command_response_data_t *data);
 
 void
 cmd_response_data_set_content_disposition (gsad_command_response_data_t *data,

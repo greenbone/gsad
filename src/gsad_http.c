@@ -538,7 +538,7 @@ gsad_http_create_response (gsad_http_connection_t *connection, gchar *data,
   gsad_http_response_t *response;
   gsize len = 0;
 
-  len = cmd_response_data_get_content_length (response_data);
+  len = gsad_command_response_data_get_content_length (response_data);
   if (len == 0 && data)
     {
       len = strlen (data);
@@ -584,9 +584,9 @@ gsad_http_create_not_found_response (
   gsad_command_response_data_set_content_type (response_data,
                                                GSAD_CONTENT_TYPE_TEXT_HTML);
 
-  cmd_response_data_set_content_length (response_data, strlen (msg));
+  gsad_command_response_data_set_content_length (response_data, strlen (msg));
 
-  len = cmd_response_data_get_content_length (response_data);
+  len = gsad_command_response_data_get_content_length (response_data);
   response = MHD_create_response_from_buffer (len, msg, MHD_RESPMEM_MUST_COPY);
   return response;
 }
@@ -1018,7 +1018,8 @@ gsad_http_create_envelope (gsad_credentials_t *credentials, gchar *xml,
 
   gchar *envelope = g_string_free (string, FALSE);
 
-  cmd_response_data_set_content_length (response_data, strlen (envelope));
+  gsad_command_response_data_set_content_length (response_data,
+                                                 strlen (envelope));
   gsad_command_response_data_set_content_type (response_data,
                                                GSAD_CONTENT_TYPE_APP_XML);
 
@@ -1058,7 +1059,8 @@ gsad_http_create_gsad_message (gsad_credentials_t *credentials,
                                      GSAD_VERSION, gsad_response);
   g_free (gsad_response);
 
-  cmd_response_data_set_content_length (response_data, strlen (envelope));
+  gsad_command_response_data_set_content_length (response_data,
+                                                 strlen (envelope));
   gsad_command_response_data_set_content_type (response_data,
                                                GSAD_CONTENT_TYPE_APP_XML);
 

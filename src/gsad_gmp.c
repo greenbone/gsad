@@ -1255,7 +1255,8 @@ export_resource (gvm_connection_t *connection, const char *type,
   cmd_response_data_set_content_disposition (
     response_data,
     g_strdup_printf ("attachment; filename=\"%s.xml\"", file_name));
-  cmd_response_data_set_content_length (response_data, strlen (content));
+  gsad_command_response_data_set_content_length (response_data,
+                                                 strlen (content));
 
   free_entity (entity);
   g_free (file_name);
@@ -1433,7 +1434,8 @@ export_many (gvm_connection_t *connection, const char *type,
   cmd_response_data_set_content_disposition (
     response_data,
     g_strdup_printf ("attachment; filename=\"%s.xml\"", file_name));
-  cmd_response_data_set_content_length (response_data, strlen (content));
+  gsad_command_response_data_set_content_length (response_data,
+                                                 strlen (content));
 
   free_entity (entity);
   g_free (file_name);
@@ -4223,7 +4225,7 @@ download_credential_gmp (gvm_connection_t *connection,
               len = 0;
             }
 
-          cmd_response_data_set_content_length (response_data, len);
+          gsad_command_response_data_set_content_length (response_data, len);
         }
       else
         {
@@ -4272,7 +4274,8 @@ download_credential_gmp (gvm_connection_t *connection,
           else
             login = NULL;
 
-          cmd_response_data_set_content_length (response_data, strlen (data));
+          gsad_command_response_data_set_content_length (response_data,
+                                                         strlen (data));
         }
       else
         {
@@ -9056,7 +9059,8 @@ export_preference_file_gmp (gvm_connection_t *connection,
       cmd_response_data_set_content_disposition (
         response_data,
         g_strdup_printf ("attachment; filename=\"pref_file.bin\""));
-      cmd_response_data_set_content_length (response_data, strlen (content));
+      gsad_command_response_data_set_content_length (response_data,
+                                                     strlen (content));
       free_entity (entity);
       g_string_free (xml, TRUE);
       return content;
@@ -9470,7 +9474,8 @@ get_report (gvm_connection_t *connection, gsad_credentials_t *credentials,
 
               free_entity (entity);
 
-              cmd_response_data_set_content_length (response_data, report_len);
+              gsad_command_response_data_set_content_length (response_data,
+                                                             report_len);
               return report_decoded;
             }
           else
@@ -10178,7 +10183,7 @@ download_ssl_cert (gvm_connection_t *connection,
                           "%s\n-----END CERTIFICATE-----\n",
                           unescaped);
 
-  cmd_response_data_set_content_length (response_data, strlen (cert));
+  gsad_command_response_data_set_content_length (response_data, strlen (cert));
 
   g_free (unescaped);
   return cert;
@@ -10213,7 +10218,8 @@ download_ca_pub (gvm_connection_t *connection, gsad_credentials_t *credentials,
     }
   /* The Base64 comes URI escaped as it may contain special characters. */
   unescaped = g_uri_unescape_string (ca_pub, NULL);
-  cmd_response_data_set_content_length (response_data, strlen (unescaped));
+  gsad_command_response_data_set_content_length (response_data,
+                                                 strlen (unescaped));
   return unescaped;
 }
 
@@ -10247,7 +10253,8 @@ download_key_pub (gvm_connection_t *connection, gsad_credentials_t *credentials,
 
   /* The Base64 comes URI escaped as it may contain special characters. */
   unescaped = g_uri_unescape_string (key_pub, NULL);
-  cmd_response_data_set_content_length (response_data, strlen (unescaped));
+  gsad_command_response_data_set_content_length (response_data,
+                                                 strlen (unescaped));
   return unescaped;
 }
 
@@ -11874,7 +11881,8 @@ get_system_report_gmp_from_url (gvm_connection_t *connection,
 #endif
             }
 
-          cmd_response_data_set_content_length (response_data, content_length);
+          gsad_command_response_data_set_content_length (response_data,
+                                                         content_length);
           free_entity (entity);
           return content;
         }
@@ -19453,7 +19461,7 @@ get_agent_installer_file_gmp (gvm_connection_t *connection,
   cmd_response_data_set_content_disposition (
     response_data,
     g_strdup_printf ("attachment; filename=%s.%s", name, format));
-  cmd_response_data_set_content_length (response_data, content_length);
+  gsad_command_response_data_set_content_length (response_data, content_length);
 
   free_entity (entity);
   return content_decoded;

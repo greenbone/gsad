@@ -162,8 +162,8 @@ gsad_command_response_data_get_status_code (gsad_command_response_data_t *data)
  * @param[in]  content_length  Content length of the response
  */
 void
-cmd_response_data_set_content_length (gsad_command_response_data_t *data,
-                                      gsize content_length)
+gsad_command_response_data_set_content_length (
+  gsad_command_response_data_t *data, gsize content_length)
 {
   data->content_length = content_length;
 }
@@ -176,7 +176,8 @@ cmd_response_data_set_content_length (gsad_command_response_data_t *data,
  * @return Content length of the response
  */
 gsize
-cmd_response_data_get_content_length (gsad_command_response_data_t *data)
+gsad_command_response_data_get_content_length (
+  gsad_command_response_data_t *data)
 {
   return data->content_length;
 }

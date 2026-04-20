@@ -1096,7 +1096,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
       response_data);
   }
 
-  res_len = cmd_response_data_get_content_length (response_data);
+  res_len = gsad_command_response_data_get_content_length (response_data);
 
   if (res_len == 0)
     res_len = strlen (res);
