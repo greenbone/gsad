@@ -11,10 +11,10 @@
 #ifndef _GSAD_GMP_H
 #define _GSAD_GMP_H
 
-#include "gsad_cmd.h"          /* for gsad_command_response_data_t */
-#include "gsad_content_type.h" /* for content_type */
-#include "gsad_http.h"         /* for gsad_http_connection_t */
-#include "gsad_user.h"         /* for credentials_t */
+#include "gsad_command_response_data.h" /* for gsad_command_response_data_t */
+#include "gsad_content_type.h"          /* for content_type */
+#include "gsad_http.h"                  /* for gsad_http_connection_t */
+#include "gsad_user.h"                  /* for credentials_t */
 
 #include <glib.h>                 /* for gboolean */
 #include <gvm/util/serverutils.h> /* for gvm_connection_t */
