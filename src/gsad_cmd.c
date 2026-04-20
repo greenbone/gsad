@@ -11,7 +11,6 @@
 #include "gsad_cmd.h"
 
 #include <microhttpd.h> /* for MHD_HTTP_OK */
-#include <string.h>     /* for memset */
 
 /**
  * @brief Response information for commands.
