@@ -55,11 +55,12 @@ gsad_command_response_data_get_content_length (
   gsad_command_response_data_t *data);
 
 void
-cmd_response_data_set_content_disposition (gsad_command_response_data_t *data,
-                                           gchar *content_disposition);
+gsad_command_response_data_set_content_disposition (
+  gsad_command_response_data_t *data, gchar *content_disposition);
 
 const gchar *
-cmd_response_data_get_content_disposition (gsad_command_response_data_t *data);
+gsad_command_response_data_get_content_disposition (
+  gsad_command_response_data_t *data);
 
 void
 gsad_command_response_data_set_content_type_string (
