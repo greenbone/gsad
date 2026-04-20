@@ -467,7 +467,7 @@ gsad_http_send_response (gsad_http_connection_t *connection,
 
   if (gsad_http_attach_remove_sid (response, sid) == MHD_NO)
     {
-      cmd_response_data_free (response_data);
+      gsad_command_response_data_free (response_data);
       MHD_destroy_response (response);
       return MHD_NO;
     }
@@ -501,7 +501,7 @@ gsad_http_send_response (gsad_http_connection_t *connection,
 
   status_code = cmd_response_data_get_status_code (response_data);
 
-  cmd_response_data_free (response_data);
+  gsad_command_response_data_free (response_data);
 
   ret = MHD_queue_response (connection, status_code, response);
   if (ret == MHD_NO)
@@ -642,7 +642,8 @@ gsad_http_send_reauthentication (gsad_http_connection_t *connection,
       msg = "";
     }
 
-  gsad_command_response_data_t *response_data = cmd_response_data_new ();
+  gsad_command_response_data_t *response_data =
+    gsad_command_response_data_new ();
   cmd_response_data_set_status_code (response_data, http_status_code);
 
   gchar *xml = gsad_http_create_gsad_message (NULL, msg, response_data);

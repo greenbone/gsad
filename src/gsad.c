@@ -183,7 +183,8 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   gchar *res = NULL, *new_sid = NULL;
   const gchar *cmd, *caller;
   gvm_connection_t connection;
-  gsad_command_response_data_t *response_data = cmd_response_data_new ();
+  gsad_command_response_data_t *response_data =
+    gsad_command_response_data_new ();
 
   params_t *params = gsad_connection_info_get_params (con_info);
   params_mhd_validate (params);
@@ -257,7 +258,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
 
       /* @todo Validate caller. */
 
-      cmd_response_data_free (response_data);
+      gsad_command_response_data_free (response_data);
 
       return gsad_http_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
                                               SESSION_EXPIRED);
@@ -265,7 +266,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
 
   if (ret == USER_BAD_MISSING_COOKIE || ret == USER_IP_ADDRESS_MISSMATCH)
     {
-      cmd_response_data_free (response_data);
+      gsad_command_response_data_free (response_data);
 
       return gsad_http_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
                                               BAD_MISSING_COOKIE);
@@ -273,7 +274,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
 
   if (ret == USER_GMP_DOWN)
     {
-      cmd_response_data_free (response_data);
+      gsad_command_response_data_free (response_data);
 
       return gsad_http_send_reauthentication (con, MHD_HTTP_SERVICE_UNAVAILABLE,
                                               GMP_SERVICE_DOWN);
@@ -318,7 +319,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
         response_data);
       break;
     case 2: /* auth failed */
-      cmd_response_data_free (response_data);
+      gsad_command_response_data_free (response_data);
       return gsad_http_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
                                               LOGIN_FAILED);
     case 3: /* timeout */
@@ -780,7 +781,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   gchar *encoding;
 
   validator = gsad_get_validator ();
-  response_data = cmd_response_data_new ();
+  response_data = gsad_command_response_data_new ();
 
   cmd = params_value (params, "cmd");
 
@@ -833,7 +834,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
         response_data);
       break;
     case 2: /* auth failed */
-      cmd_response_data_free (response_data);
+      gsad_command_response_data_free (response_data);
       return gsad_http_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
                                               LOGIN_FAILED);
     case 3: /* timeout */

@@ -18,10 +18,10 @@
 typedef struct gsad_command_response_data gsad_command_response_data_t;
 
 gsad_command_response_data_t *
-cmd_response_data_new ();
+gsad_command_response_data_new ();
 
 void
-cmd_response_data_free (gsad_command_response_data_t *data);
+gsad_command_response_data_free (gsad_command_response_data_t *data);
 
 void
 cmd_response_data_set_allow_caching (gsad_command_response_data_t *data,
