@@ -72,16 +72,8 @@ gsad_command_response_data_free (gsad_command_response_data_t *data)
       return;
     }
 
-  if (data->content_disposition)
-    {
-      g_free (data->content_disposition);
-    }
-
-  if (data->content_type_string)
-    {
-      g_free (data->content_type_string);
-    }
-
+  g_free (data->content_disposition);
+  g_free (data->content_type_string);
   g_free (data);
 }
 
