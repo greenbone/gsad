@@ -136,8 +136,8 @@ gsad_command_response_data_get_content_type (gsad_command_response_data_t *data)
  * @param[in]  http_status_code  HTTP status code
  */
 void
-cmd_response_data_set_status_code (gsad_command_response_data_t *data,
-                                   int http_status_code)
+gsad_command_response_data_set_status_code (gsad_command_response_data_t *data,
+                                            int http_status_code)
 {
   data->http_status_code = http_status_code;
 }
@@ -150,7 +150,7 @@ cmd_response_data_set_status_code (gsad_command_response_data_t *data,
  * @return  HTTP status code
  */
 int
-cmd_response_data_get_status_code (gsad_command_response_data_t *data)
+gsad_command_response_data_get_status_code (gsad_command_response_data_t *data)
 {
   return data->http_status_code;
 }

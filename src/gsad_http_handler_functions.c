@@ -554,8 +554,8 @@ gsad_http_handle_system_report (gsad_http_handler_t *handler_next,
         {
           g_info ("%s: failed to get system report for sensor %s", __func__,
                   slave_id);
-          cmd_response_data_set_status_code (response_data,
-                                             MHD_HTTP_INTERNAL_SERVER_ERROR);
+          gsad_command_response_data_set_status_code (
+            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
           res = gsad_http_create_gsad_message (
             credentials,
             "An internal error occurred. "
@@ -564,8 +564,8 @@ gsad_http_handle_system_report (gsad_http_handler_t *handler_next,
         }
       break;
     case 1: /* manager closed connection */
-      cmd_response_data_set_status_code (response_data,
-                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       res = gsad_http_create_gsad_message (
         credentials,
         "An internal error occurred. "
@@ -581,8 +581,8 @@ gsad_http_handle_system_report (gsad_http_handler_t *handler_next,
 
       break;
     case 3: /* timeout */
-      cmd_response_data_set_status_code (response_data,
-                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       res = gsad_http_create_gsad_message (
         credentials,
         "An internal error occurred. "
@@ -591,8 +591,8 @@ gsad_http_handle_system_report (gsad_http_handler_t *handler_next,
         response_data);
       break;
     case 4: /* failed to connect to manager */
-      cmd_response_data_set_status_code (response_data,
-                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       res = gsad_http_create_gsad_message (
         credentials,
         "An internal error occurred. "
@@ -601,8 +601,8 @@ gsad_http_handle_system_report (gsad_http_handler_t *handler_next,
         response_data);
       break;
     default:
-      cmd_response_data_set_status_code (response_data,
-                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       res = gsad_http_create_gsad_message (
         credentials,
         "An internal error occurred. "
@@ -778,8 +778,8 @@ gsad_http_handle_static_content (gsad_http_handler_t *handler_next,
             MHD_create_response_from_buffer (0, NULL, MHD_RESPMEM_PERSISTENT);
           MHD_add_response_header (response, "Location", new_url);
           response_data = gsad_command_response_data_new ();
-          cmd_response_data_set_status_code (response_data,
-                                             MHD_HTTP_MOVED_PERMANENTLY);
+          gsad_command_response_data_set_status_code (
+            response_data, MHD_HTTP_MOVED_PERMANENTLY);
           g_free (path);
           g_free (new_url);
           return gsad_http_send_response (connection, response, response_data,
@@ -856,7 +856,7 @@ gsad_http_handle_static_config (gsad_http_handler_t *handler_next,
   g_free (path);
 
   // send empty config
-  cmd_response_data_set_status_code (response_data, MHD_HTTP_OK);
+  gsad_command_response_data_set_status_code (response_data, MHD_HTTP_OK);
   return gsad_http_create_response (connection, g_strdup (""), response_data,
                                     NULL);
 }

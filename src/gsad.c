@@ -193,7 +193,8 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
 
   if (!cmd)
     {
-      cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
+      gsad_command_response_data_set_status_code (response_data,
+                                                  MHD_HTTP_BAD_REQUEST);
 
       res = gsad_http_create_gsad_message (
         credentials,
@@ -214,7 +215,8 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
 
   if (params_value (params, "token") == NULL)
     {
-      cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
+      gsad_command_response_data_set_status_code (response_data,
+                                                  MHD_HTTP_BAD_REQUEST);
 
       if (params_given (params, "token") == 0)
         res = gsad_http_create_gsad_message (
@@ -237,7 +239,8 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
                                 &user);
   if (ret == USER_BAD_TOKEN)
     {
-      cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
+      gsad_command_response_data_set_status_code (response_data,
+                                                  MHD_HTTP_BAD_REQUEST);
       res = gsad_http_create_gsad_message (
         NULL,
         "An internal error occurred inside GSA daemon. "
@@ -309,8 +312,8 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     case 0:
       break;
     case 1: /* manager closed connection */
-      cmd_response_data_set_status_code (response_data,
-                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       res = gsad_http_create_gsad_message (
         credentials,
         "An internal error occurred. "
@@ -323,8 +326,8 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
       return gsad_http_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
                                               LOGIN_FAILED);
     case 3: /* timeout */
-      cmd_response_data_set_status_code (response_data,
-                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       res = gsad_http_create_gsad_message (
         credentials,
         "An internal error occurred. "
@@ -333,8 +336,8 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
         response_data);
       break;
     case 4: /* can't connect to manager */
-      cmd_response_data_set_status_code (response_data,
-                                         MHD_HTTP_SERVICE_UNAVAILABLE);
+      gsad_command_response_data_set_status_code (response_data,
+                                                  MHD_HTTP_SERVICE_UNAVAILABLE);
       res = gsad_http_create_gsad_message (
         credentials,
         "An internal error occurred. "
@@ -343,8 +346,8 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
         response_data);
       break;
     default: /* unknown error */
-      cmd_response_data_set_status_code (response_data,
-                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       res = gsad_http_create_gsad_message (
         credentials,
         "An internal error occurred. "
@@ -487,7 +490,8 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (verify_scanner)
   else
   {
-    cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
+    gsad_command_response_data_set_status_code (response_data,
+                                                MHD_HTTP_BAD_REQUEST);
     res = gsad_http_create_gsad_message (
       credentials,
       "An internal error occurred inside GSA daemon. "
@@ -794,7 +798,8 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     }
   else
     {
-      cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
+      gsad_command_response_data_set_status_code (response_data,
+                                                  MHD_HTTP_BAD_REQUEST);
       res = gsad_http_create_gsad_message (
         credentials,
         "An internal error occurred inside GSA daemon. "
@@ -824,8 +829,8 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     case 0:
       break;
     case 1: /* manager closed connection */
-      cmd_response_data_set_status_code (response_data,
-                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       res = gsad_http_create_gsad_message (
         credentials,
         "An internal error occurred. "
@@ -838,8 +843,8 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
       return gsad_http_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
                                               LOGIN_FAILED);
     case 3: /* timeout */
-      cmd_response_data_set_status_code (response_data,
-                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       res = gsad_http_create_gsad_message (
         credentials,
         "An internal error occurred. "
@@ -848,8 +853,8 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
         response_data);
       break;
     case 4: /* can't connect to manager */
-      cmd_response_data_set_status_code (response_data,
-                                         MHD_HTTP_SERVICE_UNAVAILABLE);
+      gsad_command_response_data_set_status_code (response_data,
+                                                  MHD_HTTP_SERVICE_UNAVAILABLE);
       res = gsad_http_create_gsad_message (
         credentials,
         "An internal error occurred. "
@@ -858,8 +863,8 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
         response_data);
       break;
     default: /* unknown error */
-      cmd_response_data_set_status_code (response_data,
-                                         MHD_HTTP_INTERNAL_SERVER_ERROR);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       res = gsad_http_create_gsad_message (
         credentials,
         "An internal error occurred. "
@@ -1082,7 +1087,8 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
 
   else
   {
-    cmd_response_data_set_status_code (response_data, MHD_HTTP_BAD_REQUEST);
+    gsad_command_response_data_set_status_code (response_data,
+                                                MHD_HTTP_BAD_REQUEST);
     res = gsad_http_create_gsad_message (
       credentials,
       "An internal error occurred inside GSA daemon. "
