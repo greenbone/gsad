@@ -457,7 +457,8 @@ gsad_http_send_response_for_content (gsad_http_connection_t *connection,
 gsad_http_result_t
 gsad_http_send_response (gsad_http_connection_t *connection,
                          gsad_http_response_t *response,
-                         cmd_response_data_t *response_data, const gchar *sid)
+                         gsad_command_response_data_t *response_data,
+                         const gchar *sid)
 {
   int ret;
   const gchar *content_disposition;
@@ -531,7 +532,8 @@ gsad_http_send_response (gsad_http_connection_t *connection,
  */
 gsad_http_result_t
 gsad_http_create_response (gsad_http_connection_t *connection, gchar *data,
-                           cmd_response_data_t *response_data, const gchar *sid)
+                           gsad_command_response_data_t *response_data,
+                           const gchar *sid)
 {
   gsad_http_response_t *response;
   gsize len = 0;
@@ -554,7 +556,8 @@ gsad_http_create_response (gsad_http_connection_t *connection, gchar *data,
  * @return A http response
  */
 gsad_http_response_t *
-gsad_http_create_not_found_response (cmd_response_data_t *response_data)
+gsad_http_create_not_found_response (
+  gsad_command_response_data_t *response_data)
 {
   gsad_http_response_t *response;
   int len;
@@ -639,7 +642,7 @@ gsad_http_send_reauthentication (gsad_http_connection_t *connection,
       msg = "";
     }
 
-  cmd_response_data_t *response_data = cmd_response_data_new ();
+  gsad_command_response_data_t *response_data = cmd_response_data_new ();
   cmd_response_data_set_status_code (response_data, http_status_code);
 
   gchar *xml = gsad_http_create_gsad_message (NULL, msg, response_data);
@@ -678,9 +681,9 @@ file_reader (void *cls, uint64_t pos, char *buf, int max)
  *         if file information could not be retrieved.
  */
 gsad_http_response_t *
-gsad_http_create_file_content_response (gsad_http_connection_t *connection,
-                                        const char *url, const char *path,
-                                        cmd_response_data_t *response_data)
+gsad_http_create_file_content_response (
+  gsad_http_connection_t *connection, const char *url, const char *path,
+  gsad_command_response_data_t *response_data)
 {
   char date_2822[DATE_2822_LEN];
   struct tm mtime;
@@ -974,7 +977,7 @@ serve_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,
  */
 char *
 gsad_http_create_envelope (gsad_credentials_t *credentials, gchar *xml,
-                           cmd_response_data_t *response_data)
+                           gsad_command_response_data_t *response_data)
 {
   assert (credentials);
 
@@ -1030,7 +1033,7 @@ gsad_http_create_envelope (gsad_credentials_t *credentials, gchar *xml,
 gchar *
 gsad_http_create_gsad_message (gsad_credentials_t *credentials,
                                const char *message,
-                               cmd_response_data_t *response_data)
+                               gsad_command_response_data_t *response_data)
 {
   gchar *gsad_response = g_markup_printf_escaped ("<gsad_response>"
                                                   "<message>%s</message>"

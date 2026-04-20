@@ -11,7 +11,7 @@
 #ifndef _GSAD_HTTP_H
 #define _GSAD_HTTP_H
 
-#include "gsad_cmd.h"             /* for cmd_response_data_t */
+#include "gsad_cmd.h"             /* for gsad_commad_response_data_t */
 #include "gsad_connection_info.h" /* for gsad_connection_info_t */
 #include "gsad_content_type.h"    /* for content_type_t */
 #include "gsad_credentials.h"     /* for credentials_t */
@@ -115,11 +115,11 @@ gsad_http_guess_content_type (const gchar *);
 
 gsad_http_result_t
 gsad_http_create_response (gsad_http_connection_t *, gchar *,
-                           cmd_response_data_t *, const gchar *);
+                           gsad_command_response_data_t *, const gchar *);
 
 gsad_http_result_t
 gsad_http_send_response (gsad_http_connection_t *, gsad_http_response_t *,
-                         cmd_response_data_t *, const gchar *);
+                         gsad_command_response_data_t *, const gchar *);
 
 /**
  * @brief Content types.
@@ -168,10 +168,11 @@ gsad_http_add_content_type_header (gsad_http_response_t *, content_type_t *);
 
 gsad_http_response_t *
 gsad_http_create_file_content_response (gsad_http_connection_t *, const gchar *,
-                                        const gchar *, cmd_response_data_t *);
+                                        const gchar *,
+                                        gsad_command_response_data_t *);
 
 gsad_http_response_t *
-gsad_http_create_not_found_response (cmd_response_data_t *);
+gsad_http_create_not_found_response (gsad_command_response_data_t *);
 
 /* helper functions required in gsad_http */
 int
@@ -195,10 +196,10 @@ exec_gmp_post (gsad_http_connection_t *connection,
 
 gchar *
 gsad_http_create_gsad_message (gsad_credentials_t *, const gchar *,
-                               cmd_response_data_t *);
+                               gsad_command_response_data_t *);
 
 gchar *
 gsad_http_create_envelope (gsad_credentials_t *, gchar *,
-                           cmd_response_data_t *);
+                           gsad_command_response_data_t *);
 
 #endif /* _GSAD_HTTP_H */
