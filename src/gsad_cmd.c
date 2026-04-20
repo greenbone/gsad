@@ -84,8 +84,8 @@ gsad_command_response_data_free (gsad_command_response_data_t *data)
  * @param[in]  allow_caching  allow_caching flag to set
  */
 void
-cmd_response_data_set_allow_caching (gsad_command_response_data_t *data,
-                                     gboolean allow_caching)
+gsad_command_response_data_set_allow_caching (
+  gsad_command_response_data_t *data, gboolean allow_caching)
 {
   data->allow_caching = (allow_caching != FALSE);
 }
@@ -98,7 +98,7 @@ cmd_response_data_set_allow_caching (gsad_command_response_data_t *data,
  * @return The allow_caching flag
  */
 gboolean
-cmd_response_data_is_allow_caching (gsad_command_response_data_t *data)
+gsad_command_response_data_is_allow_caching (gsad_command_response_data_t *data)
 {
   return data->allow_caching;
 }

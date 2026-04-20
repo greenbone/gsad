@@ -24,11 +24,12 @@ void
 gsad_command_response_data_free (gsad_command_response_data_t *data);
 
 void
-cmd_response_data_set_allow_caching (gsad_command_response_data_t *data,
-                                     gboolean allow_caching);
+gsad_command_response_data_set_allow_caching (
+  gsad_command_response_data_t *data, gboolean allow_caching);
 
 gboolean
-cmd_response_data_is_allow_caching (gsad_command_response_data_t *data);
+gsad_command_response_data_is_allow_caching (
+  gsad_command_response_data_t *data);
 
 void
 cmd_response_data_set_content_type (gsad_command_response_data_t *data,

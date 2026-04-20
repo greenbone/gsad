@@ -651,7 +651,7 @@ gsad_http_handle_index (gsad_http_handler_t *handler_next, void *handler_data,
   gsad_command_response_data_t *response_data;
 
   response_data = gsad_command_response_data_new ();
-  cmd_response_data_set_allow_caching (response_data, FALSE);
+  gsad_command_response_data_set_allow_caching (response_data, FALSE);
 
   const gchar *url = gsad_connection_info_get_url (con_info);
 
@@ -713,7 +713,7 @@ gsad_http_handle_static_file (gsad_http_handler_t *handler_next,
   g_debug ("Requesting url %s for static path %s", url, path);
 
   response_data = gsad_command_response_data_new ();
-  cmd_response_data_set_allow_caching (response_data, TRUE);
+  gsad_command_response_data_set_allow_caching (response_data, TRUE);
 
   response = gsad_http_create_file_content_response (connection, url, path,
                                                      response_data);
@@ -792,7 +792,7 @@ gsad_http_handle_static_content (gsad_http_handler_t *handler_next,
     }
 
   response_data = gsad_command_response_data_new ();
-  cmd_response_data_set_allow_caching (response_data, TRUE);
+  gsad_command_response_data_set_allow_caching (response_data, TRUE);
 
   response = gsad_http_create_file_content_response (connection, url, path,
                                                      response_data);
@@ -842,7 +842,7 @@ gsad_http_handle_static_config (gsad_http_handler_t *handler_next,
   response_data = gsad_command_response_data_new ();
 
   // don't cache config file
-  cmd_response_data_set_allow_caching (response_data, FALSE);
+  gsad_command_response_data_set_allow_caching (response_data, FALSE);
 
   if (g_file_test (path, G_FILE_TEST_EXISTS))
     {
