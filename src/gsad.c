@@ -183,7 +183,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   gchar *res = NULL, *new_sid = NULL;
   const gchar *cmd, *caller;
   gvm_connection_t connection;
-  cmd_response_data_t *response_data = cmd_response_data_new ();
+  gsad_command_response_data_t *response_data = cmd_response_data_new ();
 
   params_t *params = gsad_connection_info_get_params (con_info);
   params_mhd_validate (params);
@@ -773,7 +773,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   gchar *res = NULL, *comp = NULL;
   gsize res_len = 0;
   gsad_http_response_t *response;
-  cmd_response_data_t *response_data;
+  gsad_command_response_data_t *response_data;
   pthread_t watch_thread;
   connection_watcher_data_t *watcher_data;
   validator_t validator;

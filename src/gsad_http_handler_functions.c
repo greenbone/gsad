@@ -521,7 +521,7 @@ gsad_http_handle_system_report (gsad_http_handler_t *handler_next,
   const char *slave_id;
   gchar *res;
   gvm_connection_t con;
-  cmd_response_data_t *response_data;
+  gsad_command_response_data_t *response_data;
 
   g_debug ("Request for system report url %s", url);
 
@@ -648,7 +648,7 @@ gsad_http_handle_index (gsad_http_handler_t *handler_next, void *handler_data,
                         gsad_connection_info_t *con_info, void *data)
 {
   gsad_http_response_t *response;
-  cmd_response_data_t *response_data;
+  gsad_command_response_data_t *response_data;
 
   response_data = cmd_response_data_new ();
   cmd_response_data_set_allow_caching (response_data, FALSE);
@@ -692,7 +692,7 @@ gsad_http_handle_static_file (gsad_http_handler_t *handler_next,
   gchar *path;
   gsad_http_response_t *response;
   char *default_file = "index.html";
-  cmd_response_data_t *response_data;
+  gsad_command_response_data_t *response_data;
   const gchar *url = gsad_connection_info_get_url (con_info);
 
   /** @todo validation, URL length restriction (allows you to view ANY
@@ -748,7 +748,7 @@ gsad_http_handle_static_content (gsad_http_handler_t *handler_next,
   gchar *path;
   gsad_http_response_t *response;
   char *default_file = "index.html";
-  cmd_response_data_t *response_data;
+  gsad_command_response_data_t *response_data;
   const gchar *url = gsad_connection_info_get_url (con_info);
 
   /** @todo validation, URL length restriction (allows you to view ANY
@@ -826,7 +826,7 @@ gsad_http_handle_static_config (gsad_http_handler_t *handler_next,
 {
   gchar *path;
   gsad_http_response_t *response;
-  cmd_response_data_t *response_data;
+  gsad_command_response_data_t *response_data;
   const gchar *url = gsad_connection_info_get_url (con_info);
 
   /* Ensure that url is relative. */
@@ -887,7 +887,7 @@ gsad_http_handle_not_found (gsad_http_handler_t *handler_next,
 
   g_debug ("Returning not found for url %s", url);
 
-  cmd_response_data_t *response_data = cmd_response_data_new ();
+  gsad_command_response_data_t *response_data = cmd_response_data_new ();
   gsad_http_response_t *response =
     gsad_http_create_not_found_response (response_data);
   return gsad_http_send_response (connection, response, response_data, NULL);

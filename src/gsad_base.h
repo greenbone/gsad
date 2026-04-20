@@ -11,7 +11,7 @@
 #ifndef _GSAD_BASE_H
 #define _GSAD_BASE_H
 
-#include "gsad_cmd.h"  /* for cmd_response_data_t */
+#include "gsad_cmd.h"  /* for gsad_command_response_data_t */
 #include "gsad_user.h" /* for gsad_credentials_t */
 
 #include <glib.h>
