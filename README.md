@@ -225,46 +225,46 @@ gsad --help
 
 The following settings can be adjusted for the `gsad` service.
 
-| CLI                         | Env | Type    | Default                                 | Description                                                                                             |
-| --------------------------- | --- | ------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `--drop-privileges`         |     | string  | false                                   | When starting as root drop priviledges to a different user                                              |
-| `-f`, `--foreground`        |     | boolean | false                                   | Run gsad in the foreground and don't fork at startup                                                    |
-| `--http-only`               |     | boolean | false                                   | Serve HTTP only, without SSL. Implies `--no-redirect`.                                                  |
-| `--listen`                  |     | string  | `0.0.0.0`                               | IP Address to listen on                                                                                 |
-| `--port`                    |     | int     | 9392 for HTTP and 443 for HTTPS         | Port to listen on                                                                                       |
-| `-r`, `--rport`             |     | int     | 9392                                    | Redirect port to listen on                                                                              |
-| `--no-redirect`             |     | boolean | false                                   | Don't redirect HTTP to HTTPS (implied when using --http-only).                                          |
-| `--version`, `-V`           |     | boolean |                                         | Print version information                                                                               |
-| `-k`, `--ssl-private-key`   |     | path    | `/var/lib/gvm/private/CA/serverkey.pem` | Path to a TLS private key                                                                               |
-| `-c`, `--ssl-certificate`   |     | path    | `/var/lib/gvm/CA/servercert.pem`        | Path to a TLS certificate                                                                               |
-| `--dh-params`               |     | path    |                                         | Path to a Diffie-Hellman parameters file                                                                |
-| `--do-chroot`               |     | boolean | false                                   | Do chroot into the static content directory.                                                            |
-| `--secure-cookie`           |     | boolean | false                                   | Use a secure cookie (implied when using HTTPS).                                                         |
-| `--timeout`                 |     | int     | 15                                      | Minutes of user idle time before session expires. Has to be between 0 (no timeout) and 40320 (4 weeks). |
-| `--client-watch-interval`   |     | int     | 0                                       | Interval in seconds to Check if client connection was closed. 0 disables the client watch interval      |
-| `--debug-tls`               |     | int     | 0                                       | Level at which the TLS debugging is enabled. O to disable.                                              |
-| `--gnutls-priorities`       |     | string  |                                         | GnuTLS priorities string.                                                                               |
-| `--http-frame-opts`         |     | string  | `SAMEORIGIN`                            | X-Frame-Options HTTP header.                                                                            |
-| `--http-csp`                |     | string  |                                         | Content-Security-Policy HTTP header.                                                                    |
-| `--http-sts`                |     | boolean | false                                   | Enable HTTP Strict-Transport-Security header.                                                           |
-| `--http-sts-max-age`        |     | int     | 31536000                                | max-age in seconds for HTTP Strict-Transport-Security header.                                           |
-| `--ignore-x-real-ip`        |     | boolean | false                                   | Do not use X-Real-IP to determine the client address.                                                   |
-| `--per-ip-connection-limit` |     | int     | 30                                      | Sets the maximum number of connections per ip. Use 0 for unlimited.                                     |
-| `--unix-socket`             |     | Path    |                                         | Path to unix socket to listen on. Set to listen on a unix socket.                                       |
-| `--unix-socket-owner`       |     | string  |                                         | Owner of the unix socket                                                                                |
-| `--unix-socket-group`       |     | string  |                                         | Group of the unix socket                                                                                |
-| `--unix-socket-mode`        |     | string  |                                         | File mode of the unix socket                                                                            |
-| `--munix-socket`            |     | path    | `/run/gvmd/gvmd.sock`                   | Path to the unix socket of gvmd                                                                         |
-| `--http-coep`               |     | string  |                                         | Set Cross-Origin-Embedder-Policy (COEP) http header                                                     |
-| `--http-coop`               |     | string  |                                         | Set Cross-Origin-Resource-Policy (COOP) http header                                                     |
-| `--http-corp`               |     | string  |                                         | Set Cross-Origin-Resource-Policy (CORP) http header                                                     |
-| `--http-cors`               |     | string  |                                         | Set Cross-Origin Resource Sharing (CORS) allow origin http header                                       |
-| `--user-session-limit`      |     | int     | 0                                       | Set maximum number of active sessions per user. 0 for unlimited.                                        |
-| `--log-config`              |     | path    | `/etc/gvm/gsad_log.conf`                | Path to logging configuration file.                                                                     |
-| `--pid-file`                |     | path    | `/run/gsad/gsad.pid`                    | Path to PID file.                                                                                       |
-| `--static-content`          |     | path    | `/usr/local/share/gvm/gsad/web`         | Path to static content directory.                                                                       |
-| `--api-only`                |     | boolean | false                                   | Run in API-only mode, disabling serving of static content.                                              |
-| `--jwt-requested`           |     | boolean | false                                   | Enable JWT-based mode using the token returned in the login response.                                   |
+| CLI                         | Env                            | Type    | Default                                 | Description                                                                                             |
+| --------------------------- | ------------------------------ | ------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `--drop-privileges`         | `GSAD_DROP_PRIVILEGES`         | string  | false                                   | When starting as root drop priviledges to a different user                                              |
+| `-f`, `--foreground`        | `GSAD_FOREGROUND`              | boolean | false                                   | Run gsad in the foreground and don't fork at startup                                                    |
+| `--http-only`               | `GSAD_HTTP_ONLY`               | boolean | false                                   | Serve HTTP only, without SSL. Implies `--no-redirect`.                                                  |
+| `--listen`                  | `GSAD_ADDRESS`                 | string  | `0.0.0.0`                               | IP Address to listen on                                                                                 |
+| `--port`                    | `GSAD_PORT`                    | int     | 9392 for HTTP and 443 for HTTPS         | Port to listen on                                                                                       |
+| `-r`, `--rport`             | `GSAD_REDIRECT_PORT`           | int     | 9392                                    | Redirect port to listen on                                                                              |
+| `--no-redirect`             | `GSAD_NO_REDIRECT`             | boolean | false                                   | Don't redirect HTTP to HTTPS (implied when using --http-only).                                          |
+| `--version`, `-V`           |                                | boolean |                                         | Print version information                                                                               |
+| `-k`, `--ssl-private-key`   | `GSAD_TLS_PRIVATE_KEY`         | path    | `/var/lib/gvm/private/CA/serverkey.pem` | Path to a TLS private key                                                                               |
+| `-c`, `--ssl-certificate`   | `GSAD_TLS_CERTIFICATE`         | path    | `/var/lib/gvm/CA/servercert.pem`        | Path to a TLS certificate                                                                               |
+| `--dh-params`               | `GSAD_DH_PARAMS`               | path    |                                         | Path to a Diffie-Hellman parameters file                                                                |
+| `--do-chroot`               | `GSAD_DO_CHROOT`               | boolean | false                                   | Do chroot into the static content directory.                                                            |
+| `--secure-cookie`           | `GSAD_SECURE_COOKIE`           | boolean | false                                   | Use a secure cookie (implied when using HTTPS).                                                         |
+| `--timeout`                 | `GSAD_SESSION_TIMEOUT`         | int     | 15                                      | Minutes of user idle time before session expires. Has to be between 0 (no timeout) and 40320 (4 weeks). |
+| `--client-watch-interval`   | `GSAD_CLIENT_WATCH_INTERVAL`   | int     | 0                                       | Interval in seconds to Check if client connection was closed. 0 disables the client watch interval      |
+| `--debug-tls`               | `GSAD_DEBUG_TLS`               | int     | 0                                       | Level at which the TLS debugging is enabled. O to disable.                                              |
+| `--gnutls-priorities`       | `GSAD_GNUTLS_PRIORITIES`       | string  |                                         | GnuTLS priorities string.                                                                               |
+| `--http-frame-opts`         | `GSAD_HTTP_FRAME_OPTS`         | string  | `SAMEORIGIN`                            | X-Frame-Options HTTP header.                                                                            |
+| `--http-csp`                | `GSAD_HTTP_CSP`                | string  |                                         | Content-Security-Policy HTTP header.                                                                    |
+| `--http-sts`                | `GSAD_HSTS_ENABLED`            | boolean | false                                   | Enable HTTP Strict-Transport-Security header.                                                           |
+| `--http-sts-max-age`        | `GSAD_HSTS_MAX_AGE`            | int     | 31536000                                | max-age in seconds for HTTP Strict-Transport-Security header.                                           |
+| `--ignore-x-real-ip`        | `GSAD_IGNORE_X_REAL_IP`        | boolean | false                                   | Do not use X-Real-IP to determine the client address.                                                   |
+| `--per-ip-connection-limit` | `GSAD_PER_IP_CONNECTION_LIMIT` | int     | 30                                      | Sets the maximum number of connections per ip. Use 0 for unlimited.                                     |
+| `--unix-socket`             | `GSAD_UNIX_SOCKET`             | Path    |                                         | Path to unix socket to listen on. Set to listen on a unix socket.                                       |
+| `--unix-socket-owner`       | `GSAD_UNIX_SOCKET_OWNER`       | string  |                                         | Owner of the unix socket                                                                                |
+| `--unix-socket-group`       | `GSAD_UNIX_SOCKET_GROUP`       | string  |                                         | Group of the unix socket                                                                                |
+| `--unix-socket-mode`        | `GSAD_UNIX_SOCKET_MODE`        | string  |                                         | File mode of the unix socket                                                                            |
+| `--munix-socket`            | `GSAD_MANAGER_UNIX_SOCKET`     | path    | `/run/gvmd/gvmd.sock`                   | Path to the unix socket of gvmd                                                                         |
+| `--http-coep`               | `GSAD_HTTP_COEP`               | string  |                                         | Set Cross-Origin-Embedder-Policy (COEP) http header                                                     |
+| `--http-coop`               | `GSAD_HTTP_COOP`               | string  |                                         | Set Cross-Origin-Resource-Policy (COOP) http header                                                     |
+| `--http-corp`               | `GSAD_HTTP_CORP`               | string  |                                         | Set Cross-Origin-Resource-Policy (CORP) http header                                                     |
+| `--http-cors`               | `GSAD_HTTP_CORS`               | string  |                                         | Set Cross-Origin Resource Sharing (CORS) allow origin http header                                       |
+| `--user-session-limit`      | `GSAD_USER_SESSION_LIMIT`      | int     | 0                                       | Set maximum number of active sessions per user. 0 for unlimited.                                        |
+| `--log-config`              | `GSAD_LOG_CONFIG`              | path    | `/etc/gvm/gsad_log.conf`                | Path to logging configuration file.                                                                     |
+| `--pid-file`                | `GSAD_PID_FILE`                | path    | `/run/gsad/gsad.pid`                    | Path to PID file.                                                                                       |
+| `--static-content`          | `GSAD_STATIC_CONTENT`          | path    | `/usr/local/share/gvm/gsad/web`         | Path to static content directory.                                                                       |
+| `--api-only`                | `GSAD_API_ONLY`                | boolean | false                                   | Run in API-only mode, disabling serving of static content.                                              |
+| `--jwt-requested`           | `GSAD_JWT_REQUESTED`           | boolean | false                                   | Enable JWT-based mode using the token returned in the login response.                                   |
 
 ## Development
 
