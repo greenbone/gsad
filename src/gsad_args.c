@@ -6,7 +6,8 @@
 #include "gsad_args.h"
 
 #include "gsad_args_internal.h"
-#include "gsad_settings.h" // for defaults
+#include "gsad_env.h"      /* for environment variables */
+#include "gsad_settings.h" /* for defaults */
 
 #include <gvm/util/fileutils.h>
 
@@ -319,46 +320,69 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
 gsad_args_t *
 gsad_args_new ()
 {
+  gchar *filename = NULL;
   gsad_args_t *args = g_malloc0 (sizeof (gsad_args_t));
-  args->api_only = FALSE;
-  args->client_watch_interval = DEFAULT_CLIENT_WATCH_INTERVAL;
-  args->debug_tls = 0;
-  args->dh_params_filename = NULL;
-  args->do_chroot = FALSE;
-  args->drop = NULL;
-  args->foreground = FALSE;
-  args->gnutls_priorities = NULL;
-  args->gsad_address_string = NULL;
+  args->api_only = gsad_env_get_boolean ("GSAD_API_ONLY", FALSE);
+  args->client_watch_interval = gsad_env_get_int (
+    "GSAD_CLIENT_WATCH_INTERVAL", DEFAULT_CLIENT_WATCH_INTERVAL);
+  args->debug_tls = gsad_env_get_int ("GSAD_DEBUG_TLS", 0);
+  args->dh_params_filename = gsad_env_get_string ("GSAD_DH_PARAMS", NULL);
+  args->do_chroot = gsad_env_get_boolean ("GSAD_DO_CHROOT", FALSE);
+  args->drop = gsad_env_get_string ("GSAD_DROP_PRIVILEGES", NULL);
+  args->foreground = gsad_env_get_boolean ("GSAD_FOREGROUND", FALSE);
+  args->gnutls_priorities =
+    gsad_env_get_string ("GSAD_GNUTLS_PRIORITIES", NULL);
+  args->gsad_address_string =
+    gsad_env_get_string_array ("GSAD_ADDRESS", ",", NULL);
+  filename = g_build_filename (GSAD_CONFIG_DIR, "gsad_log.conf", NULL);
   args->gsad_log_config_filename =
-    g_build_filename (GSAD_CONFIG_DIR, "gsad_log.conf", NULL);
+    gsad_env_get_string ("GSAD_LOG_CONFIG", filename);
+  g_free (filename);
+  filename = g_build_filename (GVMD_RUN_DIR, "gvmd.sock", NULL);
   args->manager_unix_socket_path =
-    g_build_filename (GVMD_RUN_DIR, "gvmd.sock", NULL);
-  args->gsad_pid_filename = g_strdup (DEFAULT_GSAD_PID_FILE);
-  args->gsad_port = PORT_NOT_SET;
-  args->gsad_static_content_directory =
-    g_strdup (DEFAULT_GSAD_STATIC_CONTENT_DIRECTORY);
-  args->gsad_redirect_port = PORT_NOT_SET;
-  args->user_session_limit = 0;
-  args->hsts_enabled = FALSE;
-  args->hsts_max_age = DEFAULT_GSAD_HSTS_MAX_AGE;
-  args->http_cors = NULL;
-  args->http_csp = g_strdup (DEFAULT_GSAD_CONTENT_SECURITY_POLICY);
-  args->http_frame_opts = g_strdup (DEFAULT_GSAD_X_FRAME_OPTIONS);
-  args->http_only = FALSE;
-  args->ignore_x_real_ip = FALSE;
-  args->no_redirect = FALSE;
-  args->per_ip_connection_limit = DEFAULT_PER_IP_CONNECTION_LIMIT;
+    gsad_env_get_string ("GSAD_MANAGER_UNIX_SOCKET", filename);
+  g_free (filename);
+  args->gsad_pid_filename =
+    gsad_env_get_string ("GSAD_PID_FILE", DEFAULT_GSAD_PID_FILE);
+  args->gsad_port = gsad_env_get_int ("GSAD_PORT", PORT_NOT_SET);
+  args->gsad_static_content_directory = gsad_env_get_string (
+    "GSAD_STATIC_CONTENT", DEFAULT_GSAD_STATIC_CONTENT_DIRECTORY);
+  args->gsad_redirect_port =
+    gsad_env_get_int ("GSAD_REDIRECT_PORT", PORT_NOT_SET);
+  args->user_session_limit = gsad_env_get_int ("GSAD_USER_SESSION_LIMIT", 0);
+  args->hsts_enabled = gsad_env_get_boolean ("GSAD_HSTS_ENABLED", FALSE);
+  args->hsts_max_age =
+    gsad_env_get_int ("GSAD_HSTS_MAX_AGE", DEFAULT_GSAD_HSTS_MAX_AGE);
+  args->http_cors = gsad_env_get_string ("GSAD_HTTP_CORS", NULL);
+  args->http_csp =
+    gsad_env_get_string ("GSAD_HTTP_CSP", DEFAULT_GSAD_CONTENT_SECURITY_POLICY);
+  args->http_coep = gsad_env_get_string ("GSAD_HTTP_COEP", NULL);
+  args->http_coop = gsad_env_get_string ("GSAD_HTTP_COOP", NULL);
+  args->http_corp = gsad_env_get_string ("GSAD_HTTP_CORP", NULL);
+  args->http_frame_opts =
+    gsad_env_get_string ("GSAD_HTTP_FRAME_OPTS", DEFAULT_GSAD_X_FRAME_OPTIONS);
+  args->http_only = gsad_env_get_boolean ("GSAD_HTTP_ONLY", FALSE);
+  args->ignore_x_real_ip =
+    gsad_env_get_boolean ("GSAD_IGNORE_X_REAL_IP", FALSE);
+  args->no_redirect = gsad_env_get_boolean ("GSAD_NO_REDIRECT", FALSE);
+  args->per_ip_connection_limit = gsad_env_get_int (
+    "GSAD_PER_IP_CONNECTION_LIMIT", DEFAULT_PER_IP_CONNECTION_LIMIT);
   args->print_version = FALSE;
-  args->secure_cookie = FALSE;
-  args->ssl_certificate_filename = g_strdup (DEFAULT_GSAD_TLS_CERTIFICATE);
-  args->ssl_private_key_filename = g_strdup (DEFAULT_GSAD_TLS_PRIVATE_KEY);
-  args->session_timeout = DEFAULT_SESSION_TIMEOUT;
-  args->unix_socket_group = NULL;
-  args->unix_socket_mode = NULL;
-  args->unix_socket_owner = NULL;
-  args->unix_socket_path = NULL;
+  args->secure_cookie = gsad_env_get_boolean ("GSAD_SECURE_COOKIE", FALSE);
+  args->ssl_certificate_filename =
+    gsad_env_get_string ("GSAD_TLS_CERTIFICATE", DEFAULT_GSAD_TLS_CERTIFICATE);
+  args->ssl_private_key_filename =
+    gsad_env_get_string ("GSAD_TLS_PRIVATE_KEY", DEFAULT_GSAD_TLS_PRIVATE_KEY);
+  args->session_timeout =
+    gsad_env_get_int ("GSAD_SESSION_TIMEOUT", DEFAULT_SESSION_TIMEOUT);
+  args->unix_socket_group =
+    gsad_env_get_string ("GSAD_UNIX_SOCKET_GROUP", NULL);
+  args->unix_socket_mode = gsad_env_get_string ("GSAD_UNIX_SOCKET_MODE", NULL);
+  args->unix_socket_owner =
+    gsad_env_get_string ("GSAD_UNIX_SOCKET_OWNER", NULL);
+  args->unix_socket_path = gsad_env_get_string ("GSAD_UNIX_SOCKET", NULL);
   args->verbose = FALSE;
-  args->jwt_requested = FALSE;
+  args->jwt_requested = gsad_env_get_boolean ("GSAD_JWT_REQUESTED", FALSE);
   return args;
 }
 

@@ -91,6 +91,7 @@ add_executable(
   gsad_command_response_data.c
   gsad_connection_info.c
   gsad_credentials.c
+  gsad_env.c
   gsad_gmp.c
   gsad_gmp_arguments.c
   gsad_gmp_request.c
@@ -208,7 +209,7 @@ if(BUILD_TESTING)
 
   add_unit_test(gsad-utils)
   add_unit_test(gsad-validator validator.c)
-  add_unit_test(gsad-args)
+  add_unit_test(gsad-args gsad_env.c gsad_utils.c)
   add_unit_test(gsad-settings gsad_utils.c)
   add_unit_test(gsad-connection-info gsad_params.c)
   add_unit_test(
