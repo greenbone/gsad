@@ -94,7 +94,7 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
      "Use a secure cookie (implied when using HTTPS).", NULL},
     {"timeout", 0, 0, G_OPTION_ARG_INT, &args->session_timeout,
      "Minutes of user idle time before session expires. Defaults "
-     "to " G_STRINGIFY (SESSION_TIMEOUT) " minutes",
+     "to " G_STRINGIFY (DEFAULT_SESSION_TIMEOUT) " minutes",
      "<number>"},
     {"client-watch-interval", 0, 0, G_OPTION_ARG_INT,
      &args->client_watch_interval,
