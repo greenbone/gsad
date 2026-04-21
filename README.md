@@ -18,6 +18,7 @@ full-featured HTTP interface for vulnerability management.
   - [Unit tests](#unit-tests)
 - [Logging Configuration](#logging-configuration)
 - [Usage](#usage)
+- [Settings](#settings)
 - [Development](#development)
 - [Support](#support)
 - [Maintainer](#maintainer)
@@ -219,6 +220,51 @@ To see all available command line options of gsad, enter this command:
 ```sh
 gsad --help
 ```
+
+## Settings
+
+The following settings can be adjusted for the `gsad` service.
+
+| CLI                         | Env | Type    | Default                                 | Description                                                                                             |
+| --------------------------- | --- | ------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `--drop-privileges`         |     | string  | false                                   | When starting as root drop priviledges to a different user                                              |
+| `-f`, `--foreground`        |     | boolean | false                                   | Run gsad in the foreground and don't fork at startup                                                    |
+| `--http-only`               |     | boolean | false                                   | Serve HTTP only, without SSL. Implies `--no-redirect`.                                                  |
+| `--listen`                  |     | string  | `0.0.0.0`                               | IP Address to listen on                                                                                 |
+| `--port`                    |     | int     | 9392 for HTTP and 443 for HTTPS         | Port to listen on                                                                                       |
+| `-r`, `--rport`             |     | int     | 9392                                    | Redirect port to listen on                                                                              |
+| `--no-redirect`             |     | boolean | false                                   | Don't redirect HTTP to HTTPS (implied when using --http-only).                                          |
+| `--version`, `-V`           |     | boolean |                                         | Print version information                                                                               |
+| `-k`, `--ssl-private-key`   |     | path    | `/var/lib/gvm/private/CA/serverkey.pem` | Path to a TLS private key                                                                               |
+| `-c`, `--ssl-certificate`   |     | path    | `/var/lib/gvm/CA/servercert.pem`        | Path to a TLS certificate                                                                               |
+| `--dh-params`               |     | path    |                                         | Path to a Diffie-Hellman parameters file                                                                |
+| `--do-chroot`               |     | boolean | false                                   | Do chroot into the static content directory.                                                            |
+| `--secure-cookie`           |     | boolean | false                                   | Use a secure cookie (implied when using HTTPS).                                                         |
+| `--timeout`                 |     | int     | 15                                      | Minutes of user idle time before session expires. Has to be between 0 (no timeout) and 40320 (4 weeks). |
+| `--client-watch-interval`   |     | int     | 0                                       | Interval in seconds to Check if client connection was closed. 0 disables the client watch interval      |
+| `--debug-tls`               |     | int     | 0                                       | Level at which the TLS debugging is enabled. O to disable.                                              |
+| `--gnutls-priorities`       |     | string  |                                         | GnuTLS priorities string.                                                                               |
+| `--http-frame-opts`         |     | string  | `SAMEORIGIN`                            | X-Frame-Options HTTP header.                                                                            |
+| `--http-csp`                |     | string  |                                         | Content-Security-Policy HTTP header.                                                                    |
+| `--http-sts`                |     | boolean | false                                   | Enable HTTP Strict-Transport-Security header.                                                           |
+| `--http-sts-max-age`        |     | int     | 31536000                                | max-age in seconds for HTTP Strict-Transport-Security header.                                           |
+| `--ignore-x-real-ip`        |     | boolean | false                                   | Do not use X-Real-IP to determine the client address.                                                   |
+| `--per-ip-connection-limit` |     | int     | 30                                      | Sets the maximum number of connections per ip. Use 0 for unlimited.                                     |
+| `--unix-socket`             |     | Path    |                                         | Path to unix socket to listen on. Set to listen on a unix socket.                                       |
+| `--unix-socket-owner`       |     | string  |                                         | Owner of the unix socket                                                                                |
+| `--unix-socket-group`       |     | string  |                                         | Group of the unix socket                                                                                |
+| `--unix-socket-mode`        |     | string  |                                         | File mode of the unix socket                                                                            |
+| `--munix-socket`            |     | path    | `/run/gvmd/gvmd.sock`                   | Path to the unix socket of gvmd                                                                         |
+| `--http-coep`               |     | string  |                                         | Set Cross-Origin-Embedder-Policy (COEP) http header                                                     |
+| `--http-coop`               |     | string  |                                         | Set Cross-Origin-Resource-Policy (COOP) http header                                                     |
+| `--http-corp`               |     | string  |                                         | Set Cross-Origin-Resource-Policy (CORP) http header                                                     |
+| `--http-cors`               |     | string  |                                         | Set Cross-Origin Resource Sharing (CORS) allow origin http header                                       |
+| `--user-session-limit`      |     | int     | 0                                       | Set maximum number of active sessions per user. 0 for unlimited.                                        |
+| `--log-config`              |     | path    | `/etc/gvm/gsad_log.conf`                | Path to logging configuration file.                                                                     |
+| `--pid-file`                |     | path    | `/run/gsad/gsad.pid`                    | Path to PID file.                                                                                       |
+| `--static-content`          |     | path    | `/usr/local/share/gvm/gsad/web`         | Path to static content directory.                                                                       |
+| `--api-only`                |     | boolean | false                                   | Run in API-only mode, disabling serving of static content.                                              |
+| `--jwt-requested`           |     | boolean | false                                   | Enable JWT-based mode using the token returned in the login response.                                   |
 
 ## Development
 
