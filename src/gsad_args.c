@@ -137,7 +137,7 @@ gsad_args_parse (int argc, char **argv, gsad_args_t *args)
     {"unix-socket-mode", 0, 0, G_OPTION_ARG_STRING, &unix_socket_mode,
      "File mode of the unix socket", "<string>"},
     {"munix-socket", 0, 0, G_OPTION_ARG_FILENAME, &manager_unix_socket_path,
-     "Path to Manager unix socket", "<file>"},
+     "Path to unix socket of gvmd", "<file>"},
     {"http-coep", 0, 0, G_OPTION_ARG_STRING, &http_coep,
      "Set Cross-Origin-Embedder-Policy (COEP) http header ", "<coep>"},
     {"http-coop", 0, 0, G_OPTION_ARG_STRING, &http_coop,
