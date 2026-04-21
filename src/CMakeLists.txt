@@ -255,6 +255,7 @@ if(BUILD_TESTING)
     gsad_user.c
   )
   add_unit_test(gsad-command-response-data)
+  add_unit_test(gsad-env gsad_utils.c)
   add_custom_target(
     tests
     DEPENDS
@@ -272,6 +273,7 @@ if(BUILD_TESTING)
       gsad-session-test
       gsad-user-session-test
       gsad-command-response-data-test
+      gsad-env-test
   )
 endif(BUILD_TESTING)
 
