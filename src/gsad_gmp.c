@@ -9602,6 +9602,100 @@ get_report_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
 }
 
 /**
+ * @brief Get report applications and return the result.
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Username and password for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data return for the HTTP response.
+ *
+ * @return Report applications XML.
+ */
+char *
+get_report_applications_gmp (gvm_connection_t *connection,
+                             gsad_credentials_t *credentials, params_t *params,
+                             gsad_command_response_data_t *response_data)
+{
+  GString *xml;
+  entity_t entity;
+  const char *report_id;
+  const char *filter;
+  const char *filter_id;
+  gboolean details, ignore_pagination;
+  int ret;
+
+  details = params_value_bool (params, "details");
+  ignore_pagination = params_value_bool (params, "ignore_pagination");
+
+  report_id = params_value (params, "report_id");
+  filter = params_value (params, "filter");
+  filter_id = params_value (params, "filter_id");
+
+  CHECK_VARIABLE_INVALID (report_id, "Get Report Applications");
+
+  if (filter == NULL || filter_id)
+    filter = "";
+
+  ret = gvm_connection_sendf_xml (connection,
+                                  "<get_report_applications"
+                                  " report_id=\"%s\""
+                                  " details=\"%d\""
+                                  " ignore_pagination=\"%d\""
+                                  " filter=\"%s\""
+                                  " filt_id=\"%s\"/>",
+                                  report_id, details, ignore_pagination, filter,
+                                  filter_id ? filter_id : FILT_ID_NONE);
+
+  if (ret == -1)
+    {
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting report applications. "
+        "The report applications could not be delivered. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    }
+
+  xml = g_string_new ("<get_report_applications>");
+
+  entity = NULL;
+  if (read_entity_and_string_c (connection, &entity, &xml))
+    {
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting report applications. "
+        "The report applications could not be delivered. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    }
+
+  if (gmp_success (entity) != 1)
+    {
+      gchar *message;
+
+      set_http_status_from_entity (entity, response_data);
+
+      message = gsad_http_create_gsad_message (
+        credentials, entity_attribute (entity, "status_text"), response_data);
+
+      g_string_free (xml, TRUE);
+      free_entity (entity);
+      return message;
+    }
+
+  free_entity (entity);
+
+  g_string_append (xml, "</get_report_applications>");
+
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
  * @brief Get report errors and return the result.
  *
  * @param[in]  connection      Connection to manager.
