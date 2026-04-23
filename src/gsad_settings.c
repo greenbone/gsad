@@ -124,6 +124,7 @@ gsad_settings_free (gsad_settings_t *settings)
 void
 gsad_settings_set_session_timeout (gsad_settings_t *settings, int timeout)
 {
+  g_debug ("Setting session timeout to: %d minutes", timeout);
   settings->session_timeout = timeout;
 }
 
@@ -152,6 +153,7 @@ gsad_settings_get_session_timeout (const gsad_settings_t *settings)
 void
 gsad_settings_set_use_secure_cookie (gsad_settings_t *settings, gboolean secure)
 {
+  g_debug ("Setting use of secure cookies to: %s", secure ? "TRUE" : "FALSE");
   settings->use_secure_cookie = secure;
 }
 
@@ -178,6 +180,7 @@ void
 gsad_settings_set_ignore_http_x_real_ip (gsad_settings_t *settings,
                                          gboolean ignore)
 {
+  g_debug ("Setting ignore HTTP X-Real-IP to: %s", ignore ? "TRUE" : "FALSE");
   settings->ignore_http_x_real_ip = ignore;
 }
 
@@ -204,6 +207,7 @@ gsad_settings_is_http_x_real_ip_enabled (const gsad_settings_t *settings)
 void
 gsad_settings_set_http_unix_socket (gsad_settings_t *settings, int socket)
 {
+  g_debug ("Setting HTTP Unix socket to: %d", socket);
   settings->http_unix_socket = socket;
 }
 
@@ -705,6 +709,7 @@ gsad_settings_get_pid_filename (const gsad_settings_t *settings)
 void
 gsad_settings_set_api_only (gsad_settings_t *settings, gboolean api_only)
 {
+  g_debug ("Setting API-only mode to: %s", api_only ? "TRUE" : "FALSE");
   settings->api_only = api_only;
 }
 
@@ -734,6 +739,7 @@ void
 gsad_settings_set_jwt_requested (gsad_settings_t *settings,
                                  gboolean jwt_required)
 {
+  g_debug ("Setting JWT requested to: %s", jwt_required ? "TRUE" : "FALSE");
   settings->jwt_requested = jwt_required ? 1 : 0;
 }
 
