@@ -992,16 +992,15 @@ gsad_http_create_envelope (gsad_credentials_t *credentials, gchar *xml,
 
   xml_string_append (
     string,
-    "<version>%s</version>"
-    "<token>%s</token>"
-    "<timezone>%s</timezone>"
-    "<login>%s</login>"
-    "<session>%ld</session>"
+    "<client_address>%s</client_address>"
     "<i18n>%s</i18n>"
-    "<client_address>%s</client_address>",
-    GSAD_VERSION, gsad_user_get_token (user), timezone ? timezone : "",
-    gsad_user_get_username (user), gsad_user_session_get_timeout (user),
-    gsad_user_get_language (user), gsad_user_get_client_address (user));
+    "<session>%ld</session>"
+    "<timezone>%s</timezone>"
+    "<token>%s</token>"
+    "<version>%s</version>",
+    gsad_user_get_client_address (user), gsad_user_get_language (user),
+    gsad_user_session_get_timeout (user), timezone ? timezone : "",
+    gsad_user_get_token (user), GSAD_VERSION);
 
   if (jwt)
     {
