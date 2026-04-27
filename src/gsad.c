@@ -771,7 +771,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
               gsad_credentials_t *credentials)
 {
   const gchar *cmd = NULL;
-  const int CMD_MAX_SIZE = 27; /* delete_trash_lsc_credential */
+  const int CMD_MAX_SIZE = 33; /* get_report_operating_systems_gmp */
   params_t *params = gsad_connection_info_get_params (con_info);
   gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
   gvm_connection_t connection;
@@ -1027,6 +1027,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_report_applications)
   ELSE (get_report_errors)
   ELSE (get_report_hosts)
+  ELSE (get_report_operating_systems)
   ELSE (get_report_ports)
   ELSE (get_report_tls_certificates)
   ELSE (get_reports)
