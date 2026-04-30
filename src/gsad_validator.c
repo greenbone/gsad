@@ -180,6 +180,7 @@ gsad_init_validator ()
                      "|(get_report_operating_systems)"
                      "|(get_report_ports)"
                      "|(get_report_tls_certificates)"
+                     "|(get_report_vulns)"
                      "|(get_reports)"
                      "|(get_report_config)"
                      "|(get_report_configs)"
