@@ -1030,6 +1030,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_report_operating_systems)
   ELSE (get_report_ports)
   ELSE (get_report_tls_certificates)
+  ELSE (get_report_vulns)
   ELSE (get_reports)
   ELSE (get_report_config)
   ELSE (get_report_configs)
