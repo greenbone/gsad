@@ -1025,6 +1025,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_port_lists)
   ELSE (get_report)
   ELSE (get_report_applications)
+  ELSE (get_report_closed_cves)
   ELSE (get_report_errors)
   ELSE (get_report_hosts)
   ELSE (get_report_operating_systems)
