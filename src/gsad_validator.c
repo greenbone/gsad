@@ -175,6 +175,7 @@ gsad_init_validator ()
                      "|(get_port_lists)"
                      "|(get_report)"
                      "|(get_report_applications)"
+                     "|(get_report_closed_cves)"
                      "|(get_report_errors)"
                      "|(get_report_hosts)"
                      "|(get_report_operating_systems)"
