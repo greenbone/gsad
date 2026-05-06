@@ -9508,6 +9508,7 @@ get_report (gvm_connection_t *connection, gsad_credentials_t *credentials,
           entity = NULL;
           if (read_entity_and_string_c (connection, &entity, &xml))
             {
+              g_string_free (xml, TRUE);
               gsad_command_response_data_set_status_code (
                 response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
               return gsad_http_create_gsad_message (
@@ -9663,6 +9664,7 @@ get_report_applications_gmp (gvm_connection_t *connection,
   entity = NULL;
   if (read_entity_and_string_c (connection, &entity, &xml))
     {
+      g_string_free (xml, TRUE);
       gsad_command_response_data_set_status_code (
         response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_http_create_gsad_message (
@@ -9744,6 +9746,7 @@ get_report_closed_cves_gmp (gvm_connection_t *connection,
   entity = NULL;
   if (read_entity_and_string_c (connection, &entity, &xml))
     {
+      g_string_free (xml, TRUE);
       gsad_command_response_data_set_status_code (
         response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_http_create_gsad_message (
@@ -9838,6 +9841,7 @@ get_report_errors_gmp (gvm_connection_t *connection,
   entity = NULL;
   if (read_entity_and_string_c (connection, &entity, &xml))
     {
+      g_string_free (xml, TRUE);
       gsad_command_response_data_set_status_code (
         response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_http_create_gsad_message (
@@ -9934,6 +9938,7 @@ get_report_hosts_gmp (gvm_connection_t *connection,
   entity = NULL;
   if (read_entity_and_string_c (connection, &entity, &xml))
     {
+      g_string_free (xml, TRUE);
       gsad_command_response_data_set_status_code (
         response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_http_create_gsad_message (
@@ -10029,6 +10034,7 @@ get_report_operating_systems_gmp (gvm_connection_t *connection,
   entity = NULL;
   if (read_entity_and_string_c (connection, &entity, &xml))
     {
+      g_string_free (xml, TRUE);
       gsad_command_response_data_set_status_code (
         response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_http_create_gsad_message (
@@ -10123,6 +10129,7 @@ get_report_ports_gmp (gvm_connection_t *connection,
   entity = NULL;
   if (read_entity_and_string_c (connection, &entity, &xml))
     {
+      g_string_free (xml, TRUE);
       gsad_command_response_data_set_status_code (
         response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_http_create_gsad_message (
@@ -10218,6 +10225,7 @@ get_report_tls_certificates_gmp (gvm_connection_t *connection,
   entity = NULL;
   if (read_entity_and_string_c (connection, &entity, &xml))
     {
+      g_string_free (xml, TRUE);
       gsad_command_response_data_set_status_code (
         response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_http_create_gsad_message (
@@ -10312,6 +10320,7 @@ get_report_vulns_gmp (gvm_connection_t *connection,
   entity = NULL;
   if (read_entity_and_string_c (connection, &entity, &xml))
     {
+      g_string_free (xml, TRUE);
       gsad_command_response_data_set_status_code (
         response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_http_create_gsad_message (
