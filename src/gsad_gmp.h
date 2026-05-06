@@ -86,6 +86,10 @@ get_report_closed_cves_gmp (gvm_connection_t *, gsad_credentials_t *,
                             params_t *, gsad_command_response_data_t *);
 
 char *
+get_report_cves_gmp (gvm_connection_t *, gsad_credentials_t *, params_t *,
+                     gsad_command_response_data_t *);
+
+char *
 get_report_errors_gmp (gvm_connection_t *, gsad_credentials_t *, params_t *,
                        gsad_command_response_data_t *);
 char *
