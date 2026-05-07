@@ -1049,6 +1049,7 @@ Ensure (gsad_args, should_parse_tls_certificate_filename)
   args = gsad_args_new ();
   char *argv2[] = {"gsad"};
   gsad_args_parse (1, argv2, args);
+  gsad_args_free (args);
 
   // command line argument should override env variable
   args = gsad_args_new ();
