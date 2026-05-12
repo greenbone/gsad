@@ -797,21 +797,6 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
       return gsad_http_create_response (con, res, response_data, NULL);
     }
 
-  /* Set the timezone. */
-
-  gsad_user_t *user = gsad_credentials_get_user (credentials);
-  const gchar *timezone = gsad_user_get_timezone (user);
-
-  if (timezone)
-    {
-      if (setenv ("TZ", timezone, 1) == -1)
-        {
-          g_critical ("%s: failed to set TZ\n", __func__);
-          exit (EXIT_FAILURE);
-        }
-      tzset ();
-    }
-
   /* Connect to manager */
   switch (gsad_manager_connect_with_credentials (&connection, credentials))
     {
@@ -1150,6 +1135,8 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     {
       gvm_connection_close (&connection);
     }
+
+  gsad_user_t *user = gsad_credentials_get_user (credentials);
 
   return gsad_http_send_response (con, response, response_data,
                                   gsad_user_get_cookie (user));
