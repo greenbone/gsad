@@ -984,33 +984,37 @@ gsad_http_create_envelope (gsad_credentials_t *credentials, gchar *xml,
 {
   assert (credentials);
 
+  const gchar *jwt = gsad_credentials_get_jwt (credentials);
   gsad_user_t *user = gsad_credentials_get_user (credentials);
-  const gchar *timezone = gsad_user_get_timezone (user);
-  const gchar *jwt = gsad_user_get_jwt (user);
 
   GString *string = g_string_new ("<envelope>");
 
-  xml_string_append (
-    string,
-    "<client_address>%s</client_address>"
-    "<i18n>%s</i18n>"
-    "<session>%ld</session>"
-    "<timezone>%s</timezone>"
-    "<token>%s</token>"
-    "<version>%s</version>",
-    gsad_user_get_client_address (user), gsad_user_get_language (user),
-    gsad_user_session_get_timeout (user), timezone ? timezone : "",
-    gsad_user_get_token (user), GSAD_VERSION);
+  if (user)
+    {
+      const gchar *timezone = gsad_user_get_timezone (user);
+      const gchar *locale = gsad_user_get_language (user);
+      const gchar *client_address = gsad_user_get_client_address (user);
+      const gchar *token = gsad_user_get_token (user);
+      int timeout = gsad_user_session_get_timeout (user);
+
+      xml_string_append (string,
+                         "<client_address>%s</client_address>"
+                         "<i18n>%s</i18n>"
+                         "<session>%ld</session>"
+                         "<timezone>%s</timezone>"
+                         "<token>%s</token>",
+                         client_address ? client_address : "",
+                         locale ? locale : "", timeout,
+                         timezone ? timezone : "", token ? token : "");
+    }
 
   if (jwt)
     {
-      gchar *jwt_elem = g_markup_printf_escaped ("<jwt>"
-                                                 "%s"
-                                                 "</jwt>",
-                                                 jwt);
-      g_string_append (string, jwt_elem);
-      g_free (jwt_elem);
+      xml_string_append (string, "<jwt>%s</jwt>", jwt);
     }
+
+  xml_string_append (string, "<version>%s</version>", GSAD_VERSION);
+
   g_string_append (string, xml);
   g_string_append (string, "</envelope>");
   g_free (xml);
