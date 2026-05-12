@@ -407,6 +407,28 @@ gsad_http_handle_logout (gsad_http_handler_t *handler_next, void *handler_data,
     0);
 }
 
+gsad_http_result_t
+gsad_http_handle_login (gsad_http_handler_t *handler_next, void *handler_data,
+                        gsad_http_connection_t *connection,
+                        gsad_connection_info_t *con_info, void *data)
+{
+  params_t *params = gsad_connection_info_get_params (con_info);
+  gsad_command_response_data_t *response_data =
+    gsad_command_response_data_new ();
+  char client_address[INET6_ADDRSTRLEN];
+
+  params_mhd_validate (params);
+
+  if (gsad_http_get_client_address (connection, client_address))
+    {
+      gsad_http_send_response_for_content (
+        connection, UTF8_ERROR_PAGE ("'X-Real-IP' header"),
+        MHD_HTTP_BAD_REQUEST, NULL, GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
+      gsad_command_response_data_free (response_data);
+      return MHD_YES;
+    }
+  return login (connection, params, response_data, client_address);
+}
 /**
  * @brief Handler for processing /gmp GET requests
  *
