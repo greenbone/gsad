@@ -109,6 +109,12 @@ gsad_http_request_init_handlers (gsad_settings_t *gsad_settings)
       next = gsad_http_handler_add (next, manual_handler);
     }
 
+  // Create /login handler chain.
+  gsad_http_handler_t *login_handler = gsad_http_url_handler_new (
+    "^/login/?$",
+    gsad_http_method_handler_new_post_from_func (gsad_http_handle_login));
+  next = gsad_http_handler_add (next, login_handler);
+
   // Create /system_report handler
   // chain.
   gsad_http_handler_t *system_report_handler =
