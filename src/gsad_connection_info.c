@@ -153,41 +153,6 @@ gsad_connection_info_set_cookie (gsad_connection_info_t *con_info,
 }
 
 /**
- * @brief Get the language of a connection information object.
- *
- * @param[in] con_info Connection information.
- *
- * @return Language of the connection information, or NULL if not set. The
- * language is owned by the connection information and should not be freed by
- * the caller.
- */
-const gchar *
-gsad_connection_info_get_language (const gsad_connection_info_t *con_info)
-{
-  g_return_val_if_fail (con_info != NULL, NULL);
-  return con_info->language;
-}
-
-/**
- * @brief Set the language of a connection information object.
- *
- * @param[in] con_info Connection information.
- * @param[in] language Language to set. The connection information will copy the
- * language and take ownership of the copy. The connection information will free
- * the copy when the connection information is freed. The caller retains
- * ownership of the original language and is responsible for freeing it if
- * necessary.
- */
-void
-gsad_connection_info_set_language (gsad_connection_info_t *con_info,
-                                   const gchar *language)
-{
-  g_return_if_fail (con_info != NULL);
-  g_free (con_info->language);
-  con_info->language = g_strdup (language);
-}
-
-/**
  * @brief Get the URL of a connection information object.
  *
  * @param[in] con_info Connection information.

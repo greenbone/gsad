@@ -66,12 +66,6 @@ void
 gsad_connection_info_set_cookie (gsad_connection_info_t *, const gchar *);
 
 const gchar *
-gsad_connection_info_get_language (const gsad_connection_info_t *);
-
-void
-gsad_connection_info_set_language (gsad_connection_info_t *, const gchar *);
-
-const gchar *
 gsad_connection_info_get_url (const gsad_connection_info_t *);
 
 #endif /* _GSAD_CONNECTION_INFO_H */
