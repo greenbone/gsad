@@ -13961,7 +13961,6 @@ send_settings_filters (gvm_connection_t *connection, params_t *data,
  * @param[in]  connection     Connection to manager.
  * @param[in]  credentials  Credentials of user issuing the action.
  * @param[in]  params       Request parameters.
- * @param[in]  accept_language  Accept-Language, from browser.
  * @param[out] response_data  Extra data return for the HTTP response.
  *
  * @return Enveloped XML object.
@@ -13969,7 +13968,6 @@ send_settings_filters (gvm_connection_t *connection, params_t *data,
 char *
 save_my_settings_gmp (gvm_connection_t *connection,
                       gsad_credentials_t *credentials, params_t *params,
-                      const gchar *accept_language,
                       gsad_command_response_data_t *response_data)
 {
   const char *lang, *text, *old_passwd, *passwd, *max;
