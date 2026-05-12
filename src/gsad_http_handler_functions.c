@@ -478,9 +478,6 @@ gsad_http_handle_gmp_post (gsad_http_handler_t *handler_next,
       return MHD_YES;
     }
 
-  gsad_connection_info_set_language (
-    con_info, accept_language_to_env_fmt (accept_language));
-
   if (gsad_http_get_client_address (connection, client_address))
     {
       gsad_http_send_response_for_content (
