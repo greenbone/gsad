@@ -1139,7 +1139,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   gsad_user_t *user = gsad_credentials_get_user (credentials);
 
   return gsad_http_send_response (con, response, response_data,
-                                  gsad_user_get_cookie (user));
+                                  user ? gsad_user_get_cookie (user) : NULL);
 }
 
 /**
