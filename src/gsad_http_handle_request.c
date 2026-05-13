@@ -220,6 +220,7 @@ gsad_http_handle_request (void *cls, gsad_http_connection_t *connection,
   gsad_connection_info_t *con_info = *con_cls;
   gsad_http_handler_t *handlers = (gsad_http_handler_t *) cls;
   gboolean new_connection = (con_info == NULL);
+  params_t *params = NULL;
 
   if (handlers == NULL)
     {
@@ -236,7 +237,7 @@ gsad_http_handle_request (void *cls, gsad_http_connection_t *connection,
 
           /* Freed by MHD_OPTION_NOTIFY_COMPLETED callback, free_resources. */
           con_info = gsad_connection_info_new (METHOD_TYPE_GET, url);
-          params_t *params = gsad_connection_info_get_params (con_info);
+          params = gsad_connection_info_get_params (con_info);
           MHD_get_connection_values (connection, MHD_GET_ARGUMENT_KIND,
                                      params_mhd_add, params);
           params_mhd_validate (params);
@@ -288,6 +289,10 @@ gsad_http_handle_request (void *cls, gsad_http_connection_t *connection,
           return MHD_YES;
         }
     }
+
+  /* validate parameters */
+  params = gsad_connection_info_get_params (con_info);
+  params_mhd_validate (params);
 
   g_debug ("Handling %s request for %s", method, url);
 
