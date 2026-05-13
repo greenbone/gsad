@@ -477,16 +477,6 @@ gsad_http_handle_gmp_post (gsad_http_handler_t *handler_next,
   else
     gsad_connection_info_set_cookie (con_info, sid);
 
-  accept_language = MHD_lookup_connection_value (connection, MHD_HEADER_KIND,
-                                                 "Accept-Language");
-  if (accept_language && g_utf8_validate (accept_language, -1, NULL) == FALSE)
-    {
-      gsad_http_send_response_for_content (
-        connection, UTF8_ERROR_PAGE ("'Accept-Language' header"),
-        MHD_HTTP_BAD_REQUEST, NULL, GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
-      return MHD_YES;
-    }
-
   if (gsad_http_get_client_address (connection, client_address))
     {
       gsad_http_send_response_for_content (
