@@ -288,19 +288,6 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
 
   new_sid = g_strdup (gsad_user_get_cookie (user));
 
-  /* Set the timezone. */
-
-  const gchar *timezone = gsad_user_get_timezone (user);
-  if (timezone)
-    {
-      if (setenv ("TZ", timezone, 1) == -1)
-        {
-          g_critical ("%s: failed to set TZ\n", __func__);
-          exit (EXIT_FAILURE);
-        }
-      tzset ();
-    }
-
   /* Connect to manager */
   switch (gsad_manager_connect_with_credentials (&connection, credentials))
     {
