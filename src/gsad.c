@@ -206,11 +206,6 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
 
   g_debug ("Handling GMP command '%s' for HTTP POST", cmd);
 
-  if (str_equal (cmd, "login"))
-    {
-      return login (con, params, response_data, client_address);
-    }
-
   /* Check the session. */
 
   if (params_value (params, "token") == NULL)
