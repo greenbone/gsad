@@ -16590,6 +16590,7 @@ save_user_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
   current_user = gsad_credentials_get_user (credentials);
 
   if (login
+      && current_user
       /* gvmd forbids users from modifying their own names. */
       && strcmp (login, gsad_user_get_username (current_user)))
     {
@@ -16687,11 +16688,15 @@ save_user_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
             {
               /* logout all other user sessions if new password was set,
                  authentication type has changed or username has changed */
-              gsad_session_remove_other_sessions (
-                gsad_user_get_token (current_user), old_login);
+              if (current_user)
+                {
+                  gsad_session_remove_other_sessions (
+                    gsad_user_get_token (current_user), old_login);
+                }
             }
 
-          if (str_equal (old_login, gsad_user_get_username (current_user)))
+          if (current_user
+              && str_equal (old_login, gsad_user_get_username (current_user)))
             {
               /* update username of current user */
               gsad_user_set_username (current_user, login);
@@ -16735,6 +16740,7 @@ save_user_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
 
   if (gmp_success (entity)
       && (str_equal (modify_password, "2") || !str_equal (modify_password, "3"))
+      && current_user
       && str_equal (old_login, gsad_user_get_username (current_user)))
     {
       free_entity (entity);
@@ -19779,9 +19785,23 @@ renew_session_gmp (gvm_connection_t *connection,
   gchar *message;
   gsad_user_t *user = gsad_credentials_get_user (credentials);
 
-  gsad_user_session_renew_timeout (user);
+  if (user)
+    {
+      gsad_user_session_renew_timeout (user);
 
-  message = g_strdup_printf ("%ld", gsad_user_session_get_timeout (user));
+      message = g_strdup_printf ("%ld", gsad_user_session_get_timeout (user));
+    }
+  else
+    {
+      // FIXME this is currently a placeholder for JWT based session timeout
+      time_t current_time = time (NULL);
+      gsad_settings_t *gsad_global_settings =
+        gsad_settings_get_global_settings ();
+      time_t session_timeout =
+        current_time
+        + gsad_settings_get_session_timeout (gsad_global_settings) * 60;
+      message = g_strdup_printf ("%ld", session_timeout);
+    }
 
   html = action_result (connection, credentials, params, response_data,
                         "renew_session", message, NULL, NULL);
