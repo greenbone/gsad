@@ -1103,9 +1103,9 @@ format_file_name (gchar *fname_format, gsad_credentials_t *credentials,
     }
 
   gsad_user_t *user = gsad_credentials_get_user (credentials);
-  ret = gvm_export_file_name (fname_format, gsad_user_get_username (user), type,
-                              uuid, creation_time, modification_time, name,
-                              format_name);
+  ret = gvm_export_file_name (
+    fname_format, user ? gsad_user_get_username (user) : NULL, type, uuid,
+    creation_time, modification_time, name, format_name);
   return ret;
 }
 
