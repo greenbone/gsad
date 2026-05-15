@@ -8,8 +8,6 @@
 struct gsad_connection_info
 {
   gsad_method_type_t method_type;          ///< 1=POST, 2=GET.
-  gchar *cookie;                           ///< Value of SID cookie param.
-  gchar *language;                         ///< Language code e.g. en
   gchar *url;                              ///< Request URL.
   params_t *params;                        ///< Request parameters.
   struct MHD_PostProcessor *postprocessor; ///< POST processor.
@@ -26,8 +24,6 @@ gsad_connection_info_new (gsad_method_type_t method_type, const gchar *url)
   gsad_connection_info_t *con_info = g_malloc (sizeof (gsad_connection_info_t));
   con_info->postprocessor = NULL;
   con_info->params = params_new ();
-  con_info->cookie = NULL;
-  con_info->language = NULL;
   con_info->method_type = method_type;
   con_info->url = g_strdup (url);
   return con_info;
@@ -48,8 +44,6 @@ gsad_connection_info_free (gsad_connection_info_t *con_info)
     MHD_destroy_post_processor (con_info->postprocessor);
 
   params_free (con_info->params);
-  g_free (con_info->cookie);
-  g_free (con_info->language);
   g_free (con_info->url);
   g_free (con_info);
 }
@@ -115,41 +109,6 @@ gsad_connection_info_set_postprocessor (gsad_connection_info_t *con_info,
   if (con_info->postprocessor != NULL)
     MHD_destroy_post_processor (con_info->postprocessor);
   con_info->postprocessor = postprocessor;
-}
-
-/**
- * @brief Get the cookie value of a connection information object.
- *
- * @param[in] con_info Connection information.
- *
- * @return Cookie value of the connection information, or NULL if not set. The
- * cookie value is owned by the connection information and should not be freed
- * by the caller.
- */
-const gchar *
-gsad_connection_info_get_cookie (const gsad_connection_info_t *con_info)
-{
-  g_return_val_if_fail (con_info != NULL, NULL);
-  return con_info->cookie;
-}
-
-/**
- * @brief Set the cookie value of a connection information object.
- *
- * @param[in] con_info Connection information.
- * @param[in] cookie Cookie value to set. The connection information will copy
- * the cookie value and take ownership of the copy. The connection information
- * will free the copy when the connection information is freed. The caller
- * retains ownership of the original cookie value and is responsible for freeing
- * it if necessary.
- */
-void
-gsad_connection_info_set_cookie (gsad_connection_info_t *con_info,
-                                 const gchar *cookie)
-{
-  g_return_if_fail (con_info != NULL);
-  g_free (con_info->cookie);
-  con_info->cookie = g_strdup (cookie);
 }
 
 /**
