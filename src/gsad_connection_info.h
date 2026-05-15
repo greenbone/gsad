@@ -60,12 +60,6 @@ gsad_connection_info_set_postprocessor (gsad_connection_info_t *,
                                         struct MHD_PostProcessor *);
 
 const gchar *
-gsad_connection_info_get_cookie (const gsad_connection_info_t *);
-
-void
-gsad_connection_info_set_cookie (gsad_connection_info_t *, const gchar *);
-
-const gchar *
 gsad_connection_info_get_url (const gsad_connection_info_t *);
 
 #endif /* _GSAD_CONNECTION_INFO_H */

@@ -27,7 +27,6 @@ Ensure (gsad_connection_info, should_allow_to_create_connection_info_for_post)
                is_equal_to (METHOD_TYPE_POST));
   assert_that (gsad_connection_info_get_params (con_info), is_not_null);
   assert_that (gsad_connection_info_get_postprocessor (con_info), is_null);
-  assert_that (gsad_connection_info_get_cookie (con_info), is_null);
   assert_that (gsad_connection_info_get_url (con_info),
                is_equal_to_string ("/some-url"));
 
@@ -44,7 +43,6 @@ Ensure (gsad_connection_info, should_allow_to_create_connection_info_for_get)
                is_equal_to (METHOD_TYPE_GET));
   assert_that (gsad_connection_info_get_params (con_info), is_not_null);
   assert_that (gsad_connection_info_get_postprocessor (con_info), is_null);
-  assert_that (gsad_connection_info_get_cookie (con_info), is_null);
   assert_that (gsad_connection_info_get_url (con_info),
                is_equal_to_string ("/some-url"));
 
@@ -66,7 +64,6 @@ Ensure (gsad_connection_info, should_allow_to_create_connection_info_unknown)
                is_equal_to (METHOD_TYPE_UNKNOWN));
   assert_that (gsad_connection_info_get_params (con_info), is_not_null);
   assert_that (gsad_connection_info_get_postprocessor (con_info), is_null);
-  assert_that (gsad_connection_info_get_cookie (con_info), is_null);
   assert_that (gsad_connection_info_get_url (con_info),
                is_equal_to_string ("/some-url"));
 
@@ -87,22 +84,6 @@ Ensure (gsad_connection_info, should_allow_to_get_params)
   assert_that (gsad_connection_info_get_params (con_info), is_null);
 }
 
-Ensure (gsad_connection_info, should_set_and_get_cookie)
-{
-  gsad_connection_info_t *con_info =
-    gsad_connection_info_new (METHOD_TYPE_POST, "/some-url");
-
-  gsad_connection_info_set_cookie (con_info, "test_cookie");
-  assert_that (gsad_connection_info_get_cookie (con_info),
-               is_equal_to_string ("test_cookie"));
-
-  gsad_connection_info_free (con_info);
-
-  con_info = NULL;
-  gsad_connection_info_set_cookie (con_info, "test_cookie");
-  assert_that (gsad_connection_info_get_cookie (con_info), is_null);
-}
-
 int
 main (int argc, char **argv)
 {
@@ -116,8 +97,6 @@ main (int argc, char **argv)
                          should_allow_to_create_connection_info_for_get);
   add_test_with_context (suite, gsad_connection_info,
                          should_allow_to_create_connection_info_unknown);
-  add_test_with_context (suite, gsad_connection_info,
-                         should_set_and_get_cookie);
   add_test_with_context (suite, gsad_connection_info,
                          should_allow_to_get_params);
   add_test_with_context (suite, gsad_connection_info,
