@@ -49,26 +49,39 @@ gsad_http_request_init_handlers (gsad_settings_t *gsad_settings)
   gsad_http_handler_t *url_handlers = NULL;
   gsad_http_handler_t *next = NULL;
   gsad_http_handler_t *gmp_get_handler = NULL;
+  gsad_http_handler_t *gmp_post_handler = NULL;
+  gsad_http_handler_t *system_report_handler = NULL;
 
   gboolean is_jwt_requested = gsad_settings_is_jwt_requested (gsad_settings);
 
-  // Create /gmp POST and GET handler chain.
-  gsad_http_handler_t *gmp_post_handler =
-    gsad_http_handler_new (gsad_http_handle_gmp_post);
-
-  if (!is_jwt_requested)
+  if (is_jwt_requested)
     {
-      gmp_get_handler = gsad_http_handler_new (gsad_http_handle_setup_user);
-      gsad_http_handler_add_from_func (gmp_get_handler,
-                                       gsad_http_handle_setup_credentials);
+      // setup credentials only, no session handling for JWT-based auth
+      gmp_get_handler =
+        gsad_http_handler_new (gsad_http_handle_setup_credentials);
+      gmp_post_handler =
+        gsad_http_handler_new (gsad_http_handle_setup_credentials);
+      system_report_handler =
+        gsad_http_handler_new (gsad_http_handle_setup_credentials);
     }
   else
     {
-      gmp_get_handler =
-        gsad_http_handler_new (gsad_http_handle_setup_credentials);
+      // setup user from session and also the credentials
+      gmp_get_handler = gsad_http_handler_new (gsad_http_handle_setup_user);
+      gsad_http_handler_add_from_func (gmp_get_handler,
+                                       gsad_http_handle_setup_credentials);
+      gmp_post_handler = gsad_http_handler_new (gsad_http_handle_setup_user);
+      gsad_http_handler_add_from_func (gmp_post_handler,
+                                       gsad_http_handle_setup_credentials);
+      system_report_handler =
+        gsad_http_handler_new (gsad_http_handle_setup_user);
+      gsad_http_handler_add_from_func (system_report_handler,
+                                       gsad_http_handle_setup_credentials);
     }
 
+  // Create /gmp POST and GET handler chain.
   gsad_http_handler_add_from_func (gmp_get_handler, gsad_http_handle_gmp_get);
+  gsad_http_handler_add_from_func (gmp_post_handler, gsad_http_handle_gmp_post);
   gsad_http_handler_t *gmp_url_handler = gsad_http_url_handler_new (
     "^/gmp$", gsad_http_method_handler_new_with_handlers (gmp_get_handler,
                                                           gmp_post_handler));
@@ -127,12 +140,7 @@ gsad_http_request_init_handlers (gsad_settings_t *gsad_settings)
     gsad_http_method_handler_new_post_from_func (gsad_http_handle_login));
   next = gsad_http_handler_add (next, login_handler);
 
-  // Create /system_report handler
-  // chain.
-  gsad_http_handler_t *system_report_handler =
-    gsad_http_handler_new (gsad_http_handle_setup_user);
-  gsad_http_handler_add_from_func (system_report_handler,
-                                   gsad_http_handle_setup_credentials);
+  // Create /system_report handler chain.
   gsad_http_handler_add_from_func (system_report_handler,
                                    gsad_http_handle_system_report);
   gsad_http_handler_t *system_report_url_handler = gsad_http_url_handler_new (
