@@ -474,25 +474,10 @@ gsad_http_handle_gmp_post (gsad_http_handler_t *handler_next,
                            gsad_http_connection_t *connection,
                            gsad_connection_info_t *con_info, void *data)
 {
-  const gchar *sid, *accept_language;
-  char client_address[INET6_ADDRSTRLEN];
-
-  sid = gsad_http_get_session_cookie_from_connection (connection);
-
-  if (gvm_validate (http_validator, "token", sid))
-    gsad_connection_info_set_cookie (con_info, NULL);
-  else
-    gsad_connection_info_set_cookie (con_info, sid);
-
-  if (gsad_http_get_client_address (connection, client_address))
-    {
-      gsad_http_send_response_for_content (
-        connection, UTF8_ERROR_PAGE ("'X-Real-IP' header"),
-        MHD_HTTP_BAD_REQUEST, NULL, GSAD_CONTENT_TYPE_TEXT_HTML, NULL, 0);
-      return MHD_YES;
-    }
-
-  return exec_gmp_post (connection, con_info, client_address);
+  gsad_credentials_t *credentials = (gsad_credentials_t *) data;
+  int ret = exec_gmp_post (connection, con_info, credentials);
+  gsad_credentials_free (credentials);
+  return ret;
 }
 
 /**

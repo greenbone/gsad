@@ -169,22 +169,20 @@ free_resources (void *cls, struct MHD_Connection *connection, void **con_cls,
  *
  * @param[in]   con             HTTP connection
  * @param[in]   con_info        Connection info.
- * @param[in]   client_address  Client address.
+ * @param[in]   credentials     Client credentials.
  *
  * @return MHD_YES on success, MHD_NO on error.
  */
 gsad_http_result_t
 exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
-               const gchar *client_address)
+               gsad_credentials_t *credentials)
 {
-  int ret;
-  gsad_user_t *user;
-  gsad_credentials_t *credentials = NULL;
-  gchar *res = NULL, *new_sid = NULL;
-  const gchar *cmd, *caller;
+  gchar *res = NULL;
+  const gchar *cmd;
   gvm_connection_t connection;
   gsad_command_response_data_t *response_data =
     gsad_command_response_data_new ();
+  gsad_user_t *user = gsad_credentials_get_user (credentials);
 
   params_t *params = gsad_connection_info_get_params (con_info);
   params_mhd_validate (params);
@@ -201,92 +199,10 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
         "An internal error occurred inside GSA daemon. "
         "Diagnostics: Invalid command.",
         response_data);
-      return gsad_http_create_response (con, res, response_data, new_sid);
+      return gsad_http_create_response (con, res, response_data, NULL);
     }
 
   g_debug ("Handling GMP command '%s' for HTTP POST", cmd);
-
-  /* Check the session. */
-
-  if (params_value (params, "token") == NULL)
-    {
-      gsad_command_response_data_set_status_code (response_data,
-                                                  MHD_HTTP_BAD_REQUEST);
-
-      if (params_given (params, "token") == 0)
-        res = gsad_http_create_gsad_message (
-          NULL,
-          "An internal error occurred inside GSA daemon. "
-          "Diagnostics: Token missing.",
-          response_data);
-      else
-        res = gsad_http_create_gsad_message (
-          NULL,
-          "An internal error occurred inside GSA daemon. "
-          "Diagnostics: Token bad.",
-          response_data);
-
-      return gsad_http_create_response (con, res, response_data, NULL);
-    }
-
-  ret = gsad_user_session_find (gsad_connection_info_get_cookie (con_info),
-                                params_value (params, "token"), client_address,
-                                &user);
-  if (ret == USER_BAD_TOKEN)
-    {
-      gsad_command_response_data_set_status_code (response_data,
-                                                  MHD_HTTP_BAD_REQUEST);
-      res = gsad_http_create_gsad_message (
-        NULL,
-        "An internal error occurred inside GSA daemon. "
-        "Diagnostics: Bad token.",
-        response_data);
-      return gsad_http_create_response (con, res, response_data, NULL);
-    }
-
-  if (ret == USER_EXPIRED_TOKEN)
-    {
-      caller = params_value (params, "caller");
-
-      if (caller && g_utf8_validate (caller, -1, NULL) == FALSE)
-        {
-          caller = NULL;
-          g_warning ("%s - caller is not valid UTF-8", __func__);
-        }
-
-      /* @todo Validate caller. */
-
-      gsad_command_response_data_free (response_data);
-
-      return gsad_http_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
-                                              SESSION_EXPIRED);
-    }
-
-  if (ret == USER_BAD_MISSING_COOKIE || ret == USER_IP_ADDRESS_MISSMATCH)
-    {
-      gsad_command_response_data_free (response_data);
-
-      return gsad_http_send_reauthentication (con, MHD_HTTP_UNAUTHORIZED,
-                                              BAD_MISSING_COOKIE);
-    }
-
-  if (ret == USER_GMP_DOWN)
-    {
-      gsad_command_response_data_free (response_data);
-
-      return gsad_http_send_reauthentication (con, MHD_HTTP_SERVICE_UNAVAILABLE,
-                                              GMP_SERVICE_DOWN);
-    }
-
-  /* From here, the user is authenticated. */
-
-  /* The caller of a POST is usually the caller of the page that the POST form
-   * was on. */
-  credentials = gsad_credentials_new ();
-  gsad_credentials_set_user (credentials, user);
-  gsad_credentials_set_jwt (credentials, gsad_user_get_jwt (user));
-
-  new_sid = g_strdup (gsad_user_get_cookie (user));
 
   /* Connect to manager */
   switch (gsad_manager_connect_with_credentials (&connection, credentials))
@@ -344,7 +260,10 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     }
 
   /* always renew session for http post */
-  gsad_user_session_renew_timeout (user);
+  if (user)
+    {
+      gsad_user_session_renew_timeout (user);
+    }
 
   /* Handle the usual commands. */
   if (0)
@@ -475,14 +394,9 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
       response_data);
   }
 
-  ret = gsad_http_create_response (con, res, response_data, new_sid);
-
-  gsad_user_free (user);
-  gsad_credentials_free (credentials);
   gvm_connection_close (&connection);
-  g_free (new_sid);
-
-  return ret;
+  return gsad_http_create_response (con, res, response_data,
+                                    user ? gsad_user_get_cookie (user) : NULL);
 }
 
 /*
