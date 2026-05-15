@@ -18815,53 +18815,13 @@ change_password_gmp (gvm_connection_t *connection,
   gchar *passwd_64 = NULL;
   gchar *html = NULL;
   entity_t entity = NULL;
-  gsad_user_t *user = NULL;
-  gmp_authenticate_info_opts_t auth_opts;
-
-  user = gsad_credentials_get_user (credentials);
+  gsad_user_t *user = gsad_credentials_get_user (credentials);
 
   old_passwd = params_value (params, "old_password");
   passwd = params_value (params, "password");
 
   CHECK_VARIABLE_INVALID (passwd, "Change Password")
   CHECK_VARIABLE_INVALID (old_passwd, "Change Password")
-
-  auth_opts = gmp_authenticate_info_opts_defaults;
-  auth_opts.username = gsad_user_get_username (user);
-  auth_opts.password = old_passwd;
-
-  switch (gmp_authenticate_info_ext_c (connection, auth_opts))
-    {
-    case 0:
-      break;
-    case 1:
-      gsad_command_response_data_set_status_code (
-        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-      return gsad_http_create_gsad_message (
-        credentials,
-        "An internal error occurred while changing the password. "
-        "The password was not changed. "
-        "Diagnostics: Manager closed connection during authenticate.",
-        response_data);
-    case 2:
-      gsad_command_response_data_set_status_code (
-        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-      return gsad_http_create_gsad_message (
-        credentials,
-        "You tried to change your password, but the old"
-        " password was not provided or was incorrect. "
-        " Please enter the correct old password to proceed.",
-        response_data);
-    default:
-      gsad_command_response_data_set_status_code (
-        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-      return gsad_http_create_gsad_message (
-        credentials,
-        "An internal error occurred while changing the password. "
-        "The password was not changed. "
-        "Diagnostics: Internal Error.",
-        response_data);
-    }
 
   passwd_64 = g_base64_encode ((guchar *) passwd, strlen (passwd));
 
@@ -18895,7 +18855,7 @@ change_password_gmp (gvm_connection_t *connection,
         response_data);
     }
 
-  if (gmp_success (entity) == 1)
+  if (gmp_success (entity) == 1 && user)
     {
       gsad_user_set_password (user, passwd);
       gsad_session_remove_other_sessions (gsad_user_get_token (user),
