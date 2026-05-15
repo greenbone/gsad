@@ -348,7 +348,14 @@ gsad_http_handle_setup_credentials (gsad_http_handler_t *handler_next,
   gsad_user_t *user = (gsad_user_t *) data;
   const gchar *jwt = gsad_http_get_jwt_from_connection (connection);
 
+  if (!user && !jwt)
+    {
+      return gsad_http_send_reauthentication (connection, MHD_HTTP_UNAUTHORIZED,
+                                              MISSING_CREDENTIALS);
+    }
+
   gsad_credentials_t *credentials = gsad_credentials_new ();
+
   gsad_credentials_set_user (credentials, user);
   gsad_credentials_set_jwt (credentials, jwt);
   gsad_user_free (user);

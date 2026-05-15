@@ -135,6 +135,7 @@ typedef enum gsad_authentication_reason
   BAD_MISSING_COOKIE,
   BAD_MISSING_TOKEN,
   TOO_MANY_USER_SESSIONS,
+  MISSING_CREDENTIALS,
   UNKNOWN_ERROR,
 } gsad_authentication_reason_t;
 
