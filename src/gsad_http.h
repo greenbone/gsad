@@ -193,7 +193,8 @@ exec_gmp_get (gsad_http_connection_t *connection,
 
 gsad_http_result_t
 exec_gmp_post (gsad_http_connection_t *connection,
-               gsad_connection_info_t *con_info, const gchar *client_address);
+               gsad_connection_info_t *con_info,
+               gsad_credentials_t *credentials);
 
 gchar *
 gsad_http_create_gsad_message (gsad_credentials_t *, const gchar *,
