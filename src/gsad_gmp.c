@@ -242,21 +242,6 @@ action_result (gvm_connection_t *, gsad_credentials_t *, params_t *,
 /* Helpers. */
 
 /**
- * @brief Init the GSA GMP library.
- *
- * @param[in]  credentials   Credentials.
- * @param[in]  name          Command name.
- */
-int
-command_enabled (gsad_credentials_t *credentials, const gchar *name)
-{
-  /* TODO Hack.  Fails if command named in summary of another command. */
-  gsad_user_t *user =
-    gsad_credentials_get_user (credentials); // TODO pass gsad_user_t directly
-  return strstr (gsad_user_get_capabilities (user), name) ? 1 : 0;
-}
-
-/**
  *  @brief Structure to search a key by value
  */
 typedef struct
@@ -5322,48 +5307,44 @@ new_alert (gvm_connection_t *connection, gsad_credentials_t *credentials,
   free_entity (entity);
 
   /* Get Report Configs. */
-
-  if (command_enabled (credentials, "GET_REPORT_CONFIGS"))
+  ret = gmp (connection, credentials, &response, &entity, response_data,
+             "<get_report_configs filter=\"rows=-1\"/>");
+  switch (ret)
     {
-      ret = gmp (connection, credentials, &response, &entity, response_data,
-                 "<get_report_configs filter=\"rows=-1\"/>");
-      switch (ret)
-        {
-        case 0:
-          break;
-        case 1:
-          gsad_command_response_data_set_status_code (
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_http_create_gsad_message (
-            credentials,
-            "An internal error occurred while getting Report "
-            "Configs for new alert. "
-            "Diagnostics: Failure to send command to manager daemon.",
-            response_data);
-        case 2:
-          gsad_command_response_data_set_status_code (
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_http_create_gsad_message (
-            credentials,
-            "An internal error occurred while getting Report "
-            "Configs for new alert. "
-            "Diagnostics: Failure to receive response from manager daemon.",
-            response_data);
-        default:
-          gsad_command_response_data_set_status_code (
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_http_create_gsad_message (
-            credentials,
-            "An internal error occurred while getting Report "
-            "Configs for new alert. It is unclear whether"
-            " the alert has been saved or not. "
-            "Diagnostics: Internal Error.",
-            response_data);
-        }
-      g_string_append (xml, response);
-      g_free (response);
-      free_entity (entity);
+    case 0:
+      break;
+    case 1:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting Report "
+        "Configs for new alert. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting Report "
+        "Configs for new alert. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting Report "
+        "Configs for new alert. It is unclear whether"
+        " the alert has been saved or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
     }
+  g_string_append (xml, response);
+  g_free (response);
+  free_entity (entity);
 
   /* Get Report Filters. */
 
@@ -6075,179 +6056,159 @@ edit_alert (gvm_connection_t *connection, gsad_credentials_t *credentials,
         response_data);
     }
 
-  if (command_enabled (credentials, "GET_REPORT_FORMATS"))
+  /* Get the report formats. */
+  if (gvm_connection_sendf (connection, "<get_report_formats"
+                                        " filter=\"rows=-1\"/>")
+      == -1)
     {
-      /* Get the report formats. */
-
-      if (gvm_connection_sendf (connection, "<get_report_formats"
-                                            " filter=\"rows=-1\"/>")
-          == -1)
-        {
-          g_string_free (xml, TRUE);
-          gsad_command_response_data_set_status_code (
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_http_create_gsad_message (
-            credentials,
-            "An internal error occurred while getting report formats. "
-            "The current list of report formats is not available. "
-            "Diagnostics: Failure to send command to manager daemon.",
-            response_data);
-        }
-
-      if (read_string_c (connection, &xml))
-        {
-          g_string_free (xml, TRUE);
-          gsad_command_response_data_set_status_code (
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_http_create_gsad_message (
-            credentials,
-            "An internal error occurred while getting report formats. "
-            "The current list of report formats is not available. "
-            "Diagnostics: Failure to receive response from manager daemon.",
-            response_data);
-        }
+      g_string_free (xml, TRUE);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting report formats. "
+        "The current list of report formats is not available. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
     }
 
-  if (command_enabled (credentials, "GET_REPORT_CONFIGS"))
+  if (read_string_c (connection, &xml))
     {
-      /* Get the report configs. */
-
-      if (gvm_connection_sendf (connection, "<get_report_configs"
-                                            " filter=\"rows=-1\"/>")
-          == -1)
-        {
-          g_string_free (xml, TRUE);
-          gsad_command_response_data_set_status_code (
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_http_create_gsad_message (
-            credentials,
-            "An internal error occurred while getting report configs. "
-            "The current list of report configs is not available. "
-            "Diagnostics: Failure to send command to manager daemon.",
-            response_data);
-        }
-
-      if (read_string_c (connection, &xml))
-        {
-          g_string_free (xml, TRUE);
-          gsad_command_response_data_set_status_code (
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_http_create_gsad_message (
-            credentials,
-            "An internal error occurred while getting report configs. "
-            "The current list of report configs is not available. "
-            "Diagnostics: Failure to receive response from manager daemon.",
-            response_data);
-        }
+      g_string_free (xml, TRUE);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting report formats. "
+        "The current list of report formats is not available. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
     }
 
-  if (command_enabled (credentials, "GET_FILTERS"))
+  /* Get the report configs. */
+  if (gvm_connection_sendf (connection, "<get_report_configs"
+                                        " filter=\"rows=-1\"/>")
+      == -1)
     {
-      /* Get filters. */
-
-      if (gvm_connection_sendf (connection, "<get_filters filter=\"rows=-1\"/>")
-          == -1)
-        {
-          g_string_free (xml, TRUE);
-          gsad_command_response_data_set_status_code (
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_http_create_gsad_message (
-            credentials,
-            "An internal error occurred while getting the list "
-            "of filters. "
-            "The current list of filters is not available. "
-            "Diagnostics: Failure to send command to manager daemon.",
-            response_data);
-        }
-
-      if (read_string_c (connection, &xml))
-        {
-          g_string_free (xml, TRUE);
-          gsad_command_response_data_set_status_code (
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_http_create_gsad_message (
-            credentials,
-            "An internal error occurred while getting the list "
-            "of filters. "
-            "The current list of filters is not available. "
-            "Diagnostics: Failure to receive response from manager daemon.",
-            response_data);
-        }
+      g_string_free (xml, TRUE);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting report configs. "
+        "The current list of report configs is not available. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
     }
 
-  if (command_enabled (credentials, "GET_TASKS"))
+  if (read_string_c (connection, &xml))
     {
-      /* Get tasks. */
+      g_string_free (xml, TRUE);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting report configs. "
+        "The current list of report configs is not available. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    }
 
-      if (gvm_connection_sendf (connection,
-                                "<get_tasks"
-                                " schedules_only=\"1\""
-                                " filter=\"owner=any permission=start_task"
-                                "          rows=-1\"/>")
-          == -1)
-        {
-          g_string_free (xml, TRUE);
-          gsad_command_response_data_set_status_code (
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_http_create_gsad_message (
-            credentials,
-            "An internal error occurred while getting the list "
-            "of tasks. "
-            "The current list of tasks is not available. "
-            "Diagnostics: Failure to send command to manager daemon.",
-            response_data);
-        }
+  /* Get filters. */
+  if (gvm_connection_sendf (connection, "<get_filters filter=\"rows=-1\"/>")
+      == -1)
+    {
+      g_string_free (xml, TRUE);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting the list "
+        "of filters. "
+        "The current list of filters is not available. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    }
 
-      if (read_string_c (connection, &xml))
-        {
-          g_string_free (xml, TRUE);
-          gsad_command_response_data_set_status_code (
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_http_create_gsad_message (
-            credentials,
-            "An internal error occurred while getting the list "
-            "of tasks. "
-            "The current list of tasks is not available. "
-            "Diagnostics: Failure to receive response from manager daemon.",
-            response_data);
-        }
+  if (read_string_c (connection, &xml))
+    {
+      g_string_free (xml, TRUE);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting the list "
+        "of filters. "
+        "The current list of filters is not available. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    }
+
+  /* Get tasks. */
+  if (gvm_connection_sendf (connection,
+                            "<get_tasks"
+                            " schedules_only=\"1\""
+                            " filter=\"owner=any permission=start_task"
+                            "          rows=-1\"/>")
+      == -1)
+    {
+      g_string_free (xml, TRUE);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting the list "
+        "of tasks. "
+        "The current list of tasks is not available. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    }
+
+  if (read_string_c (connection, &xml))
+    {
+      g_string_free (xml, TRUE);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting the list "
+        "of tasks. "
+        "The current list of tasks is not available. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
     }
 
   /* Get Credentials. */
-
-  if (command_enabled (credentials, "GET_CREDENTIALS"))
+  if (gvm_connection_sendf (connection, "<get_credentials"
+                                        " filter=\"type=up or type=pw"
+                                        "          owner=any permission=any"
+                                        "          rows=-1\"/>")
+      == -1)
     {
-      if (gvm_connection_sendf (connection, "<get_credentials"
-                                            " filter=\"type=up or type=pw"
-                                            "          owner=any permission=any"
-                                            "          rows=-1\"/>")
-          == -1)
-        {
-          g_string_free (xml, TRUE);
-          gsad_command_response_data_set_status_code (
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_http_create_gsad_message (
-            credentials,
-            "An internal error occurred while getting the list "
-            "of credentials. "
-            "The current list of tasks is not available. "
-            "Diagnostics: Failure to send command to manager daemon.",
-            response_data);
-        }
+      g_string_free (xml, TRUE);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting the list "
+        "of credentials. "
+        "The current list of tasks is not available. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    }
 
-      if (read_string_c (connection, &xml))
-        {
-          g_string_free (xml, TRUE);
-          gsad_command_response_data_set_status_code (
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_http_create_gsad_message (
-            credentials,
-            "An internal error occurred while getting the list "
-            "of credentials. "
-            "The current list of tasks is not available. "
-            "Diagnostics: Failure to receive response from manager daemon.",
-            response_data);
-        }
+  if (read_string_c (connection, &xml))
+    {
+      g_string_free (xml, TRUE);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting the list "
+        "of credentials. "
+        "The current list of tasks is not available. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
     }
 
   /* Cleanup, and return transformed XML. */
@@ -13287,37 +13248,33 @@ run_wizard_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
 }
 
 #define GET_TRASH_RESOURCE(capability, command, name)                       \
-  if (command_enabled (credentials, capability))                            \
+  if (gvm_connection_sendf (connection,                                     \
+                            "<" command " filter=\"rows=-1 sort=name\""     \
+                            " trash=\"1\"/>")                               \
+      == -1)                                                                \
     {                                                                       \
-      if (gvm_connection_sendf (connection,                                 \
-                                "<" command " filter=\"rows=-1 sort=name\"" \
-                                " trash=\"1\"/>")                           \
-          == -1)                                                            \
-        {                                                                   \
-          g_string_free (xml, TRUE);                                        \
-          gsad_command_response_data_set_status_code (                      \
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);                 \
-          return gsad_http_create_gsad_message (                            \
-            credentials,                                                    \
-            "An internal error occurred while getting " name                \
-            " list for trash."                                              \
-            "Diagnostics: Failure to send command to"                       \
-            " manager daemon.",                                             \
-            response_data);                                                 \
-        }                                                                   \
+      g_string_free (xml, TRUE);                                            \
+      gsad_command_response_data_set_status_code (                          \
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);                     \
+      return gsad_http_create_gsad_message (                                \
+        credentials,                                                        \
+        "An internal error occurred while getting " name " list for trash." \
+        "Diagnostics: Failure to send command to"                           \
+        " manager daemon.",                                                 \
+        response_data);                                                     \
+    }                                                                       \
                                                                             \
-      if (read_string_c (connection, &xml))                                 \
-        {                                                                   \
-          g_string_free (xml, TRUE);                                        \
-          gsad_command_response_data_set_status_code (                      \
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);                 \
-          return gsad_http_create_gsad_message (                            \
-            credentials,                                                    \
-            "An internal error occurred while getting " name " list."       \
-            "Diagnostics: Failure to receive response from"                 \
-            " manager daemon.",                                             \
-            response_data);                                                 \
-        }                                                                   \
+  if (read_string_c (connection, &xml))                                     \
+    {                                                                       \
+      g_string_free (xml, TRUE);                                            \
+      gsad_command_response_data_set_status_code (                          \
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);                     \
+      return gsad_http_create_gsad_message (                                \
+        credentials,                                                        \
+        "An internal error occurred while getting " name " list."           \
+        "Diagnostics: Failure to receive response from"                     \
+        " manager daemon.",                                                 \
+        response_data);                                                     \
     }
 
 /**
@@ -16239,49 +16196,48 @@ get_user (gvm_connection_t *connection, gsad_credentials_t *credentials,
   extra = g_string_new ("");
   if (extra_xml)
     g_string_append (extra, extra_xml);
-  if (command_enabled (credentials, "DESCRIBE_AUTH"))
+
+  gchar *response;
+  entity_t entity;
+
+  response = NULL;
+  entity = NULL;
+  switch (gmp (connection, credentials, &response, &entity, response_data,
+               "<describe_auth/>"))
     {
-      gchar *response;
-      entity_t entity;
-
-      response = NULL;
-      entity = NULL;
-      switch (gmp (connection, credentials, &response, &entity, response_data,
-                   "<describe_auth/>"))
-        {
-        case 0:
-          break;
-        case 1:
-          gsad_command_response_data_set_status_code (
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_http_create_gsad_message (
-            credentials,
-            "An internal error occurred getting the auth list. "
-            "Diagnostics: Failure to send command to manager daemon.",
-            response_data);
-        case 2:
-          gsad_command_response_data_set_status_code (
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_http_create_gsad_message (
-            credentials,
-            "An internal error occurred getting the auth list. "
-            "Diagnostics: Failure to receive response from manager daemon.",
-            response_data);
-        default:
-          gsad_command_response_data_set_status_code (
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_http_create_gsad_message (
-            credentials,
-            "An internal error occurred getting the auth list. "
-            "Diagnostics: Internal Error.",
-            response_data);
-        }
-
-      g_string_append (extra, response);
-
-      free_entity (entity);
-      g_free (response);
+    case 0:
+      break;
+    case 1:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred getting the auth list. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred getting the auth list. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred getting the auth list. "
+        "Diagnostics: Internal Error.",
+        response_data);
     }
+
+  g_string_append (extra, response);
+
+  free_entity (entity);
+  g_free (response);
+
   html = get_one (connection, "user", credentials, params, extra->str, NULL,
                   response_data);
   g_string_free (extra, TRUE);
@@ -16523,46 +16479,43 @@ auth_settings_gmp (gvm_connection_t *connection,
   g_string_append (xml, buf);
   g_free (buf);
 
-  if (command_enabled (credentials, "DESCRIBE_AUTH"))
+  gchar *response = NULL;
+  entity_t entity = NULL;
+
+  switch (gmp (connection, credentials, &response, &entity, response_data,
+               "<describe_auth/>"))
     {
-      gchar *response = NULL;
-      entity_t entity = NULL;
-
-      switch (gmp (connection, credentials, &response, &entity, response_data,
-                   "<describe_auth/>"))
-        {
-        case 0:
-          break;
-        case 1:
-          gsad_command_response_data_set_status_code (
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_http_create_gsad_message (
-            credentials,
-            "An internal error occurred getting the auth list. "
-            "Diagnostics: Failure to send command to manager daemon.",
-            response_data);
-        case 2:
-          gsad_command_response_data_set_status_code (
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_http_create_gsad_message (
-            credentials,
-            "An internal error occurred getting the auth list. "
-            "Diagnostics: Failure to receive response from manager daemon.",
-            response_data);
-        default:
-          gsad_command_response_data_set_status_code (
-            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-          return gsad_http_create_gsad_message (
-            credentials,
-            "An internal error occurred getting the auth list. "
-            "Diagnostics: Internal Error.",
-            response_data);
-        }
-
-      g_string_append (xml, response);
-      free_entity (entity);
-      g_free (response);
+    case 0:
+      break;
+    case 1:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred getting the auth list. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred getting the auth list. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred getting the auth list. "
+        "Diagnostics: Internal Error.",
+        response_data);
     }
+
+  g_string_append (xml, response);
+  free_entity (entity);
+  g_free (response);
 
   g_string_append (xml, "</auth_settings>");
 
