@@ -453,7 +453,6 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (save_credential)
   ELSE (save_filter)
   ELSE (save_group)
-  ELSE (save_my_settings)
   ELSE (save_license)
   ELSE (save_note)
   ELSE (save_oci_image_target)
