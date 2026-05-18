@@ -19,6 +19,11 @@
 #include <glib.h>                 /* for gboolean */
 #include <gvm/util/serverutils.h> /* for gvm_connection_t */
 
+gsad_http_result_t
+exec_gmp_get (gsad_http_connection_t *connection,
+              gsad_connection_info_t *con_info,
+              gsad_credentials_t *credentials);
+
 char *
 clone_gmp (gvm_connection_t *, gsad_credentials_t *, params_t *,
            gsad_command_response_data_t *);

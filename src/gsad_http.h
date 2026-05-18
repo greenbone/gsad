@@ -185,12 +185,6 @@ serve_post (void *coninfo_cls, enum MHD_ValueKind kind, const char *key,
             const char *transfer_encoding, const char *data, uint64_t off,
             size_t size);
 
-/* exec_gmp functions are still in gsad.c */
-gsad_http_result_t
-exec_gmp_get (gsad_http_connection_t *connection,
-              gsad_connection_info_t *con_info,
-              gsad_credentials_t *credentials);
-
 gsad_http_result_t
 exec_gmp_post (gsad_http_connection_t *connection,
                gsad_connection_info_t *con_info,
