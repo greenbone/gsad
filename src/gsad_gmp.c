@@ -21066,16 +21066,6 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
                                   user ? gsad_user_get_cookie (user) : NULL);
 }
 
-#undef ELSE
-
-/**
- * @brief Add else branch for an GMP operation.
- */
-#define ELSE(name)                                  \
-  else if (!strcmp (cmd, G_STRINGIFY (name))) res = \
-    name##_gmp (&connection, credentials,           \
-                gsad_connection_info_get_params (con_info), response_data);
-
 /**
  * @brief Handle a complete POST request.
  *
