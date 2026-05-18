@@ -29,9 +29,6 @@
 
 #include <arpa/inet.h>
 #include <assert.h>
-#ifdef HAVE_BROTLI
-#include <brotli/encode.h>
-#endif
 #include <errno.h>
 #include <gcrypt.h>
 #include <glib.h>
@@ -53,14 +50,14 @@
 #include <sys/types.h>
 #include <sys/un.h>
 #include <unistd.h>
-#include <zlib.h>
 /* This must follow the system includes. */
 #include "gsad_args.h"
 #include "gsad_base.h"
 #include "gsad_connection_watcher.h"
 #include "gsad_credentials.h"
 #include "gsad_gmp.h"
-#include "gsad_gmp_auth.h"            /* for authenticate_gmp */
+#include "gsad_gmp_auth.h" /* for authenticate_gmp */
+#include "gsad_http_compression.h" /* for gsad_http_may_compress, gsad_http_may_deflate, gsad_http_may_brotli */
 #include "gsad_http_handle_request.h" /* for gsad_http_handle_request */
 #include "gsad_i18n.h"
 #include "gsad_logging.h" /* for gsad_logging_init and gsad_logging_cleanup */
@@ -410,138 +407,6 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     name##_gmp (&connection, credentials, params, response_data);
 
 /**
- * @brief Check whether may compress response.
- *
- * @param[in]  con       HTTP Connection
- * @param[in]  encoding  Desired encoding.
- *
- * @return 1 if may, else 0.
- */
-static int
-may_compress (gsad_http_connection_t *con, const gchar *encoding)
-{
-  const gchar *all, *one;
-
-  all = MHD_lookup_connection_value (con, MHD_HEADER_KIND,
-                                     MHD_HTTP_HEADER_ACCEPT_ENCODING);
-  if (all == NULL)
-    return 0;
-  if (strcmp (all, "*") == 0)
-    return 1;
-
-  one = strstr (all, encoding);
-  if (one == NULL)
-    return 0;
-
-  if (((one == all) || (one[-1] == ',') || (one[-1] == ' '))
-      && ((one[strlen (encoding)] == '\0') || (one[strlen (encoding)] == ',')
-          || (one[strlen (encoding)] == ';')))
-    return 1;
-
-  return 0;
-}
-
-/**
- * @brief Check whether may compress response.
- *
- * @param[in]  con  HTTP Connection
- *
- * @return 1 if may, else 0.
- */
-static int
-may_deflate (gsad_http_connection_t *con)
-{
-  return may_compress (con, "deflate");
-}
-
-#ifdef HAVE_BROTLI
-/**
- * @brief Check whether may compress response.
- *
- * @param[in]  con  HTTP Connection
- *
- * @return 1 if may, else 0.
- */
-static int
-may_brotli (gsad_http_connection_t *con)
-{
-  return may_compress (con, "br");
-}
-#endif
-
-/**
- * @brief Compress response with zlib.
- *
- * @param[in]  res_len   Response length.
- * @param[in]  res       Response.
- * @param[out] comp_len  Compressed length.
- * @param[out] comp      Compressed response.
- *
- * @return 1 on success, else 0.
- */
-static int
-compress_response_deflate (const size_t res_len, const gchar *res,
-                           size_t *comp_len, gchar **comp)
-{
-  Bytef *cbuf;
-  uLongf cbuf_size;
-  int ret;
-
-  cbuf_size = compressBound (res_len);
-  cbuf = g_malloc (cbuf_size);
-
-  ret = compress (cbuf, &cbuf_size, (const Bytef *) res, res_len);
-
-  if ((ret == Z_OK) && (cbuf_size < res_len))
-    {
-      *comp = (char *) cbuf;
-      *comp_len = cbuf_size;
-      return 1;
-    }
-
-  free (cbuf);
-  return 0;
-}
-
-#ifdef HAVE_BROTLI
-/**
- * @brief Compress response with Brotli.
- *
- * @param[in]  res_len   Response length.
- * @param[in]  res       Response.
- * @param[out] comp_len  Compressed length.
- * @param[out] comp      Compressed response.
- *
- * @return 1 on success, else 0.
- */
-static int
-compress_response_brotli (const size_t res_len, const gchar *res,
-                          size_t *comp_len, gchar **comp)
-{
-  size_t cbuf_size;
-  uint8_t *cbuf;
-  int ret;
-
-  cbuf_size = BrotliEncoderMaxCompressedSize (res_len);
-  cbuf = g_malloc (cbuf_size);
-
-  ret = BrotliEncoderCompress (BROTLI_DEFAULT_QUALITY, BROTLI_DEFAULT_WINDOW,
-                               BROTLI_DEFAULT_MODE, res_len, (uint8_t *) res,
-                               &cbuf_size, cbuf);
-
-  if ((ret == BROTLI_TRUE) && (cbuf_size < res_len))
-    {
-      *comp = (char *) cbuf;
-      *comp_len = cbuf_size;
-      return 1;
-    }
-
-  g_free (cbuf);
-  return 0;
-}
-#endif
-
-/**
  * @brief Handle a complete GET request.
  *
  * After some input checking, depending on the cmd parameter of the connection,
@@ -874,11 +739,11 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   encoding = NULL;
 
 #ifdef HAVE_BROTLI
-  if (may_brotli (con))
+  if (gsad_http_may_brotli (con))
     {
       gsize comp_len;
 
-      if (compress_response_brotli (res_len, res, &comp_len, &comp))
+      if (gsad_http_compress_response_brotli (res_len, res, &comp_len, &comp))
         {
           free (res);
           res_len = comp_len;
@@ -888,11 +753,11 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     }
 #endif
 
-  if ((encoding == NULL) && may_deflate (con))
+  if ((encoding == NULL) && gsad_http_may_deflate (con))
     {
       gsize comp_len;
 
-      if (compress_response_deflate (res_len, res, &comp_len, &comp))
+      if (gsad_http_compress_response_deflate (res_len, res, &comp_len, &comp))
         {
           free (res);
           res_len = comp_len;

@@ -97,6 +97,7 @@ add_executable(
   gsad_gmp_arguments.c
   gsad_gmp_request.c
   gsad_http.c
+  gsad_http_compression.c
   gsad_http_handle_request.c
   gsad_http_handler.c
   gsad_http_handler_functions.c
