@@ -57,6 +57,7 @@
 /* This must follow the system includes. */
 #include "gsad_args.h"
 #include "gsad_base.h"
+#include "gsad_connection_watcher.h"
 #include "gsad_credentials.h"
 #include "gsad_gmp.h"
 #include "gsad_gmp_auth.h"            /* for authenticate_gmp */
@@ -399,110 +400,6 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
                                     user ? gsad_user_get_cookie (user) : NULL);
 }
 
-/*
- * Connection watcher thread data
- */
-typedef struct
-{
-  int client_socket_fd;
-  gvm_connection_t *gvm_connection;
-  int connection_closed;
-  pthread_mutex_t mutex;
-  gsad_settings_t *gsad_settings;
-} connection_watcher_data_t;
-
-/**
- * @brief  Create a new connection watcher thread data structure.
- *
- * @param[in]  gvm_connection   GVM connection to close if client conn. closes.
- * @param[in]  client_socket_fd File descriptor of client connection to watch.
- *
- * @return  Newly allocated watcher thread data.
- */
-static connection_watcher_data_t *
-connection_watcher_data_new (gvm_connection_t *gvm_connection,
-                             int client_socket_fd,
-                             gsad_settings_t *gsad_settings)
-{
-  connection_watcher_data_t *watcher_data =
-    g_malloc (sizeof (connection_watcher_data_t));
-
-  watcher_data->gvm_connection = gvm_connection;
-  watcher_data->client_socket_fd = client_socket_fd;
-  watcher_data->connection_closed = 0;
-  watcher_data->gsad_settings = gsad_settings;
-  pthread_mutex_init (&(watcher_data->mutex), NULL);
-
-  return watcher_data;
-}
-
-/**
- * @brief   Thread start routine watching the client connection.
- *
- * @param[in] data  The connection data watcher struct.
- *
- * @return  Always NULL.
- */
-static void *
-watch_client_connection (void *data)
-{
-  int active;
-  connection_watcher_data_t *watcher_data;
-
-  pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, NULL);
-  watcher_data = (connection_watcher_data_t *) data;
-
-  pthread_mutex_lock (&(watcher_data->mutex));
-  active = 1;
-  pthread_mutex_unlock (&(watcher_data->mutex));
-
-  while (active)
-    {
-      pthread_setcancelstate (PTHREAD_CANCEL_ENABLE, NULL);
-      sleep (
-        gsad_settings_get_client_watch_interval (watcher_data->gsad_settings));
-      pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, NULL);
-
-      pthread_mutex_lock (&(watcher_data->mutex));
-
-      if (watcher_data->connection_closed)
-        {
-          active = 0;
-          pthread_mutex_unlock (&(watcher_data->mutex));
-          continue;
-        }
-      int ret;
-      gchar buf[1];
-      errno = 0;
-      ret = recv (watcher_data->client_socket_fd, buf, 1, MSG_PEEK);
-
-      if (ret >= 0)
-        {
-          if (watcher_data->connection_closed == 0)
-            {
-              watcher_data->connection_closed = 1;
-              active = 0;
-              g_debug ("%s: Client connection closed", __func__);
-
-              if (watcher_data->gvm_connection->tls)
-                {
-                  gvm_connection_t *gvm_conn;
-                  gvm_conn = watcher_data->gvm_connection;
-                  gnutls_bye (gvm_conn->session, GNUTLS_SHUT_RDWR);
-                }
-              else
-                {
-                  gvm_connection_close (watcher_data->gvm_connection);
-                }
-            }
-        }
-
-      pthread_mutex_unlock (&(watcher_data->mutex));
-    }
-
-  return NULL;
-}
-
 #undef ELSE
 
 /**
@@ -669,8 +566,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   gsize res_len = 0;
   gsad_http_response_t *response;
   gsad_command_response_data_t *response_data;
-  pthread_t watch_thread;
-  connection_watcher_data_t *watcher_data;
+  gsad_connection_watcher_t *watcher = NULL;
   validator_t validator;
   gchar *encoding;
 
@@ -761,15 +657,9 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
       mhd_con_info =
         MHD_get_connection_info (con, MHD_CONNECTION_INFO_CONNECTION_FD);
 
-      watcher_data = connection_watcher_data_new (
-        &connection, mhd_con_info->connect_fd, gsad_global_settings);
-
-      pthread_create (&watch_thread, NULL, watch_client_connection,
-                      watcher_data);
-    }
-  else
-    {
-      watcher_data = NULL;
+      watcher = gsad_connection_watcher_new (gsad_global_settings, &connection,
+                                             mhd_con_info->connect_fd);
+      gsad_connection_watcher_start (watcher);
     }
 
   /* Check cmd and precondition, start respective GMP command(s). */
@@ -1018,19 +908,10 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     MHD_add_response_header (response, MHD_HTTP_HEADER_CONTENT_ENCODING,
                              encoding);
 
-  if (watcher_data)
+  if (watcher)
     {
-      pthread_mutex_lock (&(watcher_data->mutex));
-      if (watcher_data->connection_closed == 0
-          || watcher_data->gvm_connection->tls)
-        {
-          gvm_connection_close (watcher_data->gvm_connection);
-        }
-      watcher_data->connection_closed = 1;
-      pthread_mutex_unlock (&(watcher_data->mutex));
-      pthread_cancel (watch_thread);
-      pthread_join (watch_thread, NULL);
-      g_free (watcher_data);
+      gsad_connection_watcher_stop (watcher);
+      gsad_connection_watcher_free (watcher);
     }
   else
     {
