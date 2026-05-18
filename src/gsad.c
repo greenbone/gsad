@@ -738,7 +738,6 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
 
   encoding = NULL;
 
-#ifdef HAVE_BROTLI
   if (gsad_http_may_brotli (con))
     {
       gsize comp_len;
@@ -751,8 +750,6 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
           encoding = "br";
         }
     }
-#endif
-
   if ((encoding == NULL) && gsad_http_may_deflate (con))
     {
       gsize comp_len;
