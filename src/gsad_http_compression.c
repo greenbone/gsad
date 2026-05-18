@@ -69,7 +69,20 @@ gsad_http_may_brotli (gsad_http_connection_t *con)
 {
   return gsad_http_may_compress (con, "br");
 }
-#endif
+#else
+/**
+ * @brief Check whether may compress response.
+ *
+ * @param[in]  con  HTTP Connection
+ *
+ * @return FALSE, as brotli support is not compiled in.
+ */
+gboolean
+gsad_http_may_brotli (gsad_http_connection_t *con)
+{
+  return 0;
+}
+#endif /* HAVE_BROTLI */
 
 /**
  * @brief Compress response with zlib.
@@ -141,4 +154,21 @@ gsad_http_compress_response_brotli (const size_t res_len, const gchar *res,
   g_free (cbuf);
   return 0;
 }
-#endif
+#else
+/**
+ * @brief Compress response with Brotli.
+ *
+ * @param[in]  res_len   Response length.
+ * @param[in]  res       Response.
+ * @param[out] comp_len  Compressed length.
+ * @param[out] comp      Compressed response.
+ *
+ * @return 0, as brotli support is not compiled in.
+ */
+int
+gsad_http_compress_response_brotli (const size_t res_len, const gchar *res,
+                                    size_t *comp_len, gchar **comp)
+{
+  return 0;
+}
+#endif /* HAVE_BROTLI */

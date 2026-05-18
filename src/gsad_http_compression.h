@@ -14,17 +14,15 @@ gsad_http_may_compress (gsad_http_connection_t *, const gchar *);
 gboolean
 gsad_http_may_deflate (gsad_http_connection_t *);
 
-int
-gsad_http_compress_response_deflate (const size_t, const gchar *, size_t *,
-                                     gchar **comp);
-
-#ifdef HAVE_BROTLI
 gboolean
 gsad_http_may_brotli (gsad_http_connection_t *);
 
 int
+gsad_http_compress_response_deflate (const size_t, const gchar *, size_t *,
+                                     gchar **comp);
+
+int
 gsad_http_compress_response_brotli (const size_t, const gchar *, size_t *,
                                     gchar **comp);
-#endif /* HAVE_BROTLI */
 
 #endif /* _GSAD_HTTP_COMPRESSION_H */
