@@ -228,10 +228,6 @@ static char *
 wizard (gvm_connection_t *, gsad_credentials_t *, params_t *, const char *,
         gsad_command_response_data_t *);
 
-static char *
-wizard_get (gvm_connection_t *, gsad_credentials_t *, params_t *, const char *,
-            gsad_command_response_data_t *);
-
 static int
 gmp_success (entity_t entity);
 
@@ -17283,133 +17279,6 @@ wizard_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
 }
 
 /**
- * @brief Returns a wizard_get page.
- *
- * @param[in]  connection     Connection to manager.
- * @param[in]  credentials    Credentials of user issuing the action.
- * @param[in]  params         Request parameters.
- * @param[in]  extra_xml      Extra XML to insert inside page element.
- * @param[out] response_data  Extra data return for the HTTP response.
- *
- * @return Enveloped XML object.
- */
-char *
-wizard_get (gvm_connection_t *connection, gsad_credentials_t *credentials,
-            params_t *params, const char *extra_xml,
-            gsad_command_response_data_t *response_data)
-{
-  const char *name;
-  int ret;
-  GString *run;
-  param_t *param;
-  gchar *param_name, *response;
-  params_iterator_t iter;
-  params_t *wizard_params;
-  entity_t entity;
-  gchar *wizard_xml;
-
-  /* The naming is a bit subtle here, because the HTTP request
-   * parameters are called "param"s and so are the GMP wizard
-   * parameters. */
-
-  name = params_value (params, "get_name");
-  if (name == NULL)
-    {
-      gsad_command_response_data_set_status_code (response_data,
-                                                  MHD_HTTP_BAD_REQUEST);
-      return gsad_http_create_gsad_message (
-        credentials,
-        "An internal error occurred while trying to start a wizard. "
-        "Diagnostics: Required parameter 'get_name' was NULL.",
-        response_data);
-    }
-
-  run = g_string_new ("<run_wizard read_only=\"1\">");
-
-  g_string_append_printf (run,
-                          "<name>%s</name>"
-                          "<params>",
-                          name);
-
-  wizard_params = params_values (params, "event_data:");
-  if (wizard_params)
-    {
-      params_iterator_init (&iter, wizard_params);
-      while (params_iterator_next (&iter, &param_name, &param))
-        xml_string_append (run,
-                           "<param>"
-                           "<name>%s</name>"
-                           "<value>%s</value>"
-                           "</param>",
-                           param_name, param->value);
-    }
-
-  g_string_append (run, "</params></run_wizard>");
-
-  response = NULL;
-  entity = NULL;
-  ret =
-    gmp (connection, credentials, &response, &entity, response_data, run->str);
-  g_string_free (run, TRUE);
-  switch (ret)
-    {
-    case 0:
-      break;
-    case 1:
-      gsad_command_response_data_set_status_code (
-        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-      return gsad_http_create_gsad_message (
-        credentials,
-        "An internal error occurred while running a wizard. "
-        "The wizard did not start. "
-        "Diagnostics: Failure to send command to manager daemon.",
-        response_data);
-    case 2:
-      gsad_command_response_data_set_status_code (
-        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-      return gsad_http_create_gsad_message (
-        credentials,
-        "An internal error occurred while running a wizard. "
-        "It is unclear whether the wizard started or not. "
-        "Diagnostics: Failure to receive response from manager daemon.",
-        response_data);
-    default:
-      gsad_command_response_data_set_status_code (
-        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-      return gsad_http_create_gsad_message (
-        credentials,
-        "An internal error occurred while running a wizard. "
-        "It is unclear whether the wizard started or not. "
-        "Diagnostics: Internal Error.",
-        response_data);
-    }
-
-  wizard_xml = g_strdup_printf ("<wizard><%s/>%s%s</wizard>", name,
-                                extra_xml ? extra_xml : "", response);
-  g_free (response);
-
-  return envelope_gmp (connection, credentials, params, wizard_xml,
-                       response_data);
-}
-
-/**
- * @brief Returns a wizard_get page.
- *
- * @param[in]  connection     Connection to manager.
- * @param[in]  credentials    Credentials of user issuing the action.
- * @param[in]  params         Request parameters.
- * @param[out] response_data  Extra data return for the HTTP response.
- *
- * @return Enveloped XML object.
- */
-char *
-wizard_get_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
-                params_t *params, gsad_command_response_data_t *response_data)
-{
-  return wizard_get (connection, credentials, params, NULL, response_data);
-}
-
-/**
  * @brief Delete multiple resources, get next page, envelope the result.
  *
  * @param[in]  connection     Connection to manager.
@@ -20878,7 +20747,6 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (new_alert)
   ELSE (ping)
   ELSE (wizard)
-  ELSE (wizard_get)
 
   else if (!strcmp (cmd, "download_ssl_cert"))
   {
