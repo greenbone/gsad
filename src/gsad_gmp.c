@@ -20498,13 +20498,11 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   gchar *res = NULL, *comp = NULL;
   gsize res_len = 0;
   gsad_http_response_t *response;
-  gsad_command_response_data_t *response_data;
+  gsad_command_response_data_t *response_data =
+    gsad_command_response_data_new ();
   gsad_connection_watcher_t *watcher = NULL;
-  validator_t validator;
+  validator_t validator = gsad_get_validator ();
   gchar *encoding;
-
-  validator = gsad_get_validator ();
-  response_data = gsad_command_response_data_new ();
 
   cmd = params_value (params, "cmd");
 
@@ -20873,11 +20871,13 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   gsad_command_response_data_t *response_data =
     gsad_command_response_data_new ();
   gsad_user_t *user = gsad_credentials_get_user (credentials);
-
+  validator_t validator = gsad_get_validator ();
   params_t *params = gsad_connection_info_get_params (con_info);
-  params_mhd_validate (params);
 
   cmd = params_value (params, "cmd");
+
+  if (gvm_validate (validator, "cmd", cmd))
+    cmd = NULL;
 
   if (!cmd)
     {
