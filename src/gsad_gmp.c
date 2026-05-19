@@ -20783,40 +20783,6 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_agent_installer_file)
   ELSE (get_asset)
   ELSE (get_assets)
-
-  else if (!strcmp (cmd, "download_ssl_cert"))
-  {
-    gsad_command_response_data_set_content_type (response_data,
-                                                 GSAD_CONTENT_TYPE_APP_KEY);
-    gsad_command_response_data_set_content_disposition (
-      response_data, g_strdup_printf ("attachment; filename=ssl-cert-%s.pem",
-                                      params_value (params, "name")));
-
-    res = download_ssl_cert (&connection, credentials, params, response_data);
-  }
-
-  else if (!strcmp (cmd, "download_ca_pub"))
-  {
-    gsad_command_response_data_set_content_type (response_data,
-                                                 GSAD_CONTENT_TYPE_APP_KEY);
-    gsad_command_response_data_set_content_disposition (
-      response_data,
-      g_strdup_printf ("attachment; filename=scanner-ca-pub-%s.pem",
-                       params_value (params, "scanner_id")));
-    res = download_ca_pub (&connection, credentials, params, response_data);
-  }
-
-  else if (!strcmp (cmd, "download_key_pub"))
-  {
-    gsad_command_response_data_set_content_type (response_data,
-                                                 GSAD_CONTENT_TYPE_APP_KEY);
-    gsad_command_response_data_set_content_disposition (
-      response_data,
-      g_strdup_printf ("attachment; filename=scanner-key-pub-%s.pem",
-                       params_value (params, "scanner_id")));
-    res = download_key_pub (&connection, credentials, params, response_data);
-  }
-
   ELSE (get_aggregate)
   ELSE (get_alert)
   ELSE (get_alerts)
@@ -20913,6 +20879,39 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (ping)
   ELSE (wizard)
   ELSE (wizard_get)
+
+  else if (!strcmp (cmd, "download_ssl_cert"))
+  {
+    gsad_command_response_data_set_content_type (response_data,
+                                                 GSAD_CONTENT_TYPE_APP_KEY);
+    gsad_command_response_data_set_content_disposition (
+      response_data, g_strdup_printf ("attachment; filename=ssl-cert-%s.pem",
+                                      params_value (params, "name")));
+
+    res = download_ssl_cert (&connection, credentials, params, response_data);
+  }
+
+  else if (!strcmp (cmd, "download_ca_pub"))
+  {
+    gsad_command_response_data_set_content_type (response_data,
+                                                 GSAD_CONTENT_TYPE_APP_KEY);
+    gsad_command_response_data_set_content_disposition (
+      response_data,
+      g_strdup_printf ("attachment; filename=scanner-ca-pub-%s.pem",
+                       params_value (params, "scanner_id")));
+    res = download_ca_pub (&connection, credentials, params, response_data);
+  }
+
+  else if (!strcmp (cmd, "download_key_pub"))
+  {
+    gsad_command_response_data_set_content_type (response_data,
+                                                 GSAD_CONTENT_TYPE_APP_KEY);
+    gsad_command_response_data_set_content_disposition (
+      response_data,
+      g_strdup_printf ("attachment; filename=scanner-key-pub-%s.pem",
+                       params_value (params, "scanner_id")));
+    res = download_key_pub (&connection, credentials, params, response_data);
+  }
 
   else
   {
