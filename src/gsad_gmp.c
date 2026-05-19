@@ -20595,6 +20595,9 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
       gsad_connection_watcher_start (watcher);
     }
 
+  if (0)
+    {
+    }
   ELSE (auth_settings)
   ELSE (edit_alert)
   ELSE (edit_config_family)
