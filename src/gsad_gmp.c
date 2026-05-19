@@ -16798,87 +16798,6 @@ export_users_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
   return export_many (connection, "user", credentials, params, response_data);
 }
 
-char *
-cvss_calculator (gvm_connection_t *connection, gsad_credentials_t *credentials,
-                 params_t *params, gsad_command_response_data_t *response_data)
-{
-  GString *xml;
-  const char *cvss_av, *cvss_au, *cvss_ac, *cvss_c, *cvss_i, *cvss_a;
-  const char *cvss_vector, *name;
-
-  cvss_av = params_value (params, "cvss_av");
-  cvss_au = params_value (params, "cvss_au");
-  cvss_ac = params_value (params, "cvss_ac");
-  cvss_c = params_value (params, "cvss_c");
-  cvss_i = params_value (params, "cvss_i");
-  cvss_a = params_value (params, "cvss_a");
-  cvss_vector = params_value (params, "cvss_vector");
-  name = params_value (params, "name");
-
-  xml = g_string_new ("<cvss_calculator>");
-
-  /* Calculate base score */
-  if (cvss_av && cvss_au && cvss_ac && cvss_c && cvss_i && cvss_a)
-    {
-      char *vector =
-        g_strdup_printf ("AV:%c/AC:%c/Au:%c/C:%c/I:%c/A:%c", *cvss_av, *cvss_ac,
-                         *cvss_au, *cvss_c, *cvss_i, *cvss_a);
-
-      g_string_append_printf (xml,
-                              "<cvss_vector>%s</cvss_vector>"
-                              "<cvss_score>%.1f</cvss_score>",
-                              vector,
-                              get_cvss_score_from_base_metrics (vector));
-
-      g_string_append_printf (xml,
-                              "<cvss_av>%c</cvss_av><cvss_au>%c</cvss_au>"
-                              "<cvss_ac>%c</cvss_ac><cvss_c>%c</cvss_c>"
-                              "<cvss_i>%c</cvss_i><cvss_a>%c</cvss_a>",
-                              *cvss_av, *cvss_au, *cvss_ac, *cvss_c, *cvss_i,
-                              *cvss_a);
-
-      g_free (vector);
-    }
-  else if (cvss_vector)
-    {
-      double cvss_score = get_cvss_score_from_base_metrics (cvss_vector);
-
-      g_string_append_printf (xml,
-                              "<cvss_vector>%s</cvss_vector>"
-                              "<cvss_score>%.1f</cvss_score>",
-                              cvss_vector, cvss_score);
-
-      if (cvss_score != -1.0)
-        {
-          cvss_av = strstr (cvss_vector, "AV:");
-          cvss_ac = strstr (cvss_vector, "/AC:");
-          cvss_au = strstr (cvss_vector, "/Au:");
-          if (cvss_au == NULL)
-            cvss_au = strstr (cvss_vector, "/AU:");
-          cvss_c = strstr (cvss_vector, "/C:");
-          cvss_i = strstr (cvss_vector, "/I:");
-          cvss_a = strstr (cvss_vector, "/A:");
-
-          if (cvss_av && cvss_ac && cvss_au && cvss_c && cvss_i && cvss_a)
-            g_string_append_printf (xml,
-                                    "<cvss_av>%c</cvss_av><cvss_ac>%c</cvss_ac>"
-                                    "<cvss_au>%c</cvss_au><cvss_c>%c</cvss_c>"
-                                    "<cvss_i>%c</cvss_i><cvss_a>%c</cvss_a>",
-                                    *(cvss_av + 3), *(cvss_ac + 4),
-                                    *(cvss_au + 4), *(cvss_c + 3),
-                                    *(cvss_i + 3), *(cvss_a + 3));
-        }
-    }
-  else if (name && !strcmp ("vector", name))
-    {
-      g_string_append_printf (xml, "<cvss_score>%.1f</cvss_score>", -1.0);
-    }
-
-  g_string_append (xml, "</cvss_calculator>");
-  return envelope_gmp (connection, credentials, params,
-                       g_string_free (xml, FALSE), response_data);
-}
-
 /**
  * @brief Generate AUTH_CONF_SETTING element for save_auth_gmp.
  */
@@ -20806,11 +20725,6 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
                                              mhd_con_info->connect_fd);
       gsad_connection_watcher_start (watcher);
     }
-
-  /* Check cmd and precondition, start respective GMP command(s). */
-
-  if (!strcmp (cmd, "cvss_calculator"))
-    res = cvss_calculator (&connection, credentials, params, response_data);
 
   ELSE (auth_settings)
   ELSE (edit_alert)
