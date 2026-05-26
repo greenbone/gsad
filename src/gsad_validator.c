@@ -569,6 +569,7 @@ gsad_init_validator ()
   gvm_validator_alias (validator, "accept_invalid_certs", "boolean");
   gvm_validator_alias (validator, "registry_allow_insecure", "boolean");
   gvm_validator_alias (validator, "agent_ids:name", "number");
+  gvm_validator_alias (validator, "scheduler_cron_time", "name");
   gvm_validator_alias (validator, "scheduler_cron_times:name", "number");
   gvm_validator_alias (validator, "scheduler_cron_times:value", "name");
 
