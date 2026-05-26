@@ -18828,12 +18828,10 @@ char *
 modify_agent_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, gsad_command_response_data_t *response_data)
 {
-  gchar *xml, *format, *update_to_latest_tag;
-  const char *authorized, *attempts, *delay_in_seconds, *bulk_size;
-  const char *max_jitter_in_seconds, *bulk_throttle_time_in_ms,
-    *indexer_dir_depth, *update_to_latest;
-  const char *interval_in_seconds, *miss_until_inactive, *comment;
-  params_t *scheduler_cron_times;
+  gchar *xml, *command;
+  gchar *authorized_tag, *update_to_latest_tag, *config_tag, *comment_tag;
+  const char *authorized, *update_to_latest;
+  const char *interval_in_seconds, *comment;
   int ret;
   GString *agents_element;
   params_t *agent_ids;
@@ -18842,50 +18840,8 @@ modify_agent_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
   agent_ids = params_values (params, "agent_ids:");
   authorized = params_value (params, "authorized");
   update_to_latest = params_value (params, "update_to_latest");
-  attempts = params_value (params, "attempts");
-  delay_in_seconds = params_value (params, "delay_in_seconds");
-  bulk_size = params_value (params, "bulk_size");
-  bulk_throttle_time_in_ms = params_value (params, "bulk_throttle_time_in_ms");
-  indexer_dir_depth = params_value (params, "indexer_dir_depth");
-  scheduler_cron_times = params_values (params, "scheduler_cron_times:");
   interval_in_seconds = params_value (params, "interval_in_seconds");
-  miss_until_inactive = params_value (params, "miss_until_inactive");
-  max_jitter_in_seconds = params_value (params, "max_jitter_in_seconds");
-
-  const gboolean has_config =
-    params_given (params, "attempts")
-    || params_given (params, "delay_in_seconds")
-    || params_given (params, "max_jitter_in_seconds")
-    || params_given (params, "bulk_size")
-    || params_given (params, "bulk_throttle_time_in_ms")
-    || params_given (params, "indexer_dir_depth")
-    || (scheduler_cron_times != NULL);
-
   comment = params_value (params, "comment");
-
-  if (has_config)
-    {
-      CHECK_VARIABLE_INVALID (authorized, "Save Agent List");
-      CHECK_VARIABLE_INVALID (attempts, "Save Agent List");
-      CHECK_VARIABLE_INVALID (delay_in_seconds, "Save Agent List");
-      CHECK_VARIABLE_INVALID (bulk_size, "Save Agent List");
-      CHECK_VARIABLE_INVALID (bulk_throttle_time_in_ms, "Save Agent List");
-      CHECK_VARIABLE_INVALID (indexer_dir_depth, "Save Agent List");
-    }
-  if (params_given (params, "interval_in_seconds"))
-    {
-      CHECK_VARIABLE_INVALID (interval_in_seconds, "Save Agent List")
-    }
-  if (params_given (params, "miss_until_inactive"))
-    {
-      CHECK_VARIABLE_INVALID (miss_until_inactive, "Save Agent List")
-    }
-  if (params_given (params, "comment"))
-    {
-      CHECK_VARIABLE_INVALID (comment, "Save Agent List");
-    }
-  else
-    comment = "";
 
   if (!agent_ids)
     {
@@ -18894,6 +18850,16 @@ modify_agent_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
       return gsad_http_create_gsad_message (
         credentials, "The 'agent_ids' parameter is required.", response_data);
     }
+
+  if (params_given (params, "authorized"))
+    {
+      CHECK_VARIABLE_INVALID (authorized, "Save Agent List");
+      authorized_tag =
+        g_strdup_printf ("<authorized>%d</authorized>",
+                         authorized ? strcmp (authorized, "0") : 0);
+    }
+  else
+    authorized_tag = g_strdup ("");
 
   if (params_given (params, "update_to_latest"))
     {
@@ -18904,6 +18870,28 @@ modify_agent_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
     }
   else
     update_to_latest_tag = g_strdup ("");
+
+  if (params_given (params, "interval_in_seconds"))
+    {
+      CHECK_VARIABLE_INVALID (interval_in_seconds, "Save Agent List");
+      config_tag =
+        g_markup_printf_escaped ("<config>"
+                                 "<heartbeat>"
+                                 "<interval_in_seconds>%s</interval_in_seconds>"
+                                 "</heartbeat>"
+                                 "</config>",
+                                 interval_in_seconds);
+    }
+  else
+    config_tag = g_strdup ("");
+
+  if (params_given (params, "comment"))
+    {
+      CHECK_VARIABLE_INVALID (comment, "Save Agent List");
+      comment_tag = g_markup_printf_escaped ("<comment>%s</comment>", comment);
+    }
+  else
+    comment_tag = g_strdup ("");
 
   agents_element = g_string_new ("<agents>");
 
@@ -18919,82 +18907,24 @@ modify_agent_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
     }
   xml_string_append (agents_element, "</agents>");
 
-  GString *items_xml = g_string_new ("");
-  if (scheduler_cron_times)
-    {
-      params_iterator_init (&iter, scheduler_cron_times);
-      while (params_iterator_next (&iter, &name, &param))
-        {
-          if (param->value && *param->value)
-            {
-              gchar *escaped = g_markup_escape_text (param->value, -1);
-              g_string_append_printf (items_xml, "<item>%s</item>", escaped);
-              g_free (escaped);
-            }
-        }
-    }
+  command = g_strdup_printf ("<modify_agent>"
+                             "%s" /* agents */
+                             "%s" /* authorized */
+                             "%s" /* update_to_latest */
+                             "%s" /* config */
+                             "%s" /* comment */
+                             "</modify_agent>",
+                             agents_element->str, authorized_tag,
+                             update_to_latest_tag, config_tag, comment_tag);
 
-  if (has_config)
-    {
-      format = g_strdup_printf (
-        "<modify_agent>"
-        "%s" /* agents */
-        "<authorized>%d</authorized>"
-        "%s" /* update_to_latest_tag */
-        "<config>"
-        "<agent_control>"
-        "<retry>"
-        "<attempts>%%s</attempts>"
-        "<delay_in_seconds>%%s</delay_in_seconds>"
-        "<max_jitter_in_seconds>%%s</max_jitter_in_seconds>"
-        "</retry>"
-        "</agent_control>"
-        "<agent_script_executor>"
-        "<bulk_size>%%s</bulk_size>"
-        "<bulk_throttle_time_in_ms>%%s</bulk_throttle_time_in_ms>"
-        "<indexer_dir_depth>%%s</indexer_dir_depth>"
-        "<scheduler_cron_time is_list=\"1\">"
-        "%s" /* items_xml->str */
-        "</scheduler_cron_time>"
-        "</agent_script_executor>"
-        "<heartbeat>"
-        "<interval_in_seconds>%%s</interval_in_seconds>"
-        "<miss_until_inactive>%%s</miss_until_inactive>"
-        "</heartbeat>"
-        "</config>"
-        "<comment>%%s</comment>"
-        "</modify_agent>",
-        agents_element->str, authorized ? strcmp (authorized, "0") : 0,
-        update_to_latest_tag, items_xml->str);
+  entity = NULL;
+  ret = gmp (connection, credentials, NULL, &entity, response_data, command);
 
-      entity = NULL;
-      ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
-                  /* retry */ attempts, delay_in_seconds, max_jitter_in_seconds,
-                  /* executor */ bulk_size, bulk_throttle_time_in_ms,
-                  indexer_dir_depth,
-                  /* heartbeat */ interval_in_seconds, miss_until_inactive,
-                  /* comment */ comment);
-    }
-  else
-    {
-      format = g_strdup_printf ("<modify_agent>"
-                                "%s" /* agents */
-                                "<authorized>%d</authorized>"
-                                "%s" /* update_to_latest*/
-                                "<comment>%%s</comment>"
-                                "</modify_agent>",
-                                agents_element->str,
-                                authorized ? strcmp (authorized, "0") : 0,
-                                update_to_latest_tag);
-
-      entity = NULL;
-      ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
-                  /* comment */ comment);
-    }
-
-  g_free (format);
+  g_free (command);
+  g_free (authorized_tag);
   g_free (update_to_latest_tag);
-  g_string_free (items_xml, TRUE);
+  g_free (config_tag);
+  g_free (comment_tag);
   g_string_free (agents_element, TRUE);
 
   switch (ret)
@@ -19237,8 +19167,14 @@ delete_agent_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
   while (params_iterator_next (&iter, &name, &param))
     {
       if (param->value && strcmp (param->value, "0"))
-        g_string_append_printf (agents_element, "<agent id=\"%s\"/>",
-                                param->value);
+        {
+          gchar *agent_tag;
+
+          agent_tag =
+            g_markup_printf_escaped ("<agent id=\"%s\"/>", param->value);
+          g_string_append (agents_element, agent_tag);
+          g_free (agent_tag);
+        }
     }
   xml_string_append (agents_element, "</agents>");
 
@@ -19345,7 +19281,8 @@ create_agent_group_gmp (gvm_connection_t *connection,
 {
   gchar *command = NULL, *html = NULL;
   GString *agents_element = NULL, *cmd = NULL;
-  const char *name = NULL, *comment = NULL, *copy = NULL;
+  const char *name = NULL, *comment = NULL, *scheduler_cron_time = NULL,
+             *copy = NULL;
   char *param_name = NULL;
   entity_t entity = NULL;
   int ret;
@@ -19356,6 +19293,7 @@ create_agent_group_gmp (gvm_connection_t *connection,
 
   name = params_value (params, "name");
   comment = params_value (params, "comment");
+  scheduler_cron_time = params_value (params, "scheduler_cron_time");
   copy = params_value (params, "copy");
   agent_ids = params_values (params, "agent_ids:");
 
@@ -19376,6 +19314,20 @@ create_agent_group_gmp (gvm_connection_t *connection,
       return gsad_http_create_gsad_message (
         credentials, "The 'agent_ids' parameter is required.", response_data);
     }
+
+  CHECK_VARIABLE_INVALID (scheduler_cron_time, "Create Agent Group");
+
+  if (!scheduler_cron_time && !copy)
+    {
+      gsad_command_response_data_set_status_code (response_data,
+                                                  MHD_HTTP_BAD_REQUEST);
+      return gsad_http_create_gsad_message (
+        credentials, "The 'scheduler_cron_time' parameter is required.",
+        response_data);
+    }
+
+  g_string_append_printf (cmd, "<scheduler_cron_time>%s</scheduler_cron_time>",
+                          scheduler_cron_time);
 
   if (agent_ids)
     {
@@ -19457,7 +19409,8 @@ save_agent_group_gmp (gvm_connection_t *connection,
                       gsad_command_response_data_t *response_data)
 {
   gchar *html = NULL, *format = NULL;
-  const char *agent_group_id = NULL, *name = NULL, *comment = NULL;
+  const char *agent_group_id = NULL, *name = NULL, *scheduler_cron_time = NULL,
+             *comment = NULL;
   params_t *agent_ids = NULL;
   GString *agents_element = NULL;
   entity_t entity = NULL;
@@ -19466,11 +19419,13 @@ save_agent_group_gmp (gvm_connection_t *connection,
   agent_group_id = params_value (params, "agent_group_id");
   name = params_value (params, "name");
   comment = params_value (params, "comment");
+  scheduler_cron_time = params_value (params, "scheduler_cron_time");
   agent_ids = params_values (params, "agent_ids:");
 
   CHECK_VARIABLE_INVALID (agent_group_id, "Save Agent Group");
   CHECK_VARIABLE_INVALID (name, "Save Agent Group");
   CHECK_VARIABLE_INVALID (comment, "Save Agent Group");
+  CHECK_VARIABLE_INVALID (scheduler_cron_time, "Save Agent Group");
 
   agents_element = g_string_new ("<agents>");
   if (agent_ids)
@@ -19492,12 +19447,13 @@ save_agent_group_gmp (gvm_connection_t *connection,
   format = g_strdup_printf ("<modify_agent_group agent_group_id=\"%%s\">"
                             "<name>%%s</name>"
                             "<comment>%%s</comment>"
+                            "<scheduler_cron_time>%%s</scheduler_cron_time>"
                             "%s"
                             "</modify_agent_group>",
                             agents_element->str);
 
   ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
-              agent_group_id, name, comment);
+              agent_group_id, name, comment, scheduler_cron_time);
 
   g_free (format);
   g_string_free (agents_element, TRUE);
