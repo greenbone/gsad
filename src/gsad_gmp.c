@@ -10877,22 +10877,16 @@ get_hosts_from_params (params_t *params)
   if (params_valid (params, "hosts"))
     {
       hosts = params_value (params, "hosts");
-      if (strcmp (hosts, "--") == 0)
+      if (str_equal (hosts, "--"))
         {
           if (params_valid (params, "hosts_manual"))
             hosts = params_value (params, "hosts_manual");
-          else if (params_given (params, "hosts_manual")
-                   && strcmp (params_original_value (params, "hosts_manual"),
-                              ""))
-            hosts = NULL;
           else
-            hosts = "";
+            hosts = NULL;
         }
     }
-  else if (strcmp (params_original_value (params, "hosts"), ""))
-    hosts = NULL;
   else
-    hosts = "";
+    hosts = NULL;
 
   return hosts;
 }
