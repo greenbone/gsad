@@ -138,9 +138,6 @@ gsad_init_validator ()
                      "|(get_agents)"
                      "|(get_agent_group)"
                      "|(get_agent_groups)"
-                     "|(get_agent_installers)"
-                     "|(get_agent_installer)"
-                     "|(get_agent_installer_file)"
                      "|(get_aggregate)"
                      "|(get_alert)"
                      "|(get_alerts)"
@@ -578,7 +575,6 @@ gsad_init_validator ()
   gvm_validator_alias (validator, "agent_control_id", "id");
   gvm_validator_alias (validator, "agent_group_id", "id");
   gvm_validator_alias (validator, "agent_ids:value", "id");
-  gvm_validator_alias (validator, "agent_installer_id", "id");
   gvm_validator_alias (validator, "alert_id_2", "alert_id");
   gvm_validator_alias (validator, "alert_id", "id");
   gvm_validator_alias (validator, "config_id", "id");
