@@ -18449,6 +18449,57 @@ get_license (gvm_connection_t *connection, gsad_credentials_t *credentials,
 }
 
 /**
+ * @brief Escape XML text content while keeping quotes unchanged.
+ *
+ * This escapes only characters that are required for XML text nodes:
+ * - &  becomes &amp;
+ * - <  becomes &lt;
+ * - >  becomes &gt;
+ *
+ * Quotes do not need to be escaped inside XML text content, so they are kept
+ * as normal quotes. This makes JSON text inside XML easier to read.
+ *
+ * @param[in] text  Text to escape.
+ *
+ * @return Newly allocated escaped text. Free with g_free().
+ */
+static gchar *
+xml_escape_text_keep_quotes (const gchar *text)
+{
+  GString *escaped;
+  const gchar *p;
+
+  if (text == NULL)
+    return g_strdup ("");
+
+  escaped = g_string_new ("");
+
+  for (p = text; *p; p++)
+    {
+      switch (*p)
+        {
+        case '&':
+          g_string_append (escaped, "&amp;");
+          break;
+
+        case '<':
+          g_string_append (escaped, "&lt;");
+          break;
+
+        case '>':
+          g_string_append (escaped, "&gt;");
+          break;
+
+        default:
+          g_string_append_c (escaped, *p);
+          break;
+        }
+    }
+
+  return g_string_free (escaped, FALSE);
+}
+
+/**
  * @brief Get the current license and its status, envelope the result.
  *
  * @param[in]  connection     Connection to manager.
@@ -18616,7 +18667,7 @@ change_password_gmp (gvm_connection_t *connection,
 }
 
 /**
- * @brief Get agent installers.
+ * @brief Get an agent installer instruction, envelope the result.
  *
  * @param[in]  connection      Connection to manager.
  * @param[in]  credentials     Credentials for authentication.
@@ -18626,90 +18677,56 @@ change_password_gmp (gvm_connection_t *connection,
  * @return Enveloped XML object.
  */
 char *
-get_agent_installers_gmp (gvm_connection_t *connection,
-                          gsad_credentials_t *credentials, params_t *params,
-                          gsad_command_response_data_t *response_data)
+get_agent_installer_instruction_gmp (
+  gvm_connection_t *connection, gsad_credentials_t *credentials,
+  params_t *params, gsad_command_response_data_t *response_data)
 {
-  return get_many (connection, "agent_installers", credentials, params, NULL,
-                   response_data);
-}
+  GString *xml;
+  entity_t entity;
+  entity_t language_entity;
+  entity_t instruction_entity;
+  const char *scanner_id;
+  const char *language_type;
+  const char *language;
+  const char *instruction;
+  gchar *escaped_language;
+  gchar *escaped_instruction;
+  int ret;
 
-/**
- * @brief Get a single agent installer.
- *
- * @param[in]  connection      Connection to manager.
- * @param[in]  credentials     Credentials for authentication.
- * @param[in]  params          Request parameters.
- * @param[out] response_data   Extra data for the HTTP response.
- *
- * @return Enveloped XML object.
- */
-char *
-get_agent_installer_gmp (gvm_connection_t *connection,
-                         gsad_credentials_t *credentials, params_t *params,
-                         gsad_command_response_data_t *response_data)
-{
-  return get_one (connection, "agent_installer", credentials, params, NULL,
-                  NULL, response_data);
-}
+  scanner_id = params_value (params, "scanner_id");
+  language_type = params_value (params, "language_type");
 
-/**
- * @brief Get an agent installer file.
- *
- * @param[in]  connection      Connection to manager.
- * @param[in]  credentials     Credentials for authentication.
- * @param[in]  params          Request parameters.
- * @param[out] response_data   Extra data for the HTTP response.
- *
- * @return Enveloped XML object.
- */
-char *
-get_agent_installer_file_gmp (gvm_connection_t *connection,
-                              gsad_credentials_t *credentials, params_t *params,
-                              gsad_command_response_data_t *response_data)
-{
-  const gchar *id = params_value (params, "agent_installer_id");
-  entity_t entity = NULL;
-  entity_t file_entity = NULL;
-  entity_t format_entity = NULL;
-  entity_t content_type_entity = NULL;
-  entity_t content_entity = NULL;
-  entity_t name_entity = NULL;
-  const gchar *format = NULL;
-  const gchar *name = NULL;
-  const gchar *content_type = NULL;
-  gchar *content = NULL;
-  gchar *content_decoded = NULL;
-  gsize content_length = 0;
+  CHECK_VARIABLE_INVALID (scanner_id, "Get Agent Installer Instruction");
+  CHECK_VARIABLE_INVALID (language_type, "Get Agent Installer Instruction");
 
-  if (!id || strlen (id) == 0)
-    {
-      gsad_command_response_data_set_status_code (response_data,
-                                                  MHD_HTTP_BAD_REQUEST);
-      return gsad_http_create_gsad_message (
-        credentials, "The 'agent_installer_id' parameter is required.",
-        response_data);
-    }
+  ret = gvm_connection_sendf_xml (connection,
+                                  "<get_agent_installer_instruction"
+                                  " scanner_id=\"%s\""
+                                  " language=\"%s\"/>",
+                                  scanner_id, language_type);
 
-  // Send request
-  if (gvm_connection_sendf (
-        connection, "<get_agent_installer_file agent_installer_id=\"%s\"/>", id)
-      == -1)
+  if (ret == -1)
     {
       gsad_command_response_data_set_status_code (
         response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_http_create_gsad_message (
-        credentials, "Failed to send GMP command to retrieve installer.",
+        credentials,
+        "An internal error occurred while getting the agent installer "
+        "instruction. The agent installer instruction could not be delivered. "
+        "Diagnostics: Failure to send command to manager daemon.",
         response_data);
     }
 
-  // Parse response
+  entity = NULL;
   if (read_entity_c (connection, &entity))
     {
       gsad_command_response_data_set_status_code (
         response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_http_create_gsad_message (
-        credentials, "Failed to receive installer file response.",
+        credentials,
+        "An internal error occurred while getting the agent installer "
+        "instruction. The agent installer instruction could not be delivered. "
+        "Diagnostics: Failure to receive response from manager daemon.",
         response_data);
     }
 
@@ -18721,61 +18738,38 @@ get_agent_installer_file_gmp (gvm_connection_t *connection,
 
       message = gsad_http_create_gsad_message (
         credentials, entity_attribute (entity, "status_text"), response_data);
+
       free_entity (entity);
       return message;
     }
 
-  file_entity = entity_child (entity, "file");
+  language_entity = entity_child (entity, "language");
+  instruction_entity = entity_child (entity, "instruction");
 
-  if (!file_entity || !entity_text (file_entity))
-    {
-      free_entity (entity);
-      gsad_command_response_data_set_status_code (
-        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
-      return gsad_http_create_gsad_message (
-        credentials, "No agent installer content was returned.", response_data);
-    }
+  language = language_entity ? entity_text (language_entity) : "";
+  instruction = instruction_entity ? entity_text (instruction_entity) : "";
 
-  format_entity = entity_child (file_entity, "file_extension");
-  format = format_entity ? entity_text (format_entity) : NULL;
-  name_entity = entity_child (file_entity, "name");
-  name = name_entity ? entity_text (name_entity) : NULL;
-  content_type_entity = entity_child (file_entity, "content_type");
-  content_type = content_type_entity ? entity_text (content_type_entity) : NULL;
-  content_entity = entity_child (file_entity, "content");
-  content = content_entity ? entity_text (content_entity) : "";
+  escaped_language = xml_escape_text_keep_quotes (language);
+  escaped_instruction = xml_escape_text_keep_quotes (instruction);
 
-  content_decoded = (gchar *) g_base64_decode (content, &content_length);
-  if (!content_decoded)
-    {
-      content_decoded = g_strdup ("");
-      content_length = 0;
-    }
+  xml = g_string_new ("<get_agent_installer_instruction>");
 
-  if (!format || strlen (format) == 0)
-    format = "";
+  g_string_append_printf (xml,
+                          "<get_agent_installer_instruction_response"
+                          " status=\"200\" status_text=\"OK\">"
+                          "<language>%s</language>"
+                          "<instruction>%s</instruction>"
+                          "</get_agent_installer_instruction_response>",
+                          escaped_language, escaped_instruction);
 
-  if (!name || strlen (name) == 0)
-    name = "agent_installer";
+  g_string_append (xml, "</get_agent_installer_instruction>");
 
-  if (!content_type || strlen (content_type) == 0)
-    {
-      gsad_command_response_data_set_content_type (
-        response_data, GSAD_CONTENT_TYPE_OCTET_STREAM);
-    }
-  else
-    {
-      gsad_command_response_data_set_content_type_string (
-        response_data, g_strdup (content_type));
-    }
-
-  gsad_command_response_data_set_content_disposition (
-    response_data,
-    g_strdup_printf ("attachment; filename=%s.%s", name, format));
-  gsad_command_response_data_set_content_length (response_data, content_length);
-
+  g_free (escaped_language);
+  g_free (escaped_instruction);
   free_entity (entity);
-  return content_decoded;
+
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
 }
 
 /**
@@ -20594,13 +20588,11 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (export_tasks)
   ELSE (export_user)
   ELSE (export_users)
+  ELSE (get_agent_installer_instruction)
   ELSE (get_agent)
   ELSE (get_agents)
   ELSE (get_agent_group)
   ELSE (get_agent_groups)
-  ELSE (get_agent_installers)
-  ELSE (get_agent_installer)
-  ELSE (get_agent_installer_file)
   ELSE (get_asset)
   ELSE (get_assets)
   ELSE (get_aggregate)

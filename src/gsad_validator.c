@@ -134,13 +134,11 @@ gsad_init_validator ()
                      "|(export_tasks)"
                      "|(export_user)"
                      "|(export_users)"
+                     "|(get_agent_installer_instruction)"
                      "|(get_agent)"
                      "|(get_agents)"
                      "|(get_agent_group)"
                      "|(get_agent_groups)"
-                     "|(get_agent_installers)"
-                     "|(get_agent_installer)"
-                     "|(get_agent_installer_file)"
                      "|(get_aggregate)"
                      "|(get_alert)"
                      "|(get_alerts)"
@@ -578,7 +576,6 @@ gsad_init_validator ()
   gvm_validator_alias (validator, "agent_control_id", "id");
   gvm_validator_alias (validator, "agent_group_id", "id");
   gvm_validator_alias (validator, "agent_ids:value", "id");
-  gvm_validator_alias (validator, "agent_installer_id", "id");
   gvm_validator_alias (validator, "alert_id_2", "alert_id");
   gvm_validator_alias (validator, "alert_id", "id");
   gvm_validator_alias (validator, "config_id", "id");
@@ -714,6 +711,7 @@ gsad_init_validator ()
   gvm_validator_alias (validator, "max_hosts", "number");
   gvm_validator_alias (validator, "method", "condition");
   gvm_validator_alias (validator, "modify_password", "number");
+  gvm_validator_add (validator, "language_type", "^(en|de)$");
   gvm_validator_alias (validator, "ldaphost", "hostport");
   gvm_validator_alias (validator, "ldaps_only", "boolean");
   gvm_validator_alias (validator, "lean", "boolean");
