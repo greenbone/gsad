@@ -134,6 +134,7 @@ gsad_init_validator ()
                      "|(export_tasks)"
                      "|(export_user)"
                      "|(export_users)"
+                     "|(get_agent_installer_instruction)"
                      "|(get_agent)"
                      "|(get_agents)"
                      "|(get_agent_group)"
@@ -710,6 +711,7 @@ gsad_init_validator ()
   gvm_validator_alias (validator, "max_hosts", "number");
   gvm_validator_alias (validator, "method", "condition");
   gvm_validator_alias (validator, "modify_password", "number");
+  gvm_validator_add (validator, "language_type", "^(en|de)$");
   gvm_validator_alias (validator, "ldaphost", "hostport");
   gvm_validator_alias (validator, "ldaps_only", "boolean");
   gvm_validator_alias (validator, "lean", "boolean");

@@ -237,6 +237,26 @@ Ensure (gsad_validator, alias_hostpath_scanner_host)
   assert_that (gvm_validate (validator, "scanner_host", ""), is_equal_to (2));
 }
 
+Ensure (gsad_validator, validate_language_type)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "language_type", "en"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "language_type", "de"),
+               is_equal_to (0));
+
+  assert_that (gvm_validate (validator, "language_type", "EN"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "language_type", "tr"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "language_type", "english"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "language_type", ""), is_equal_to (2));
+  assert_that (gvm_validate (validator, "language_type", NULL),
+               is_equal_to (5));
+}
+
 int
 main (int argc, char **argv)
 {
@@ -262,6 +282,7 @@ main (int argc, char **argv)
                          alias_email_list_method_data_to_address);
   add_test_with_context (suite, gsad_validator, alias_hosts_hosts_manual);
   add_test_with_context (suite, gsad_validator, alias_hostpath_scanner_host);
+  add_test_with_context (suite, gsad_validator, validate_language_type);
 
   if (argc > 1)
     ret = run_single_test (suite, argv[1], create_text_reporter ());
