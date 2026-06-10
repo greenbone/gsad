@@ -20261,6 +20261,205 @@ delete_web_application_target_gmp (gvm_connection_t *connection,
 }
 
 /**
+ * @brief Modify a web application target, get all targets, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+save_web_application_target_gmp (gvm_connection_t *connection,
+                                 gsad_credentials_t *credentials,
+                                 params_t *params,
+                                 gsad_command_response_data_t *response_data)
+{
+  entity_t entity;
+  const char *name, *comment, *urls, *exclude_urls = NULL;
+  const char *credential, *target_source, *file;
+  const char *target_exclude_source = NULL, *exclude_file = NULL;
+  const char *web_application_target_id, *in_use;
+  gchar *xml;
+  GString *command;
+  int ret;
+
+  name = params_value (params, "name");
+  comment = params_value (params, "comment");
+  in_use = params_value (params, "in_use");
+  web_application_target_id =
+    params_value (params, "web_application_target_id");
+
+  CHECK_VARIABLE_INVALID (name, "Save Web Application Target");
+  CHECK_VARIABLE_INVALID (web_application_target_id,
+                          "Save Web Application Target");
+  CHECK_VARIABLE_INVALID (in_use, "Save Web Application Target");
+  CHECK_VARIABLE_INVALID (comment, "Save Web Application Target");
+
+  if (strcmp (in_use, "1") == 0)
+    {
+      /* Target is in use. Modify fewer fields. */
+
+      command = g_string_new ("");
+      xml_string_append (
+        command,
+        "<modify_web_application_target web_application_target_id=\"%s\">"
+        "<name>%s</name>"
+        "<comment>%s</comment>"
+        "</modify_web_application_target>",
+        web_application_target_id, name, comment);
+
+      entity = NULL;
+      ret = gmp (connection, credentials, NULL, &entity, response_data,
+                 command->str);
+      g_string_free (command, TRUE);
+
+      switch (ret)
+        {
+        case 0:
+          break;
+        case 1:
+          gsad_command_response_data_set_status_code (
+            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+          return gsad_http_create_gsad_message (
+            credentials,
+            "An internal error occurred while saving a web application "
+            "target. The target remains the same. "
+            "Diagnostics: Failure to send command to manager daemon.",
+            response_data);
+        case 2:
+          gsad_command_response_data_set_status_code (
+            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+          return gsad_http_create_gsad_message (
+            credentials,
+            "An internal error occurred while saving a web application "
+            "target. It is unclear whether the target has been saved or not. "
+            "Diagnostics: Failure to receive response from manager daemon.",
+            response_data);
+        default:
+          gsad_command_response_data_set_status_code (
+            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+          return gsad_http_create_gsad_message (
+            credentials,
+            "An internal error occurred while saving a web application "
+            "target. It is unclear whether the target has been saved or not. "
+            "Diagnostics: Internal Error.",
+            response_data);
+        }
+
+      xml = response_from_entity (connection, credentials, params, entity,
+                                  "Save Web Application Target", response_data);
+
+      free_entity (entity);
+      return xml;
+    }
+
+  file = params_value (params, "file");
+  urls = params_value (params, "urls");
+  target_source = params_value (params, "target_source");
+  credential = params_value (params, "credential_id");
+
+  CHECK_VARIABLE_INVALID (target_source, "Save Web Application Target");
+
+  if (strcmp (target_source, "manual") == 0)
+    CHECK_VARIABLE_INVALID (urls, "Save Web Application Target");
+
+  if (strcmp (target_source, "file") == 0)
+    CHECK_VARIABLE_INVALID (file, "Save Web Application Target");
+
+  if (params_given (params, "target_exclude_source"))
+    {
+      target_exclude_source = params_value (params, "target_exclude_source");
+      CHECK_VARIABLE_INVALID (target_exclude_source,
+                              "Save Web Application Target");
+
+      exclude_urls = params_value (params, "exclude_urls");
+      exclude_file = params_value (params, "exclude_file");
+
+      if (str_equal (target_exclude_source, "manual")
+          && params_given (params, "exclude_urls"))
+        {
+          CHECK_VARIABLE_INVALID (exclude_urls, "Save Web Application Target");
+        }
+      else if (str_equal (target_exclude_source, "file")
+               && params_given (params, "exclude_file"))
+        {
+          CHECK_VARIABLE_INVALID (exclude_file, "Save Web Application Target");
+        }
+    }
+
+  if (params_given (params, "credential_id"))
+    CHECK_VARIABLE_INVALID (credential, "Save Web Application Target");
+
+  gchar *credential_element = NULL;
+  if (credential)
+    credential_element =
+      g_strdup_printf ("<credential id=\"%s\"/>", credential);
+
+  command = g_string_new ("");
+  xml_string_append (
+    command,
+    "<modify_web_application_target web_application_target_id=\"%s\">"
+    "<name>%s</name>"
+    "<comment>%s</comment>"
+    "<urls>%s</urls>"
+    "<exclude_urls>%s</exclude_urls>",
+    web_application_target_id,
+    name,
+    comment,
+    (strcmp (target_source, "file") == 0) ? file : urls,
+    target_exclude_source
+      ? (strcmp (target_exclude_source, "file") == 0
+           ? exclude_file ?: ""
+           : exclude_urls ?: "")
+      : "");
+
+  g_string_append_printf (command,
+                          "%s"
+                          "</modify_web_application_target>",
+                          credential_element ?: "");
+
+  g_free (credential_element);
+
+  /* Modify the target. */
+
+  ret = gvm_connection_sendf (connection, "%s", command->str);
+  g_string_free (command, TRUE);
+
+  if (ret == -1)
+    {
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while modifying a web application target. "
+        "No target was modified. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    }
+
+  entity = NULL;
+  if (read_entity_c (connection, &entity))
+    {
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while modifying a web application target. "
+        "It is unclear whether the target has been modified or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    }
+
+  xml = response_from_entity (connection, credentials, params, entity,
+                              "Save Web Application Target", response_data);
+
+  free_entity (entity);
+  return xml;
+}
+
+/**
  * @brief Get assets, envelope the result.
  *
  * @param[in]  connection     Connection to manager.
@@ -21297,6 +21496,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (save_import_task)
   ELSE (save_tls_certificate)
   ELSE (save_user)
+  ELSE (save_web_application_target)
   ELSE (start_task)
   ELSE (stop_task)
   ELSE (sync_agents)
