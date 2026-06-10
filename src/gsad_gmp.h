@@ -939,6 +939,10 @@ save_oci_image_task_gmp (gvm_connection_t *, gsad_credentials_t *, params_t *,
                          gsad_command_response_data_t *);
 
 char *
+create_web_application_target_gmp (gvm_connection_t *, gsad_credentials_t *,
+                                   params_t *, gsad_command_response_data_t *);
+
+char *
 renew_session_gmp (gvm_connection_t *, gsad_credentials_t *, params_t *,
                    gsad_command_response_data_t *);
 char *

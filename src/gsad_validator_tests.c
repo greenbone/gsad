@@ -257,6 +257,55 @@ Ensure (gsad_validator, validate_language_type)
                is_equal_to (5));
 }
 
+Ensure (gsad_validator, validate_web_application_urls)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (
+    gvm_validate (validator, "web_application_urls", "https://example.com"),
+    is_equal_to (0));
+  assert_that (
+    gvm_validate (validator, "web_application_urls", "http://localhost:8080"),
+    is_equal_to (0));
+  assert_that (gvm_validate (validator, "web_application_urls",
+                             "https://example.com/app?x=1&y=2"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "web_application_urls",
+                             "https://example.com,https://example.com/app"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "web_application_urls",
+                             "https://[0001:1:1:1::1]:8443/app"),
+               is_equal_to (0));
+
+  assert_that (gvm_validate (validator, "web_application_urls", ""),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "web_application_urls",
+                             "https://example.com/<script>"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "web_application_urls",
+                             "https://example.com/with space"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "web_application_urls", NULL),
+               is_equal_to (5));
+}
+
+Ensure (gsad_validator, alias_web_application_target_fields)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "urls", "https://example.com"),
+               is_equal_to (0));
+  assert_that (
+    gvm_validate (validator, "exclude_urls", "https://example.com/logout"),
+    is_equal_to (0));
+  assert_that (gvm_validate (validator, "urls",
+                             "https://example.com,https://example.com/app"),
+               is_equal_to (0));
+
+  assert_that (gvm_validate (validator, "urls", "https://example.com/<script>"),
+               is_equal_to (2));
+}
+
 int
 main (int argc, char **argv)
 {
@@ -283,6 +332,9 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_validator, alias_hosts_hosts_manual);
   add_test_with_context (suite, gsad_validator, alias_hostpath_scanner_host);
   add_test_with_context (suite, gsad_validator, validate_language_type);
+  add_test_with_context (suite, gsad_validator, validate_web_application_urls);
+  add_test_with_context (suite, gsad_validator,
+                         alias_web_application_target_fields);
 
   if (argc > 1)
     ret = run_single_test (suite, argv[1], create_text_reporter ());
