@@ -13833,6 +13833,33 @@ get_trash_agent_group_gmp (gvm_connection_t *connection,
                        g_string_free (xml, FALSE), response_data);
 }
 
+/**
+ * @brief Setup trash page XML, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_trash_web_application_targets_gmp (
+  gvm_connection_t *connection, gsad_credentials_t *credentials,
+  params_t *params, gsad_command_response_data_t *response_data)
+{
+  GString *xml = g_string_new ("<get_trash>");
+
+  GET_TRASH_RESOURCE ("GET_WEB_APPLICATION_TARGETS",
+                      "get_web_application_targets", "web_application_targets");
+
+  /* Cleanup, and return transformed XML. */
+
+  g_string_append (xml, "</get_trash>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
 #undef GET_TRASH_RESOURCE
 
 /* Groups. */
@@ -20944,6 +20971,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_trash_targets)
   ELSE (get_trash_tasks)
   ELSE (get_trash_tickets)
+  ELSE (get_trash_web_application_targets)
   ELSE (get_user)
   ELSE (get_users)
   ELSE (get_vulns)
