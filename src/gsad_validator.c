@@ -82,6 +82,7 @@ gsad_init_validator ()
                      "|(delete_ticket)"
                      "|(delete_tls_certificate)"
                      "|(delete_user)"
+                     "|(delete_web_application_target)"
                      "|(download_credential)"
                      "|(download_ssl_cert)"
                      "|(download_ca_pub)"
