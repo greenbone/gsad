@@ -234,6 +234,7 @@ gsad_init_validator ()
                      "|(get_trash_targets)"
                      "|(get_trash_tasks)"
                      "|(get_trash_tickets)"
+                     "|(get_trash_web_application_targets)"
                      "|(get_user)"
                      "|(get_users)"
                      "|(get_vulns)"

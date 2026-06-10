@@ -746,8 +746,14 @@ get_trash_agent_group_gmp (gvm_connection_t *connection,
                            gsad_command_response_data_t *response_data);
 
 char *
-get_trash_oci_image_targets (gvm_connection_t *, gsad_credentials_t *,
-                             params_t *params, gsad_command_response_data_t *);
+get_trash_oci_image_targets_gmp (gvm_connection_t *, gsad_credentials_t *,
+                                 params_t *params,
+                                 gsad_command_response_data_t *);
+
+char *
+get_trash_web_application_targets_gmp (
+  gvm_connection_t *connection, gsad_credentials_t *credentials,
+  params_t *params, gsad_command_response_data_t *response_data);
 
 char *
 restore_gmp (gvm_connection_t *, gsad_credentials_t *, params_t *,
