@@ -20214,6 +20214,26 @@ create_web_application_target_gmp (gvm_connection_t *connection,
 }
 
 /**
+ * @brief Delete a web application target, get all targets, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+delete_web_application_target_gmp (gvm_connection_t *connection,
+                                   gsad_credentials_t *credentials,
+                                   params_t *params,
+                                   gsad_command_response_data_t *response_data)
+{
+  return move_resource_to_trash (connection, "web_application_target",
+                                 credentials, params, response_data);
+}
+
+/**
  * @brief Get assets, envelope the result.
  *
  * @param[in]  connection     Connection to manager.
@@ -21203,6 +21223,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (delete_ticket)
   ELSE (delete_tls_certificate)
   ELSE (delete_user)
+  ELSE (delete_web_application_target)
   ELSE (empty_trashcan)
   ELSE (import_config)
   ELSE (import_port_list)
