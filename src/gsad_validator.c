@@ -289,6 +289,7 @@ gsad_init_validator ()
                      "|(save_ticket)"
                      "|(save_tls_certificate)"
                      "|(save_user)"
+                     "|(save_web_application_target)"
                      "|(start_task)"
                      "|(stop_task)"
                      "|(sync_agents)"
