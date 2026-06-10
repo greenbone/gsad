@@ -135,6 +135,8 @@ gsad_init_validator ()
                      "|(export_tasks)"
                      "|(export_user)"
                      "|(export_users)"
+                     "|(export_web_application_target)"
+                     "|(export_web_application_targets)"
                      "|(get_agent_installer_instruction)"
                      "|(get_agent)"
                      "|(get_agents)"
