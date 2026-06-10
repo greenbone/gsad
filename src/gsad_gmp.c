@@ -20022,6 +20022,48 @@ get_web_application_targets_gmp (gvm_connection_t *connection,
 }
 
 /**
+ * @brief Export a web application target.
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Username and password for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data return for the HTTP response.
+ *
+ * @return Web application target XML on success.  Enveloped XML
+ *         on error.
+ */
+char *
+export_web_application_target_gmp (gvm_connection_t *connection,
+                                   gsad_credentials_t *credentials,
+                                   params_t *params,
+                                   gsad_command_response_data_t *response_data)
+{
+  return export_resource (connection, "web_application_target", credentials,
+                          params, response_data);
+}
+
+/**
+ * @brief Export a list of web application targets.
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Username and password for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data return for the HTTP response.
+ *
+ * @return Web application targets XML on success.  Enveloped XML
+ *         on error.
+ */
+char *
+export_web_application_targets_gmp (gvm_connection_t *connection,
+                                    gsad_credentials_t *credentials,
+                                    params_t *params,
+                                    gsad_command_response_data_t *response_data)
+{
+  return export_many (connection, "web_application_target", credentials, params,
+                      response_data);
+}
+
+/**
  * @brief Create a web application target, get all targets, envelope the result.
  *
  * @param[in]  connection     Connection to manager.
@@ -20784,6 +20826,8 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (export_tasks)
   ELSE (export_user)
   ELSE (export_users)
+  ELSE (export_web_application_target)
+  ELSE (export_web_application_targets)
   ELSE (get_agent_installer_instruction)
   ELSE (get_agent)
   ELSE (get_agents)
