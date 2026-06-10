@@ -53,6 +53,7 @@ gsad_init_validator ()
                      "|(create_agent_group)"
                      "|(create_agent_group_task)"
                      "|(create_oci_image_task)"
+                     "|(create_web_application_target)"
                      "|(cvss_calculator)"
                      "|(delete_agent)"
                      "|(delete_agent_group)"
@@ -444,6 +445,8 @@ gsad_init_validator ()
   gvm_validator_add (validator, "number", "^ *[0-9]+ *$");
   gvm_validator_add (validator, "image_references",
                      "^[-_@[:alnum:],: \\./\\[\\]]+$");
+  gvm_validator_add (validator, "web_application_urls",
+                     "^[-_@%[:alnum:],:\\./\\[\\]\\?&=#~+]+$");
   gvm_validator_add (validator, "optional_number", "^[0-9]*$");
   gvm_validator_add (validator, "oid", "^([0-9.]{1,80}|CVE-[-0-9]{1,14})$");
   gvm_validator_add (validator, "page", "^[_[:alnum:] ]+$");
@@ -700,6 +703,8 @@ gsad_init_validator ()
   gvm_validator_alias (validator, "hosts_filter", "filter");
   gvm_validator_alias (validator, "exclude_hosts", "hosts_opt");
   gvm_validator_alias (validator, "exclude_images", "image_references");
+  gvm_validator_alias (validator, "urls", "web_application_urls");
+  gvm_validator_alias (validator, "exclude_urls", "web_application_urls");
   gvm_validator_alias (validator, "in_assets", "boolean");
   gvm_validator_alias (validator, "in_use", "boolean");
   gvm_validator_alias (validator, "include_related", "number");

@@ -19976,6 +19976,156 @@ save_oci_image_target_gmp (gvm_connection_t *connection,
 }
 
 /**
+ * @brief Create a web application target, get all targets, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+create_web_application_target_gmp (gvm_connection_t *connection,
+                                   gsad_credentials_t *credentials,
+                                   params_t *params,
+                                   gsad_command_response_data_t *response_data)
+{
+  int ret;
+  gchar *xml;
+  const char *name, *urls, *comment;
+  const char *credential, *target_source, *file;
+  const char *exclude_urls, *target_exclude_source, *exclude_file;
+  gchar *credential_element;
+  gchar *comment_element = NULL;
+  entity_t entity;
+  GString *command;
+
+  name = params_value (params, "name");
+  urls = params_value (params, "urls");
+  exclude_urls = params_value (params, "exclude_urls");
+  comment = params_value (params, "comment");
+  credential = params_value (params, "credential_id");
+  target_source = params_value (params, "target_source");
+  target_exclude_source = params_value (params, "target_exclude_source");
+  file = params_value (params, "file");
+  exclude_file = params_value (params, "exclude_file");
+
+  CHECK_VARIABLE_INVALID (name, "Create Web Application Target");
+  CHECK_VARIABLE_INVALID (target_source, "Create Web Application Target");
+
+  if (strcmp (target_source, "manual") == 0)
+    CHECK_VARIABLE_INVALID (urls, "Create Web Application Target");
+
+  if (strcmp (target_source, "file") == 0)
+    CHECK_VARIABLE_INVALID (file, "Create Web Application Target");
+
+  if (params_given (params, "target_exclude_source"))
+    {
+      CHECK_VARIABLE_INVALID (target_exclude_source,
+                              "Create Web Application Target");
+
+      if (str_equal (target_exclude_source, "manual")
+          && params_given (params, "exclude_urls"))
+        CHECK_VARIABLE_INVALID (exclude_urls, "Create Web Application Target");
+
+      if (str_equal (target_exclude_source, "file")
+          && params_given (params, "exclude_file"))
+        CHECK_VARIABLE_INVALID (exclude_file, "Create Web Application Target");
+    }
+
+  if (params_given (params, "comment"))
+    CHECK_VARIABLE_INVALID (comment, "Create Web Application Target");
+
+  if (params_given (params, "credential_id"))
+    CHECK_VARIABLE_INVALID (credential, "Create Web Application Target");
+
+  comment_element = NULL;
+  if (comment)
+    comment_element =
+      g_markup_printf_escaped ("<comment>%s</comment>", comment);
+
+  credential_element = NULL;
+  if (credential && !str_equal (credential, ""))
+    credential_element =
+      g_strdup_printf ("<credential id=\"%s\"/>", credential);
+
+  /* Create the web application target. */
+
+  command = g_string_new ("");
+
+  xml_string_append (
+    command,
+    "<create_web_application_target>"
+    "<name>%s</name>"
+    "<urls>%s</urls>"
+    "<exclude_urls>%s</exclude_urls>",
+    name,
+    str_equal (target_source, "file") ? file : urls,
+    target_exclude_source
+      ? (str_equal (target_exclude_source, "file")
+         ? exclude_file ?: ""
+         : exclude_urls ?: "")
+      : "");
+
+  g_string_append_printf (command,
+                          "%s%s"
+                          "</create_web_application_target>",
+                          comment_element ?: "", credential_element ?: "");
+
+  g_free (comment_element);
+  g_free (credential_element);
+
+  ret =
+    gmp (connection, credentials, NULL, &entity, response_data, command->str);
+
+  g_string_free (command, TRUE);
+
+  switch (ret)
+    {
+    case 0:
+      break;
+    case 1:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while creating a new web application "
+        "target. No new target was created. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while creating a new web application "
+        "target. It is unclear whether the target has been created or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while creating a new web application "
+        "target. It is unclear whether the target has been created or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
+    }
+
+  if (entity_attribute (entity, "id"))
+    params_add (params, "web_application_target_id",
+                entity_attribute (entity, "id"));
+
+  xml = response_from_entity (connection, credentials, params, entity,
+                              "Create Web Application Target", response_data);
+
+  free_entity (entity);
+  return xml;
+}
+
+/**
  * @brief Get assets, envelope the result.
  *
  * @param[in]  connection     Connection to manager.
@@ -20934,6 +21084,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (create_role)
   ELSE (create_agent_group)
   ELSE (create_agent_group_task)
+  ELSE (create_web_application_target)
   ELSE (delete_agent_group)
   ELSE (delete_asset)
   ELSE (delete_alert)
