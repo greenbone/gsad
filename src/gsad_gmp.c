@@ -19976,6 +19976,52 @@ save_oci_image_target_gmp (gvm_connection_t *connection,
 }
 
 /**
+ * @brief Get one web application target, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_web_application_target_gmp (gvm_connection_t *connection,
+                                gsad_credentials_t *credentials,
+                                params_t *params,
+                                gsad_command_response_data_t *response_data)
+{
+  gmp_arguments_t *arguments;
+
+  arguments = gmp_arguments_new ();
+
+  gmp_arguments_add (arguments, "tasks", "1");
+
+  return get_one (connection, "web_application_target", credentials, params,
+                  NULL, arguments, response_data);
+}
+
+/**
+ * @brief Get all web application targets, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_web_application_targets_gmp (gvm_connection_t *connection,
+                                 gsad_credentials_t *credentials,
+                                 params_t *params,
+                                 gsad_command_response_data_t *response_data)
+{
+  return get_many (connection, "web_application_targets", credentials, params,
+                   NULL, response_data);
+}
+
+/**
  * @brief Create a web application target, get all targets, envelope the result.
  *
  * @param[in]  connection     Connection to manager.
@@ -20837,6 +20883,8 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_user)
   ELSE (get_users)
   ELSE (get_vulns)
+  ELSE (get_web_application_target)
+  ELSE (get_web_application_targets)
   ELSE (new_alert)
   ELSE (ping)
   ELSE (wizard)
