@@ -234,6 +234,8 @@ gsad_init_validator ()
                      "|(get_user)"
                      "|(get_users)"
                      "|(get_vulns)"
+                     "|(get_web_application_target)"
+                     "|(get_web_application_targets)"
                      "|(import_config)"
                      "|(import_port_list)"
                      "|(import_report_format)"
@@ -622,6 +624,7 @@ gsad_init_validator ()
   gvm_validator_alias (validator, "report_format_ids:value", "id");
   gvm_validator_alias (validator, "report_result_id", "id");
   gvm_validator_alias (validator, "report_uuid", "id");
+  gvm_validator_alias (validator, "web_application_target_id", "id");
 
   /* Define Optional IDs "^[a-z0-9\\-]*$" */
   gvm_validator_alias (validator, "credential_id", "optional_id");
