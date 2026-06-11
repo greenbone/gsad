@@ -319,7 +319,7 @@ gsad_init_validator ()
   gvm_validator_add (
     validator, "alive_tests:value",
     "^(Scan Config Default|ICMP Ping|TCP-ACK Service Ping|TCP-SYN Service "
-    "Ping|ARP Ping|Consider Alive)$");
+    "Ping|ARP Ping|Consider Alive|Host Discovery IPv6)$");
   gvm_validator_add (validator, "apply_filter", "^(no|no_pagination|full)$");
   gvm_validator_add (validator, "asset_name", "(?s)^.*$");
   gvm_validator_add (validator, "asset_type", "^(host|os)$");
