@@ -2758,7 +2758,6 @@ create_web_application_task_gmp (gvm_connection_t *connection,
 
   if (str_equal (web_application_target_id, "0"))
     {
-      /* Don't allow to create web application task via create_task. */
       return message_invalid (connection, credentials, params, response_data,
                               "Given web_application_target_id was invalid",
                               "Create Web Application Task");
