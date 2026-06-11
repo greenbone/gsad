@@ -2732,7 +2732,6 @@ create_web_application_task_gmp (gvm_connection_t *connection,
   const char *schedule_id, *schedule_periods;
   const char *alterable, *add_tag, *tag_id, *scanner_id;
   const char *auto_delete, *auto_delete_data;
-  const char *accept_invalid_certs;
   gchar *name_escaped, *comment_escaped;
   params_t *alerts;
   GString *alert_element;
@@ -2748,7 +2747,6 @@ create_web_application_task_gmp (gvm_connection_t *connection,
   tag_id = params_value (params, "tag_id");
   web_application_target_id =
     params_value (params, "web_application_target_id");
-  accept_invalid_certs = params_value (params, "accept_invalid_certs");
   scanner_id = params_value (params, "scanner_id");
 
   CHECK_VARIABLE_INVALID (name, "Create Web Application Task");
@@ -2756,7 +2754,6 @@ create_web_application_task_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (web_application_target_id,
                           "Create Web Application Task");
   CHECK_VARIABLE_INVALID (schedule_id, "Create Web Application Task");
-  CHECK_VARIABLE_INVALID (accept_invalid_certs, "Create Web Application Task");
   CHECK_VARIABLE_INVALID (scanner_id, "Create Web Application Task");
 
   if (str_equal (web_application_target_id, "0"))
@@ -2810,27 +2807,20 @@ create_web_application_task_gmp (gvm_connection_t *connection,
   name_escaped = name ? g_markup_escape_text (name, -1) : NULL;
   comment_escaped = comment ? g_markup_escape_text (comment, -1) : NULL;
 
-  command = g_strdup_printf (
-    "<create_task>"
-    "<schedule_periods>%s</schedule_periods>"
-    "%s%s"
-    "<web_application_target id=\"%s\"/>"
-    "<name>%s</name>"
-    "<comment>%s</comment>"
-    "<alterable>%i</alterable>"
-    "<preferences>"
-    "<preference>"
-    "<scanner_name>accept_invalid_certs</scanner_name>"
-    "<value>%d</value>"
-    "</preference>"
-    "</preferences>"
-    "<usage_type>scan</usage_type>"
-    "<scanner id=\"%s\"/>"
-    "</create_task>",
-    schedule_periods, schedule_element, alert_element->str,
-    web_application_target_id, name_escaped, comment_escaped,
-    alterable ? strcmp (alterable, "0") : 0,
-    accept_invalid_certs ? strcmp (accept_invalid_certs, "0") : 0, scanner_id);
+  command =
+    g_strdup_printf ("<create_task>"
+                     "<schedule_periods>%s</schedule_periods>"
+                     "%s%s"
+                     "<web_application_target id=\"%s\"/>"
+                     "<name>%s</name>"
+                     "<comment>%s</comment>"
+                     "<alterable>%i</alterable>"
+                     "<usage_type>scan</usage_type>"
+                     "<scanner id=\"%s\"/>"
+                     "</create_task>",
+                     schedule_periods, schedule_element, alert_element->str,
+                     web_application_target_id, name_escaped, comment_escaped,
+                     alterable ? strcmp (alterable, "0") : 0, scanner_id);
 
   g_free (name_escaped);
   g_free (comment_escaped);
@@ -3593,7 +3583,6 @@ save_web_application_task_gmp (gvm_connection_t *connection,
   gchar *html = NULL, *format = NULL;
   const char *comment, *name, *schedule_id, *schedule_periods;
   const char *task_id, *web_application_target_id, *scanner_id;
-  const char *accept_invalid_certs;
   const char *alterable;
   int ret;
   params_t *alerts;
@@ -3609,7 +3598,6 @@ save_web_application_task_gmp (gvm_connection_t *connection,
   task_id = params_value (params, "task_id");
   web_application_target_id =
     params_value (params, "web_application_target_id");
-  accept_invalid_certs = params_value (params, "accept_invalid_certs");
   scanner_id = params_value (params, "scanner_id");
 
   /* Optional schedule_periods -> default "0" if not provided. */
@@ -3627,7 +3615,6 @@ save_web_application_task_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (task_id, "Save Web Application Task");
   CHECK_VARIABLE_INVALID (web_application_target_id,
                           "Save Web Application Task");
-  CHECK_VARIABLE_INVALID (accept_invalid_certs, "Save Web Application Task");
   CHECK_VARIABLE_INVALID (scanner_id, "Save Web Application Task");
 
   /* Build alerts list. */
@@ -3665,12 +3652,6 @@ save_web_application_task_gmp (gvm_connection_t *connection,
     "<schedule_periods>%%s</schedule_periods>"
     "<scanner id=\"%%s\"/>"
     "%s%i%s" /* optional alterable wrapper with numeric value */
-    "<preferences>"
-    "<preference>"
-    "<scanner_name>accept_invalid_certs</scanner_name>"
-    "<value>%%d</value>"
-    "</preference>"
-    "</preferences>"
     "</modify_task>",
     alert_element->str, alterable ? "<alterable>" : "",
     alterable ? strcmp (alterable, "0") : 0, alterable ? "</alterable>" : "");
@@ -3678,8 +3659,7 @@ save_web_application_task_gmp (gvm_connection_t *connection,
   /* Send. */
   ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
               task_id, name, comment, web_application_target_id, schedule_id,
-              schedule_periods, scanner_id,
-              accept_invalid_certs ? strcmp (accept_invalid_certs, "0") : 0);
+              schedule_periods, scanner_id);
 
   g_free (format);
   g_string_free (alert_element, TRUE);
