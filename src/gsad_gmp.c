@@ -2709,6 +2709,258 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
 }
 
 /**
+ * @brief Create a web application task, get all tasks, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+create_web_application_task_gmp (gvm_connection_t *connection,
+                                 gsad_credentials_t *credentials,
+                                 params_t *params,
+                                 gsad_command_response_data_t *response_data)
+{
+  entity_t entity;
+  int ret;
+  gchar *schedule_element, *command;
+  gchar *html;
+  const char *name, *comment, *web_application_target_id;
+  const char *schedule_id, *schedule_periods;
+  const char *alterable, *add_tag, *tag_id, *scanner_id;
+  const char *auto_delete, *auto_delete_data;
+  const char *accept_invalid_certs;
+  gchar *name_escaped, *comment_escaped;
+  params_t *alerts;
+  GString *alert_element;
+
+  add_tag = params_value (params, "add_tag");
+  alterable = params_value (params, "alterable");
+  auto_delete = params_value (params, "auto_delete");
+  auto_delete_data = params_value (params, "auto_delete_data");
+  comment = params_value (params, "comment");
+  name = params_value (params, "name");
+  schedule_id = params_value (params, "schedule_id");
+  schedule_periods = params_value (params, "schedule_periods");
+  tag_id = params_value (params, "tag_id");
+  web_application_target_id =
+    params_value (params, "web_application_target_id");
+  accept_invalid_certs = params_value (params, "accept_invalid_certs");
+  scanner_id = params_value (params, "scanner_id");
+
+  CHECK_VARIABLE_INVALID (name, "Create Web Application Task");
+  CHECK_VARIABLE_INVALID (comment, "Create Web Application Task");
+  CHECK_VARIABLE_INVALID (web_application_target_id,
+                          "Create Web Application Task");
+  CHECK_VARIABLE_INVALID (schedule_id, "Create Web Application Task");
+  CHECK_VARIABLE_INVALID (accept_invalid_certs, "Create Web Application Task");
+  CHECK_VARIABLE_INVALID (scanner_id, "Create Web Application Task");
+
+  if (str_equal (web_application_target_id, "0"))
+    {
+      /* Don't allow to create web application task via create_task. */
+      return message_invalid (connection, credentials, params, response_data,
+                              "Given web_application_target_id was invalid",
+                              "Create Web Application Task");
+    }
+
+  if (params_given (params, "schedule_periods"))
+    {
+      CHECK_VARIABLE_INVALID (schedule_periods, "Create Web Application Task");
+    }
+  else
+    schedule_periods = "0";
+
+  CHECK_VARIABLE_INVALID (auto_delete, "Create Task");
+  CHECK_VARIABLE_INVALID (auto_delete_data, "Create Task");
+  CHECK_VARIABLE_INVALID (alterable, "Create Task");
+
+  if (add_tag && strcmp (add_tag, "1") == 0)
+    {
+      CHECK_VARIABLE_INVALID (tag_id, "Create Task");
+    }
+
+  if (schedule_id == NULL || strcmp (schedule_id, "0") == 0)
+    schedule_element = g_strdup ("");
+  else
+    schedule_element = g_strdup_printf ("<schedule id=\"%s\"/>", schedule_id);
+
+  alert_element = g_string_new ("");
+  if (params_given (params, "alert_id_optional:"))
+    alerts = params_values (params, "alert_id_optional:");
+  else
+    alerts = params_values (params, "alert_ids:");
+
+  if (alerts)
+    {
+      params_iterator_t iter;
+      char *name;
+      param_t *param;
+
+      params_iterator_init (&iter, alerts);
+      while (params_iterator_next (&iter, &name, &param))
+        if (param->value && strcmp (param->value, "0"))
+          g_string_append_printf (alert_element, "<alert id=\"%s\"/>",
+                                  param->value ? param->value : "");
+    }
+
+  name_escaped = name ? g_markup_escape_text (name, -1) : NULL;
+  comment_escaped = comment ? g_markup_escape_text (comment, -1) : NULL;
+
+  command = g_strdup_printf (
+    "<create_task>"
+    "<schedule_periods>%s</schedule_periods>"
+    "%s%s"
+    "<web_application_target id=\"%s\"/>"
+    "<name>%s</name>"
+    "<comment>%s</comment>"
+    "<alterable>%i</alterable>"
+    "<preferences>"
+    "<preference>"
+    "<scanner_name>accept_invalid_certs</scanner_name>"
+    "<value>%d</value>"
+    "</preference>"
+    "</preferences>"
+    "<usage_type>scan</usage_type>"
+    "<scanner id=\"%s\"/>"
+    "</create_task>",
+    schedule_periods, schedule_element, alert_element->str,
+    web_application_target_id, name_escaped, comment_escaped,
+    alterable ? strcmp (alterable, "0") : 0,
+    accept_invalid_certs ? strcmp (accept_invalid_certs, "0") : 0, scanner_id);
+
+  g_free (name_escaped);
+  g_free (comment_escaped);
+
+  ret = gmp (connection, credentials, NULL, &entity, response_data, command);
+  g_free (command);
+
+  g_free (schedule_element);
+  g_string_free (alert_element, TRUE);
+
+  switch (ret)
+    {
+    case 0:
+      break;
+    case 1:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while creating a new web application "
+        "task. No new task was created. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while creating a new web application "
+        "task. It is unclear whether the task has been created or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while creating a new web application "
+        "task. It is unclear whether the task has been created or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
+    }
+
+  if (gmp_success (entity))
+    {
+      if (add_tag && strcmp (add_tag, "1") == 0)
+        {
+          const char *new_task_id = entity_attribute (entity, "id");
+          gchar *tag_command;
+          entity_t tag_entity;
+
+          tag_command = g_markup_printf_escaped ("<modify_tag tag_id=\"%s\">"
+                                                 "<resources action=\"add\">"
+                                                 "<resource id=\"%s\"/>"
+                                                 "</resources>"
+                                                 "</modify_tag>",
+                                                 tag_id, new_task_id);
+
+          ret = gmp (connection, credentials, NULL, &tag_entity, response_data,
+                     tag_command);
+
+          g_free (tag_command);
+
+          switch (ret)
+            {
+            case 0:
+              break;
+            case 1:
+              free_entity (entity);
+              gsad_command_response_data_set_status_code (
+                response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+              return gsad_http_create_gsad_message (
+                credentials,
+                "An internal error occurred while creating a new tag. "
+                "No new tag was created. "
+                "Diagnostics: Failure to send command to manager daemon.",
+                response_data);
+            case 2:
+              free_entity (entity);
+              gsad_command_response_data_set_status_code (
+                response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+              return gsad_http_create_gsad_message (
+                credentials,
+                "An internal error occurred while creating a new tag. "
+                "It is unclear whether the tag has been created or not. "
+                "Diagnostics: Failure to receive response from manager daemon.",
+                response_data);
+            default:
+              free_entity (entity);
+              gsad_command_response_data_set_status_code (
+                response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+              return gsad_http_create_gsad_message (
+                credentials,
+                "An internal error occurred while creating a new task. "
+                "It is unclear whether the tag has been created or not. "
+                "Diagnostics: Internal Error.",
+                response_data);
+            }
+
+          if (entity_attribute (entity, "id"))
+            params_add (params, "task_id", entity_attribute (entity, "id"));
+
+          html = response_from_entity (
+            connection, credentials, params, tag_entity,
+            "Create Web Application Task and Tag", response_data);
+
+          free_entity (tag_entity);
+        }
+      else
+        {
+          if (entity_attribute (entity, "id"))
+            params_add (params, "task_id", entity_attribute (entity, "id"));
+
+          html =
+            response_from_entity (connection, credentials, params, entity,
+                                  "Create Web Application Task", response_data);
+        }
+    }
+  else
+    {
+      html =
+        response_from_entity (connection, credentials, params, entity,
+                              "Create Web Application Task", response_data);
+    }
+
+  free_entity (entity);
+  return html;
+}
+
+/**
  * @brief Delete a task, get all tasks, envelope the result.
  *
  * @param[in]  connection     Connection to manager.
@@ -21424,6 +21676,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (create_agent_group)
   ELSE (create_agent_group_task)
   ELSE (create_web_application_target)
+  ELSE (create_web_application_task)
   ELSE (delete_agent_group)
   ELSE (delete_asset)
   ELSE (delete_alert)

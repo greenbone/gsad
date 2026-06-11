@@ -54,6 +54,7 @@ gsad_init_validator ()
                      "|(create_agent_group_task)"
                      "|(create_oci_image_task)"
                      "|(create_web_application_target)"
+                     "|(create_web_application_task)"
                      "|(cvss_calculator)"
                      "|(delete_agent)"
                      "|(delete_agent_group)"
