@@ -3607,7 +3607,7 @@ save_web_application_task_gmp (gvm_connection_t *connection,
   else
     schedule_periods = "0";
 
-  /* Validate requireds. */
+  /* Validate required parameters. */
   CHECK_VARIABLE_INVALID (name, "Save Web Application Task");
   CHECK_VARIABLE_INVALID (comment, "Save Web Application Task");
   CHECK_VARIABLE_INVALID (schedule_id, "Save Web Application Task");
