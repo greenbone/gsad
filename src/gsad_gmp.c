@@ -3434,7 +3434,7 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
 /**
  * @brief Save an oci image task, envelope the result.
  *
- * This variant updates only fields relevant to agent-group tasks.
+ * This variant updates only fields relevant to oci image tasks.
  */
 char *
 save_oci_image_task_gmp (gvm_connection_t *connection,
@@ -3575,6 +3575,150 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
 
   html = response_from_entity (connection, credentials, params, entity,
                                "Save OCI Image Task", response_data);
+  free_entity (entity);
+  return html;
+}
+
+/**
+ * @brief Save a web application task, envelope the result.
+ *
+ * This variant updates only fields relevant to web application tasks.
+ */
+char *
+save_web_application_task_gmp (gvm_connection_t *connection,
+                               gsad_credentials_t *credentials,
+                               params_t *params,
+                               gsad_command_response_data_t *response_data)
+{
+  gchar *html = NULL, *format = NULL;
+  const char *comment, *name, *schedule_id, *schedule_periods;
+  const char *task_id, *web_application_target_id, *scanner_id;
+  const char *accept_invalid_certs;
+  const char *alterable;
+  int ret;
+  params_t *alerts;
+  GString *alert_element;
+  entity_t entity = NULL;
+
+  /* Read params. */
+  alterable = params_value (params, "alterable");
+  comment = params_value (params, "comment");
+  name = params_value (params, "name");
+  schedule_id = params_value (params, "schedule_id");
+  schedule_periods = params_value (params, "schedule_periods");
+  task_id = params_value (params, "task_id");
+  web_application_target_id =
+    params_value (params, "web_application_target_id");
+  accept_invalid_certs = params_value (params, "accept_invalid_certs");
+  scanner_id = params_value (params, "scanner_id");
+
+  /* Optional schedule_periods -> default "0" if not provided. */
+  if (params_given (params, "schedule_periods"))
+    {
+      CHECK_VARIABLE_INVALID (schedule_periods, "Save Web Application Task");
+    }
+  else
+    schedule_periods = "0";
+
+  /* Validate requireds. */
+  CHECK_VARIABLE_INVALID (name, "Save Web Application Task");
+  CHECK_VARIABLE_INVALID (comment, "Save Web Application Task");
+  CHECK_VARIABLE_INVALID (schedule_id, "Save Web Application Task");
+  CHECK_VARIABLE_INVALID (task_id, "Save Web Application Task");
+  CHECK_VARIABLE_INVALID (web_application_target_id,
+                          "Save Web Application Task");
+  CHECK_VARIABLE_INVALID (accept_invalid_certs, "Save Web Application Task");
+  CHECK_VARIABLE_INVALID (scanner_id, "Save Web Application Task");
+
+  /* Build alerts list. */
+  alert_element = g_string_new ("");
+  if (params_given (params, "alert_id_optional:"))
+    alerts = params_values (params, "alert_id_optional:");
+  else
+    alerts = params_values (params, "alert_ids:");
+
+  if (alerts)
+    {
+      params_iterator_t iter;
+      char *pname;
+      param_t *param;
+
+      params_iterator_init (&iter, alerts);
+      while (params_iterator_next (&iter, &pname, &param))
+        {
+          if (param->value && strcmp (param->value, "0"))
+            g_string_append_printf (alert_element, "<alert id=\"%s\"/>",
+                                    param->value ? param->value : "");
+        }
+    }
+
+  if (strcmp (alert_element->str, "") == 0)
+    g_string_append_printf (alert_element, "<alert id=\"0\"/>");
+
+  format = g_strdup_printf (
+    "<modify_task task_id=\"%%s\">"
+    "<name>%%s</name>"
+    "<comment>%%s</comment>"
+    "%s" /* alerts */
+    "<web_application_target id=\"%%s\"/>"
+    "<schedule id=\"%%s\"/>"
+    "<schedule_periods>%%s</schedule_periods>"
+    "<scanner id=\"%%s\"/>"
+    "%s%i%s" /* optional alterable wrapper with numeric value */
+    "<preferences>"
+    "<preference>"
+    "<scanner_name>accept_invalid_certs</scanner_name>"
+    "<value>%%d</value>"
+    "</preference>"
+    "</preferences>"
+    "</modify_task>",
+    alert_element->str, alterable ? "<alterable>" : "",
+    alterable ? strcmp (alterable, "0") : 0, alterable ? "</alterable>" : "");
+
+  /* Send. */
+  ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
+              task_id, name, comment, web_application_target_id, schedule_id,
+              schedule_periods, scanner_id,
+              accept_invalid_certs ? strcmp (accept_invalid_certs, "0") : 0);
+
+  g_free (format);
+  g_string_free (alert_element, TRUE);
+
+  switch (ret)
+    {
+    case 0:
+      break;
+    case 1:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while saving a web application task. "
+        "The task was not saved. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while saving a web application task. "
+        "It is unclear whether the task has been saved or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while saving a web application task. "
+        "It is unclear whether the task has been saved or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
+    }
+
+  html = response_from_entity (connection, credentials, params, entity,
+                               "Save Web Application Task", response_data);
   free_entity (entity);
   return html;
 }
@@ -21750,6 +21894,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (save_tls_certificate)
   ELSE (save_user)
   ELSE (save_web_application_target)
+  ELSE (save_web_application_task)
   ELSE (start_task)
   ELSE (stop_task)
   ELSE (sync_agents)
