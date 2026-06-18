@@ -19071,6 +19071,7 @@ get_agent_installer_instruction_gmp (
   entity_t instruction_entity;
   const char *scanner_id;
   const char *language_type;
+  const char *origin_url;
   const char *language;
   const char *instruction;
   gchar *escaped_language;
@@ -19079,15 +19080,18 @@ get_agent_installer_instruction_gmp (
 
   scanner_id = params_value (params, "scanner_id");
   language_type = params_value (params, "language_type");
+  origin_url = params_value (params, "origin_url");
 
   CHECK_VARIABLE_INVALID (scanner_id, "Get Agent Installer Instruction");
   CHECK_VARIABLE_INVALID (language_type, "Get Agent Installer Instruction");
+  CHECK_VARIABLE_INVALID (origin_url, "Get Agent Installer Instruction");
 
   ret = gvm_connection_sendf_xml (connection,
                                   "<get_agent_installer_instruction"
                                   " scanner_id=\"%s\""
-                                  " language=\"%s\"/>",
-                                  scanner_id, language_type);
+                                  " language=\"%s\""
+                                  " origin_url=\"%s\"/>",
+                                  scanner_id, language_type, origin_url);
 
   if (ret == -1)
     {
