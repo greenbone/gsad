@@ -759,6 +759,7 @@ gsad_init_validator ()
   gvm_validator_alias (validator, "open_note", "note_optional");
   gvm_validator_alias (validator, "original_overrides", "boolean");
   gvm_validator_alias (validator, "owner", "name");
+  gvm_validator_alias (validator, "origin_url", "web_application_urls");
   gvm_validator_alias (validator, "passphrase", "lsc_password");
   gvm_validator_alias (validator, "password:name", "preference_name");
   gvm_validator_alias (validator, "path", "hostpath");
