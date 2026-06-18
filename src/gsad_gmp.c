@@ -11349,27 +11349,19 @@ create_note_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
   gchar *response;
   const char *oid, *severity, *port, *hosts;
   const char *text, *task_id, *result_id;
-  /* For get_report. */
-  const char *active, *days;
+  const char *active;
   entity_t entity;
 
   oid = params_value (params, "oid");
   CHECK_VARIABLE_INVALID (oid, "Create Note");
 
-  port = get_port_from_params (params);
-  hosts = get_hosts_from_params (params);
-  task_id = get_task_id_from_params (params);
-  severity = get_severity_from_params (params);
-  result_id = get_result_id_from_params (params);
-
-  CHECK_VARIABLE_INVALID (severity, "Create Note");
-  CHECK_VARIABLE_INVALID (hosts, "Create Note");
-
-  active = params_value (params, "active");
-  CHECK_VARIABLE_INVALID (active, "Create Note");
-
+  port = params_value (params, "port");
+  hosts = params_value (params, "hosts");
+  task_id = params_value (params, "task_id");
+  severity = params_value (params, "severity");
+  result_id = params_value (params, "result_id");
   text = params_value (params, "text");
-  days = params_value (params, "days");
+  active = params_value (params, "active");
 
   response = NULL;
   entity = NULL;
@@ -11384,10 +11376,9 @@ create_note_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 "<task id=\"%s\"/>"
                 "<result id=\"%s\"/>"
                 "</create_note>",
-                strcmp (active, "1") ? active : (days ? days : "-1"), oid,
-                hosts ? hosts : "", port ? port : "", severity ? severity : "",
-                text ? text : "", task_id ? task_id : "",
-                result_id ? result_id : ""))
+                active ? active : "", oid, hosts ? hosts : "", port ? port : "",
+                severity ? severity : "", text ? text : "",
+                task_id ? task_id : "", result_id ? result_id : ""))
     {
     case 0:
       break;
@@ -11464,30 +11455,22 @@ save_note_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
   gchar *response;
   entity_t entity;
   const char *note_id, *text, *hosts, *port, *severity, *task_id;
-  const char *result_id, *active, *days, *oid;
+  const char *result_id, *active, *oid;
   char *ret;
 
   note_id = params_value (params, "note_id");
-
   oid = params_value (params, "oid");
 
-  text = params_value (params, "text");
-  if (text == NULL)
-    params_given (params, "text") || (text = "");
-
-  port = get_port_from_params (params);
-  hosts = get_hosts_from_params (params);
-  task_id = get_task_id_from_params (params);
-  severity = get_severity_from_params (params);
-  result_id = get_result_id_from_params (params);
-
-  active = params_value (params, "active");
-  days = params_value (params, "days");
-
   CHECK_VARIABLE_INVALID (oid, "Save Note");
-  CHECK_VARIABLE_INVALID (active, "Save Note");
   CHECK_VARIABLE_INVALID (note_id, "Save Note");
-  CHECK_VARIABLE_INVALID (days, "Save Note");
+
+  text = params_value (params, "text");
+  port = params_value (params, "port");
+  hosts = params_value (params, "hosts");
+  task_id = params_value (params, "task_id");
+  severity = params_value (params, "severity");
+  result_id = params_value (params, "result_id");
+  active = params_value (params, "active");
 
   response = NULL;
   entity = NULL;
@@ -11502,10 +11485,9 @@ save_note_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 "<result id=\"%s\"/>"
                 "<nvt oid=\"%s\"/>"
                 "</modify_note>",
-                note_id, strcmp (active, "1") ? active : (days ? days : "-1"),
-                hosts ? hosts : "", port ? port : "", severity ? severity : "",
-                text ? text : "", task_id ? task_id : "",
-                result_id ? result_id : "", oid))
+                note_id, active ? active : "", hosts ? hosts : "",
+                port ? port : "", severity ? severity : "", text ? text : "",
+                task_id ? task_id : "", result_id ? result_id : "", oid))
     {
     case 0:
       break;
