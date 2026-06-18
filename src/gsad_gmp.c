@@ -19175,6 +19175,142 @@ get_agent_installer_instruction_gmp (
 }
 
 /**
+ * @brief Get an agent support bundle.
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Credentials for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_agent_support_bundle_gmp (gvm_connection_t *connection,
+                              gsad_credentials_t *credentials, params_t *params,
+                              gsad_command_response_data_t *response_data)
+{
+  const gchar *agent_uuid = params_value (params, "agent_uuid");
+  const gchar *days = params_value (params, "days");
+  entity_t entity = NULL;
+  entity_t file_entity = NULL;
+  entity_t content_type_entity = NULL;
+  entity_t content_entity = NULL;
+  entity_t name_entity = NULL;
+  const gchar *name = NULL;
+  const gchar *content_type = NULL;
+  gchar *content = NULL;
+  gchar *content_decoded = NULL;
+  gsize content_length = 0;
+
+  CHECK_VARIABLE_INVALID (agent_uuid, "Get Agent Support Bundle");
+
+  if (days && strlen (days) > 0)
+    {
+      CHECK_VARIABLE_INVALID (days, "Get Agent Support Bundle");
+    }
+
+  if (days && strlen (days) > 0)
+    {
+      if (gvm_connection_sendf (
+            connection,
+            "<get_agent_support_bundle agent_uuid=\"%s\" days=\"%s\"/>",
+            agent_uuid, days)
+          == -1)
+        {
+          gsad_command_response_data_set_status_code (
+            response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+          return gsad_http_create_gsad_message (
+            credentials,
+            "Failed to send GMP command to retrieve support bundle.",
+            response_data);
+        }
+    }
+  else if (gvm_connection_sendf (
+             connection, "<get_agent_support_bundle agent_uuid=\"%s\"/>",
+             agent_uuid)
+           == -1)
+    {
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials, "Failed to send GMP command to retrieve support bundle.",
+        response_data);
+    }
+
+  if (read_entity_c (connection, &entity))
+    {
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials, "Failed to receive support bundle response.",
+        response_data);
+    }
+
+  if (gmp_success (entity) != 1)
+    {
+      gchar *message;
+
+      set_http_status_from_entity (entity, response_data);
+
+      message = gsad_http_create_gsad_message (
+        credentials, entity_attribute (entity, "status_text"), response_data);
+      free_entity (entity);
+      return message;
+    }
+
+  file_entity = entity_child (entity, "file");
+
+  if (!file_entity || !entity_text (file_entity))
+    {
+      free_entity (entity);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials, "No agent support bundle content was returned.",
+        response_data);
+    }
+
+  name_entity = entity_child (file_entity, "name");
+  name = name_entity ? entity_text (name_entity) : NULL;
+
+  content_type_entity = entity_child (file_entity, "content_type");
+  content_type = content_type_entity ? entity_text (content_type_entity) : NULL;
+
+  content_entity = entity_child (file_entity, "content");
+  content = content_entity ? entity_text (content_entity) : "";
+
+  content_decoded = (gchar *) g_base64_decode (content, &content_length);
+
+  if (!content_decoded)
+    {
+      content_decoded = g_strdup ("");
+      content_length = 0;
+    }
+
+  if (!name || strlen (name) == 0)
+    name = "agent_support_bundle.tar.gz.enc";
+
+  if (!content_type || strlen (content_type) == 0)
+    {
+      gsad_command_response_data_set_content_type (
+        response_data, GSAD_CONTENT_TYPE_OCTET_STREAM);
+    }
+  else
+    {
+      gsad_command_response_data_set_content_type_string (
+        response_data, g_strdup (content_type));
+    }
+
+  gsad_command_response_data_set_content_disposition (
+    response_data, g_strdup_printf ("attachment; filename=\"%s\"", name));
+
+  gsad_command_response_data_set_content_length (response_data, content_length);
+
+  free_entity (entity);
+  return content_decoded;
+}
+
+/**
  * @brief Get one agent, envelope the result.
  *
  * @param[in]  connection      Connection to manager.
@@ -21450,6 +21586,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (export_web_application_target)
   ELSE (export_web_application_targets)
   ELSE (get_agent_installer_instruction)
+  ELSE (get_agent_support_bundle)
   ELSE (get_agent)
   ELSE (get_agents)
   ELSE (get_agent_group)
