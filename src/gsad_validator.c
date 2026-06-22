@@ -341,7 +341,7 @@ gsad_init_validator ()
   gvm_validator_add (validator, "chart_gen:value", "(?s)^.*$");
   gvm_validator_add (validator, "chart_init:name", "^.*$");
   gvm_validator_add (validator, "chart_init:value", "(?s)^.*$");
-  gvm_validator_add (validator, "setting_value", "^.*$");
+  gvm_validator_add (validator, "setting_value", "(?s)^.*$");
   gvm_validator_add (validator, "setting_name", "^.*$");
   gvm_validator_add (validator, "comment", "^[[:graph:][:space:]]*$");
   gvm_validator_add (validator, "condition", "^[[:alnum:] ]*$");
