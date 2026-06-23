@@ -11606,53 +11606,24 @@ create_override_gmp (gvm_connection_t *connection,
 {
   char *ret;
   gchar *response;
-  const char *oid, *severity, *custom_severity, *new_severity, *port, *hosts;
+  const char *oid, *severity, *new_severity, *port, *hosts;
   const char *text, *task_id, *result_id;
-  /* For get_report. */
-  const char *active, *days;
+  const char *active;
   entity_t entity;
 
   oid = params_value (params, "oid");
   CHECK_VARIABLE_INVALID (oid, "Create Override");
 
-  port = get_port_from_params (params);
-  hosts = get_hosts_from_params (params);
-  task_id = get_task_id_from_params (params);
-  severity = get_severity_from_params (params);
-  result_id = get_result_id_from_params (params);
+  new_severity = params_value (params, "new_severity");
+  CHECK_VARIABLE_INVALID (new_severity, "Create Override");
 
-  custom_severity = params_value (params, "custom_severity");
-  CHECK_VARIABLE_INVALID (custom_severity, "Create Override");
-
-  if (custom_severity != NULL && strcmp (custom_severity, "0"))
-    {
-      if (params_valid (params, "new_severity"))
-        new_severity = params_value (params, "new_severity");
-      else if (params_original_value (params, "new_severity") == NULL
-               || strcmp (params_original_value (params, "new_severity"), ""))
-        new_severity = NULL;
-      else
-        new_severity = "";
-      CHECK_VARIABLE_INVALID (new_severity, "Create Override");
-    }
-  else
-    {
-      if (params_valid (params, "new_severity_from_list"))
-        new_severity = params_value (params, "new_severity_from_list");
-      else if (params_original_value (params, "new_severity_from_list") == NULL
-               || strcmp (
-                 params_original_value (params, "new_severity_from_list"), ""))
-        new_severity = NULL;
-      else
-        new_severity = "";
-      CHECK_VARIABLE_INVALID (new_severity, "Create Override");
-    }
-
-  active = params_value (params, "active");
-  CHECK_VARIABLE_INVALID (active, "Create Override");
-
+  port = params_value (params, "port");
+  hosts = params_value (params, "hosts");
+  task_id = params_value (params, "task_id");
+  severity = params_value (params, "severity");
+  result_id = params_value (params, "result_id");
   text = params_value (params, "text");
-  days = params_value (params, "days");
+  active = params_value (params, "active");
 
   response = NULL;
   entity = NULL;
@@ -11668,10 +11639,9 @@ create_override_gmp (gvm_connection_t *connection,
                 "<task id=\"%s\"/>"
                 "<result id=\"%s\"/>"
                 "</create_override>",
-                strcmp (active, "1") ? active : (days ? days : "-1"), oid,
-                hosts ? hosts : "", port ? port : "", severity ? severity : "",
-                new_severity, text ? text : "", task_id ? task_id : "",
-                result_id ? result_id : ""))
+                active ? active : "", oid, hosts ? hosts : "", port ? port : "",
+                severity ? severity : "", new_severity, text ? text : "",
+                task_id ? task_id : "", result_id ? result_id : ""))
     {
     case 0:
       break;
@@ -11750,37 +11720,25 @@ save_override_gmp (gvm_connection_t *connection,
   gchar *response;
   entity_t entity;
   const char *override_id, *text, *hosts, *port;
-  const char *severity, *custom_severity, *new_severity;
-  const char *task_id, *result_id, *active, *days, *oid;
+  const char *severity, *new_severity;
+  const char *task_id, *result_id, *active, *oid;
   char *ret;
 
   override_id = params_value (params, "override_id");
+  oid = params_value (params, "oid");
+  new_severity = params_value (params, "new_severity");
 
-  port = get_port_from_params (params);
-  hosts = get_hosts_from_params (params);
-  task_id = get_task_id_from_params (params);
-  severity = get_severity_from_params (params);
-  result_id = get_result_id_from_params (params);
+  CHECK_VARIABLE_INVALID (override_id, "Save Override");
+  CHECK_VARIABLE_INVALID (oid, "Save Override");
+  CHECK_VARIABLE_INVALID (new_severity, "Save Override");
 
   text = params_value (params, "text");
-  if (text == NULL)
-    params_given (params, "text") || (text = "");
-
-  custom_severity = params_value (params, "custom_severity");
-  if (custom_severity && strcmp (custom_severity, "0") != 0)
-    new_severity = params_value (params, "new_severity");
-  else
-    new_severity = params_value (params, "new_severity_from_list");
-
+  port = params_value (params, "port");
+  hosts = params_value (params, "hosts");
+  task_id = params_value (params, "task_id");
+  severity = params_value (params, "severity");
+  result_id = params_value (params, "result_id");
   active = params_value (params, "active");
-  days = params_value (params, "days");
-  oid = params_value (params, "oid");
-
-  CHECK_VARIABLE_INVALID (active, "Save Override");
-  CHECK_VARIABLE_INVALID (override_id, "Save Override");
-  CHECK_VARIABLE_INVALID (new_severity, "Save Override");
-  CHECK_VARIABLE_INVALID (days, "Save Override");
-  CHECK_VARIABLE_INVALID (oid, "Save Override");
 
   response = NULL;
   entity = NULL;
@@ -11796,10 +11754,9 @@ save_override_gmp (gvm_connection_t *connection,
                 "<task id=\"%s\"/>"
                 "<result id=\"%s\"/>"
                 "</modify_override>",
-                override_id,
-                strcmp (active, "1") ? active : (days ? days : "-1"), oid,
-                hosts ? hosts : "", port ? port : "", severity ? severity : "",
-                new_severity, text ? text : "", task_id ? task_id : "",
+                override_id, active ? active : "", oid, hosts ? hosts : "",
+                port ? port : "", severity ? severity : "", new_severity,
+                text ? text : "", task_id ? task_id : "",
                 result_id ? result_id : ""))
     {
     case 0:
