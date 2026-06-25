@@ -306,6 +306,34 @@ Ensure (gsad_validator, alias_web_application_target_fields)
                is_equal_to (2));
 }
 
+Ensure (gsad_validator, validate_scan_mode)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "scan_mode", "active"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "scan_mode", "safe"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "scan_mode", ""), is_equal_to (2));
+  assert_that (gvm_validate (validator, "scan_mode", "invalid"),
+               is_equal_to (2));
+}
+
+Ensure (gsad_validator, validate_ajax_spider_timeout)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "ajax_spider_timeout", "0"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "ajax_spider_timeout", "30"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "ajax_spider_timeout", "-1"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "ajax_spider_timeout", "abc"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "ajax_spider_timeout", ""),
+               is_equal_to (2));
+}
+
 int
 main (int argc, char **argv)
 {
@@ -335,6 +363,8 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_validator, validate_web_application_urls);
   add_test_with_context (suite, gsad_validator,
                          alias_web_application_target_fields);
+  add_test_with_context (suite, gsad_validator, validate_scan_mode);
+  add_test_with_context (suite, gsad_validator, validate_ajax_spider_timeout);
 
   if (argc > 1)
     ret = run_single_test (suite, argv[1], create_text_reporter ());

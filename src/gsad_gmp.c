@@ -2732,6 +2732,7 @@ create_web_application_task_gmp (gvm_connection_t *connection,
   const char *schedule_id, *schedule_periods;
   const char *alterable, *add_tag, *tag_id, *scanner_id;
   const char *auto_delete, *auto_delete_data;
+  const char *scan_mode, *ajax_spider_timeout;
   gchar *name_escaped, *comment_escaped;
   params_t *alerts;
   GString *alert_element;
@@ -2748,6 +2749,8 @@ create_web_application_task_gmp (gvm_connection_t *connection,
   web_application_target_id =
     params_value (params, "web_application_target_id");
   scanner_id = params_value (params, "scanner_id");
+  scan_mode = params_value (params, "scan_mode");
+  ajax_spider_timeout = params_value (params, "ajax_spider_timeout");
 
   CHECK_VARIABLE_INVALID (name, "Create Web Application Task");
   CHECK_VARIABLE_INVALID (comment, "Create Web Application Task");
@@ -2773,6 +2776,8 @@ create_web_application_task_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (auto_delete, "Create Task");
   CHECK_VARIABLE_INVALID (auto_delete_data, "Create Task");
   CHECK_VARIABLE_INVALID (alterable, "Create Task");
+  CHECK_VARIABLE_INVALID (scan_mode, "Create Web Application Task");
+  CHECK_VARIABLE_INVALID (ajax_spider_timeout, "Create Web Application Task");
 
   if (add_tag && strcmp (add_tag, "1") == 0)
     {
@@ -2816,10 +2821,21 @@ create_web_application_task_gmp (gvm_connection_t *connection,
                      "<alterable>%i</alterable>"
                      "<usage_type>scan</usage_type>"
                      "<scanner id=\"%s\"/>"
+                     "<preferences>"
+                     "<preference>"
+                     "<scanner_name>scan_mode</scanner_name>"
+                     "<value>%s</value>"
+                     "</preference>"
+                     "<preference>"
+                     "<scanner_name>ajax_spider_timeout</scanner_name>"
+                     "<value>%s</value>"
+                     "</preference>"
+                     "</preferences>"
                      "</create_task>",
                      schedule_periods, schedule_element, alert_element->str,
                      web_application_target_id, name_escaped, comment_escaped,
-                     alterable ? strcmp (alterable, "0") : 0, scanner_id);
+                     alterable ? strcmp (alterable, "0") : 0, scanner_id,
+                     scan_mode, ajax_spider_timeout);
 
   g_free (name_escaped);
   g_free (comment_escaped);
@@ -3583,6 +3599,7 @@ save_web_application_task_gmp (gvm_connection_t *connection,
   const char *comment, *name, *schedule_id, *schedule_periods;
   const char *task_id, *web_application_target_id, *scanner_id;
   const char *alterable;
+  const char *scan_mode, *ajax_spider_timeout;
   int ret;
   params_t *alerts;
   GString *alert_element;
@@ -3598,6 +3615,8 @@ save_web_application_task_gmp (gvm_connection_t *connection,
   web_application_target_id =
     params_value (params, "web_application_target_id");
   scanner_id = params_value (params, "scanner_id");
+  scan_mode = params_value (params, "scan_mode");
+  ajax_spider_timeout = params_value (params, "ajax_spider_timeout");
 
   /* Optional schedule_periods -> default "0" if not provided. */
   if (params_given (params, "schedule_periods"))
@@ -3615,6 +3634,8 @@ save_web_application_task_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (web_application_target_id,
                           "Save Web Application Task");
   CHECK_VARIABLE_INVALID (scanner_id, "Save Web Application Task");
+  CHECK_VARIABLE_INVALID (scan_mode, "Save Web Application Task");
+  CHECK_VARIABLE_INVALID (ajax_spider_timeout, "Save Web Application Task");
 
   /* Build alerts list. */
   alert_element = g_string_new ("");
@@ -3651,14 +3672,25 @@ save_web_application_task_gmp (gvm_connection_t *connection,
     "<schedule_periods>%%s</schedule_periods>"
     "<scanner id=\"%%s\"/>"
     "%s%i%s" /* optional alterable wrapper with numeric value */
+    "<preferences>"
+    "<preference>"
+    "<scanner_name>scan_mode</scanner_name>"
+    "<value>%s</value>"
+    "</preference>"
+    "<preference>"
+    "<scanner_name>ajax_spider_timeout</scanner_name>"
+    "<value>%s</value>"
+    "</preference>"
+    "</preferences>"
     "</modify_task>",
     alert_element->str, alterable ? "<alterable>" : "",
-    alterable ? strcmp (alterable, "0") : 0, alterable ? "</alterable>" : "");
+    alterable ? strcmp (alterable, "0") : 0, alterable ? "</alterable>" : "",
+    scan_mode, ajax_spider_timeout);
 
   /* Send. */
   ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
               task_id, name, comment, web_application_target_id, schedule_id,
-              schedule_periods, scanner_id);
+              schedule_periods, scanner_id, scan_mode, ajax_spider_timeout);
 
   g_free (format);
   g_string_free (alert_element, TRUE);
