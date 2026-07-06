@@ -8158,7 +8158,7 @@ create_config_gmp (gvm_connection_t *connection,
                    gsad_command_response_data_t *response_data)
 {
   gchar *html, *response;
-  const char *name, *comment, *base, *usage_type, *scanner = NULL;
+  const char *name, *comment, *base, *usage_type;
   entity_t entity;
 
   name = params_value (params, "name");
@@ -8167,14 +8167,11 @@ create_config_gmp (gvm_connection_t *connection,
   usage_type = params_value (params, "usage_type");
 
   CHECK_VARIABLE_INVALID (name, "New Config");
-  CHECK_VARIABLE_INVALID (comment, "New Config");
   CHECK_VARIABLE_INVALID (base, "New Config");
   CHECK_VARIABLE_INVALID (usage_type, "New Config");
-  if (str_equal (base, "0"))
-    {
-      scanner = params_value (params, "scanner_id");
-      CHECK_VARIABLE_INVALID (scanner, "New Config");
-    }
+
+  if (params_given (params, "comment"))
+    CHECK_VARIABLE_INVALID (comment, "New Config");
 
   /* Create the config. */
   switch (gmpf (connection, credentials, &response, &entity, response_data,
@@ -8182,10 +8179,9 @@ create_config_gmp (gvm_connection_t *connection,
                 "<name>%s</name>"
                 "<copy>%s</copy>"
                 "<comment>%s</comment>"
-                "<scanner>%s</scanner>"
                 "<usage_type>%s</usage_type>"
                 "</create_config>",
-                name, base, comment, scanner ?: "", usage_type))
+                name, base, comment ? comment : "", usage_type))
     {
     case 0:
       break;
