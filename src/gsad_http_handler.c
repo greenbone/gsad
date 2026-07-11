@@ -53,7 +53,7 @@ gsad_http_handler_set_leaf (gsad_http_handler_t *handler,
 {
   if (handler->next)
     {
-      // there are more handlers in the chaing, so we are not the leaf handler.
+      // there are more handlers in the chain, so we are not the leaf handler.
       // Set the leaf handler in the next handler in the chain.
       handler->next->set_leaf (handler->next, next, free_next);
     }

@@ -26,9 +26,9 @@ struct gsad_command_response_data
 };
 
 /**
- * @brief Initializes a gsad_commad_response_data_t struct.
+ * @brief Initializes a gsad_command_response_data_t struct.
  *
- * @param[in]  data  The gsad_commad_response_data_t struct to initialize
+ * @param[in]  data  The gsad_command_response_data_t struct to initialize
  */
 static void
 gsad_command_response_data_init (gsad_command_response_data_t *data)
@@ -42,7 +42,7 @@ gsad_command_response_data_init (gsad_command_response_data_t *data)
 }
 
 /**
- * @brief Allocates memory for a gsad_commad_response_data_t sturct and
+ * @brief Allocates memory for a gsad_command_response_data_t struct and
  * initializes it
  *
  * @return Pointer to the newly allocated gsad_command_response_data_t struct
@@ -57,12 +57,12 @@ gsad_command_response_data_new ()
 }
 
 /**
- * @brief Frees the memory of a gsad_commad_response_data_t struct
+ * @brief Frees the memory of a gsad_command_response_data_t struct
  *
  * If content_disposition of data is not NULL the content_disposition is also
  * being freed.
  *
- * @param[in] data The gsad_commad_response_data_t struct to free
+ * @param[in] data The gsad_command_response_data_t struct to free
  */
 void
 gsad_command_response_data_free (gsad_command_response_data_t *data)
@@ -78,7 +78,7 @@ gsad_command_response_data_free (gsad_command_response_data_t *data)
 }
 
 /**
- * @brief Set allow_caching flag of gsad_commad_response_data_t struct
+ * @brief Set allow_caching flag of gsad_command_response_data_t struct
  *
  * @param[in]  data           Command response data struct
  * @param[in]  allow_caching  allow_caching flag to set
