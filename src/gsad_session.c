@@ -267,7 +267,7 @@ gsad_session_replace_user_if_exists (gsad_user_t *user)
 }
 
 /**
- * @brief Removes all session of the user, except the one with the passed id.
+ * @brief Removes all sessions of the user, except the one with the passed id.
  *
  * @param[in] keep_id   ID of the session to keep
  * @param[in] username  The user to logout.
