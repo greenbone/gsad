@@ -8,6 +8,12 @@
 #include <pthread.h>
 #include <unistd.h> /* for sleep */
 
+#undef G_LOG_DOMAIN
+/**
+ * @brief GLib log domain.
+ */
+#define G_LOG_DOMAIN "gsad connection watcher"
+
 struct gsad_connection_watcher_data
 {
   int client_socket_fd;

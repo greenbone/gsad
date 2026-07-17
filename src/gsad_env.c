@@ -9,6 +9,12 @@
 
 #include <stdio.h>
 
+#undef G_LOG_DOMAIN
+/**
+ * @brief GLib log domain.
+ */
+#define G_LOG_DOMAIN "gsad env"
+
 /**
  * @brief Get a boolean value from an environment variable.
  *
