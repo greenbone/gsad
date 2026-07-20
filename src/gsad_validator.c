@@ -199,6 +199,7 @@ gsad_init_validator ()
                      "|(get_roles)"
                      "|(get_scanner)"
                      "|(get_scanners)"
+                     "|(get_scan_report)"
                      "|(get_schedule)"
                      "|(get_schedules)"
                      "|(get_setting)"
