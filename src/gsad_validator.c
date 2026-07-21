@@ -636,6 +636,7 @@ gsad_init_validator ()
   gvm_validator_alias (validator, "report_format_ids:value", "id");
   gvm_validator_alias (validator, "report_result_id", "id");
   gvm_validator_alias (validator, "report_uuid", "id");
+  gvm_validator_alias (validator, "scan_report_id", "id");
   gvm_validator_alias (validator, "web_application_target_id", "id");
 
   /* Define Optional IDs "^[a-z0-9\\-]*$" */

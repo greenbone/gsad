@@ -10843,26 +10843,26 @@ get_scan_report_gmp (gvm_connection_t *connection,
 {
   GString *xml;
   entity_t entity;
-  const char *report_id;
+  const char *scan_report_id;
   const char *filter;
   const char *filter_id;
   int ret;
 
-  report_id = params_value (params, "report_id");
+  scan_report_id = params_value (params, "scan_report_id");
   filter = params_value (params, "filter");
   filter_id = params_value (params, "filter_id");
 
-  CHECK_VARIABLE_INVALID (report_id, "Get Scan Report");
+  CHECK_VARIABLE_INVALID (scan_report_id, "Get Scan Report");
 
   if (filter == NULL || filter_id)
     filter = "";
 
   ret = gvm_connection_sendf_xml (connection,
                                   "<get_scan_report"
-                                  " report_id=\"%s\""
+                                  " scan_report_id=\"%s\""
                                   " filter=\"%s\""
                                   " filt_id=\"%s\"/>",
-                                  report_id, filter,
+                                  scan_report_id, filter,
                                   filter_id ? filter_id : FILT_ID_NONE);
 
   if (ret == -1)
