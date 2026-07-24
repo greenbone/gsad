@@ -153,6 +153,19 @@ gsad_user_session_find (const gchar *cookie, const gchar *token,
 }
 
 /**
+ * @brief Get the maximum session duration in seconds
+ *
+ * @return The maximum session duration in seconds, based on the global
+ * settings.
+ */
+const time_t
+gsad_user_session_get_max_duration (void)
+{
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
+  return gsad_settings_get_session_timeout (gsad_global_settings) * 60;
+}
+
+/**
  * @brief Get the session timeout time of a user
  *
  * @param[in] user User whose session timeout time is to be retrieved.
@@ -162,9 +175,7 @@ gsad_user_session_find (const gchar *cookie, const gchar *token,
 const time_t
 gsad_user_session_get_timeout (gsad_user_t *user)
 {
-  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
-  return user->time
-         + (gsad_settings_get_session_timeout (gsad_global_settings) * 60);
+  return user->time + gsad_user_session_get_max_duration ();
 }
 
 /**
@@ -174,14 +185,17 @@ gsad_user_session_get_timeout (gsad_user_t *user)
  *
  * This function should be called when the session timeout of a user needs to be
  * extended.
+ *
+ * @return The session duration in seconds.
  */
-void
+time_t
 gsad_user_session_renew_timeout (gsad_user_t *user)
 {
   if (!user)
     {
-      return;
+      return 0;
     }
   gsad_user_renew_time (user);
   gsad_session_replace_user_if_exists (user);
+  return gsad_user_session_get_max_duration ();
 }

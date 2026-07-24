@@ -26,7 +26,10 @@ gsad_user_session_is_expired (gsad_user_t *user);
 const time_t
 gsad_user_session_get_timeout (gsad_user_t *user);
 
-void
+const time_t
+gsad_user_session_get_max_duration (void);
+
+time_t
 gsad_user_session_renew_timeout (gsad_user_t *user);
 
 #endif /* _GSAD_USER_SESSION_H */
