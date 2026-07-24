@@ -22,6 +22,12 @@
 #include <gvm/util/uuidutils.h> /* for gvm_uuid_make */
 #include <string.h>             /* for strcmp */
 
+#undef G_LOG_DOMAIN
+/**
+ * @brief GLib log domain.
+ */
+#define G_LOG_DOMAIN "gsad user"
+
 /**
  * @brief Create a new user
  *
@@ -72,6 +78,10 @@ gsad_user_new_with_data (const gchar *username, const gchar *password,
   user->time = time (NULL);
 
   gsad_user_set_language (user, language);
+
+  g_debug (
+    "Created new user %s with timezone %s, address %s and login time %ld",
+    username, user->timezone, user->address, user->time);
 
   return user;
 }
@@ -361,4 +371,5 @@ void
 gsad_user_renew_time (gsad_user_t *user)
 {
   user->time = time (NULL);
+  g_debug ("Renewed login time for user %s to %ld", user->username, user->time);
 }
