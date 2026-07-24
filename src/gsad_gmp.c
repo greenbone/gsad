@@ -21332,10 +21332,13 @@ login (gsad_http_connection_t *con, params_t *params,
           gsad_credentials_set_user (credentials, user);
           gsad_credentials_set_jwt (credentials, jwt);
 
-          // xml must not be NULL: gsad_http_create_envelope() expects a valid
-          // string and passing NULL would trigger a GLib critical
-          gchar *data = gsad_http_create_envelope (credentials, g_strdup (""),
-                                                   response_data);
+          // we just created the user so we can assume that the session duration
+          // is the max duration
+          time_t session_duration = gsad_user_session_get_max_duration ();
+          gchar *message =
+            g_strdup_printf ("<duration>%ld</duration>", session_duration);
+          gchar *data =
+            gsad_http_create_envelope (credentials, message, response_data);
 
           ret = gsad_http_create_response (con, data, response_data,
                                            gsad_user_get_cookie (user));
