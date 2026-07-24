@@ -21851,12 +21851,6 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
       return gsad_http_create_response (con, res, response_data, NULL);
     }
 
-  /* always renew session for http post */
-  if (user)
-    {
-      gsad_user_session_renew_timeout (user);
-    }
-
   /* Handle the usual commands. */
   if (0)
     {
