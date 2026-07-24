@@ -142,21 +142,6 @@ Ensure (gsad_user_session, should_check_session_expiration)
   gsad_user_free (user);
 }
 
-Ensure (gsad_user_session, should_allow_to_get_the_timeout)
-{
-  int timeout_in_minutes = 10;
-  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
-  gsad_settings_set_session_timeout (gsad_global_settings, timeout_in_minutes);
-  gsad_user_t *user =
-    gsad_user_new_with_data ("username1", "password1", "timezone1",
-                             "capabilities1", "language1", "address1", "jwt1");
-  user->time = 0;
-  assert_equal (gsad_user_get_time (user), 0);
-  assert_equal (gsad_user_session_get_timeout (user), timeout_in_minutes * 60);
-
-  gsad_user_free (user);
-}
-
 Ensure (gsad_user_session,
         should_return_bad_missing_token_for_user_find_without_token)
 {
@@ -372,8 +357,6 @@ main (int argc, char **argv)
                          should_remove_expired_sessions);
   add_test_with_context (suite, gsad_user_session,
                          should_check_session_expiration);
-  add_test_with_context (suite, gsad_user_session,
-                         should_allow_to_get_the_timeout);
   add_test_with_context (
     suite, gsad_user_session,
     should_return_bad_missing_token_for_user_find_without_token);

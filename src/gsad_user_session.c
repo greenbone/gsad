@@ -166,19 +166,6 @@ gsad_user_session_get_max_duration (void)
 }
 
 /**
- * @brief Get the session timeout time of a user
- *
- * @param[in] user User whose session timeout time is to be retrieved.
- *
- * @return The session timeout time of the user, calculated as the login time
- */
-const time_t
-gsad_user_session_get_timeout (gsad_user_t *user)
-{
-  return user->time + gsad_user_session_get_max_duration ();
-}
-
-/**
  * @brief Renew the session timeout of a user by updating the login time to the
  * current time and replacing the user in the session store with the updated
  * user.
