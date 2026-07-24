@@ -20019,9 +20019,8 @@ renew_session_gmp (gvm_connection_t *connection,
 
   if (user)
     {
-      gsad_user_session_renew_timeout (user);
-
-      message = g_strdup_printf ("%ld", gsad_user_session_get_timeout (user));
+      time_t session_duration = gsad_user_session_renew_timeout (user);
+      message = g_strdup_printf ("%ld", session_duration);
     }
   else
     {
