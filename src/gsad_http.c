@@ -995,17 +995,14 @@ gsad_http_create_envelope (gsad_credentials_t *credentials, gchar *xml,
       const gchar *locale = gsad_user_get_language (user);
       const gchar *client_address = gsad_user_get_client_address (user);
       const gchar *token = gsad_user_get_token (user);
-      time_t timeout = gsad_user_session_get_timeout (user);
-
       xml_string_append (string,
                          "<client_address>%s</client_address>"
                          "<i18n>%s</i18n>"
-                         "<session>%ld</session>"
                          "<timezone>%s</timezone>"
                          "<token>%s</token>",
                          client_address ? client_address : "",
-                         locale ? locale : "", timeout,
-                         timezone ? timezone : "", token ? token : "");
+                         locale ? locale : "", timezone ? timezone : "",
+                         token ? token : "");
     }
 
   if (jwt)
