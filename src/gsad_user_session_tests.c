@@ -352,6 +352,13 @@ Ensure (gsad_user_session, should_allow_to_renew_timeout)
   gsad_user_free (user);
 }
 
+Ensure (gsad_user_session, should_allow_to_get_max_duration)
+{
+  gsad_settings_t *gsad_global_settings = gsad_settings_get_global_settings ();
+  gsad_settings_set_session_timeout (gsad_global_settings, 10);
+  assert_that (gsad_user_session_get_max_duration (), is_equal_to (600));
+}
+
 int
 main (int argc, char **argv)
 {
@@ -393,6 +400,8 @@ main (int argc, char **argv)
                          should_allow_to_renew_timeout_with_null_user);
   add_test_with_context (suite, gsad_user_session,
                          should_allow_to_renew_timeout);
+  add_test_with_context (suite, gsad_user_session,
+                         should_allow_to_get_max_duration);
 
   int ret = run_test_suite (suite, create_text_reporter ());
   destroy_test_suite (suite);
