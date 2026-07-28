@@ -150,6 +150,7 @@ gsad_init_validator ()
                      "|(get_alerts)"
                      "|(get_asset)"
                      "|(get_assets)"
+                     "|(get_audit_report)"
                      "|(get_capabilities)"
                      "|(get_config)"
                      "|(get_config_family)"
@@ -595,6 +596,7 @@ gsad_init_validator ()
   gvm_validator_alias (validator, "agent_uuid", "id");
   gvm_validator_alias (validator, "alert_id_2", "alert_id");
   gvm_validator_alias (validator, "alert_id", "id");
+  gvm_validator_alias (validator, "audit_report_id", "id");
   gvm_validator_alias (validator, "config_id", "id");
   gvm_validator_alias (validator, "cve_scanner_id", "id");
   gvm_validator_alias (validator, "delta_report_id", "id");
