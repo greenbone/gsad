@@ -151,6 +151,7 @@ gsad_init_validator ()
                      "|(get_asset)"
                      "|(get_assets)"
                      "|(get_audit_report)"
+                     "|(get_audit_report_hosts)"
                      "|(get_capabilities)"
                      "|(get_config)"
                      "|(get_config_family)"

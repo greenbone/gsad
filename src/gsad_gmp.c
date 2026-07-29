@@ -10445,6 +10445,103 @@ get_report_hosts_gmp (gvm_connection_t *connection,
 }
 
 /**
+ * @brief Get audit report hosts and return the result.
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Username and password for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data return for the HTTP response.
+ *
+ * @return Audit report hosts XML.
+ */
+char *
+get_audit_report_hosts_gmp (gvm_connection_t *connection,
+                            gsad_credentials_t *credentials, params_t *params,
+                            gsad_command_response_data_t *response_data)
+{
+  GString *xml;
+  entity_t entity;
+  const char *report_id;
+  const char *filter;
+  const char *filter_id;
+  gboolean lean, details, ignore_pagination;
+  int ret;
+
+  details = params_value_bool (params, "details");
+  ignore_pagination = params_value_bool (params, "ignore_pagination");
+  lean = params_value_bool (params, "lean");
+
+  report_id = params_value (params, "report_id");
+  filter = params_value (params, "filter");
+  filter_id = params_value (params, "filter_id");
+
+  CHECK_VARIABLE_INVALID (report_id, "Get Audit Report Hosts");
+
+  if (filter == NULL || filter_id)
+    filter = "";
+
+  ret = gvm_connection_sendf_xml (connection,
+                                  "<get_audit_report_hosts"
+                                  " report_id=\"%s\""
+                                  " details=\"%d\""
+                                  " ignore_pagination=\"%d\""
+                                  " lean=\"%d\""
+                                  " filter=\"%s\""
+                                  " filt_id=\"%s\"/>",
+                                  report_id, details, ignore_pagination, lean,
+                                  filter, filter_id ? filter_id : FILT_ID_NONE);
+
+  if (ret == -1)
+    {
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting audit report hosts. "
+        "The audit report hosts could not be delivered. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    }
+
+  xml = g_string_new ("<get_audit_report_hosts>");
+
+  entity = NULL;
+  if (read_entity_and_string_c (connection, &entity, &xml))
+    {
+      g_string_free (xml, TRUE);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting audit report hosts. "
+        "The audit report hosts could not be delivered. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    }
+
+  if (gmp_success (entity) != 1)
+    {
+      gchar *message;
+
+      set_http_status_from_entity (entity, response_data);
+
+      message = gsad_http_create_gsad_message (
+        credentials, entity_attribute (entity, "status_text"), response_data);
+
+      g_string_free (xml, TRUE);
+      free_entity (entity);
+      return message;
+    }
+
+  free_entity (entity);
+
+  g_string_append (xml, "</get_audit_report_hosts>");
+
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
  * @brief Get report operating systems and return the result.
  *
  * @param[in]  connection      Connection to manager.
@@ -21647,6 +21744,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_asset)
   ELSE (get_assets)
   ELSE (get_audit_report)
+  ELSE (get_audit_report_hosts)
   ELSE (get_aggregate)
   ELSE (get_alert)
   ELSE (get_alerts)
