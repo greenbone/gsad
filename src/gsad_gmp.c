@@ -11110,6 +11110,118 @@ get_audit_report_gmp (gvm_connection_t *connection,
 }
 
 /**
+ * @brief Create or reuse an asynchronous scan report export.
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Username and password for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data returned for the HTTP response.
+ *
+ * @return Scan report export response XML.
+ */
+char *
+export_scan_report_gmp (gvm_connection_t *connection,
+                        gsad_credentials_t *credentials, params_t *params,
+                        gsad_command_response_data_t *response_data)
+{
+  GString *xml;
+  entity_t entity;
+  const char *report_id;
+  const char *format_id;
+  const char *config_id;
+  const char *filter;
+  const char *ignore_pagination;
+  const char *lean;
+  const char *notes_details;
+  const char *overrides_details;
+  const char *result_tags;
+  int ret;
+
+  report_id = params_value (params, "report_id");
+  format_id = params_value (params, "format_id");
+  config_id = params_value (params, "config_id");
+  filter = params_value (params, "filter");
+  ignore_pagination = params_value (params, "ignore_pagination");
+  lean = params_value (params, "lean");
+  notes_details = params_value (params, "notes_details");
+  overrides_details = params_value (params, "overrides_details");
+  result_tags = params_value (params, "result_tags");
+
+  CHECK_VARIABLE_INVALID (report_id, "Export Scan Report");
+
+  ret = gvm_connection_sendf_xml (
+    connection,
+    "<export_scan_report"
+    " report_id=\"%s\""
+    " format_id=\"%s\""
+    " config_id=\"%s\""
+    " filter=\"%s\""
+    " ignore_pagination=\"%s\""
+    " lean=\"%s\""
+    " notes_details=\"%s\""
+    " overrides_details=\"%s\""
+    " result_tags=\"%s\"/>",
+    report_id, format_id, config_id ? config_id : "", filter ? filter : "",
+    ignore_pagination ? ignore_pagination : "0", lean ? lean : "0",
+    notes_details ? notes_details : "0",
+    overrides_details ? overrides_details : "0",
+    result_tags ? result_tags : "0");
+
+  if (ret == -1)
+    {
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while exporting the scan report. "
+        "The report export could not be created. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    }
+
+  xml = g_string_new ("<export_scan_report>");
+
+  entity = NULL;
+  if (read_entity_and_string_c (connection, &entity, &xml))
+    {
+      g_string_free (xml, TRUE);
+
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while exporting the scan report. "
+        "The report export could not be created. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    }
+
+  if (gmp_success (entity) != 1)
+    {
+      gchar *message;
+
+      set_http_status_from_entity (entity, response_data);
+
+      message = gsad_http_create_gsad_message (
+        credentials, entity_attribute (entity, "status_text"), response_data);
+
+      g_string_free (xml, TRUE);
+      free_entity (entity);
+
+      return message;
+    }
+
+  free_entity (entity);
+
+  g_string_append (xml, "</export_scan_report>");
+
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
  * @brief Run alert for a report.
  *
  * @param[in]  connection     Connection to manager.
@@ -22112,6 +22224,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (delete_user)
   ELSE (delete_web_application_target)
   ELSE (empty_trashcan)
+  ELSE (export_scan_report)
   ELSE (import_config)
   ELSE (import_port_list)
   ELSE (import_report_format)

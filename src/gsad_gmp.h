@@ -136,6 +136,10 @@ get_audit_report_gmp (gvm_connection_t *, gsad_credentials_t *, params_t *,
                       gsad_command_response_data_t *);
 
 char *
+export_scan_report_gmp (gvm_connection_t *, gsad_credentials_t *, params_t *,
+                        gsad_command_response_data_t *);
+
+char *
 get_reports_gmp (gvm_connection_t *, gsad_credentials_t *, params_t *,
                  gsad_command_response_data_t *);
 
