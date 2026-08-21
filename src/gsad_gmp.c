@@ -4242,8 +4242,9 @@ create_credential_gmp (gvm_connection_t *connection,
       else if (str_equal (type, "cc"))
         {
           CHECK_VARIABLE_INVALID (certificate, "Create Credential");
-          CHECK_VARIABLE_INVALID (passphrase, "Create Credential");
           CHECK_VARIABLE_INVALID (private_key, "Create Credential");
+          if (params_given (params, "passphrase"))
+            CHECK_VARIABLE_INVALID (passphrase, "Create Credential");
 
           ret = gmpf (
             connection, credentials, NULL, &entity, response_data,
