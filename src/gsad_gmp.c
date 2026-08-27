@@ -3476,12 +3476,16 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
   else
     schedule_periods = "0";
 
+  if (params_given (params, "oci_image_target_id"))
+    {
+      CHECK_VARIABLE_INVALID (oci_image_target_id, "Save OCI Image Task");
+    }
+
   /* Validate requireds */
   CHECK_VARIABLE_INVALID (name, "Save OCI Image Task");
   CHECK_VARIABLE_INVALID (comment, "Save OCI Image Task");
   CHECK_VARIABLE_INVALID (schedule_id, "Save OCI Image Task");
   CHECK_VARIABLE_INVALID (task_id, "Save OCI Image Task");
-  CHECK_VARIABLE_INVALID (oci_image_target_id, "Save OCI Image Task");
   CHECK_VARIABLE_INVALID (accept_invalid_certs, "Save OCI Image Task");
   CHECK_VARIABLE_INVALID (registry_allow_insecure, "Save OCI Image Task");
   CHECK_VARIABLE_INVALID (scanner_id, "Save OCI Image Task");
@@ -3538,7 +3542,7 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
   /* Send */
   ret = gmpf (
     connection, credentials, NULL, &entity, response_data, format, task_id,
-    name, comment, oci_image_target_id, schedule_id, schedule_periods,
+    name, comment, oci_image_target_id ?: "0", schedule_id, schedule_periods,
     scanner_id, accept_invalid_certs ? strcmp (accept_invalid_certs, "0") : 0,
     registry_allow_insecure ? strcmp (registry_allow_insecure, "0") : 0);
 
