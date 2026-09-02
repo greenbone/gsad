@@ -193,6 +193,8 @@ gsad_init_validator ()
                      "|(get_reports)"
                      "|(get_report_config)"
                      "|(get_report_configs)"
+                     "|(get_report_export)"
+                     "|(get_report_exports)"
                      "|(get_report_format)"
                      "|(get_report_formats)"
                      "|(get_resource_names)"
@@ -620,6 +622,7 @@ gsad_init_validator ()
   gvm_validator_alias (validator, "report_config_id", "id");
   gvm_validator_alias (validator, "report_format_id", "id");
   gvm_validator_alias (validator, "report_id", "id");
+  gvm_validator_alias (validator, "report_export_id", "id");
   gvm_validator_alias (validator, "result_id", "id");
   gvm_validator_alias (validator, "role_id", "id");
   gvm_validator_alias (validator, "scanner_id", "id");

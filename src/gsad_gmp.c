@@ -11227,6 +11227,44 @@ export_scan_report_gmp (gvm_connection_t *connection,
 }
 
 /**
+ * @brief Get report exports.
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Credentials for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_report_exports_gmp (gvm_connection_t *connection,
+                        gsad_credentials_t *credentials, params_t *params,
+                        gsad_command_response_data_t *response_data)
+{
+  return get_many (connection, "report_exports", credentials, params, NULL,
+                   response_data);
+}
+
+/**
+ * @brief Get a report export.
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Credentials for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_report_export_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       gsad_command_response_data_t *response_data)
+{
+  return get_one (connection, "report_export", credentials, params, NULL, NULL,
+                  response_data);
+}
+
+/**
  * @brief Run alert for a report.
  *
  * @param[in]  connection     Connection to manager.
@@ -21905,6 +21943,8 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_reports)
   ELSE (get_report_config)
   ELSE (get_report_configs)
+  ELSE (get_report_export)
+  ELSE (get_report_exports)
   ELSE (get_report_format)
   ELSE (get_report_formats)
   ELSE (get_resource_names)
