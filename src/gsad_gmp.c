@@ -576,8 +576,9 @@ setting_get_value (gvm_connection_t *connection, const char *setting_id,
 
   *value = NULL;
 
-  ret = gvm_connection_sendf (connection, "<get_settings setting_id=\"%s\"/>",
-                              setting_id);
+  ret = gvm_connection_sendf_xml (connection,
+                                  "<get_settings setting_id=\"%s\"/>",
+                                  setting_id);
   if (ret)
     return 1;
 
@@ -1110,7 +1111,7 @@ export_resource (gvm_connection_t *connection, const char *type,
                  gsad_credentials_t *credentials, params_t *params,
                  gsad_command_response_data_t *response_data)
 {
-  GString *xml;
+  GString *xml, *command;
   entity_t entity;
   entity_t resource_entity;
   char *content = NULL;
@@ -1132,19 +1133,26 @@ export_resource (gvm_connection_t *connection, const char *type,
                            g_string_free (xml, FALSE), response_data);
     }
 
+  command = g_string_new ("");
   subtype = params_value (params, "subtype");
 
-  if (gvm_connection_sendf (connection,
-                            "<get_%ss"
-                            " %s_id=\"%s\""
-                            "%s%s%s"
-                            " export=\"1\""
-                            " details=\"1\"/>",
-                            type, type, resource_id, subtype ? " type=\"" : "",
-                            subtype ? subtype : "", subtype ? "\"" : "")
-      == -1)
+  xml_string_append (command,
+                     "<get_%ss"
+                     " %s_id=\"%s\""
+                     " export=\"1\""
+                     " details=\"1\"",
+                     type,
+                     type,
+                     resource_id);
+  if (subtype)
+    xml_string_append (command, " type=\"%s\"", subtype);
+
+  xml_string_append(command, "/>");
+
+  if (gvm_connection_sendf (connection, "%s", command->str) == -1)
     {
       g_string_free (xml, TRUE);
+      g_string_free (command, TRUE);
       gsad_command_response_data_set_status_code (
         response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_http_create_gsad_message (
@@ -1154,6 +1162,7 @@ export_resource (gvm_connection_t *connection, const char *type,
         "Diagnostics: Failure to send command to manager daemon.",
         response_data);
     }
+  g_string_free (command, TRUE);
 
   entity = NULL;
   if (read_entity_and_text_c (connection, &entity, &content))
@@ -1268,28 +1277,24 @@ export_many (gvm_connection_t *connection, const char *type,
   entity_t entity;
   char *content = NULL;
   const char *filter;
-  gchar *filter_escaped;
   gchar *type_many;
   gchar *fname_format, *file_name;
   int ret;
 
   filter = params_value (params, "filter");
 
-  filter_escaped = g_markup_escape_text (filter, -1);
-
   if (strcmp (type, "info") == 0)
     {
-      if (gvm_connection_sendf (connection,
-                                "<get_info"
-                                " type=\"%s\""
-                                " export=\"1\""
-                                " details=\"1\""
-                                " filter=\"%s\"/>",
-                                params_value (params, "info_type"),
-                                filter_escaped ? filter_escaped : "")
+      if (gvm_connection_sendf_xml (connection,
+                                    "<get_info"
+                                    " type=\"%s\""
+                                    " export=\"1\""
+                                    " details=\"1\""
+                                    " filter=\"%s\"/>",
+                                    params_value (params, "info_type"),
+                                    filter ? filter : "")
           == -1)
         {
-          g_free (filter_escaped);
           gsad_command_response_data_set_status_code (
             response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
           return gsad_http_create_gsad_message (
@@ -1302,17 +1307,16 @@ export_many (gvm_connection_t *connection, const char *type,
     }
   else if (strcmp (type, "asset") == 0)
     {
-      if (gvm_connection_sendf (connection,
-                                "<get_assets"
-                                " type=\"%s\""
-                                " export=\"1\""
-                                " details=\"1\""
-                                " filter=\"%s\"/>",
-                                params_value (params, "asset_type"),
-                                filter_escaped ? filter_escaped : "")
+      if (gvm_connection_sendf_xml (connection,
+                                    "<get_assets"
+                                    " type=\"%s\""
+                                    " export=\"1\""
+                                    " details=\"1\""
+                                    " filter=\"%s\"/>",
+                                    params_value (params, "asset_type"),
+                                    filter ? filter : "")
           == -1)
         {
-          g_free (filter_escaped);
           gsad_command_response_data_set_status_code (
             response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
           return gsad_http_create_gsad_message (
@@ -1325,15 +1329,14 @@ export_many (gvm_connection_t *connection, const char *type,
     }
   else
     {
-      if (gvm_connection_sendf (connection,
-                                "<get_%ss"
-                                " export=\"1\""
-                                " details=\"1\""
-                                " filter=\"%s\"/>",
-                                type, filter_escaped ? filter_escaped : "")
+      if (gvm_connection_sendf_xml (connection,
+                                    "<get_%ss"
+                                    " export=\"1\""
+                                    " details=\"1\""
+                                    " filter=\"%s\"/>",
+                                    type, filter ? filter : "")
           == -1)
         {
-          g_free (filter_escaped);
           gsad_command_response_data_set_status_code (
             response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
           return gsad_http_create_gsad_message (
@@ -1344,7 +1347,6 @@ export_many (gvm_connection_t *connection, const char *type,
             response_data);
         }
     }
-  g_free (filter_escaped);
 
   entity = NULL;
   if (read_entity_and_text_c (connection, &entity, &content))
@@ -1444,9 +1446,10 @@ delete_resource (gvm_connection_t *connection, const char *type,
                  gsad_credentials_t *credentials, params_t *params,
                  gboolean ultimate, gsad_command_response_data_t *response_data)
 {
-  gchar *html, *id_name, *resource_id, *extra_attribs;
+  gchar *html, *id_name, *resource_id;
   entity_t entity;
   gchar *cap_type, *prev_action;
+  GString *command;
 
   id_name = g_strdup_printf ("%s_id", type);
   if (params_value (params, id_name))
@@ -1469,7 +1472,10 @@ delete_resource (gvm_connection_t *connection, const char *type,
   g_free (id_name);
 
   /* Extra attributes */
-  extra_attribs = NULL;
+  command = g_string_new ("");
+  xml_string_append (command,
+                     "<delete_%s %s_id=\"%s\" ultimate=\"%i\"",
+                     type, type, resource_id, !!ultimate);
 
   /* Inheritor of user's resource */
   if (strcmp (type, "user") == 0)
@@ -1477,22 +1483,20 @@ delete_resource (gvm_connection_t *connection, const char *type,
       const char *inheritor_id;
       inheritor_id = params_value (params, "inheritor_id");
       if (inheritor_id)
-        extra_attribs = g_strdup_printf ("inheritor_id=\"%s\"", inheritor_id);
+        xml_string_append (command, " inheritor_id=\"%s\"", inheritor_id);
       else if (params_given (params, "inheritor_id"))
         return message_invalid (connection, credentials, params, response_data,
                                 "Invalid inheritor_id", "Delete User");
     }
+  
+  g_string_append (command, "/>");
 
   /* Delete the resource and get all resources. */
 
-  if (gvm_connection_sendf (
-        connection, "<delete_%s %s_id=\"%s\" ultimate=\"%i\"%s%s/>", type, type,
-        resource_id, !!ultimate, extra_attribs ? " " : "",
-        extra_attribs ? extra_attribs : "")
-      == -1)
+  if (gvm_connection_sendf (connection, "%s", command->str) == -1)
     {
       g_free (resource_id);
-      g_free (extra_attribs);
+      g_string_free (command, TRUE);
       gsad_command_response_data_set_status_code (
         response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
       return gsad_http_create_gsad_message (
@@ -1504,7 +1508,7 @@ delete_resource (gvm_connection_t *connection, const char *type,
     }
 
   g_free (resource_id);
-  g_free (extra_attribs);
+  g_string_free (command, TRUE);
 
   entity = NULL;
   if (read_entity_c (connection, &entity))
@@ -1745,7 +1749,7 @@ create_report_gmp (gvm_connection_t *connection,
   entity_t entity;
   int ret;
   gchar **xml_file_array, *xml_file_escaped;
-  gchar *command, *html;
+  gchar *task_id_escaped, *in_assets_escaped, *command, *html;
   const char *task_id = params_value (params, "task_id"),
              *xml_file = params_value (params, "xml_file"),
              *in_assets = params_value (params, "in_assets");
@@ -1766,13 +1770,22 @@ create_report_gmp (gvm_connection_t *connection,
     xml_file_escaped = g_strdup (xml_file);
   g_strfreev (xml_file_array);
 
+  // TODO: Validate XML file
+
+  task_id_escaped = g_markup_escape_text (task_id, -1);
+  in_assets_escaped = in_assets ? g_markup_escape_text (in_assets, -1) : NULL;
+
   command = g_strdup_printf ("<create_report>"
                              "<in_assets>%s</in_assets>"
                              "<task id=\"%s\"/>"
                              "%s"
                              "</create_report>",
-                             in_assets ? in_assets : "0", task_id,
+                             in_assets_escaped ? in_assets_escaped : "0",
+                             task_id_escaped,
                              xml_file_escaped ? xml_file_escaped : "");
+
+  g_free (in_assets_escaped);
+  g_free (task_id_escaped);
   g_free (xml_file_escaped);
 
   ret = gmp (connection, credentials, NULL, &entity, response_data, command);
@@ -2298,7 +2311,10 @@ create_agent_group_task_gmp (gvm_connection_t *connection,
   if (schedule_id == NULL || strcmp (schedule_id, "0") == 0)
     schedule_element = g_strdup ("");
   else
-    schedule_element = g_strdup_printf ("<schedule id=\"%s\"/>", schedule_id);
+    {
+      schedule_element = g_markup_printf_escaped ("<schedule id=\"%s\"/>",
+                                                  schedule_id);
+    }
 
   alert_element = g_string_new ("");
   if (params_given (params, "alert_id_optional:"))
@@ -2315,8 +2331,8 @@ create_agent_group_task_gmp (gvm_connection_t *connection,
       params_iterator_init (&iter, alerts);
       while (params_iterator_next (&iter, &name, &param))
         if (param->value && strcmp (param->value, "0"))
-          g_string_append_printf (alert_element, "<alert id=\"%s\"/>",
-                                  param->value ? param->value : "");
+          xml_string_append (alert_element, "<alert id=\"%s\"/>",
+                             param->value ? param->value : "");
     }
 
   name_escaped = name ? g_markup_escape_text (name, -1) : NULL;
@@ -2535,7 +2551,10 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
   if (schedule_id == NULL || strcmp (schedule_id, "0") == 0)
     schedule_element = g_strdup ("");
   else
-    schedule_element = g_strdup_printf ("<schedule id=\"%s\"/>", schedule_id);
+    {
+      schedule_element = g_markup_printf_escaped ("<schedule id=\"%s\"/>",
+                                                  schedule_id);
+    }
 
   alert_element = g_string_new ("");
   if (params_given (params, "alert_id_optional:"))
@@ -2552,8 +2571,10 @@ create_oci_image_task_gmp (gvm_connection_t *connection,
       params_iterator_init (&iter, alerts);
       while (params_iterator_next (&iter, &name, &param))
         if (param->value && strcmp (param->value, "0"))
-          g_string_append_printf (alert_element, "<alert id=\"%s\"/>",
-                                  param->value ? param->value : "");
+          {
+            xml_string_append (alert_element, "<alert id=\"%s\"/>",
+                               param->value ? param->value : "");
+          }
     }
 
   name_escaped = name ? g_markup_escape_text (name, -1) : NULL;
@@ -2787,7 +2808,10 @@ create_web_application_task_gmp (gvm_connection_t *connection,
   if (schedule_id == NULL || strcmp (schedule_id, "0") == 0)
     schedule_element = g_strdup ("");
   else
-    schedule_element = g_strdup_printf ("<schedule id=\"%s\"/>", schedule_id);
+    {
+      schedule_element = g_markup_printf_escaped ("<schedule id=\"%s\"/>",
+                                                  schedule_id);
+    }
 
   alert_element = g_string_new ("");
   if (params_given (params, "alert_id_optional:"))
@@ -2804,8 +2828,10 @@ create_web_application_task_gmp (gvm_connection_t *connection,
       params_iterator_init (&iter, alerts);
       while (params_iterator_next (&iter, &name, &param))
         if (param->value && strcmp (param->value, "0"))
-          g_string_append_printf (alert_element, "<alert id=\"%s\"/>",
-                                  param->value ? param->value : "");
+          {
+            xml_string_append (alert_element, "<alert id=\"%s\"/>",
+                               param->value ? param->value : "");
+          }
     }
 
   name_escaped = name ? g_markup_escape_text (name, -1) : NULL;
@@ -3101,8 +3127,10 @@ save_task_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
       while (params_iterator_next (&iter, &name, &param))
         {
           if (param->value && strcmp (param->value, "0"))
-            g_string_append_printf (alert_element, "<alert id=\"%s\"/>",
-                                    param->value ? param->value : "");
+            {
+              xml_string_append (alert_element, "<alert id=\"%s\"/>",
+                                 param->value ? param->value : "");
+            }
         }
     }
 
@@ -3368,8 +3396,10 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
       while (params_iterator_next (&iter, &pname, &param))
         {
           if (param->value && strcmp (param->value, "0"))
-            g_string_append_printf (alert_element, "<alert id=\"%s\"/>",
-                                    param->value ? param->value : "");
+            {
+              xml_string_append (alert_element, "<alert id=\"%s\"/>",
+                                 param->value ? param->value : "");
+            }
         }
     }
 
@@ -3507,8 +3537,10 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
       while (params_iterator_next (&iter, &pname, &param))
         {
           if (param->value && strcmp (param->value, "0"))
-            g_string_append_printf (alert_element, "<alert id=\"%s\"/>",
-                                    param->value ? param->value : "");
+            {
+              xml_string_append (alert_element, "<alert id=\"%s\"/>",
+                                 param->value ? param->value : "");
+            }
         }
     }
 
@@ -3658,8 +3690,10 @@ save_web_application_task_gmp (gvm_connection_t *connection,
       while (params_iterator_next (&iter, &pname, &param))
         {
           if (param->value && strcmp (param->value, "0"))
-            g_string_append_printf (alert_element, "<alert id=\"%s\"/>",
-                                    param->value ? param->value : "");
+            {
+              xml_string_append (alert_element, "<alert id=\"%s\"/>",
+                                 param->value ? param->value : "");
+            }
         }
     }
 
@@ -3679,17 +3713,16 @@ save_web_application_task_gmp (gvm_connection_t *connection,
     "<preferences>"
     "<preference>"
     "<scanner_name>scan_mode</scanner_name>"
-    "<value>%s</value>"
+    "<value>%%s</value>"
     "</preference>"
     "<preference>"
     "<scanner_name>ajax_spider_timeout</scanner_name>"
-    "<value>%s</value>"
+    "<value>%%s</value>"
     "</preference>"
     "</preferences>"
     "</modify_task>",
     alert_element->str, alterable ? "<alterable>" : "",
-    alterable ? strcmp (alterable, "0") : 0, alterable ? "</alterable>" : "",
-    scan_mode, ajax_spider_timeout);
+    alterable ? strcmp (alterable, "0") : 0, alterable ? "</alterable>" : "");
 
   /* Send. */
   ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
@@ -3850,8 +3883,10 @@ move_task_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
   slave_id = params_value (params, "slave_id");
   task_id = params_value (params, "task_id");
 
-  command = g_strdup_printf ("<move_task task_id=\"%s\" slave_id=\"%s\"/>",
-                             task_id ? task_id : "", slave_id ? slave_id : "");
+  command = g_markup_printf_escaped ("<move_task task_id=\"%s\""
+                                     " slave_id=\"%s\"/>",
+                                     task_id ? task_id : "",
+                                     slave_id ? slave_id : "");
 
   entity = NULL;
   ret = gmp (connection, credentials, NULL, &entity, response_data, command);
@@ -4566,11 +4601,11 @@ download_credential_gmp (gvm_connection_t *connection,
                             "Required credential_id parameter is missing.",
                             "Download Credential");
 
-  if (gvm_connection_sendf (connection,
-                            "<get_credentials"
-                            " credential_id=\"%s\""
-                            " format=\"%s\"/>",
-                            credential_id, format)
+  if (gvm_connection_sendf_xml (connection,
+                                "<get_credentials"
+                                " credential_id=\"%s\""
+                                " format=\"%s\"/>",
+                                credential_id, format)
       == -1)
     {
       gsad_command_response_data_set_status_code (
@@ -4810,12 +4845,12 @@ add_preference_to_xml (GString *xml, const char *name, const char *value)
 
   if (*name && *value)
     {
-      g_string_append_printf (xml,
-                              "<preference>"
-                              "<name>%s</name>"
-                              "<value>%s</value>"
-                              "</preference>",
-                              name, value);
+      xml_string_append (xml,
+                         "<preference>"
+                         "<name>%s</name>"
+                         "<value>%s</value>"
+                         "</preference>",
+                         name, value);
     }
 }
 
@@ -6426,11 +6461,11 @@ edit_alert (gvm_connection_t *connection, gsad_credentials_t *credentials,
   if (next == NULL)
     next = "get_alerts";
 
-  if (gvm_connection_sendf (connection,
-                            "<get_alerts"
-                            " alert_id=\"%s\""
-                            " details=\"1\"/>",
-                            alert_id)
+  if (gvm_connection_sendf_xml (connection,
+                                "<get_alerts"
+                                " alert_id=\"%s\""
+                                " details=\"1\"/>",
+                                alert_id)
       == -1)
     {
       gsad_command_response_data_set_status_code (
@@ -6820,8 +6855,9 @@ test_alert_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
 
   /* Test the alert. */
 
-  if (gvm_connection_sendf (connection, "<test_alert alert_id=\"%s\"/>",
-                            alert_id)
+  if (gvm_connection_sendf_xml (connection,
+                                "<test_alert alert_id=\"%s\"/>",
+                                alert_id)
       == -1)
     {
       gsad_command_response_data_set_status_code (
@@ -7003,12 +7039,13 @@ create_target_gmp (gvm_connection_t *connection,
     }
   else
     {
-      ssh_credentials_element = g_strdup_printf ("<ssh_credential id=\"%s\">"
-                                                 "<port>%s</port>"
-                                                 "</ssh_credential>",
-                                                 target_ssh_credential, port);
+      ssh_credentials_element
+        = g_markup_printf_escaped ("<ssh_credential id=\"%s\">"
+                                   "<port>%s</port>"
+                                   "</ssh_credential>",
+                                   target_ssh_credential, port);
       if (target_ssh_elevate_credential)
-        ssh_elevate_credentials_element = g_strdup_printf (
+        ssh_elevate_credentials_element = g_markup_printf_escaped (
           "<ssh_elevate_credential id=\"%s\"/>", target_ssh_elevate_credential);
       else
         ssh_elevate_credentials_element = NULL;
@@ -7017,22 +7054,25 @@ create_target_gmp (gvm_connection_t *connection,
   if (strcmp (target_smb_credential, "0") == 0)
     smb_credentials_element = g_strdup ("");
   else
-    smb_credentials_element =
-      g_strdup_printf ("<smb_credential id=\"%s\"/>", target_smb_credential);
+    smb_credentials_element
+      = g_markup_printf_escaped ("<smb_credential id=\"%s\"/>",
+                                 target_smb_credential);
 
   if (strcmp (target_esxi_credential, "0") == 0)
     esxi_credentials_element = g_strdup ("");
   else
-    esxi_credentials_element =
-      g_strdup_printf ("<esxi_credential id=\"%s\"/>", target_esxi_credential);
+    esxi_credentials_element
+      = g_markup_printf_escaped ("<esxi_credential id=\"%s\"/>",
+                                 target_esxi_credential);
 
   if (target_krb5_credential)
     {
       if (strcmp (target_krb5_credential, "0") == 0)
         krb5_credentials_element = g_strdup ("");
       else
-        krb5_credentials_element = g_strdup_printf (
-          "<krb5_credential id=\"%s\"/>", target_krb5_credential);
+        krb5_credentials_element
+          = g_markup_printf_escaped ("<krb5_credential id=\"%s\"/>",
+                                     target_krb5_credential);
     }
   else
     krb5_credentials_element = NULL;
@@ -7040,8 +7080,9 @@ create_target_gmp (gvm_connection_t *connection,
   if (strcmp (target_snmp_credential, "0") == 0)
     snmp_credentials_element = g_strdup ("");
   else
-    snmp_credentials_element =
-      g_strdup_printf ("<snmp_credential id=\"%s\"/>", target_snmp_credential);
+    snmp_credentials_element
+      = g_markup_printf_escaped ("<snmp_credential id=\"%s\"/>",
+                                 target_snmp_credential);
 
   if (strcmp (target_source, "asset_hosts") == 0)
     asset_hosts_element = g_markup_printf_escaped ("<asset_hosts"
@@ -7082,14 +7123,14 @@ create_target_gmp (gvm_connection_t *connection,
       g_string_append (xml, "<alive_tests>");
       while (params_iterator_next (&iter, &name, &param))
         if (param->value)
-          g_string_append_printf (xml, "<alive_test>%s</alive_test>",
-                                  param->value);
+          xml_string_append (xml, "<alive_test>%s</alive_test>",
+                             param->value);
       g_string_append (xml, "</alive_tests>");
     }
   else if (alive_tests)
     {
-      g_string_append_printf (xml, "<alive_tests>%s</alive_tests>",
-                              alive_tests);
+      xml_string_append (xml, "<alive_tests>%s</alive_tests>",
+                         alive_tests);
     }
 
   command = g_strdup_printf (
@@ -7183,12 +7224,12 @@ clone_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
 
   if (alterable && strcmp (alterable, "0"))
     {
-      if (gvm_connection_sendf (connection,
-                                "<create_%s>"
-                                "<copy>%s</copy>"
-                                "<alterable>1</alterable>"
-                                "</create_%s>",
-                                type, id, type)
+      if (gvm_connection_sendf_xml (connection,
+                                    "<create_%s>"
+                                    "<copy>%s</copy>"
+                                    "<alterable>1</alterable>"
+                                    "</create_%s>",
+                                    type, id, type)
           == -1)
         {
           gsad_command_response_data_set_status_code (
@@ -7201,11 +7242,11 @@ clone_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
             response_data);
         }
     }
-  else if (gvm_connection_sendf (connection,
-                                 "<create_%s>"
-                                 "<copy>%s</copy>"
-                                 "</create_%s>",
-                                 type, id, type)
+  else if (gvm_connection_sendf_xml (connection,
+                                     "<create_%s>"
+                                     "<copy>%s</copy>"
+                                     "</create_%s>",
+                                     type, id, type)
            == -1)
     {
       gsad_command_response_data_set_status_code (
@@ -7283,10 +7324,9 @@ restore_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
 
   /* Restore the resource. */
 
-  if (gvm_connection_sendf (connection,
-                            "<restore"
-                            " id=\"%s\"/>",
-                            target_id)
+  if (gvm_connection_sendf_xml (connection,
+                                "<restore id=\"%s\"/>",
+                                target_id)
       == -1)
     {
       gsad_command_response_data_set_status_code (
@@ -7745,11 +7785,11 @@ toggle_tag_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
 
   /* Delete the resource and get all resources. */
 
-  if (gvm_connection_sendf (connection,
-                            "<modify_tag tag_id=\"%s\">"
-                            "<active>%s</active>"
-                            "</modify_tag>",
-                            tag_id, enable)
+  if (gvm_connection_sendf_xml (connection,
+                                "<modify_tag tag_id=\"%s\">"
+                                "<active>%s</active>"
+                                "</modify_tag>",
+                                tag_id, enable)
       == -1)
     {
       gsad_command_response_data_set_status_code (
@@ -8251,6 +8291,9 @@ import_config_gmp (gvm_connection_t *connection,
   /* Create the config. */
 
   entity = NULL;
+
+  // TODO: Validate XML file
+
   command = g_strdup_printf ("<create_config>"
                              "%s"
                              "</create_config>",
@@ -8441,15 +8484,15 @@ save_config_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                                                        param->value_size)
                                     : g_strdup ("");
 
-          if (gvm_connection_sendf (connection,
-                                    "<modify_config config_id=\"%s\">"
-                                    "<preference>"
-                                    "<name>%s</name>"
-                                    "<value>%s</value>"
-                                    "</preference>"
-                                    "</modify_config>",
-                                    params_value (params, "config_id"),
-                                    param_name, value)
+          if (gvm_connection_sendf_xml (connection,
+                                        "<modify_config config_id=\"%s\">"
+                                        "<preference>"
+                                        "<name>%s</name>"
+                                        "<value>%s</value>"
+                                        "</preference>"
+                                        "</modify_config>",
+                                        params_value (params, "config_id"),
+                                        param_name, value)
               == -1)
             {
               g_free (value);
@@ -8482,7 +8525,7 @@ save_config_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
 
   if (trends || selects || params_value (params, "trend"))
     {
-      if (gvm_connection_sendf (
+      if (gvm_connection_sendf_xml (
             connection,
             "<modify_config config_id=\"%s\">"
             "<family_selection>"
@@ -8510,14 +8553,14 @@ save_config_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
 
           params_iterator_init (&iter, selects);
           while (params_iterator_next (&iter, &family, &param))
-            if (gvm_connection_sendf (connection,
-                                      "<family>"
-                                      "<name>%s</name>"
-                                      "<all>1</all>"
-                                      "<growing>%i</growing>"
-                                      "</family>",
-                                      family,
-                                      trends && member1 (trends, family))
+            if (gvm_connection_sendf_xml (connection,
+                                          "<family>"
+                                          "<name>%s</name>"
+                                          "<all>1</all>"
+                                          "<growing>%i</growing>"
+                                          "</family>",
+                                          family,
+                                          trends && member1 (trends, family))
                 == -1)
               {
                 gsad_command_response_data_set_status_code (
@@ -8546,13 +8589,13 @@ save_config_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 continue;
               if (selects && member (selects, family))
                 continue;
-              if (gvm_connection_sendf (connection,
-                                        "<family>"
-                                        "<name>%s</name>"
-                                        "<all>0</all>"
-                                        "<growing>1</growing>"
-                                        "</family>",
-                                        family)
+              if (gvm_connection_sendf_xml (connection,
+                                            "<family>"
+                                            "<name>%s</name>"
+                                            "<all>0</all>"
+                                            "<growing>1</growing>"
+                                            "</family>",
+                                            family)
                   == -1)
                 {
                   gsad_command_response_data_set_status_code (
@@ -8620,7 +8663,7 @@ get_config_family (gvm_connection_t *connection,
   sort_field = params_value (params, "sort_field");
   sort_order = params_value (params, "sort_order");
 
-  if (gvm_connection_sendf (
+  if (gvm_connection_sendf_xml (
         connection,
         "<get_nvts"
         " config_id=\"%s\" details=\"1\""
@@ -8734,20 +8777,22 @@ edit_config_family_all_gmp (gvm_connection_t *connection,
   sort_field = params_value (params, "sort_field");
   sort_order = params_value (params, "sort_order");
 
-  if (gvm_connection_sendf (connection,
-                            "<get_nvts"
-                            " details=\"1\""
-                            " timeout=\"1\""
-                            " family=\"%s\""
-                            " preferences_config_id=\"%s\""
-                            " preference_count=\"1\""
-                            " skip_cert_refs=\"1\""
-                            " skip_tags=\"1\""
-                            " lean=\"1\""
-                            " sort_field=\"%s\""
-                            " sort_order=\"%s\"/>",
-                            family, config_id, sort_field ? sort_field : "name",
-                            sort_order ? sort_order : "ascending")
+  if (gvm_connection_sendf_xml (connection,
+                                "<get_nvts"
+                                " details=\"1\""
+                                " timeout=\"1\""
+                                " family=\"%s\""
+                                " preferences_config_id=\"%s\""
+                                " preference_count=\"1\""
+                                " skip_cert_refs=\"1\""
+                                " skip_tags=\"1\""
+                                " lean=\"1\""
+                                " sort_field=\"%s\""
+                                " sort_order=\"%s\"/>",
+                                family,
+                                config_id,
+                                sort_field ? sort_field : "name",
+                                sort_order ? sort_order : "ascending")
       == -1)
     {
       g_string_free (xml, TRUE);
@@ -8813,11 +8858,11 @@ save_config_family_gmp (gvm_connection_t *connection,
 
   /* Set the NVT selection. */
 
-  if (gvm_connection_sendf (connection,
-                            "<modify_config config_id=\"%s\">"
-                            "<nvt_selection>"
-                            "<family>%s</family>",
-                            config_id, family)
+  if (gvm_connection_sendf_xml (connection,
+                                "<modify_config config_id=\"%s\">"
+                                "<nvt_selection>"
+                                "<family>%s</family>",
+                                config_id, family)
       == -1)
     {
       gsad_command_response_data_set_status_code (
@@ -8839,7 +8884,10 @@ save_config_family_gmp (gvm_connection_t *connection,
 
       params_iterator_init (&iter, nvts);
       while (params_iterator_next (&iter, &name, &param))
-        if (gvm_connection_sendf (connection, "<nvt oid=\"%s\"/>", name) == -1)
+        if (gvm_connection_sendf_xml (connection,
+                                      "<nvt oid=\"%s\"/>",
+                                      name)
+            == -1)
           {
             gsad_command_response_data_set_status_code (
               response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
@@ -8902,13 +8950,15 @@ get_config_nvt_gmp (gvm_connection_t *connection,
   sort_field = params_value (params, "sort_field");
   sort_order = params_value (params, "sort_order");
 
-  if (gvm_connection_sendf (connection,
-                            "<get_nvts"
-                            " config_id=\"%s\" nvt_oid=\"%s\""
-                            " details=\"1\" preferences=\"1\""
-                            " sort_field=\"%s\" sort_order=\"%s\"/>",
-                            config_id, nvt, sort_field ? sort_field : "name",
-                            sort_order ? sort_order : "ascending")
+  if (gvm_connection_sendf_xml (connection,
+                                "<get_nvts"
+                                " config_id=\"%s\" nvt_oid=\"%s\""
+                                " details=\"1\" preferences=\"1\""
+                                " sort_field=\"%s\" sort_order=\"%s\"/>",
+                                config_id,
+                                nvt,
+                                sort_field ? sort_field : "name",
+                                sort_order ? sort_order : "ascending")
       == -1)
     {
       g_string_free (xml, TRUE);
@@ -9086,7 +9136,6 @@ save_config_nvt_gmp (gvm_connection_t *connection,
           if (is_timeout)
             {
               const char *timeout;
-              gchar *preference_name_escaped;
 
               timeout = params_value (params, "timeout");
 
@@ -9103,51 +9152,45 @@ save_config_nvt_gmp (gvm_connection_t *connection,
                     response_data);
                 }
 
-              preference_name_escaped =
-                g_markup_escape_text (preference_name, -1);
-
               if (strcmp (timeout, "0") == 0)
                 /* Leave out the value to clear the preference. */
-                ret = gvm_connection_sendf (connection,
-                                            "<modify_config"
-                                            " config_id=\"%s\">"
-                                            "<preference>"
-                                            "<name>%s</name>"
-                                            "</preference>"
-                                            "</modify_config>",
-                                            config_id, preference_name_escaped);
+                ret = gvm_connection_sendf_xml (connection,
+                                                "<modify_config"
+                                                " config_id=\"%s\">"
+                                                "<preference>"
+                                                "<name>%s</name>"
+                                                "</preference>"
+                                                "</modify_config>",
+                                                config_id, preference_name);
               else
-                ret = gvm_connection_sendf (connection,
-                                            "<modify_config"
-                                            " config_id=\"%s\">"
-                                            "<preference>"
-                                            "<name>%s</name>"
-                                            "<value>%s</value>"
-                                            "</preference>"
-                                            "</modify_config>",
-                                            config_id, preference_name_escaped,
-                                            value);
-
-              g_free (preference_name_escaped);
+                ret = gvm_connection_sendf_xml (connection,
+                                                "<modify_config"
+                                                " config_id=\"%s\">"
+                                                "<preference>"
+                                                "<name>%s</name>"
+                                                "<value>%s</value>"
+                                                "</preference>"
+                                                "</modify_config>",
+                                                config_id,
+                                                preference_name,
+                                                value);
             }
           else
             {
-              gchar *preference_name_escaped;
-              preference_name_escaped =
-                g_markup_escape_text (preference_name, -1);
               ret =
-                gvm_connection_sendf (connection,
-                                      "<modify_config"
-                                      " config_id=\"%s\">"
-                                      "<preference>"
-                                      "<nvt oid=\"%s\"/>"
-                                      "<name>%s</name>"
-                                      "<value>%s</value>"
-                                      "</preference>"
-                                      "</modify_config>",
-                                      config_id, params_value (params, "oid"),
-                                      preference_name_escaped, value);
-              g_free (preference_name_escaped);
+                gvm_connection_sendf_xml (connection,
+                                          "<modify_config"
+                                          " config_id=\"%s\">"
+                                          "<preference>"
+                                          "<nvt oid=\"%s\"/>"
+                                          "<name>%s</name>"
+                                          "<value>%s</value>"
+                                          "</preference>"
+                                          "</modify_config>",
+                                          config_id,
+                                          params_value (params, "oid"),
+                                          preference_name,
+                                          value);
             }
 
           if (ret == -1)
@@ -9385,12 +9428,12 @@ export_preference_file_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (oid, "Export Preference File")
   CHECK_VARIABLE_INVALID (preference_name, "Export Preference File")
 
-  if (gvm_connection_sendf (connection,
-                            "<get_preferences"
-                            " config_id=\"%s\""
-                            " nvt_oid=\"%s\""
-                            " preference=\"%s\"/>",
-                            config_id, oid, preference_name)
+  if (gvm_connection_sendf_xml (connection,
+                                "<get_preferences"
+                                " config_id=\"%s\""
+                                " nvt_oid=\"%s\""
+                                " preference=\"%s\"/>",
+                                config_id, oid, preference_name)
       == -1)
     {
       g_string_free (xml, TRUE);
@@ -12731,9 +12774,10 @@ get_system_reports_gmp (gvm_connection_t *connection,
 
   /* Get the system reports. */
 
-  if (gvm_connection_sendf (connection,
-                            "<get_system_reports brief=\"1\" slave_id=\"%s\"/>",
-                            slave_id ? slave_id : "0")
+  if (gvm_connection_sendf_xml (connection,
+                                "<get_system_reports"
+                                " brief=\"1\" slave_id=\"%s\"/>",
+                                slave_id ? slave_id : "0")
       == -1)
     {
       g_string_free (xml, TRUE);
@@ -13462,6 +13506,9 @@ import_report_format_gmp (gvm_connection_t *connection,
   /* Create the report format. */
 
   entity = NULL;
+
+  // TODO: Validate XML file
+
   command = g_strdup_printf ("<create_report_format>"
                              "%s"
                              "</create_report_format>",
@@ -13853,10 +13900,10 @@ run_wizard_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
     }
   run = g_string_new ("<run_wizard>");
 
-  g_string_append_printf (run,
-                          "<name>%s</name>"
-                          "<params>",
-                          name);
+  xml_string_append (run,
+                     "<name>%s</name>"
+                     "<params>",
+                     name);
 
   wizard_params = params_values (params, "event_data:");
   if (wizard_params)
@@ -15918,6 +15965,9 @@ import_port_list_gmp (gvm_connection_t *connection,
   /* Create the port list. */
 
   entity = NULL;
+
+  // TODO: Validate XML file
+
   command = g_strdup_printf ("<create_port_list>"
                              "%s"
                              "</create_port_list>",
@@ -16316,7 +16366,7 @@ sync_feed (gvm_connection_t *connection, gsad_credentials_t *credentials,
   entity_t entity;
   gchar *html, *msg;
 
-  if (gvm_connection_sendf (connection, "<%s/>", sync_cmd) == -1)
+  if (gvm_connection_sendf_xml (connection, "<%s/>", sync_cmd) == -1)
     {
       gsad_command_response_data_set_status_code (
         response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
@@ -18456,9 +18506,11 @@ delete_asset_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
 
   /* Delete the resource and get all resources. */
 
-  if (gvm_connection_sendf (
-        connection, "<delete_asset %s_id=\"%s\"/>",
-        params_value (params, "asset_id") ? "asset" : "report", resource_id)
+  if (gvm_connection_sendf_xml (connection,
+                                "<delete_asset %s_id=\"%s\"/>",
+                                params_value (params, "asset_id")
+                                  ? "asset" : "report",
+                                resource_id)
       == -1)
     {
       g_free (resource_id);
@@ -19523,10 +19575,12 @@ get_agent_support_bundle_gmp (gvm_connection_t *connection,
 
   if (days && strlen (days) > 0)
     {
-      if (gvm_connection_sendf (connection,
-                                "<get_agent_support_bundle agent_uuid=\"%s\" "
-                                "days=\"%s\" encryption=\"%s\"/>",
-                                agent_uuid, days, encryption)
+      if (gvm_connection_sendf_xml (connection,
+                                    "<get_agent_support_bundle"
+                                    " agent_uuid=\"%s\""
+                                    " days=\"%s\""
+                                    " encryption=\"%s\"/>",
+                                    agent_uuid, days, encryption)
           == -1)
         {
           gsad_command_response_data_set_status_code (
@@ -19537,10 +19591,11 @@ get_agent_support_bundle_gmp (gvm_connection_t *connection,
             response_data);
         }
     }
-  else if (gvm_connection_sendf (
-             connection,
-             "<get_agent_support_bundle agent_uuid=\"%s\"  encryption=\"%s\"/>",
-             agent_uuid, encryption)
+  else if (gvm_connection_sendf_xml (connection,
+                                     "<get_agent_support_bundle"
+                                     " agent_uuid=\"%s\""
+                                     " encryption=\"%s\"/>",
+                                     agent_uuid, encryption)
            == -1)
     {
       gsad_command_response_data_set_status_code (
@@ -19747,8 +19802,8 @@ modify_agent_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
   while (params_iterator_next (&iter, &name, &param))
     {
       if (param->value && strcmp (param->value, "0"))
-        g_string_append_printf (agents_element, "<agent id=\"%s\"/>",
-                                param->value);
+        xml_string_append (agents_element, "<agent id=\"%s\"/>",
+                           param->value);
     }
   xml_string_append (agents_element, "</agents>");
 
@@ -20146,11 +20201,11 @@ create_agent_group_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (comment, "Create Agent Group");
 
   cmd = g_string_new ("<create_agent_group>");
-  g_string_append_printf (cmd, "<name>%s</name>", name);
-  g_string_append_printf (cmd, "<comment>%s</comment>", comment ? comment : "");
+  xml_string_append (cmd, "<name>%s</name>", name);
+  xml_string_append (cmd, "<comment>%s</comment>", comment ? comment : "");
 
   if (copy)
-    g_string_append_printf (cmd, "<copy>%s</copy>", copy);
+    xml_string_append (cmd, "<copy>%s</copy>", copy);
 
   if (!agent_ids && !copy)
     {
@@ -20171,8 +20226,8 @@ create_agent_group_gmp (gvm_connection_t *connection,
         response_data);
     }
 
-  g_string_append_printf (cmd, "<scheduler_cron_time>%s</scheduler_cron_time>",
-                          scheduler_cron_time);
+  xml_string_append (cmd, "<scheduler_cron_time>%s</scheduler_cron_time>",
+                     scheduler_cron_time);
 
   if (agent_ids)
     {
@@ -20181,8 +20236,8 @@ create_agent_group_gmp (gvm_connection_t *connection,
       while (params_iterator_next (&iter, &param_name, &param))
         {
           if (param->value && strcmp (param->value, "0") != 0)
-            g_string_append_printf (agents_element, "<agent id=\"%s\"/>",
-                                    param->value);
+            xml_string_append (agents_element, "<agent id=\"%s\"/>",
+                               param->value);
         }
       g_string_append (agents_element, "</agents>");
       g_string_append (cmd, agents_element->str);
@@ -20283,8 +20338,8 @@ save_agent_group_gmp (gvm_connection_t *connection,
       while (params_iterator_next (&iter, &key, &param))
         {
           if (param->value && strcmp (param->value, "0") != 0)
-            g_string_append_printf (agents_element, "<agent id=\"%s\"/>",
-                                    param->value);
+            xml_string_append (agents_element, "<agent id=\"%s\"/>",
+                               param->value);
         }
     }
   g_string_append (agents_element, "</agents>");
@@ -20547,7 +20602,7 @@ create_oci_image_target_gmp (gvm_connection_t *connection,
   credential_element = NULL;
   if (credential && !str_equal (credential, ""))
     credential_element =
-      g_strdup_printf ("<credential id=\"%s\"/>", credential);
+      g_markup_printf_escaped ("<credential id=\"%s\"/>", credential);
 
   /* Create the OCI image target. */
 
@@ -20765,7 +20820,7 @@ save_oci_image_target_gmp (gvm_connection_t *connection,
   gchar *credential_element = NULL;
   if (credential)
     credential_element =
-      g_strdup_printf ("<credential id=\"%s\"/>", credential);
+      g_markup_printf_escaped ("<credential id=\"%s\"/>", credential);
 
   command = g_string_new ("");
   xml_string_append (
@@ -20986,7 +21041,7 @@ create_web_application_target_gmp (gvm_connection_t *connection,
   credential_element = NULL;
   if (credential && !str_equal (credential, ""))
     credential_element =
-      g_strdup_printf ("<credential id=\"%s\"/>", credential);
+      g_markup_printf_escaped ("<credential id=\"%s\"/>", credential);
 
   /* Create the web application target. */
 
@@ -21218,7 +21273,7 @@ save_web_application_target_gmp (gvm_connection_t *connection,
   gchar *credential_element = NULL;
   if (credential)
     credential_element =
-      g_strdup_printf ("<credential id=\"%s\"/>", credential);
+      g_markup_printf_escaped ("<credential id=\"%s\"/>", credential);
 
   command = g_string_new ("");
   xml_string_append (
