@@ -19494,6 +19494,7 @@ get_agent_support_bundle_gmp (gvm_connection_t *connection,
 {
   const gchar *agent_uuid = params_value (params, "agent_uuid");
   const gchar *days = params_value (params, "days");
+  const gchar *encryption = params_value (params, "encryption");
   entity_t entity = NULL;
   entity_t file_entity = NULL;
   entity_t content_type_entity = NULL;
@@ -19511,13 +19512,21 @@ get_agent_support_bundle_gmp (gvm_connection_t *connection,
     {
       CHECK_VARIABLE_INVALID (days, "Get Agent Support Bundle");
     }
+  if (encryption && strlen (encryption) > 0)
+    {
+      CHECK_VARIABLE_INVALID (encryption, "Get Agent Support Bundle");
+    }
+  else
+    {
+      encryption = "1";
+    }
 
   if (days && strlen (days) > 0)
     {
-      if (gvm_connection_sendf (
-            connection,
-            "<get_agent_support_bundle agent_uuid=\"%s\" days=\"%s\"/>",
-            agent_uuid, days)
+      if (gvm_connection_sendf (connection,
+                                "<get_agent_support_bundle agent_uuid=\"%s\" "
+                                "days=\"%s\" encryption=\"%s\"/>",
+                                agent_uuid, days, encryption)
           == -1)
         {
           gsad_command_response_data_set_status_code (
@@ -19529,8 +19538,9 @@ get_agent_support_bundle_gmp (gvm_connection_t *connection,
         }
     }
   else if (gvm_connection_sendf (
-             connection, "<get_agent_support_bundle agent_uuid=\"%s\"/>",
-             agent_uuid)
+             connection,
+             "<get_agent_support_bundle agent_uuid=\"%s\"  encryption=\"%s\"/>",
+             agent_uuid, encryption)
            == -1)
     {
       gsad_command_response_data_set_status_code (
