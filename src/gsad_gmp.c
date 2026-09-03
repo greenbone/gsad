@@ -1763,14 +1763,18 @@ create_report_gmp (gvm_connection_t *connection,
                               "Report required", "Create Report");
     }
 
+  if (! gvm_is_valid_xml (xml_file, NULL))
+    {
+      return message_invalid (connection, credentials, params, response_data,
+                              "Report is not valid XML", "Create Report");
+    }
+
   xml_file_array = g_strsplit (xml_file, "%", -1);
   if (xml_file_array != NULL && xml_file_array[0] != NULL)
     xml_file_escaped = g_strjoinv ("%%", xml_file_array);
   else
     xml_file_escaped = g_strdup (xml_file);
   g_strfreev (xml_file_array);
-
-  // TODO: Validate XML file
 
   task_id_escaped = g_markup_escape_text (task_id, -1);
   in_assets_escaped = in_assets ? g_markup_escape_text (in_assets, -1) : NULL;
@@ -8284,6 +8288,7 @@ import_config_gmp (gvm_connection_t *connection,
                    gsad_credentials_t *credentials, params_t *params,
                    gsad_command_response_data_t *response_data)
 {
+  const char *xml_file;
   gchar *command, *html;
   entity_t entity;
   int ret;
@@ -8292,12 +8297,17 @@ import_config_gmp (gvm_connection_t *connection,
 
   entity = NULL;
 
-  // TODO: Validate XML file
+  xml_file = params_value (params, "xml_file");
+  if (! gvm_is_valid_xml (xml_file, NULL))
+    {
+      return message_invalid (connection, credentials, params, response_data,
+                              "Config is not valid XML", "Create Config");
+    }
 
   command = g_strdup_printf ("<create_config>"
                              "%s"
                              "</create_config>",
-                             params_value (params, "xml_file"));
+                             xml_file);
   ret = gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
   switch (ret)
@@ -13499,6 +13509,7 @@ import_report_format_gmp (gvm_connection_t *connection,
                           gsad_credentials_t *credentials, params_t *params,
                           gsad_command_response_data_t *response_data)
 {
+  const char *xml_file;
   gchar *command, *html;
   entity_t entity;
   int ret;
@@ -13507,12 +13518,18 @@ import_report_format_gmp (gvm_connection_t *connection,
 
   entity = NULL;
 
-  // TODO: Validate XML file
+  xml_file = params_value (params, "xml_file");
+  if (! gvm_is_valid_xml (xml_file, NULL))
+    {
+      return message_invalid (connection, credentials, params, response_data,
+                              "Report Format is not valid XML",
+                              "Create Report Format");
+    }
 
   command = g_strdup_printf ("<create_report_format>"
                              "%s"
                              "</create_report_format>",
-                             params_value (params, "xml_file"));
+                             xml_file);
   ret = gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
   switch (ret)
@@ -15958,6 +15975,7 @@ import_port_list_gmp (gvm_connection_t *connection,
                       gsad_credentials_t *credentials, params_t *params,
                       gsad_command_response_data_t *response_data)
 {
+  const char *xml_file;
   gchar *command, *html;
   entity_t entity;
   int ret;
@@ -15966,12 +15984,18 @@ import_port_list_gmp (gvm_connection_t *connection,
 
   entity = NULL;
 
-  // TODO: Validate XML file
+  xml_file = params_value (params, "xml_file");
+  if (! gvm_is_valid_xml (xml_file, NULL))
+    {
+      return message_invalid (connection, credentials, params, response_data,
+                              "Port List is not valid XML",
+                              "Create Port List");
+    }
 
   command = g_strdup_printf ("<create_port_list>"
                              "%s"
                              "</create_port_list>",
-                             params_value (params, "xml_file"));
+                             xml_file);
   ret = gmp (connection, credentials, NULL, &entity, response_data, command);
   g_free (command);
   switch (ret)
