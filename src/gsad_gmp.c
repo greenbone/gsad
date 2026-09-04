@@ -3027,7 +3027,9 @@ char *
 save_task_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                params_t *params, gsad_command_response_data_t *response_data)
 {
-  gchar *html, *format;
+  GString *command;
+  int alerts_count;
+  gchar *html;
   const char *comment, *name, *schedule_id, *in_assets;
   const char *scanner_id, *task_id, *max_checks, *max_hosts;
   const char *config_id, *target_id, *alterable;
@@ -3036,7 +3038,6 @@ save_task_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
   const char *cs_allow_failed_retrieval;
   int ret;
   params_t *alerts;
-  GString *alert_element;
   entity_t entity;
 
   alterable = params_value (params, "alterable");
@@ -3115,12 +3116,15 @@ save_task_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
         min_qod = "";
     }
 
-  alert_element = g_string_new ("");
+  command = g_string_new ("");
+  xml_string_append (command, "<modify_task task_id=\"%s\">", task_id);
+
   if (params_given (params, "alert_id_optional:"))
     alerts = params_values (params, "alert_id_optional:");
   else
     alerts = params_values (params, "alert_ids:");
 
+  alerts_count = 0;
   if (alerts)
     {
       params_iterator_t iter;
@@ -3132,75 +3136,85 @@ save_task_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
         {
           if (param->value && strcmp (param->value, "0"))
             {
-              xml_string_append (alert_element, "<alert id=\"%s\"/>",
+              alerts_count ++;
+              xml_string_append (command, "<alert id=\"%s\"/>",
                                  param->value ? param->value : "");
             }
         }
     }
 
   // Remove Alerts from Task if none are given.
-  if (strcmp (alert_element->str, "") == 0)
-    g_string_append_printf (alert_element, "<alert id=\"0\"/>");
+  if (alerts_count == 0)
+    g_string_append_printf (command, "<alert id=\"0\"/>");
 
-  format = g_strdup_printf (
-    "<modify_task task_id=\"%%s\">"
-    "<name>%%s</name>"
-    "<comment>%%s</comment>"
-    "%s"
-    "<target id=\"%%s\"/>"
-    "<config id=\"%%s\"/>"
-    "<schedule id=\"%%s\"/>"
-    "<schedule_periods>%%s</schedule_periods>"
-    "<scanner id=\"%%s\"/>"
+  if (alterable)
+    g_string_append_printf (command, "<alterable>%d</alterable>",
+                            strcmp (alterable, "0") ? 1 : 0);
+
+  xml_string_append (
+    command,
+    "<name>%s</name>"
+    "<comment>%s</comment>"
+    "<target id=\"%s\"/>"
+    "<config id=\"%s\"/>"
+    "<schedule id=\"%s\"/>"
+    "<schedule_periods>%s</schedule_periods>"
+    "<scanner id=\"%s\"/>"
     "<preferences>"
     "<preference>"
     "<scanner_name>max_checks</scanner_name>"
-    "<value>%%s</value>"
+    "<value>%s</value>"
     "</preference>"
     "<preference>"
     "<scanner_name>max_hosts</scanner_name>"
-    "<value>%%s</value>"
+    "<value>%s</value>"
     "</preference>"
     "<preference>"
     "<scanner_name>in_assets</scanner_name>"
-    "<value>%%s</value>"
+    "<value>%s</value>"
     "</preference>"
     "<preference>"
     "<scanner_name>assets_apply_overrides</scanner_name>"
-    "<value>%%s</value>"
+    "<value>%s</value>"
     "</preference>"
     "<preference>"
     "<scanner_name>assets_min_qod</scanner_name>"
-    "<value>%%s</value>"
+    "<value>%s</value>"
     "</preference>"
     "<preference>"
     "<scanner_name>auto_delete</scanner_name>"
-    "<value>%%s</value>"
+    "<value>%s</value>"
     "</preference>"
     "<preference>"
     "<scanner_name>cs_allow_failed_retrieval</scanner_name>"
-    "<value>%%d</value>"
+    "<value>%d</value>"
     "</preference>"
     "<preference>"
     "<scanner_name>auto_delete_data</scanner_name>"
-    "<value>%%s</value>"
+    "<value>%s</value>"
     "</preference>"
     "</preferences>"
-    "%s%i%s"
     "</modify_task>",
-    alert_element->str, alterable ? "<alterable>" : "",
-    alterable ? strcmp (alterable, "0") : 0, alterable ? "</alterable>" : "");
-  entity = NULL;
-  ret = gmpf (
-    connection, credentials, NULL, &entity, response_data, format, task_id,
-    name, comment, target_id, config_id, schedule_id, schedule_periods,
-    scanner_id, max_checks, max_hosts, strcmp (in_assets, "0") ? "yes" : "no",
-    strcmp (apply_overrides, "0") ? "yes" : "no", min_qod, auto_delete,
+    name,
+    comment,
+    target_id,
+    config_id,
+    schedule_id,
+    schedule_periods,
+    scanner_id,
+    max_checks,
+    max_hosts,
+    strcmp (in_assets, "0") ? "yes" : "no",
+    strcmp (apply_overrides, "0") ? "yes" : "no",
+    min_qod,
+    auto_delete,
     cs_allow_failed_retrieval ? strcmp (cs_allow_failed_retrieval, "0") : 0,
     auto_delete_data);
-  g_free (format);
 
-  g_string_free (alert_element, TRUE);
+  entity = NULL;
+  ret = gmp (
+    connection, credentials, NULL, &entity, response_data, command->str);
+  g_string_free (command, TRUE);
 
   switch (ret)
     {
@@ -3258,7 +3272,7 @@ save_import_task_gmp (gvm_connection_t *connection,
                       gsad_credentials_t *credentials, params_t *params,
                       gsad_command_response_data_t *response_data)
 {
-  gchar *format, *html;
+  gchar *html;
   const char *comment, *name, *task_id;
   const char *in_assets, *auto_delete, *auto_delete_data;
   int ret;
@@ -3277,30 +3291,29 @@ save_import_task_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (auto_delete, "Save Import Task");
   CHECK_VARIABLE_INVALID (auto_delete_data, "Save Import Task");
 
-  format = g_strdup_printf ("<modify_task task_id=\"%%s\">"
-                            "<name>%%s</name>"
-                            "<comment>%%s</comment>"
-                            "<preferences>"
-                            "<preference>"
-                            "<scanner_name>in_assets</scanner_name>"
-                            "<value>%%s</value>"
-                            "</preference>"
-                            "<preference>"
-                            "<scanner_name>auto_delete</scanner_name>"
-                            "<value>%%s</value>"
-                            "</preference>"
-                            "<preference>"
-                            "<scanner_name>auto_delete_data</scanner_name>"
-                            "<value>%%s</value>"
-                            "</preference>"
-                            "</preferences>"
-                            "</modify_task>");
-
   entity = NULL;
-  ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
+  ret = gmpf (connection, credentials, NULL, &entity, response_data,
+              "<modify_task task_id=\"%s\">"
+              "<name>%s</name>"
+              "<comment>%s</comment>"
+              "<preferences>"
+              "<preference>"
+              "<scanner_name>in_assets</scanner_name>"
+              "<value>%s</value>"
+              "</preference>"
+              "<preference>"
+              "<scanner_name>auto_delete</scanner_name>"
+              "<value>%s</value>"
+              "</preference>"
+              "<preference>"
+              "<scanner_name>auto_delete_data</scanner_name>"
+              "<value>%s</value>"
+              "</preference>"
+              "</preferences>"
+              "</modify_task>",
               task_id, name, comment, strcmp (in_assets, "0") ? "yes" : "no",
               auto_delete, auto_delete_data);
-  g_free (format);
+
   switch (ret)
     {
     case 0:
@@ -3350,13 +3363,14 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
                            gsad_credentials_t *credentials, params_t *params,
                            gsad_command_response_data_t *response_data)
 {
-  gchar *html = NULL, *format = NULL;
+  GString *command;
+  int alerts_count;
+  gchar *html = NULL;
   const char *comment, *name, *schedule_id, *schedule_periods;
   const char *task_id, *agent_group_id;
   const char *alterable;
   int ret;
   params_t *alerts;
-  GString *alert_element;
   entity_t entity = NULL;
 
   /* Read params */
@@ -3383,13 +3397,16 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (task_id, "Save Agent Group Task");
   CHECK_VARIABLE_INVALID (agent_group_id, "Save Agent Group Task");
 
+  command = g_string_new ("");
+  xml_string_append (command, "<modify_task task_id=\"%s\">", task_id);
+
   /* Build alerts list */
-  alert_element = g_string_new ("");
   if (params_given (params, "alert_id_optional:"))
     alerts = params_values (params, "alert_id_optional:");
   else
     alerts = params_values (params, "alert_ids:");
 
+  alerts_count = 0;
   if (alerts)
     {
       params_iterator_t iter;
@@ -3401,35 +3418,35 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
         {
           if (param->value && strcmp (param->value, "0"))
             {
-              xml_string_append (alert_element, "<alert id=\"%s\"/>",
+              xml_string_append (command, "<alert id=\"%s\"/>",
                                  param->value ? param->value : "");
+              alerts_count ++;
             }
         }
     }
 
-  if (strcmp (alert_element->str, "") == 0)
-    g_string_append_printf (alert_element, "<alert id=\"0\"/>");
+  if (alerts_count == 0)
+    g_string_append_printf (command, "<alert id=\"0\"/>");
 
-  format = g_strdup_printf (
-    "<modify_task task_id=\"%%s\">"
-    "<name>%%s</name>"
-    "<comment>%%s</comment>"
-    "%s" /* alerts */
-    "<agent_group id=\"%%s\"/>"
-    "<schedule id=\"%%s\"/>"
-    "<schedule_periods>%%s</schedule_periods>"
-    "%s%i%s" /* optional alterable wrapper with numeric value */
+  if (alterable)
+    xml_string_append (command, "<alterable>%d</alterable>",
+                       strcmp (alterable, "0") ? 1 : 0);
+
+  xml_string_append (
+    command,
+    "<name>%s</name>"
+    "<comment>%s</comment>"
+    "<agent_group id=\"%s\"/>"
+    "<schedule id=\"%s\"/>"
+    "<schedule_periods>%s</schedule_periods>"
     "</modify_task>",
-    alert_element->str, alterable ? "<alterable>" : "",
-    alterable ? strcmp (alterable, "0") : 0, alterable ? "</alterable>" : "");
+    name, comment, agent_group_id, schedule_id, schedule_periods);
 
   /* Send */
-  ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
-              task_id, name, comment, agent_group_id, schedule_id,
-              schedule_periods);
+  ret = gmp (connection, credentials, NULL, &entity, response_data,
+             command->str);
 
-  g_free (format);
-  g_string_free (alert_element, TRUE);
+  g_string_free (command, TRUE);
 
   switch (ret)
     {
@@ -3480,14 +3497,15 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
                          gsad_credentials_t *credentials, params_t *params,
                          gsad_command_response_data_t *response_data)
 {
-  gchar *html = NULL, *format = NULL;
+  gchar *html = NULL;
+  GString *command;
+  int alerts_count;
   const char *comment, *name, *schedule_id, *schedule_periods;
   const char *task_id, *oci_image_target_id, *scanner_id;
   const char *accept_invalid_certs, *registry_allow_insecure;
   const char *alterable;
   int ret;
   params_t *alerts;
-  GString *alert_element;
   entity_t entity = NULL;
 
   /* Read params */
@@ -3524,13 +3542,16 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (registry_allow_insecure, "Save OCI Image Task");
   CHECK_VARIABLE_INVALID (scanner_id, "Save OCI Image Task");
 
+  command = g_string_new ("");
+  xml_string_append (command, "<modify_task task_id=\"%s\">", task_id);
+
   /* Build alerts list */
-  alert_element = g_string_new ("");
   if (params_given (params, "alert_id_optional:"))
     alerts = params_values (params, "alert_id_optional:");
   else
     alerts = params_values (params, "alert_ids:");
 
+  alerts_count = 0;
   if (alerts)
     {
       params_iterator_t iter;
@@ -3542,48 +3563,49 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
         {
           if (param->value && strcmp (param->value, "0"))
             {
-              xml_string_append (alert_element, "<alert id=\"%s\"/>",
+              xml_string_append (command, "<alert id=\"%s\"/>",
                                  param->value ? param->value : "");
+              alerts_count ++;
             }
         }
     }
 
-  if (strcmp (alert_element->str, "") == 0)
-    g_string_append_printf (alert_element, "<alert id=\"0\"/>");
+  if (alerts_count == 0)
+    g_string_append_printf (command, "<alert id=\"0\"/>");
 
-  format = g_strdup_printf (
-    "<modify_task task_id=\"%%s\">"
-    "<name>%%s</name>"
-    "<comment>%%s</comment>"
-    "%s" /* alerts */
-    "<oci_image_target id=\"%%s\"/>"
-    "<schedule id=\"%%s\"/>"
+  if (alterable)
+    xml_string_append (command, "<alterable>%d</alterable>",
+                       strcmp (alterable, "0") ? 1 : 0);
+
+  xml_string_append (
+    command,
+    "<name>%s</name>"
+    "<comment>%s</comment>"
+    "<oci_image_target id=\"%s\"/>"
+    "<schedule id=\"%s\"/>"
     "<schedule_periods>%%s</schedule_periods>"
-    "<scanner id=\"%%s\"/>"
-    "%s%i%s" /* optional alterable wrapper with numeric value */
+    "<scanner id=\"%s\"/>"
     "<preferences>"
     "<preference>"
     "<scanner_name>accept_invalid_certs</scanner_name>"
-    "<value>%%d</value>"
+    "<value>%d</value>"
     "</preference>"
     "<preference>"
     "<scanner_name>registry_allow_insecure</scanner_name>"
-    "<value>%%d</value>"
+    "<value>%d</value>"
     "</preference>"
     "</preferences>"
     "</modify_task>",
-    alert_element->str, alterable ? "<alterable>" : "",
-    alterable ? strcmp (alterable, "0") : 0, alterable ? "</alterable>" : "");
-
-  /* Send */
-  ret = gmpf (
-    connection, credentials, NULL, &entity, response_data, format, task_id,
     name, comment, oci_image_target_id ?: "0", schedule_id, schedule_periods,
-    scanner_id, accept_invalid_certs ? strcmp (accept_invalid_certs, "0") : 0,
+    scanner_id, 
+    accept_invalid_certs ? strcmp (accept_invalid_certs, "0") : 0,
     registry_allow_insecure ? strcmp (registry_allow_insecure, "0") : 0);
 
-  g_free (format);
-  g_string_free (alert_element, TRUE);
+  /* Send */
+  ret = gmp (
+    connection, credentials, NULL, &entity, response_data, command->str);
+
+  g_string_free (command, TRUE);
 
   switch (ret)
     {
@@ -3635,14 +3657,15 @@ save_web_application_task_gmp (gvm_connection_t *connection,
                                params_t *params,
                                gsad_command_response_data_t *response_data)
 {
-  gchar *html = NULL, *format = NULL;
+  GString *command;
+  int alerts_count;
+  gchar *html = NULL;
   const char *comment, *name, *schedule_id, *schedule_periods;
   const char *task_id, *web_application_target_id, *scanner_id;
   const char *alterable;
   const char *scan_mode, *ajax_spider_timeout;
   int ret;
   params_t *alerts;
-  GString *alert_element;
   entity_t entity = NULL;
 
   /* Read params. */
@@ -3677,13 +3700,16 @@ save_web_application_task_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (scan_mode, "Save Web Application Task");
   CHECK_VARIABLE_INVALID (ajax_spider_timeout, "Save Web Application Task");
 
+  command = g_string_new ("");
+  xml_string_append (command, "<modify_task task_id=\"%s\">", task_id);
+
   /* Build alerts list. */
-  alert_element = g_string_new ("");
   if (params_given (params, "alert_id_optional:"))
     alerts = params_values (params, "alert_id_optional:");
   else
     alerts = params_values (params, "alert_ids:");
 
+  alerts_count = 0;
   if (alerts)
     {
       params_iterator_t iter;
@@ -3695,46 +3721,47 @@ save_web_application_task_gmp (gvm_connection_t *connection,
         {
           if (param->value && strcmp (param->value, "0"))
             {
-              xml_string_append (alert_element, "<alert id=\"%s\"/>",
+              xml_string_append (command, "<alert id=\"%s\"/>",
                                  param->value ? param->value : "");
+              alerts_count ++;
             }
         }
     }
 
-  if (strcmp (alert_element->str, "") == 0)
-    g_string_append_printf (alert_element, "<alert id=\"0\"/>");
+  if (alerts_count)
+    g_string_append_printf (command, "<alert id=\"0\"/>");
 
-  format = g_strdup_printf (
-    "<modify_task task_id=\"%%s\">"
-    "<name>%%s</name>"
-    "<comment>%%s</comment>"
-    "%s" /* alerts */
-    "<web_application_target id=\"%%s\"/>"
-    "<schedule id=\"%%s\"/>"
-    "<schedule_periods>%%s</schedule_periods>"
-    "<scanner id=\"%%s\"/>"
-    "%s%i%s" /* optional alterable wrapper with numeric value */
+  if (alterable)
+    xml_string_append (command, "<alterable>%d</alterable>",
+                       strcmp (alterable, "0") ? 1 : 0);
+
+  xml_string_append (
+    command,
+    "<name>%s</name>"
+    "<comment>%s</comment>"
+    "<web_application_target id=\"%s\"/>"
+    "<schedule id=\"%s\"/>"
+    "<schedule_periods>%s</schedule_periods>"
+    "<scanner id=\"%s\"/>"
     "<preferences>"
     "<preference>"
     "<scanner_name>scan_mode</scanner_name>"
-    "<value>%%s</value>"
+    "<value>%s</value>"
     "</preference>"
     "<preference>"
     "<scanner_name>ajax_spider_timeout</scanner_name>"
-    "<value>%%s</value>"
+    "<value>%s</value>"
     "</preference>"
     "</preferences>"
     "</modify_task>",
-    alert_element->str, alterable ? "<alterable>" : "",
-    alterable ? strcmp (alterable, "0") : 0, alterable ? "</alterable>" : "");
+    name, comment, web_application_target_id, schedule_id,
+    schedule_periods, scanner_id, scan_mode, ajax_spider_timeout);
 
   /* Send. */
-  ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
-              task_id, name, comment, web_application_target_id, schedule_id,
-              schedule_periods, scanner_id, scan_mode, ajax_spider_timeout);
+  ret = gmp (connection, credentials, NULL, &entity, response_data,
+             command->str);
 
-  g_free (format);
-  g_string_free (alert_element, TRUE);
+  g_string_free (command, TRUE);
 
   switch (ret)
     {
@@ -4897,14 +4924,14 @@ modify_credential_store_gmp (gvm_connection_t *connection,
                              gsad_credentials_t *credentials, params_t *params,
                              gsad_command_response_data_t *response_data)
 {
-  gchar *xml, *format;
+  GString *command;
+  gchar *xml;
   int ret;
   entity_t entity;
   const char *credential_store_id, *active, *host, *port, *path, *comment,
     *app_id, *passphrase;
   param_t *client_certificate, *client_key, *pkcs12_file,
     *server_ca_certificate;
-  GString *preferences_element;
 
   credential_store_id = params_value (params, "credential_store_id");
   active = params_value (params, "active");
@@ -4975,37 +5002,38 @@ modify_credential_store_gmp (gvm_connection_t *connection,
   else
     comment = "";
 
-  preferences_element = g_string_new ("<preferences>");
+  command = g_string_new ("");
+  xml_string_append (command,
+                     "<modify_credential_store credential_store_id=\"%s\">");
 
-  add_preference_to_xml (preferences_element, "app_id", app_id);
-  add_preference_to_xml (preferences_element, "passphrase", passphrase);
-  add_preference_to_xml_base64 (preferences_element, "client_cert",
+  g_string_append (command, "<preferences>");
+
+  add_preference_to_xml (command, "app_id", app_id);
+  add_preference_to_xml (command, "passphrase", passphrase);
+  add_preference_to_xml_base64 (command, "client_cert",
                                 client_certificate);
-  add_preference_to_xml_base64 (preferences_element, "client_key", client_key);
-  add_preference_to_xml_base64 (preferences_element, "client_pkcs12_file",
+  add_preference_to_xml_base64 (command, "client_key", client_key);
+  add_preference_to_xml_base64 (command, "client_pkcs12_file",
                                 pkcs12_file);
-  add_preference_to_xml_base64 (preferences_element, "server_ca_cert",
+  add_preference_to_xml_base64 (command, "server_ca_cert",
                                 server_ca_certificate);
 
-  xml_string_append (preferences_element, "</preferences>");
+  xml_string_append (command, "</preferences>");
 
-  format =
-    g_strdup_printf ("<modify_credential_store credential_store_id=\"%%s\">"
-                     "<active>%%s</active>"
-                     "<host>%%s</host>"
-                     "<port>%%s</port>"
-                     "<path>%%s</path>"
-                     "%s" /* preferences */
-                     "<comment>%%s</comment>"
+  xml_string_append (command,
+                     "<active>%s</active>"
+                     "<host>%s</host>"
+                     "<port>%s</port>"
+                     "<path>%s</path>"
+                     "<comment>%s</comment>"
                      "</modify_credential_store>",
-                     preferences_element->str);
+                     active, host, port, path, comment);
 
   entity = NULL;
-  ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
-              credential_store_id, active, host, port, path, comment);
+  ret = gmp (connection, credentials, NULL, &entity, response_data,
+             command->str);
 
-  g_free (format);
-  g_string_free (preferences_element, TRUE);
+  g_string_free (command, TRUE);
 
   switch (ret)
     {
@@ -19905,7 +19933,8 @@ modify_agent_control_scan_config_gmp (
   gvm_connection_t *connection, gsad_credentials_t *credentials,
   params_t *params, gsad_command_response_data_t *response_data)
 {
-  gchar *xml, *format;
+  GString *command;
+  gchar *xml;
   const char *agent_control_id, *attempts, *delay_in_seconds;
   const char *max_jitter_in_seconds, *bulk_size, *bulk_throttle_time_in_ms;
   const char *indexer_dir_depth, *interval_in_seconds, *miss_until_inactive;
@@ -19950,11 +19979,17 @@ modify_agent_control_scan_config_gmp (
         response_data);
     }
 
+  command = g_string_new ("");
+  xml_string_append (command,
+                     "<modify_agent_control_scan_config"
+                     " agent_control_id=\"%s\">",
+                     agent_control_id);
+
   char *name;
   params_iterator_t iter;
   param_t *param;
 
-  GString *items_xml = g_string_new ("");
+  g_string_append (command, "<scheduler_cron_time is_list=\"1\">");
   if (scheduler_cron_times)
     {
       params_iterator_init (&iter, scheduler_cron_times);
@@ -19962,35 +19997,33 @@ modify_agent_control_scan_config_gmp (
         {
           if (param->value && *param->value)
             {
-              gchar *escaped = g_markup_escape_text (param->value, -1);
-              g_string_append_printf (items_xml, "<item>%s</item>", escaped);
-              g_free (escaped);
+              xml_string_append (command, "<item>%s</item>", param->value);
             }
         }
     }
+  g_string_append (command, "</scheduler_cron_time>");
 
-  format = g_strdup_printf (
-    "<modify_agent_control_scan_config agent_control_id=\"%s\">"
+  xml_string_append (
+    command,
     "<config_defaults>"
     "<agent_defaults>"
     "<agent_control>"
     "<retry>"
-    "<attempts>%%s</attempts>"
-    "<delay_in_seconds>%%s</delay_in_seconds>"
-    "<max_jitter_in_seconds>%%s</max_jitter_in_seconds>"
+    "<attempts>%s</attempts>"
+    "<delay_in_seconds>%s</delay_in_seconds>"
+    "<max_jitter_in_seconds>%s</max_jitter_in_seconds>"
     "</retry>"
     "</agent_control>"
     "<agent_script_executor>"
-    "<bulk_size>%%s</bulk_size>"
-    "<bulk_throttle_time_in_ms>%%s</bulk_throttle_time_in_ms>"
-    "<indexer_dir_depth>%%s</indexer_dir_depth>"
+    "<bulk_size>%s</bulk_size>"
+    "<bulk_throttle_time_in_ms>%s</bulk_throttle_time_in_ms>"
+    "<indexer_dir_depth>%s</indexer_dir_depth>"
     "<scheduler_cron_time is_list=\"1\">"
-    "%s" // list of items
     "</scheduler_cron_time>"
     "</agent_script_executor>"
     "<heartbeat>"
-    "<interval_in_seconds>%%s</interval_in_seconds>"
-    "<miss_until_inactive>%%s</miss_until_inactive>"
+    "<interval_in_seconds>%s</interval_in_seconds>"
+    "<miss_until_inactive>%s</miss_until_inactive>"
     "</heartbeat>"
     "</agent_defaults>"
     "<agent_control_defaults>"
@@ -19998,17 +20031,16 @@ modify_agent_control_scan_config_gmp (
     "</agent_control_defaults>"
     "</config_defaults>"
     "</modify_agent_control_scan_config>",
-    agent_control_id, items_xml->str);
+    attempts, delay_in_seconds, max_jitter_in_seconds, bulk_size,
+    bulk_throttle_time_in_ms, indexer_dir_depth, interval_in_seconds,
+    miss_until_inactive, update_to_latest);
 
   entity = NULL;
 
-  ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
-              attempts, delay_in_seconds, max_jitter_in_seconds, bulk_size,
-              bulk_throttle_time_in_ms, indexer_dir_depth, interval_in_seconds,
-              miss_until_inactive, update_to_latest);
+  ret = gmp (connection, credentials, NULL, &entity, response_data,
+             command->str);
 
-  g_free (format);
-  g_string_free (items_xml, TRUE);
+  g_string_free (command, TRUE);
 
   switch (ret)
     {
@@ -20066,10 +20098,10 @@ char *
 delete_agent_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                   params_t *params, gsad_command_response_data_t *response_data)
 {
-  gchar *xml, *format;
+  GString *command;
+  gchar *xml;
   int ret;
   char *name;
-  GString *agents_element;
   params_t *agent_ids;
   entity_t entity;
 
@@ -20083,7 +20115,7 @@ delete_agent_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
         credentials, "The 'agent_ids' parameter is required.", response_data);
     }
 
-  agents_element = g_string_new ("<agents>");
+  command = g_string_new ("<delete_agent><agents>");
 
   params_iterator_t iter;
   param_t *param;
@@ -20092,24 +20124,16 @@ delete_agent_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
     {
       if (param->value && strcmp (param->value, "0"))
         {
-          gchar *agent_tag;
-
-          agent_tag =
-            g_markup_printf_escaped ("<agent id=\"%s\"/>", param->value);
-          g_string_append (agents_element, agent_tag);
-          g_free (agent_tag);
+          xml_string_append (command, "<agent id=\"%s\"/>", param->value);
         }
     }
-  xml_string_append (agents_element, "</agents>");
+  xml_string_append (command, "</agents></delete_agent>");
 
-  format = g_strdup_printf ("<delete_agent>"
-                            "%s"
-                            "</delete_agent>",
-                            agents_element->str);
   entity = NULL;
-  ret = gmpf (connection, credentials, NULL, &entity, response_data, format);
-  g_free (format);
-  g_string_free (agents_element, TRUE);
+  ret = gmp (connection, credentials, NULL, &entity, response_data,
+             command->str);
+
+  g_string_free (command, TRUE);
 
   switch (ret)
     {
