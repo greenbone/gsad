@@ -2331,9 +2331,27 @@ create_agent_group_task_gmp (gvm_connection_t *connection,
     "<comment>%s</comment>"
     "<alterable>%i</alterable>"
     "<usage_type>scan</usage_type>"
+    "<preferences>"
+    "<preference>"
+    "<scanner_name>in_assets</scanner_name>"
+    "<value>%s</value>"
+    "</preference>"
+    "<preference>"
+    "<scanner_name>"
+    "assets_apply_overrides"
+    "</scanner_name>"
+    "<value>%s</value>"
+    "</preference>"
+    "<preference>"
+    "<scanner_name>assets_min_qod</scanner_name>"
+    "<value>%s</value>"
+    "</preference>"
+    "</preferences>"
     "</create_task>",
     schedule_periods, schedule_element, alert_element->str, agent_group_id,
-    name_escaped, comment_escaped, alterable ? strcmp (alterable, "0") : 0);
+    name_escaped, comment_escaped, alterable ? strcmp (alterable, "0") : 0,
+    strcmp (in_assets, "0") ? "yes" : "no",
+    strcmp (apply_overrides, "0") ? "yes" : "no", min_qod);
 
   g_free (name_escaped);
   g_free (comment_escaped);
@@ -3319,8 +3337,8 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
                            gsad_command_response_data_t *response_data)
 {
   gchar *html = NULL, *format = NULL;
-  const char *comment, *name, *schedule_id, *schedule_periods;
-  const char *task_id, *agent_group_id;
+  const char *comment, *name, *schedule_id, *schedule_periods, *in_assets;
+  const char *min_qod, *task_id, *agent_group_id, *apply_overrides;
   const char *alterable;
   int ret;
   params_t *alerts;
@@ -3329,10 +3347,15 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
 
   /* Read params */
   alterable = params_value (params, "alterable");
+  apply_overrides = params_value (params, "apply_overrides");
+  in_assets = params_value (params, "in_assets");
   comment = params_value (params, "comment");
   name = params_value (params, "name");
   schedule_id = params_value (params, "schedule_id");
   schedule_periods = params_value (params, "schedule_periods");
+  min_qod = params_value (params, "min_qod");
+  if (!params_given (params, "min_qod") || !params_valid (params, "min_qod"))
+    min_qod = "";
   task_id = params_value (params, "task_id");
   agent_group_id = params_value (params, "agent_group_id");
 
@@ -3350,6 +3373,23 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (schedule_id, "Save Agent Group Task");
   CHECK_VARIABLE_INVALID (task_id, "Save Agent Group Task");
   CHECK_VARIABLE_INVALID (agent_group_id, "Save Agent Group Task");
+  CHECK_VARIABLE_INVALID (in_assets, "Save Task");
+
+  if (!strcmp (in_assets, "1"))
+    {
+      CHECK_VARIABLE_INVALID (apply_overrides, "Save Agent Group Task");
+      CHECK_VARIABLE_INVALID (min_qod, "Save Agent Group Task");
+    }
+  else
+    {
+      if (!params_given (params, "apply_overrides")
+          || !params_valid (params, "apply_overrides"))
+        apply_overrides = "";
+
+      if (!params_given (params, "min_qod")
+          || !params_valid (params, "min_qod"))
+        min_qod = "";
+    }
 
   /* Build alerts list */
   alert_element = g_string_new ("");
@@ -3384,6 +3424,20 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
     "<agent_group id=\"%%s\"/>"
     "<schedule id=\"%%s\"/>"
     "<schedule_periods>%%s</schedule_periods>"
+    "<preferences>"
+    "<preference>"
+    "<scanner_name>in_assets</scanner_name>"
+    "<value>%%s</value>"
+    "</preference>"
+    "<preference>"
+    "<scanner_name>assets_apply_overrides</scanner_name>"
+    "<value>%%s</value>"
+    "</preference>"
+    "<preference>"
+    "<scanner_name>assets_min_qod</scanner_name>"
+    "<value>%%s</value>"
+    "</preference>"
+    "</preferences>"
     "%s%i%s" /* optional alterable wrapper with numeric value */
     "</modify_task>",
     alert_element->str, alterable ? "<alterable>" : "",
@@ -3392,7 +3446,8 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
   /* Send */
   ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
               task_id, name, comment, agent_group_id, schedule_id,
-              schedule_periods);
+              schedule_periods, strcmp (in_assets, "0") ? "yes" : "no",
+              strcmp (apply_overrides, "0") ? "yes" : "no", min_qod);
 
   g_free (format);
   g_string_free (alert_element, TRUE);
