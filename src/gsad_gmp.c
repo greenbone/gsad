@@ -11280,6 +11280,44 @@ export_scan_report_gmp (gvm_connection_t *connection,
 }
 
 /**
+ * @brief Get report exports.
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Credentials for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_report_exports_gmp (gvm_connection_t *connection,
+                        gsad_credentials_t *credentials, params_t *params,
+                        gsad_command_response_data_t *response_data)
+{
+  return get_many (connection, "report_exports", credentials, params, NULL,
+                   response_data);
+}
+
+/**
+ * @brief Get a report export.
+ *
+ * @param[in]  connection      Connection to manager.
+ * @param[in]  credentials     Credentials for authentication.
+ * @param[in]  params          Request parameters.
+ * @param[out] response_data   Extra data for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_report_export_gmp (gvm_connection_t *connection,
+                       gsad_credentials_t *credentials, params_t *params,
+                       gsad_command_response_data_t *response_data)
+{
+  return get_one (connection, "report_export", credentials, params, NULL, NULL,
+                  response_data);
+}
+
+/**
  * @brief Run alert for a report.
  *
  * @param[in]  connection     Connection to manager.
@@ -19509,6 +19547,7 @@ get_agent_support_bundle_gmp (gvm_connection_t *connection,
 {
   const gchar *agent_uuid = params_value (params, "agent_uuid");
   const gchar *days = params_value (params, "days");
+  const gchar *encryption = params_value (params, "encryption");
   entity_t entity = NULL;
   entity_t file_entity = NULL;
   entity_t content_type_entity = NULL;
@@ -19526,13 +19565,21 @@ get_agent_support_bundle_gmp (gvm_connection_t *connection,
     {
       CHECK_VARIABLE_INVALID (days, "Get Agent Support Bundle");
     }
+  if (encryption && strlen (encryption) > 0)
+    {
+      CHECK_VARIABLE_INVALID (encryption, "Get Agent Support Bundle");
+    }
+  else
+    {
+      encryption = "1";
+    }
 
   if (days && strlen (days) > 0)
     {
-      if (gvm_connection_sendf (
-            connection,
-            "<get_agent_support_bundle agent_uuid=\"%s\" days=\"%s\"/>",
-            agent_uuid, days)
+      if (gvm_connection_sendf (connection,
+                                "<get_agent_support_bundle agent_uuid=\"%s\" "
+                                "days=\"%s\" encryption=\"%s\"/>",
+                                agent_uuid, days, encryption)
           == -1)
         {
           gsad_command_response_data_set_status_code (
@@ -19544,8 +19591,9 @@ get_agent_support_bundle_gmp (gvm_connection_t *connection,
         }
     }
   else if (gvm_connection_sendf (
-             connection, "<get_agent_support_bundle agent_uuid=\"%s\"/>",
-             agent_uuid)
+             connection,
+             "<get_agent_support_bundle agent_uuid=\"%s\"  encryption=\"%s\"/>",
+             agent_uuid, encryption)
            == -1)
     {
       gsad_command_response_data_set_status_code (
@@ -21958,6 +22006,8 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (get_reports)
   ELSE (get_report_config)
   ELSE (get_report_configs)
+  ELSE (get_report_export)
+  ELSE (get_report_exports)
   ELSE (get_report_format)
   ELSE (get_report_formats)
   ELSE (get_resource_names)

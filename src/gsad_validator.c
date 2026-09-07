@@ -193,6 +193,8 @@ gsad_init_validator ()
                      "|(get_reports)"
                      "|(get_report_config)"
                      "|(get_report_configs)"
+                     "|(get_report_export)"
+                     "|(get_report_exports)"
                      "|(get_report_format)"
                      "|(get_report_formats)"
                      "|(get_resource_names)"
@@ -589,6 +591,7 @@ gsad_init_validator ()
   gvm_validator_alias (validator, "scheduler_cron_time", "name");
   gvm_validator_alias (validator, "scheduler_cron_times:name", "number");
   gvm_validator_alias (validator, "scheduler_cron_times:value", "name");
+  gvm_validator_alias (validator, "encryption", "details");
 
   /* Defined IDs "^[a-z0-9\\-]+$" */
   gvm_validator_alias (validator, "_and_report_id", "id");
@@ -620,6 +623,7 @@ gsad_init_validator ()
   gvm_validator_alias (validator, "report_config_id", "id");
   gvm_validator_alias (validator, "report_format_id", "id");
   gvm_validator_alias (validator, "report_id", "id");
+  gvm_validator_alias (validator, "report_export_id", "id");
   gvm_validator_alias (validator, "result_id", "id");
   gvm_validator_alias (validator, "role_id", "id");
   gvm_validator_alias (validator, "scanner_id", "id");
