@@ -3354,8 +3354,6 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
   schedule_id = params_value (params, "schedule_id");
   schedule_periods = params_value (params, "schedule_periods");
   min_qod = params_value (params, "min_qod");
-  if (!params_given (params, "min_qod") || !params_valid (params, "min_qod"))
-    min_qod = "";
   task_id = params_value (params, "task_id");
   agent_group_id = params_value (params, "agent_group_id");
 
@@ -3373,9 +3371,9 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (schedule_id, "Save Agent Group Task");
   CHECK_VARIABLE_INVALID (task_id, "Save Agent Group Task");
   CHECK_VARIABLE_INVALID (agent_group_id, "Save Agent Group Task");
-  CHECK_VARIABLE_INVALID (in_assets, "Save Task");
+  CHECK_VARIABLE_INVALID (in_assets, "Save Agent Group Task");
 
-  if (!strcmp (in_assets, "1"))
+  if (str_equal (in_assets, "1"))
     {
       CHECK_VARIABLE_INVALID (apply_overrides, "Save Agent Group Task");
       CHECK_VARIABLE_INVALID (min_qod, "Save Agent Group Task");
@@ -3446,8 +3444,8 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
   /* Send */
   ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
               task_id, name, comment, agent_group_id, schedule_id,
-              schedule_periods, strcmp (in_assets, "0") ? "yes" : "no",
-              strcmp (apply_overrides, "0") ? "yes" : "no", min_qod);
+              schedule_periods, str_equal (in_assets, "1") ? "yes" : "no",
+              str_equal (apply_overrides, "1") ? "yes" : "no", min_qod);
 
   g_free (format);
   g_string_free (alert_element, TRUE);
