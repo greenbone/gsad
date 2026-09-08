@@ -20324,11 +20324,11 @@ save_agent_group_gmp (gvm_connection_t *connection,
                       gsad_credentials_t *credentials, params_t *params,
                       gsad_command_response_data_t *response_data)
 {
-  gchar *html = NULL, *format = NULL;
+  GString *command;
+  gchar *html = NULL;
   const char *agent_group_id = NULL, *name = NULL, *scheduler_cron_time = NULL,
              *comment = NULL;
   params_t *agent_ids = NULL;
-  GString *agents_element = NULL;
   entity_t entity = NULL;
   int ret;
 
@@ -20343,7 +20343,12 @@ save_agent_group_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (comment, "Save Agent Group");
   CHECK_VARIABLE_INVALID (scheduler_cron_time, "Save Agent Group");
 
-  agents_element = g_string_new ("<agents>");
+  command = g_string_new ("");
+  xml_string_append (command,
+                     "<modify_agent_group agent_group_id=\"%s\">"
+                     "<agents>",
+                     agent_group_id);
+
   if (agent_ids)
     {
       params_iterator_t iter;
@@ -20354,25 +20359,23 @@ save_agent_group_gmp (gvm_connection_t *connection,
       while (params_iterator_next (&iter, &key, &param))
         {
           if (param->value && strcmp (param->value, "0") != 0)
-            xml_string_append (agents_element, "<agent id=\"%s\"/>",
+            xml_string_append (command, "<agent id=\"%s\"/>",
                                param->value);
         }
     }
-  g_string_append (agents_element, "</agents>");
 
-  format = g_strdup_printf ("<modify_agent_group agent_group_id=\"%%s\">"
-                            "<name>%%s</name>"
-                            "<comment>%%s</comment>"
-                            "<scheduler_cron_time>%%s</scheduler_cron_time>"
-                            "%s"
-                            "</modify_agent_group>",
-                            agents_element->str);
+  xml_string_append (command,
+                     "</agents>"
+                     "<name>%s</name>"
+                     "<comment>%s</comment>"
+                     "<scheduler_cron_time>%s</scheduler_cron_time>"
+                     "</modify_agent_group>",
+                     name, comment, scheduler_cron_time);
 
-  ret = gmpf (connection, credentials, NULL, &entity, response_data, format,
-              agent_group_id, name, comment, scheduler_cron_time);
+  ret = gmp (connection, credentials, NULL, &entity, response_data,
+             command->str);
 
-  g_free (format);
-  g_string_free (agents_element, TRUE);
+  g_string_free (command, TRUE);
 
   switch (ret)
     {
