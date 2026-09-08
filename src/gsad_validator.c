@@ -88,6 +88,7 @@ gsad_init_validator ()
                      "|(download_ssl_cert)"
                      "|(download_ca_pub)"
                      "|(download_key_pub)"
+                     "|(download_report_export)"
                      "|(edit_alert)"
                      "|(edit_config_family)"
                      "|(edit_config_family_all)"
