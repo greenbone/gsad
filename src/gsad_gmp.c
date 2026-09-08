@@ -1484,8 +1484,8 @@ delete_resource (gvm_connection_t *connection, const char *type,
         {
           g_string_free (command, TRUE);
           return message_invalid (connection, credentials, params,
-                                  response_data,
-                                  "Invalid inheritor_id", "Delete User");
+                                  response_data, "Invalid inheritor_id",
+                                  "Delete User");
         }
     }
 
@@ -20359,8 +20359,7 @@ save_agent_group_gmp (gvm_connection_t *connection,
       while (params_iterator_next (&iter, &key, &param))
         {
           if (param->value && strcmp (param->value, "0") != 0)
-            xml_string_append (command, "<agent id=\"%s\"/>",
-                               param->value);
+            xml_string_append (command, "<agent id=\"%s\"/>", param->value);
         }
     }
 
@@ -20372,8 +20371,8 @@ save_agent_group_gmp (gvm_connection_t *connection,
                      "</modify_agent_group>",
                      name, comment, scheduler_cron_time);
 
-  ret = gmp (connection, credentials, NULL, &entity, response_data,
-             command->str);
+  ret =
+    gmp (connection, credentials, NULL, &entity, response_data, command->str);
 
   g_string_free (command, TRUE);
 
