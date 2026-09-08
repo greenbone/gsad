@@ -1481,8 +1481,12 @@ delete_resource (gvm_connection_t *connection, const char *type,
       if (inheritor_id)
         xml_string_append (command, " inheritor_id=\"%s\"", inheritor_id);
       else if (params_given (params, "inheritor_id"))
-        return message_invalid (connection, credentials, params, response_data,
-                                "Invalid inheritor_id", "Delete User");
+        {
+          g_string_free (command, TRUE);
+          return message_invalid (connection, credentials, params,
+                                  response_data,
+                                  "Invalid inheritor_id", "Delete User");
+        }
     }
 
   g_string_append (command, "/>");
@@ -3569,7 +3573,7 @@ save_oci_image_task_gmp (gvm_connection_t *connection,
     "<comment>%s</comment>"
     "<oci_image_target id=\"%s\"/>"
     "<schedule id=\"%s\"/>"
-    "<schedule_periods>%%s</schedule_periods>"
+    "<schedule_periods>%s</schedule_periods>"
     "<scanner id=\"%s\"/>"
     "<preferences>"
     "<preference>"
@@ -3713,7 +3717,7 @@ save_web_application_task_gmp (gvm_connection_t *connection,
         }
     }
 
-  if (alerts_count)
+  if (alerts_count == 0)
     g_string_append_printf (command, "<alert id=\"0\"/>");
 
   if (alterable)
@@ -4989,7 +4993,8 @@ modify_credential_store_gmp (gvm_connection_t *connection,
 
   command = g_string_new ("");
   xml_string_append (command,
-                     "<modify_credential_store credential_store_id=\"%s\">");
+                     "<modify_credential_store credential_store_id=\"%s\">",
+                     credential_store_id);
 
   g_string_append (command, "<preferences>");
 
@@ -19989,7 +19994,7 @@ modify_agent_control_scan_config_gmp (
                      "</heartbeat>"
                      "</agent_defaults>"
                      "<agent_control_defaults>"
-                     "<update_to_latest>%%s</update_to_latest>"
+                     "<update_to_latest>%s</update_to_latest>"
                      "</agent_control_defaults>"
                      "</config_defaults>"
                      "</modify_agent_control_scan_config>",
