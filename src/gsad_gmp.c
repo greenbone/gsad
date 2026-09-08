@@ -9606,6 +9606,158 @@ delete_report_gmp (gvm_connection_t *connection,
 }
 
 /**
+ * @brief Download a completed report export.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Decoded report export content.
+ */
+char *
+download_report_export_gmp (gvm_connection_t *connection,
+                            gsad_credentials_t *credentials, params_t *params,
+                            gsad_command_response_data_t *response_data)
+{
+  entity_t entity;
+  entity_t report_export_entity;
+  entity_t content_entity;
+  entity_t content_type_entity;
+  entity_t extension_entity;
+  entity_t report_entity;
+  const char *report_export_id;
+  const char *content_type;
+  const char *extension;
+  const char *content_encoded;
+  const char *report_id;
+  gchar *content_decoded;
+  gchar *file_name;
+  gsize content_len;
+  int ret;
+
+  report_export_id = params_value (params, "report_export_id");
+
+  CHECK_VARIABLE_INVALID (report_export_id, "Download Report Export");
+
+  ret = gvm_connection_sendf_xml (connection,
+                                  "<download_report_export"
+                                  " report_export_id=\"%s\"/>",
+                                  report_export_id);
+
+  if (ret == -1)
+    {
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while downloading a report export. "
+        "The report export could not be delivered. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    }
+
+  entity = NULL;
+
+  if (read_entity_c (connection, &entity))
+    {
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while downloading a report export. "
+        "The report export could not be delivered. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    }
+
+  if (gmp_success (entity) != 1)
+    {
+      gchar *message;
+
+      set_http_status_from_entity (entity, response_data);
+
+      message = gsad_http_create_gsad_message (
+        credentials, entity_attribute (entity, "status_text"), response_data);
+
+      free_entity (entity);
+
+      return message;
+    }
+
+  report_export_entity = entity_child (entity, "report_export");
+
+  if (report_export_entity == NULL)
+    {
+      free_entity (entity);
+
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while downloading a report export. "
+        "The report export could not be delivered. "
+        "Diagnostics: Response from manager daemon did not contain a "
+        "report export.",
+        response_data);
+    }
+
+  content_entity = entity_child (report_export_entity, "content");
+  content_type_entity = entity_child (report_export_entity, "content_type");
+  extension_entity = entity_child (report_export_entity, "extension");
+  report_entity = entity_child (report_export_entity, "report");
+
+  if (content_entity == NULL || content_type_entity == NULL
+      || extension_entity == NULL || report_entity == NULL)
+    {
+      free_entity (entity);
+
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while downloading a report export. "
+        "The report export could not be delivered. "
+        "Diagnostics: Response from manager daemon did not contain the "
+        "report export file information.",
+        response_data);
+    }
+
+  content_encoded = entity_text (content_entity);
+  content_type = entity_text (content_type_entity);
+  extension = entity_text (extension_entity);
+  report_id = entity_attribute (report_entity, "id");
+
+  content_decoded = (gchar *) g_base64_decode (content_encoded, &content_len);
+
+  if (content_decoded == NULL)
+    {
+      content_decoded = g_strdup ("");
+      content_len = 0;
+    }
+
+  gsad_command_response_data_set_content_type_string (response_data,
+                                                      g_strdup (content_type));
+
+  file_name = g_strdup_printf (
+    "report-%s.%s", report_id ? report_id : report_export_id, extension);
+
+  gsad_command_response_data_set_content_disposition (
+    response_data, g_strdup_printf ("attachment; filename=\"%s\"", file_name));
+
+  gsad_command_response_data_set_content_length (response_data, content_len);
+
+  g_free (file_name);
+  free_entity (entity);
+
+  return content_decoded;
+}
+
+/**
  * @brief Get a report and return the result.
  *
  * @param[in]  connection     Connection to manager.
@@ -21924,6 +22076,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     {
     }
   ELSE (auth_settings)
+  ELSE (download_report_export)
   ELSE (edit_alert)
   ELSE (edit_config_family)
   ELSE (edit_config_family_all)
