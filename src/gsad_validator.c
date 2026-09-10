@@ -128,6 +128,7 @@ gsad_init_validator ()
                      "|(export_roles)"
                      "|(export_scanner)"
                      "|(export_scanners)"
+                     "|(export_audit_report)"
                      "|(export_scan_report)"
                      "|(export_schedule)"
                      "|(export_schedules)"
