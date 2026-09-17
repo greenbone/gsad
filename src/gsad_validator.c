@@ -129,6 +129,7 @@ gsad_init_validator ()
                      "|(export_scanner)"
                      "|(export_scanners)"
                      "|(export_audit_report)"
+                     "|(export_delta_audit_report)"
                      "|(export_delta_scan_report)"
                      "|(export_scan_report)"
                      "|(export_schedule)"
