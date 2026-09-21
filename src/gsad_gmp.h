@@ -85,6 +85,10 @@ delete_report_gmp (gvm_connection_t *, gsad_credentials_t *, params_t *,
                    gsad_command_response_data_t *);
 
 char *
+cancel_report_export_gmp (gvm_connection_t *, gsad_credentials_t *, params_t *,
+                          gsad_command_response_data_t *);
+
+char *
 download_report_export_gmp (gvm_connection_t *, gsad_credentials_t *,
                             params_t *, gsad_command_response_data_t *);
 char *

@@ -21,6 +21,7 @@ gsad_init_validator ()
   gvm_validator_add (validator, "cmd",
                      "^((bulk_delete)"
                      "|(bulk_export)"
+                     "|(cancel_report_export)"
                      "|(change_password)"
                      "|(clone)"
                      "|(create_asset)"
