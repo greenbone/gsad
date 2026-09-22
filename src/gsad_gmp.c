@@ -3375,6 +3375,7 @@ save_agent_group_task_gmp (gvm_connection_t *connection,
   int alerts_count;
   gchar *html = NULL;
   const char *comment, *name, *schedule_id, *schedule_periods;
+  const char *in_assets, *min_qod, *apply_overrides;
   const char *task_id, *agent_group_id;
   const char *alterable;
   int ret;
