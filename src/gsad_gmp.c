@@ -2349,9 +2349,9 @@ create_agent_group_task_gmp (gvm_connection_t *connection,
     "</preferences>"
     "</create_task>",
     schedule_periods, schedule_element, alert_element->str, agent_group_id,
-    name_escaped, comment_escaped, alterable ? strcmp (alterable, "0") : 0,
-    strcmp (in_assets, "0") ? "yes" : "no",
-    strcmp (apply_overrides, "0") ? "yes" : "no", min_qod);
+    name_escaped, comment_escaped, alterable ? !str_equal (alterable, "0") : 0,
+    !str_equal (in_assets, "0") ? "yes" : "no",
+    !str_equal (apply_overrides, "0") ? "yes" : "no", min_qod);
 
   g_free (name_escaped);
   g_free (comment_escaped);
