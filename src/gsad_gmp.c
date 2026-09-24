@@ -13023,7 +13023,8 @@ create_scanner_gmp (gvm_connection_t *connection,
   CHECK_VARIABLE_INVALID (name, "Create Scanner");
   CHECK_VARIABLE_INVALID (comment, "Create Scanner");
   CHECK_VARIABLE_INVALID (host, "Create Scanner");
-  CHECK_VARIABLE_INVALID (port, "Create Scanner");
+  if (port)
+    CHECK_VARIABLE_INVALID (port, "Create Scanner");
   CHECK_VARIABLE_INVALID (type, "Create Scanner");
 
   if (params_given (params, "credential_id"))
