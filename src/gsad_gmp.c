@@ -5311,7 +5311,8 @@ save_credential_gmp (gvm_connection_t *connection,
       if (params_given (params, "privacy_host_identifier"))
         CHECK_VARIABLE_INVALID (privacy_host_identifier, "Save Credential");
     }
-  else if (str_equal (type, "up") || str_equal (type, "pw"))
+  else if (str_equal (type, "up") || str_equal (type, "pw")
+           || str_equal (type, "krb5") || str_equal (type, "snmp"))
     {
       if (params_given (params, "password"))
         CHECK_VARIABLE_INVALID (password, "Save Credential");
@@ -5382,6 +5383,10 @@ save_credential_gmp (gvm_connection_t *connection,
 
           xml_string_append (command, "</privacy>");
         }
+      if (password)
+        {
+          xml_string_append (command, "<password>%s</password>", password);
+        }
     }
   else if (str_equal (type, "cs_snmp"))
     {
@@ -5423,6 +5428,10 @@ save_credential_gmp (gvm_connection_t *connection,
       if (realm)
         {
           xml_string_append (command, "<realm>%s</realm>", realm);
+        }
+      if (password)
+        {
+          xml_string_append (command, "<password>%s</password>", password);
         }
     }
   else if (str_equal (type, "cc"))
