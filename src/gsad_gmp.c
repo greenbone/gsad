@@ -1750,6 +1750,7 @@ create_report_gmp (gvm_connection_t *connection,
   int ret;
   gchar **xml_file_array, *xml_file_escaped;
   gchar *task_id_escaped, *in_assets_escaped, *command, *html;
+  gchar *xml_error_message = NULL;
   const char *task_id = params_value (params, "task_id"),
              *xml_file = params_value (params, "xml_file"),
              *in_assets = params_value (params, "in_assets");
@@ -1763,10 +1764,25 @@ create_report_gmp (gvm_connection_t *connection,
                               "Report required", "Create Report");
     }
 
-  if (!gvm_is_valid_xml (xml_file, NULL))
+  if (!gvm_is_valid_xml (xml_file, &xml_error_message))
     {
-      return message_invalid (connection, credentials, params, response_data,
-                              "Report is not valid XML", "Create Report");
+      gchar *invalid_message;
+      gchar *ret;
+
+      g_warning ("Import Report invalid XML: %s",
+                 xml_error_message ? xml_error_message : "Unknown error");
+
+      invalid_message = g_strdup_printf ("Report is not valid XML: %s",
+                                         xml_error_message ? xml_error_message
+                                                           : "Unknown error");
+
+      g_free (xml_error_message);
+
+      ret = message_invalid (connection, credentials, params, response_data,
+                             invalid_message, "Create Report");
+
+      g_free (invalid_message);
+      return ret;
     }
 
   xml_file_array = g_strsplit (xml_file, "%", -1);
@@ -8336,6 +8352,7 @@ import_config_gmp (gvm_connection_t *connection,
 {
   const char *xml_file;
   gchar *command, *html;
+  gchar *xml_error_message = NULL;
   entity_t entity;
   int ret;
 
@@ -8344,10 +8361,24 @@ import_config_gmp (gvm_connection_t *connection,
   entity = NULL;
 
   xml_file = params_value (params, "xml_file");
-  if (!gvm_is_valid_xml (xml_file, NULL))
+  if (!gvm_is_valid_xml (xml_file, &xml_error_message))
     {
-      return message_invalid (connection, credentials, params, response_data,
-                              "Config is not valid XML", "Create Config");
+      gchar *invalid_message;
+      gchar *ret;
+
+      g_warning ("Import Scan Config invalid XML: %s",
+                 xml_error_message ? xml_error_message : "Unknown error");
+
+      invalid_message = g_strdup_printf ("Scan Config is not valid XML: %s",
+                                         xml_error_message ? xml_error_message
+                                                           : "Unknown error");
+      g_free (xml_error_message);
+
+      ret = message_invalid (connection, credentials, params, response_data,
+                             invalid_message, "Import Scan Config");
+
+      g_free (invalid_message);
+      return ret;
     }
 
   command = g_strdup_printf ("<create_config>"
@@ -14132,6 +14163,7 @@ import_report_format_gmp (gvm_connection_t *connection,
 {
   const char *xml_file;
   gchar *command, *html;
+  gchar *xml_error_message = NULL;
   entity_t entity;
   int ret;
 
@@ -14140,11 +14172,23 @@ import_report_format_gmp (gvm_connection_t *connection,
   entity = NULL;
 
   xml_file = params_value (params, "xml_file");
-  if (!gvm_is_valid_xml (xml_file, NULL))
+  if (!gvm_is_valid_xml (xml_file, &xml_error_message))
     {
-      return message_invalid (connection, credentials, params, response_data,
-                              "Report Format is not valid XML",
-                              "Create Report Format");
+      gchar *invalid_message;
+      gchar *ret;
+
+      g_warning ("Import Report Format invalid XML: %s",
+                 xml_error_message ? xml_error_message : "Unknown error");
+
+      invalid_message = g_strdup_printf ("Report Format is not valid XML: %s",
+                                         xml_error_message ? xml_error_message
+                                                           : "Unknown error");
+      g_free (xml_error_message);
+
+      ret = message_invalid (connection, credentials, params, response_data,
+                             invalid_message, "Import Report Format");
+      g_free (invalid_message);
+      return ret;
     }
 
   command = g_strdup_printf ("<create_report_format>"
@@ -16598,6 +16642,7 @@ import_port_list_gmp (gvm_connection_t *connection,
 {
   const char *xml_file;
   gchar *command, *html;
+  gchar *xml_error_message = NULL;
   entity_t entity;
   int ret;
 
@@ -16606,10 +16651,24 @@ import_port_list_gmp (gvm_connection_t *connection,
   entity = NULL;
 
   xml_file = params_value (params, "xml_file");
-  if (!gvm_is_valid_xml (xml_file, NULL))
+  if (!gvm_is_valid_xml (xml_file, &xml_error_message))
     {
-      return message_invalid (connection, credentials, params, response_data,
-                              "Port List is not valid XML", "Create Port List");
+      gchar *invalid_message;
+      gchar *ret;
+
+      g_warning ("Import Port List invalid XML: %s",
+                 xml_error_message ? xml_error_message : "Unknown error");
+
+      invalid_message = g_strdup_printf ("Port List is not valid XML: %s",
+                                         xml_error_message ? xml_error_message
+                                                           : "Unknown error");
+
+      g_free (xml_error_message);
+
+      ret = message_invalid (connection, credentials, params, response_data,
+                             invalid_message, "Import Port List");
+      g_free (invalid_message);
+      return ret;
     }
 
   command = g_strdup_printf ("<create_port_list>"
