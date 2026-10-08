@@ -1,4 +1,4 @@
-FROM registry.community.greenbone.net/community/gvm-libs:stable
+FROM ghcr.io/greenbone/gvm-libs:stable
 
 ARG DEBIAN_FRONTEND=noninteractive
 
