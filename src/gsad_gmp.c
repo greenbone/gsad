@@ -22545,7 +22545,6 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
     {
     }
   ELSE (auth_settings)
-  ELSE (cancel_report_export)
   ELSE (download_report_export)
   ELSE (edit_alert)
   ELSE (edit_config_family)
