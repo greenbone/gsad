@@ -4378,12 +4378,23 @@ create_credential_gmp (gvm_connection_t *connection,
         }
       else if (str_equal (type, "snmp"))
         {
-          CHECK_VARIABLE_INVALID (community, "Create Credential");
-          CHECK_VARIABLE_INVALID (credential_login, "Create Credential");
-          CHECK_VARIABLE_INVALID (password, "Create Credential");
-          CHECK_VARIABLE_INVALID (privacy_password, "Create Credential");
-          CHECK_VARIABLE_INVALID (auth_algorithm, "Create Credential");
-          CHECK_VARIABLE_INVALID (privacy_algorithm, "Create Credential");
+          if (params_given (params, "community"))
+            CHECK_VARIABLE_INVALID (community, "Create Credential");
+
+          if (params_given (params, "credential_login"))
+            CHECK_VARIABLE_INVALID (credential_login, "Create Credential");
+
+          if (params_given (params, "lsc_password"))
+            CHECK_VARIABLE_INVALID (password, "Create Credential");
+
+          if (params_given (params, "auth_algorithm"))
+            CHECK_VARIABLE_INVALID (auth_algorithm, "Create Credential");
+
+          if (params_given (params, "privacy_password"))
+            CHECK_VARIABLE_INVALID (privacy_password, "Create Credential");
+
+          if (params_given (params, "privacy_algorithm"))
+            CHECK_VARIABLE_INVALID (privacy_algorithm, "Create Credential");
 
           if (privacy_password && strcmp (privacy_password, ""))
             ret = gmpf (connection, credentials, NULL, &entity, response_data,
