@@ -20608,6 +20608,9 @@ modify_agent_control_scan_config_gmp (
   const char *indexer_dir_depth, *interval_in_seconds, *miss_until_inactive;
   const char *update_to_latest;
   params_t *scheduler_cron_times;
+  params_iterator_t iter;
+  char *name;
+  param_t *param;
   int ret;
   entity_t entity;
 
@@ -20650,28 +20653,7 @@ modify_agent_control_scan_config_gmp (
   command = g_string_new ("");
   xml_string_append (command,
                      "<modify_agent_control_scan_config"
-                     " agent_control_id=\"%s\">",
-                     agent_control_id);
-
-  char *name;
-  params_iterator_t iter;
-  param_t *param;
-
-  g_string_append (command, "<scheduler_cron_time is_list=\"1\">");
-  if (scheduler_cron_times)
-    {
-      params_iterator_init (&iter, scheduler_cron_times);
-      while (params_iterator_next (&iter, &name, &param))
-        {
-          if (param->value && *param->value)
-            {
-              xml_string_append (command, "<item>%s</item>", param->value);
-            }
-        }
-    }
-  g_string_append (command, "</scheduler_cron_time>");
-
-  xml_string_append (command,
+                     " agent_control_id=\"%s\">"
                      "<config_defaults>"
                      "<agent_defaults>"
                      "<agent_control>"
@@ -20684,9 +20666,28 @@ modify_agent_control_scan_config_gmp (
                      "<agent_script_executor>"
                      "<bulk_size>%s</bulk_size>"
                      "<bulk_throttle_time_in_ms>%s</bulk_throttle_time_in_ms>"
-                     "<indexer_dir_depth>%s</indexer_dir_depth>"
-                     "<scheduler_cron_time is_list=\"1\">"
-                     "</scheduler_cron_time>"
+                     "<indexer_dir_depth>%s</indexer_dir_depth>",
+                     agent_control_id, attempts, delay_in_seconds,
+                     max_jitter_in_seconds, bulk_size, bulk_throttle_time_in_ms,
+                     indexer_dir_depth);
+
+  /* Append scheduler cron times inside agent_script_executor. */
+  g_string_append (command, "<scheduler_cron_time is_list=\"1\">");
+
+  if (scheduler_cron_times)
+    {
+      params_iterator_init (&iter, scheduler_cron_times);
+      while (params_iterator_next (&iter, &name, &param))
+        {
+          if (param->value && *param->value)
+            xml_string_append (command, "<item>%s</item>", param->value);
+        }
+    }
+
+  g_string_append (command, "</scheduler_cron_time>");
+
+  /* Append remaining configuration. */
+  xml_string_append (command,
                      "</agent_script_executor>"
                      "<heartbeat>"
                      "<interval_in_seconds>%s</interval_in_seconds>"
@@ -20698,8 +20699,6 @@ modify_agent_control_scan_config_gmp (
                      "</agent_control_defaults>"
                      "</config_defaults>"
                      "</modify_agent_control_scan_config>",
-                     attempts, delay_in_seconds, max_jitter_in_seconds,
-                     bulk_size, bulk_throttle_time_in_ms, indexer_dir_depth,
                      interval_in_seconds, miss_until_inactive,
                      update_to_latest);
 
@@ -20749,6 +20748,7 @@ modify_agent_control_scan_config_gmp (
     response_from_entity (connection, credentials, params, entity,
                           "Modify Agent Control Scan Config", response_data);
   free_entity (entity);
+
   return xml;
 }
 
