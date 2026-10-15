@@ -358,7 +358,7 @@ gsad_init_validator ()
   gvm_validator_add (validator, "condition", "^[[:alnum:] ]*$");
   gvm_validator_add (validator, "create_credentials_type", "^(gen|pass|key)$");
   gvm_validator_add (validator, "credential_type",
-                     "^(cc|up|usk|smime|pgp|snmp|krb5|pw|cs_cc|cs_up|cs_usk"
+                     "^(cc|up|usk|smime|pgp|snmp|krb5|pw|ad|cs_cc|cs_up|cs_usk"
                      "|cs_smime|cs_pgp|cs_snmp|cs_krb5|cs_pw)$");
   gvm_validator_add (validator, "vault_id", "^.*$");
   gvm_validator_add (validator, "host_identifier", "^.*$");
@@ -574,6 +574,13 @@ gsad_init_validator ()
   gvm_validator_add (validator, "icalendar", "(?s)^BEGIN:VCALENDAR.+$");
   gvm_validator_add (validator, "time_format", "^(12|24|system_default)$");
   gvm_validator_add (validator, "date_format", "^(wmdy|wdmy|system_default)$");
+  gvm_validator_add (validator, "ad_port", "^[0-9]*$");
+  gvm_validator_add (validator, "ad_bind_dn", "^.+$");
+  gvm_validator_add (validator, "ad_bind_password", "^.+$");
+  gvm_validator_add (validator, "ad_base_dn", "^.+$");
+  gvm_validator_add (validator, "ad_tls_mode", "^(ldaps|starttls)$");
+  gvm_validator_alias (validator, "ad_host", "host");
+  gvm_validator_alias (validator, "ad_ca_certificate", "certificate");
 
   /* Binary data params that should not use no UTF-8 validation */
   gvm_validator_add_binary (validator, "certificate_bin");

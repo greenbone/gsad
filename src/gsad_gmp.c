@@ -4121,6 +4121,80 @@ get_task_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
 }
 
 /**
+ * @brief Validate AD parameters and execute a credential creation request.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ * @param[out] ret            Return code from the GMP command.
+ * @param[out] entity         Response entity from the GMP command.
+ *
+ * @return  Enveloped XML error response if parameter validation fails,
+ *          NULL otherwise, including when the GMP command fails.
+ */
+static gchar *
+create_ad_credential_request (gvm_connection_t *connection,
+                              gsad_credentials_t *credentials, params_t *params,
+                              gsad_command_response_data_t *response_data,
+                              int *ret, entity_t *entity)
+{
+  const char *name = params_value (params, "name");
+  const char *comment = params_value (params, "comment");
+  const char *host = params_value (params, "ad_host");
+  const char *port = params_value (params, "ad_port");
+  const char *bind_dn = params_value (params, "ad_bind_dn");
+  const char *bind_password = params_value (params, "ad_bind_password");
+  const char *base_dn = params_value (params, "ad_base_dn");
+  const char *tls_mode = params_value (params, "ad_tls_mode");
+  const char *ca_certificate = params_value (params, "ad_ca_certificate");
+  GString *command;
+
+  CHECK_VARIABLE_INVALID (host, "Create Credential");
+  CHECK_VARIABLE_INVALID (bind_dn, "Create Credential");
+  CHECK_VARIABLE_INVALID (bind_password, "Create Credential");
+  CHECK_VARIABLE_INVALID (base_dn, "Create Credential");
+  CHECK_VARIABLE_INVALID (tls_mode, "Create Credential");
+
+  if (params_given (params, "ad_port"))
+    {
+      CHECK_VARIABLE_INVALID (port, "Create Credential");
+      if (*port == '\0')
+        return message_invalid (connection, credentials, params, response_data,
+                                "Given ad_port must not be empty",
+                                "Create Credential");
+    }
+  if (params_given (params, "ad_ca_certificate"))
+    CHECK_VARIABLE_INVALID (ca_certificate, "Create Credential");
+
+  command = g_string_new ("<create_credential>");
+  xml_string_append (command,
+                     "<name>%s</name>"
+                     "<comment>%s</comment>"
+                     "<type>ad</type>"
+                     "<host>%s</host>"
+                     "<bind_dn>%s</bind_dn>"
+                     "<bind_password>%s</bind_password>"
+                     "<base_dn>%s</base_dn>"
+                     "<tls_mode>%s</tls_mode>"
+                     "<allow_insecure>1</allow_insecure>",
+                     name, comment ? comment : "", host, bind_dn, bind_password,
+                     base_dn, tls_mode);
+
+  if (port && *port)
+    xml_string_append (command, "<port>%s</port>", port);
+  if (ca_certificate && *ca_certificate)
+    xml_string_append (command, "<ca_certificate>%s</ca_certificate>",
+                       ca_certificate);
+  g_string_append (command, "</create_credential>");
+
+  *ret =
+    gmp (connection, credentials, NULL, entity, response_data, command->str);
+  g_string_free (command, TRUE);
+  return NULL;
+}
+
+/**
  * @brief Create a credential, get all credentials, envelope result.
  *
  * @param[in]  connection     Connection to manager.
@@ -4176,6 +4250,12 @@ create_credential_gmp (gvm_connection_t *connection,
 
   if (str_equal (autogenerate, "1"))
     {
+      if (str_equal (type, "ad"))
+        {
+          return message_invalid (
+            connection, credentials, params, response_data,
+            "Auto-generate not allowed for type 'ad'", "Create Credential");
+        }
       if (str_equal (type, "cc"))
         {
           // Auto-generate types without username
@@ -4558,6 +4638,13 @@ create_credential_gmp (gvm_connection_t *connection,
                       "</create_credential>",
                       name, comment ? comment : "", type,
                       credential_store_id ?: "", vault_id, host_identifier);
+        }
+      else if (str_equal (type, "ad"))
+        {
+          html = create_ad_credential_request (connection, credentials, params,
+                                               response_data, &ret, &entity);
+          if (html)
+            return html;
         }
       else
         {
@@ -5237,6 +5324,8 @@ save_credential_gmp (gvm_connection_t *connection,
   const char *private_key, *certificate, *community, *privacy_password;
   const char *kdc, *realm;
   const char *auth_algorithm, *privacy_algorithm;
+  const char *ad_host, *ad_port, *ad_bind_dn, *ad_bind_password;
+  const char *ad_base_dn, *ad_tls_mode, *ad_ca_certificate;
   params_t *kdcs_param;
   GString *command;
   entity_t entity = NULL;
@@ -5262,6 +5351,13 @@ save_credential_gmp (gvm_connection_t *connection,
   realm = params_value (params, "realm");
   public_key = params_value (params, "public_key");
   kdcs_param = params_values (params, "kdcs:");
+  ad_host = params_value (params, "ad_host");
+  ad_port = params_value (params, "ad_port");
+  ad_bind_dn = params_value (params, "ad_bind_dn");
+  ad_bind_password = params_value (params, "ad_bind_password");
+  ad_base_dn = params_value (params, "ad_base_dn");
+  ad_tls_mode = params_value (params, "ad_tls_mode");
+  ad_ca_certificate = params_value (params, "ad_ca_certificate");
 
   CHECK_VARIABLE_INVALID (credential_id, "Save Credential");
   CHECK_VARIABLE_INVALID (name, "Save Credential");
@@ -5355,8 +5451,26 @@ save_credential_gmp (gvm_connection_t *connection,
       if (params_given (params, "passphrase"))
         CHECK_VARIABLE_INVALID (passphrase, "Save Credential");
     }
+  else if (str_equal (type, "ad"))
+    {
+      if (params_given (params, "ad_host"))
+        CHECK_VARIABLE_INVALID (ad_host, "Save Credential");
+      if (params_given (params, "ad_port"))
+        CHECK_VARIABLE_INVALID (ad_port, "Save Credential");
+      if (params_given (params, "ad_bind_dn"))
+        CHECK_VARIABLE_INVALID (ad_bind_dn, "Save Credential");
+      if (params_given (params, "ad_bind_password"))
+        CHECK_VARIABLE_INVALID (ad_bind_password, "Save Credential");
+      if (params_given (params, "ad_base_dn"))
+        CHECK_VARIABLE_INVALID (ad_base_dn, "Save Credential");
+      if (params_given (params, "ad_tls_mode"))
+        CHECK_VARIABLE_INVALID (ad_tls_mode, "Save Credential");
+      if (params_given (params, "ad_ca_certificate"))
+        CHECK_VARIABLE_INVALID (ad_ca_certificate, "Save Credential");
+    }
 
-  if (!str_equal (type, "krb5") && params_given (params, "credential_login"))
+  if (!str_equal (type, "krb5") && !str_equal (type, "ad")
+      && params_given (params, "credential_login"))
     CHECK_VARIABLE_INVALID (credential_login, "Save Credential");
 
   /* Prepare command */
@@ -5497,6 +5611,25 @@ save_credential_gmp (gvm_connection_t *connection,
           xml_string_append (command, "</key>");
         }
     }
+  else if (str_equal (type, "ad"))
+    {
+      if (ad_host)
+        xml_string_append (command, "<host>%s</host>", ad_host);
+      if (ad_port)
+        xml_string_append (command, "<port>%s</port>", ad_port);
+      if (ad_bind_dn)
+        xml_string_append (command, "<bind_dn>%s</bind_dn>", ad_bind_dn);
+      if (ad_bind_password)
+        xml_string_append (command, "<bind_password>%s</bind_password>",
+                           ad_bind_password);
+      if (ad_base_dn)
+        xml_string_append (command, "<base_dn>%s</base_dn>", ad_base_dn);
+      if (ad_tls_mode)
+        xml_string_append (command, "<tls_mode>%s</tls_mode>", ad_tls_mode);
+      if (ad_ca_certificate)
+        xml_string_append (command, "<ca_certificate>%s</ca_certificate>",
+                           ad_ca_certificate);
+    }
 
   if (g_str_has_prefix (type, "cs_"))
     {
@@ -5523,7 +5656,7 @@ save_credential_gmp (gvm_connection_t *connection,
         }
     }
 
-  if (credential_login)
+  if (credential_login && !str_equal (type, "ad"))
     xml_string_append (command, "<login>%s</login>", credential_login);
 
   xml_string_append (command, "</modify_credential>");

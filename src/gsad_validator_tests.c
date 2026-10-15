@@ -334,6 +334,195 @@ Ensure (gsad_validator, validate_ajax_spider_timeout)
                is_equal_to (2));
 }
 
+Ensure (gsad_validator, validate_ad_credential_type)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "credential_type", "ad"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "credential_type", "cc"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "credential_type", "up"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "credential_type", "usk"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "credential_type", "smime"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "credential_type", "pgp"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "credential_type", "snmp"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "credential_type", "krb5"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "credential_type", "pw"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "credential_type", "cs_cc"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "credential_type", "cs_up"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "credential_type", "cs_usk"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "credential_type", "cs_smime"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "credential_type", "cs_pgp"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "credential_type", "cs_snmp"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "credential_type", "cs_krb5"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "credential_type", "cs_pw"),
+               is_equal_to (0));
+
+  assert_that (gvm_validate (validator, "credential_type", "AD"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "credential_type", "cs_ad"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "credential_type", "ad_extra"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "credential_type", ""),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "credential_type", NULL),
+               is_equal_to (5));
+}
+
+Ensure (gsad_validator, validate_ad_host)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "ad_host", "dc.example.com"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "ad_host", "192.0.2.10"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "ad_host", "2001:db8::1"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "ad_host", "dc-01"), is_equal_to (0));
+
+  assert_that (gvm_validate (validator, "ad_host", ""), is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_host", "dc example.com"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_host", "ldaps://dc.example.com"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_host", "[2001:db8::1]"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_host", NULL), is_equal_to (5));
+}
+
+Ensure (gsad_validator, validate_ad_port_format)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "ad_port", ""), is_equal_to (0));
+  assert_that (gvm_validate (validator, "ad_port", "1"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "ad_port", "389"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "ad_port", "636"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "ad_port", "65535"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "ad_port", "00389"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "ad_port", "0"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "ad_port", "65536"), is_equal_to (0));
+
+  assert_that (gvm_validate (validator, "ad_port", "-1"), is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_port", "+389"), is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_port", "389.0"), is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_port", " 389"), is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_port", "389 "), is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_port", "ldap"), is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_port", NULL), is_equal_to (5));
+}
+
+Ensure (gsad_validator, validate_ad_bind_dn)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "ad_bind_dn",
+                             "CN=Service Account,OU=Users,DC=example,DC=com"),
+               is_equal_to (0));
+  assert_that (
+    gvm_validate (validator, "ad_bind_dn", "CN=Doe\\, Jane,DC=example,DC=com"),
+    is_equal_to (0));
+  assert_that (gvm_validate (validator, "ad_bind_dn", "svc@example.com"),
+               is_equal_to (0));
+
+  assert_that (gvm_validate (validator, "ad_bind_dn", ""), is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_bind_dn",
+                             "CN=Service\nAccount,DC=example,DC=com"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_bind_dn", NULL), is_equal_to (5));
+}
+
+Ensure (gsad_validator, validate_ad_bind_password)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "ad_bind_password", "secret"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "ad_bind_password", "p<&>\"'\\word"),
+               is_equal_to (0));
+
+  assert_that (gvm_validate (validator, "ad_bind_password", "first\nsecond"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_bind_password", ""),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_bind_password", NULL),
+               is_equal_to (5));
+}
+
+Ensure (gsad_validator, validate_ad_base_dn)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "ad_base_dn", "DC=example,DC=com"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "ad_base_dn",
+                             "OU=Corporate Users,DC=example,DC=com"),
+               is_equal_to (0));
+
+  assert_that (gvm_validate (validator, "ad_base_dn", ""), is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_base_dn", "DC=example\nDC=com"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_base_dn", NULL), is_equal_to (5));
+}
+
+Ensure (gsad_validator, validate_ad_tls_mode)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "ad_tls_mode", "ldaps"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "ad_tls_mode", "starttls"),
+               is_equal_to (0));
+
+  assert_that (gvm_validate (validator, "ad_tls_mode", ""), is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_tls_mode", "ldap"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_tls_mode", "none"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_tls_mode", "LDAPS"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_tls_mode", "StartTLS"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_tls_mode", "ldaps-extra"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "ad_tls_mode", NULL), is_equal_to (5));
+}
+
+Ensure (gsad_validator, validate_ad_ca_certificate_not_null)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "ad_ca_certificate", ""),
+               is_equal_to (0));
+  assert_that (
+    gvm_validate (validator, "ad_ca_certificate", "not a certificate"),
+    is_equal_to (0));
+  assert_that (gvm_validate (validator, "ad_ca_certificate",
+                             "-----BEGIN CERTIFICATE-----\n"
+                             "YWJj\n"
+                             "-----END CERTIFICATE-----\n"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "ad_ca_certificate", NULL),
+               is_equal_to (5));
+}
+
 int
 main (int argc, char **argv)
 {
@@ -365,7 +554,15 @@ main (int argc, char **argv)
                          alias_web_application_target_fields);
   add_test_with_context (suite, gsad_validator, validate_scan_mode);
   add_test_with_context (suite, gsad_validator, validate_ajax_spider_timeout);
-
+  add_test_with_context (suite, gsad_validator, validate_ad_credential_type);
+  add_test_with_context (suite, gsad_validator, validate_ad_host);
+  add_test_with_context (suite, gsad_validator, validate_ad_port_format);
+  add_test_with_context (suite, gsad_validator, validate_ad_bind_dn);
+  add_test_with_context (suite, gsad_validator, validate_ad_bind_password);
+  add_test_with_context (suite, gsad_validator, validate_ad_base_dn);
+  add_test_with_context (suite, gsad_validator, validate_ad_tls_mode);
+  add_test_with_context (suite, gsad_validator,
+                         validate_ad_ca_certificate_not_null);
   if (argc > 1)
     ret = run_single_test (suite, argv[1], create_text_reporter ());
   else
