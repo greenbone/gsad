@@ -20268,6 +20268,7 @@ get_agent_support_bundle_gmp (gvm_connection_t *connection,
   const gchar *agent_uuid = params_value (params, "agent_uuid");
   const gchar *days = params_value (params, "days");
   const gchar *encryption = params_value (params, "encryption");
+  const gchar *anonymized = params_value (params, "anonymized");
   entity_t entity = NULL;
   entity_t file_entity = NULL;
   entity_t content_type_entity = NULL;
@@ -20293,6 +20294,12 @@ get_agent_support_bundle_gmp (gvm_connection_t *connection,
     {
       encryption = "1";
     }
+  if (anonymized && *anonymized)
+    {
+      CHECK_VARIABLE_INVALID (anonymized, "Get Agent Support Bundle");
+    }
+  else
+    anonymized = "0";
 
   if (days && strlen (days) > 0)
     {
