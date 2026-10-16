@@ -4176,8 +4176,7 @@ create_ad_credential_request (gvm_connection_t *connection,
                      "<bind_dn>%s</bind_dn>"
                      "<bind_password>%s</bind_password>"
                      "<base_dn>%s</base_dn>"
-                     "<tls_mode>%s</tls_mode>"
-                     "<allow_insecure>1</allow_insecure>",
+                     "<tls_mode>%s</tls_mode>",
                      name, comment ? comment : "", host, bind_dn, bind_password,
                      base_dn, tls_mode);
 
