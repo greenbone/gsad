@@ -20325,7 +20325,7 @@ get_agent_support_bundle_gmp (gvm_connection_t *connection,
                                      " agent_uuid=\"%s\""
                                      " encryption=\"%s\""
                                      " anonymized=\"%s\"/>",
-                                     agent_uuid, days, encryption, anonymized)
+                                     agent_uuid, encryption, anonymized)
            == -1)
     {
       gsad_command_response_data_set_status_code (
