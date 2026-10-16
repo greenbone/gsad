@@ -20307,8 +20307,9 @@ get_agent_support_bundle_gmp (gvm_connection_t *connection,
                                     "<get_agent_support_bundle"
                                     " agent_uuid=\"%s\""
                                     " days=\"%s\""
-                                    " encryption=\"%s\"/>",
-                                    agent_uuid, days, encryption)
+                                    " encryption=\"%s\""
+                                    " anonymized=\"%s\"/>",
+                                    agent_uuid, days, encryption, anonymized)
           == -1)
         {
           gsad_command_response_data_set_status_code (
@@ -20322,8 +20323,9 @@ get_agent_support_bundle_gmp (gvm_connection_t *connection,
   else if (gvm_connection_sendf_xml (connection,
                                      "<get_agent_support_bundle"
                                      " agent_uuid=\"%s\""
-                                     " encryption=\"%s\"/>",
-                                     agent_uuid, encryption)
+                                     " encryption=\"%s\""
+                                     " anonymized=\"%s\"/>",
+                                     agent_uuid, days, encryption, anonymized)
            == -1)
     {
       gsad_command_response_data_set_status_code (
