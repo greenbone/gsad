@@ -20728,7 +20728,7 @@ modify_agent_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
 }
 
 /**
- * @brief Modify the scan config of an agent control
+ * @brief Modify the scan config of an agent control.
  *
  * @param[in]  connection      Connection to manager.
  * @param[in]  credentials     Credentials for authentication.
@@ -20812,7 +20812,7 @@ modify_agent_control_scan_config_gmp (
                      max_jitter_in_seconds, bulk_size, bulk_throttle_time_in_ms,
                      indexer_dir_depth);
 
-  /* Append scheduler cron times inside agent_script_executor. */
+  /* Append scheduler cron entries inside agent_script_executor. */
   g_string_append (command, "<scheduler_cron_time is_list=\"1\">");
 
   if (scheduler_cron_times)
@@ -20821,7 +20821,42 @@ modify_agent_control_scan_config_gmp (
       while (params_iterator_next (&iter, &name, &param))
         {
           if (param->value && *param->value)
-            xml_string_append (command, "<item>%s</item>", param->value);
+            {
+              gchar **parts = g_strsplit (param->value, "|", 3);
+              const gchar *cron = parts[0];
+              const gchar *max_delay_seconds = "0";
+              gchar *endptr = NULL;
+              gint64 delay;
+
+              if (!cron || !*cron || (parts[1] && parts[2]))
+                {
+                  g_strfreev (parts);
+                  continue;
+                }
+
+              if (parts[1])
+                {
+                  delay = g_ascii_strtoll (parts[1], &endptr, 10);
+
+                  if (!parts[1][0] || *endptr != '\0' || delay < 0
+                      || delay > G_MAXINT)
+                    {
+                      g_strfreev (parts);
+                      continue;
+                    }
+
+                  max_delay_seconds = parts[1];
+                }
+
+              xml_string_append (command,
+                                 "<item>"
+                                 "<cron>%s</cron>"
+                                 "<max_delay_seconds>%s</max_delay_seconds>"
+                                 "</item>",
+                                 cron, max_delay_seconds);
+
+              g_strfreev (parts);
+            }
         }
     }
 
@@ -21039,7 +21074,7 @@ create_agent_group_gmp (gvm_connection_t *connection,
   gchar *command = NULL, *html = NULL;
   GString *agents_element = NULL, *cmd = NULL;
   const char *name = NULL, *comment = NULL, *scheduler_cron_time = NULL,
-             *copy = NULL;
+             *max_delay_seconds = NULL, *copy = NULL;
   char *param_name = NULL;
   entity_t entity = NULL;
   int ret;
@@ -21051,11 +21086,17 @@ create_agent_group_gmp (gvm_connection_t *connection,
   name = params_value (params, "name");
   comment = params_value (params, "comment");
   scheduler_cron_time = params_value (params, "scheduler_cron_time");
+  max_delay_seconds = params_value (params, "max_delay_seconds");
   copy = params_value (params, "copy");
   agent_ids = params_values (params, "agent_ids:");
 
   CHECK_VARIABLE_INVALID (name, "Create Agent Group");
   CHECK_VARIABLE_INVALID (comment, "Create Agent Group");
+
+  if (max_delay_seconds)
+    {
+      CHECK_VARIABLE_INVALID (max_delay_seconds, "Create Agent Group");
+    }
 
   cmd = g_string_new ("<create_agent_group>");
   xml_string_append (cmd, "<name>%s</name>", name);
@@ -21066,6 +21107,7 @@ create_agent_group_gmp (gvm_connection_t *connection,
 
   if (!agent_ids && !copy)
     {
+      g_string_free (cmd, TRUE);
       gsad_command_response_data_set_status_code (response_data,
                                                   MHD_HTTP_BAD_REQUEST);
       return gsad_http_create_gsad_message (
@@ -21076,6 +21118,7 @@ create_agent_group_gmp (gvm_connection_t *connection,
 
   if (!scheduler_cron_time && !copy)
     {
+      g_string_free (cmd, TRUE);
       gsad_command_response_data_set_status_code (response_data,
                                                   MHD_HTTP_BAD_REQUEST);
       return gsad_http_create_gsad_message (
@@ -21083,8 +21126,13 @@ create_agent_group_gmp (gvm_connection_t *connection,
         response_data);
     }
 
-  xml_string_append (cmd, "<scheduler_cron_time>%s</scheduler_cron_time>",
-                     scheduler_cron_time);
+  if (scheduler_cron_time)
+    xml_string_append (cmd, "<scheduler_cron_time>%s</scheduler_cron_time>",
+                       scheduler_cron_time);
+
+  if (max_delay_seconds && !copy)
+    xml_string_append (cmd, "<max_delay_seconds>%s</max_delay_seconds>",
+                       max_delay_seconds);
 
   if (agent_ids)
     {
@@ -21168,7 +21216,7 @@ save_agent_group_gmp (gvm_connection_t *connection,
   GString *command;
   gchar *html = NULL;
   const char *agent_group_id = NULL, *name = NULL, *scheduler_cron_time = NULL,
-             *comment = NULL;
+             *max_delay_seconds = NULL, *comment = NULL;
   params_t *agent_ids = NULL;
   entity_t entity = NULL;
   int ret;
@@ -21177,12 +21225,18 @@ save_agent_group_gmp (gvm_connection_t *connection,
   name = params_value (params, "name");
   comment = params_value (params, "comment");
   scheduler_cron_time = params_value (params, "scheduler_cron_time");
+  max_delay_seconds = params_value (params, "max_delay_seconds");
   agent_ids = params_values (params, "agent_ids:");
 
   CHECK_VARIABLE_INVALID (agent_group_id, "Save Agent Group");
   CHECK_VARIABLE_INVALID (name, "Save Agent Group");
   CHECK_VARIABLE_INVALID (comment, "Save Agent Group");
   CHECK_VARIABLE_INVALID (scheduler_cron_time, "Save Agent Group");
+
+  if (max_delay_seconds)
+    {
+      CHECK_VARIABLE_INVALID (max_delay_seconds, "Save Agent Group");
+    }
 
   command = g_string_new ("");
   xml_string_append (command,
@@ -21208,9 +21262,14 @@ save_agent_group_gmp (gvm_connection_t *connection,
                      "</agents>"
                      "<name>%s</name>"
                      "<comment>%s</comment>"
-                     "<scheduler_cron_time>%s</scheduler_cron_time>"
-                     "</modify_agent_group>",
+                     "<scheduler_cron_time>%s</scheduler_cron_time>",
                      name, comment, scheduler_cron_time);
+
+  if (max_delay_seconds)
+    xml_string_append (command, "<max_delay_seconds>%s</max_delay_seconds>",
+                       max_delay_seconds);
+
+  xml_string_append (command, "</modify_agent_group>");
 
   ret =
     gmp (connection, credentials, NULL, &entity, response_data, command->str);

@@ -688,6 +688,7 @@ gsad_init_validator ()
   gvm_validator_alias (validator, "interval_in_seconds", "number");
   gvm_validator_alias (validator, "miss_until_inactive", "number");
   gvm_validator_alias (validator, "max_jitter_in_seconds", "number");
+  gvm_validator_alias (validator, "max_delay_seconds", "number");
   gvm_validator_alias (validator, "schedule", "number");
   gvm_validator_alias (validator, "alert_id_optional:name", "number");
   gvm_validator_alias (validator, "alerts", "optional_number");
