@@ -13982,15 +13982,9 @@ buffer_report_config_params (GString *string, GHashTable *config_params,
   const char *param_name, *param_value;
 
   g_hash_table_iter_init (&iter, config_params);
-  g_message ("%s: params size: %d", __func__,
-             g_hash_table_size (config_params));
   while (g_hash_table_iter_next (&iter, (void **) &param_name,
                                  (void **) &param_value))
     {
-      g_message ("%s: param...", __func__);
-      g_message ("%s: param name %s", __func__, param_name);
-      g_message ("%s: param value %s", __func__, param_value);
-
       xml_string_append (string,
                          "<param>"
                          "<name>%s</name>"
@@ -14058,7 +14052,7 @@ create_report_config_gmp (gvm_connection_t *connection,
 
   entity = NULL;
   ret =
-    gmpf (connection, credentials, NULL, &entity, response_data, command->str);
+    gmp (connection, credentials, NULL, &entity, response_data, command->str);
 
   g_string_free (command, TRUE);
 
@@ -14168,7 +14162,7 @@ save_report_config_gmp (gvm_connection_t *connection,
 
   entity = NULL;
   ret =
-    gmpf (connection, credentials, NULL, &entity, response_data, command->str);
+    gmp (connection, credentials, NULL, &entity, response_data, command->str);
 
   g_string_free (command, TRUE);
 
@@ -18573,7 +18567,7 @@ get_settings_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                           " sort_order=\"ascending\"/>");
     }
 
-  if (gvm_connection_sendf (connection, command))
+  if (gvm_connection_sendf (connection, "%s", command))
     {
       g_free (command);
 
@@ -18919,7 +18913,8 @@ bulk_delete_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
       const char *inheritor_id;
       inheritor_id = params_value (params, "inheritor_id");
       if (inheritor_id)
-        extra_attribs = g_strdup_printf ("inheritor_id=\"%s\"", inheritor_id);
+        extra_attribs =
+          g_markup_printf_escaped ("inheritor_id=\"%s\"", inheritor_id);
     }
 
   count = fail = 0;
@@ -18933,18 +18928,22 @@ bulk_delete_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
       params_iterator_init (&iter, selected_ids);
       while (params_iterator_next (&iter, &param_name, &param))
         {
-          gchar *command;
+          GString *command;
           entity_t entity;
 
           /* Delete the resource. */
 
-          command = g_strdup_printf ("<delete_%s %s_id=\"%s\""
-                                     "           ultimate=\"0\" %s/>",
-                                     type, type, param_name,
-                                     extra_attribs ? extra_attribs : "");
-          if (gvm_connection_sendf_xml (connection, command) == -1)
+          command = g_string_new ("");
+          xml_string_append (command,
+                             "<delete_%s %s_id=\"%s\""
+                             " ultimate=\"0\" ",
+                             type, type, param_name);
+          if (extra_attribs)
+            g_string_append (command, extra_attribs);
+          g_string_append (command, "/>");
+          if (gvm_connection_sendf (connection, "%s", command->str) == -1)
             {
-              g_free (command);
+              g_string_free (command, TRUE);
               g_free (extra_attribs);
               gsad_command_response_data_set_status_code (
                 response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
@@ -18955,7 +18954,7 @@ bulk_delete_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                 "Diagnostics: Failure to send command to manager daemon.",
                 response_data);
             }
-          g_free (command);
+          g_string_free (command, TRUE);
 
           entity = NULL;
           if (read_entity_c (connection, &entity))
