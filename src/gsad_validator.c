@@ -312,6 +312,7 @@ gsad_init_validator ()
                      "|(sync_cert)"
                      "|(sync_config)"
                      "|(toggle_tag)"
+                     "|(verify_active_directory_credential)"
                      "|(verify_credential_store)"
                      "|(verify_scanner)"
                      "|(wizard)"
