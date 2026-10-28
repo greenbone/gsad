@@ -5705,6 +5705,135 @@ save_credential_gmp (gvm_connection_t *connection,
 }
 
 /**
+ * @brief Verify an Active Directory credential.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return The result of the verification.
+ */
+char *
+verify_active_directory_credential_gmp (
+  gvm_connection_t *connection, gsad_credentials_t *credentials,
+  params_t *params, gsad_command_response_data_t *response_data)
+{
+  GString *command;
+  entity_t entity = NULL;
+  gchar *html;
+  int ret;
+
+  const char *credential_id = params_value (params, "credential_id");
+  const char *host = params_value (params, "ad_host");
+  const char *port = params_value (params, "ad_port");
+  const char *bind_dn = params_value (params, "ad_bind_dn");
+  const char *bind_password = params_value (params, "ad_bind_password");
+  const char *base_dn = params_value (params, "ad_base_dn");
+  const char *tls_mode = params_value (params, "ad_tls_mode");
+  const char *ca_certificate = params_value (params, "ad_ca_certificate");
+
+  const char *action = "Verify Active Directory Credential";
+
+  if (params_given (params, "credential_id"))
+    CHECK_VARIABLE_INVALID (credential_id, action);
+
+  if (credential_id && *credential_id)
+    {
+      if (params_given (params, "ad_host") || params_given (params, "ad_port")
+          || params_given (params, "ad_bind_dn")
+          || params_given (params, "ad_bind_password")
+          || params_given (params, "ad_base_dn")
+          || params_given (params, "ad_tls_mode")
+          || params_given (params, "ad_ca_certificate"))
+        return message_invalid (connection, credentials, params, response_data,
+                                "Provide either a credential ID or inline "
+                                "Active Directory settings.",
+                                action);
+
+      ret = gmpf (connection, credentials, NULL, &entity, response_data,
+                  "<verify_active_directory_credential credential_id=\"%s\"/>",
+                  credential_id);
+    }
+  else
+    {
+      CHECK_VARIABLE_INVALID (host, action);
+      CHECK_VARIABLE_INVALID (bind_dn, action);
+      CHECK_VARIABLE_INVALID (bind_password, action);
+      CHECK_VARIABLE_INVALID (base_dn, action);
+      CHECK_VARIABLE_INVALID (tls_mode, action);
+
+      if (params_given (params, "ad_port"))
+        CHECK_VARIABLE_INVALID (port, action);
+
+      if (params_given (params, "ad_ca_certificate"))
+        CHECK_VARIABLE_INVALID (ca_certificate, action);
+
+      command = g_string_new ("<verify_active_directory_credential>");
+
+      xml_string_append (command,
+                         "<host>%s</host>"
+                         "<bind_dn>%s</bind_dn>"
+                         "<bind_password>%s</bind_password>"
+                         "<base_dn>%s</base_dn>"
+                         "<tls_mode>%s</tls_mode>",
+                         host, bind_dn, bind_password, base_dn, tls_mode);
+
+      if (port && *port)
+        xml_string_append (command, "<port>%s</port>", port);
+
+      if (ca_certificate && *ca_certificate)
+        xml_string_append (command, "<ca_certificate>%s</ca_certificate>",
+                           ca_certificate);
+
+      g_string_append (command, "</verify_active_directory_credential>");
+
+      ret = gmp (connection, credentials, NULL, &entity, response_data,
+                 command->str);
+      g_string_free (command, TRUE);
+    }
+
+  switch (ret)
+    {
+    case 0:
+      break;
+    case 1:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while verifying an Active Directory "
+        "credential. The credential was not verified. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while verifying an Active Directory "
+        "credential. It is unclear whether the credential was verified. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while verifying an Active Directory "
+        "credential. It is unclear whether the credential was verified. "
+        "Diagnostics: Unknown error.",
+        response_data);
+    }
+
+  html =
+    response_from_entity (connection, credentials, params, entity,
+                          "Verify Active Directory Credential", response_data);
+  free_entity (entity);
+  return html;
+}
+
+/**
  * @brief Get an aggregate of resources.
  *
  * @param[in]  connection     Connection to manager.
@@ -23311,6 +23440,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (sync_cert)
   ELSE (test_alert)
   ELSE (toggle_tag)
+  ELSE (verify_active_directory_credential)
   ELSE (verify_credential_store)
   ELSE (verify_scanner)
   else
