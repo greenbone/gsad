@@ -20511,6 +20511,73 @@ get_agent_installer_instruction_gmp (
 }
 
 /**
+ * @brief Get an agent inventory token, envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Credentials for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+get_agent_inventory_token_gmp (gvm_connection_t *connection,
+                               gsad_credentials_t *credentials,
+                               params_t *params,
+                               gsad_command_response_data_t *response_data)
+{
+  entity_t entity = NULL;
+  GString *xml;
+
+  if (gvm_connection_sendf (connection, "<get_agent_inventory_token/>"))
+    {
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting the agent inventory "
+        "token. Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    }
+
+  xml = g_string_new ("");
+  g_string_append (xml, "<get_agent_inventory_token>");
+
+  if (read_entity_and_string_c (connection, &entity, &xml))
+    {
+      g_string_free (xml, TRUE);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting the agent inventory "
+        "token. Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    }
+
+  if (gmp_success (entity) != 1)
+    {
+      gchar *message;
+
+      set_http_status_from_entity (entity, response_data);
+
+      message = gsad_http_create_gsad_message (
+        credentials, entity_attribute (entity, "status_text"), response_data);
+
+      g_string_free (xml, TRUE);
+      free_entity (entity);
+      return message;
+    }
+
+  free_entity (entity);
+
+  g_string_append (xml, "</get_agent_inventory_token>");
+
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
  * @brief Get an agent support bundle.
  *
  * @param[in]  connection      Connection to manager.
@@ -23003,6 +23070,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (export_web_application_target)
   ELSE (export_web_application_targets)
   ELSE (get_agent_installer_instruction)
+  ELSE (get_agent_inventory_token)
   ELSE (get_agent_support_bundle)
   ELSE (get_agent)
   ELSE (get_agents)
