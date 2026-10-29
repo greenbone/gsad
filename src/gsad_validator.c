@@ -146,6 +146,7 @@ gsad_init_validator ()
                      "|(export_web_application_target)"
                      "|(export_web_application_targets)"
                      "|(get_agent_installer_instruction)"
+                     "|(get_agent_inventory_token)"
                      "|(get_agent_support_bundle)"
                      "|(get_agent)"
                      "|(get_agents)"
