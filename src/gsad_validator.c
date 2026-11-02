@@ -47,6 +47,7 @@ gsad_init_validator ()
                      "|(create_tag)"
                      "|(create_tags)"
                      "|(create_target)"
+                     "|(create_target_multiple_credentials)"
                      "|(create_task)"
                      "|(create_ticket)"
                      "|(create_tls_certificate)"
@@ -299,6 +300,7 @@ gsad_init_validator ()
                      "|(save_schedule)"
                      "|(save_tag)"
                      "|(save_target)"
+                     "|(save_target_multiple_credentials)"
                      "|(save_task)"
                      "|(save_ticket)"
                      "|(save_tls_certificate)"
@@ -661,6 +663,19 @@ gsad_init_validator ()
   gvm_validator_alias (validator, "report_uuid", "id");
   gvm_validator_alias (validator, "scan_report_id", "id");
   gvm_validator_alias (validator, "web_application_target_id", "id");
+  gvm_validator_alias (validator, "ssh_credentials:name", "number");
+  gvm_validator_add (validator, "ssh_credentials:value",
+                     "^[a-fA-F0-9-]+\\|[0-9]{1,5}$");
+  gvm_validator_alias (validator, "ssh_elevate_credentials:name", "number");
+  gvm_validator_alias (validator, "ssh_elevate_credentials:value", "id");
+  gvm_validator_alias (validator, "smb_credentials:name", "number");
+  gvm_validator_alias (validator, "smb_credentials:value", "id");
+  gvm_validator_alias (validator, "esxi_credentials:name", "number");
+  gvm_validator_alias (validator, "esxi_credentials:value", "id");
+  gvm_validator_alias (validator, "snmp_credentials:name", "number");
+  gvm_validator_alias (validator, "snmp_credentials:value", "id");
+  gvm_validator_alias (validator, "krb5_credentials:name", "number");
+  gvm_validator_alias (validator, "krb5_credentials:value", "id");
 
   /* Define Optional IDs "^[a-z0-9\\-]*$" */
   gvm_validator_alias (validator, "credential_id", "optional_id");
