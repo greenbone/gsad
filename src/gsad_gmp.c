@@ -12488,6 +12488,13 @@ download_ca_pub (gvm_connection_t *connection, gsad_credentials_t *credentials,
     }
   /* The Base64 comes URI escaped as it may contain special characters. */
   unescaped = g_uri_unescape_string (ca_pub, NULL);
+  if (unescaped == NULL)
+    {
+      gsad_command_response_data_set_status_code (response_data,
+                                                  MHD_HTTP_BAD_REQUEST);
+      return gsad_http_create_gsad_message (
+        credentials, "Invalid parameter: ca_pub.", response_data);
+    }
   gsad_command_response_data_set_content_length (response_data,
                                                  strlen (unescaped));
   return unescaped;
@@ -12523,6 +12530,13 @@ download_key_pub (gvm_connection_t *connection, gsad_credentials_t *credentials,
 
   /* The Base64 comes URI escaped as it may contain special characters. */
   unescaped = g_uri_unescape_string (key_pub, NULL);
+  if (unescaped == NULL)
+    {
+      gsad_command_response_data_set_status_code (response_data,
+                                                  MHD_HTTP_BAD_REQUEST);
+      return gsad_http_create_gsad_message (
+        credentials, "Invalid parameter: key_pub.", response_data);
+    }
   gsad_command_response_data_set_content_length (response_data,
                                                  strlen (unescaped));
   return unescaped;
