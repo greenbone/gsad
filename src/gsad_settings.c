@@ -95,23 +95,27 @@ gsad_settings_new ()
 /**
  * @brief Free a gsad_settings_t instance and its associated resources.
  *
- * @param[in]  settings  The settings instance to free.
+ * @param[in]  settings_to_free  The settings instance to free.
  */
 void
-gsad_settings_free (gsad_settings_t *settings)
+gsad_settings_free (gsad_settings_t *settings_to_free)
 {
-  if (settings)
+  if (settings_to_free)
     {
-      g_free (settings->log_config_filename);
-      g_free (settings->http_content_security_policy);
-      g_free (settings->http_cors_origin);
-      g_free (settings->http_guest_chart_content_security_policy);
-      g_free (settings->http_guest_chart_x_frame_options);
-      g_free (settings->http_strict_transport_security);
-      g_free (settings->http_x_frame_options);
-      g_free (settings->manager_address);
-      g_free (settings->pid_filename);
-      g_free (settings);
+      g_free (settings_to_free->log_config_filename);
+      g_free (settings_to_free->http_content_security_policy);
+      g_free (settings_to_free->http_cors_origin);
+      g_free (settings_to_free->http_guest_chart_content_security_policy);
+      g_free (settings_to_free->http_guest_chart_x_frame_options);
+      g_free (settings_to_free->http_strict_transport_security);
+      g_free (settings_to_free->http_x_frame_options);
+      g_free (settings_to_free->manager_address);
+      g_free (settings_to_free->pid_filename);
+
+      if (settings_to_free == settings)
+        settings = NULL;
+
+      g_free (settings_to_free);
     }
 }
 
