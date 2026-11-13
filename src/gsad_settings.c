@@ -49,8 +49,8 @@ static gsad_settings_t *settings = NULL;
 /**
  * @brief Get the global settings instance.
  *
- * @return A pointer to the global gsad_settings_t instance. The caller should
- * free this instance.
+ * @return A borrowed pointer to the global gsad_settings_t instance. This
+ * instance is freed during application cleanup.
  */
 gsad_settings_t *
 gsad_settings_get_global_settings ()
@@ -104,6 +104,9 @@ gsad_settings_free (gsad_settings_t *settings_to_free)
     {
       g_free (settings_to_free->log_config_filename);
       g_free (settings_to_free->http_content_security_policy);
+      g_free (settings_to_free->http_coep);
+      g_free (settings_to_free->http_coop);
+      g_free (settings_to_free->http_corp);
       g_free (settings_to_free->http_cors_origin);
       g_free (settings_to_free->http_guest_chart_content_security_policy);
       g_free (settings_to_free->http_guest_chart_x_frame_options);
