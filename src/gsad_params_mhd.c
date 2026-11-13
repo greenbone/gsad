@@ -117,7 +117,13 @@ params_mhd_append (params_t *params, const gchar *name, const gchar *filename,
       || (strcmp (name, "resource_ids:") == 0) || (strcmp (name, "kdcs:") == 0)
       || (strcmp (name, "agent_ids:") == 0)
       || (strcmp (name, "scheduler_cron_times:") == 0)
-      || (strcmp (name, "alive_tests:") == 0))
+      || (strcmp (name, "alive_tests:") == 0)
+      || (strcmp (name, "ssh_credentials:") == 0)
+      || (strcmp (name, "ssh_elevate_credentials:") == 0)
+      || (strcmp (name, "smb_credentials:") == 0)
+      || (strcmp (name, "esxi_credentials:") == 0)
+      || (strcmp (name, "snmp_credentials:") == 0)
+      || (strcmp (name, "krb5_credentials:") == 0))
     {
       param_t *param;
       gchar *index_str;

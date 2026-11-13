@@ -7545,6 +7545,302 @@ create_target_gmp (gvm_connection_t *connection,
 }
 
 /**
+ * @brief Create a target with multiple credentials and envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials  Username and password for authentication.
+ * @param[in]  params       Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+create_target_multiple_credentials_gmp (
+  gvm_connection_t *connection, gsad_credentials_t *credentials,
+  params_t *params, gsad_command_response_data_t *response_data)
+{
+  int ret;
+  gchar *html, *command;
+  const char *name, *hosts, *exclude_hosts, *comment;
+  const char *target_source;
+  const char *target_exclude_source;
+  const char *port_list_id, *reverse_lookup_only, *reverse_lookup_unify;
+  const char *alive_tests = NULL;
+  GHashTable *alive_tests_table;
+  const char *hosts_filter, *file, *exclude_file;
+  const char *allow_simultaneous_ips;
+  GString *credentials_xml;
+  params_t *credential_params;
+  params_iterator_t credential_iter;
+  char *credential_name;
+  param_t *credential_param;
+  size_t i;
+  gboolean invalid_credentials = FALSE;
+
+  const struct
+  {
+    const char *param_name;
+    const char *element_name;
+  } credential_types[] = {
+    {"ssh_elevate_credentials:", "ssh_elevate_credential"},
+    {"smb_credentials:", "smb_credential"},
+    {"esxi_credentials:", "esxi_credential"},
+    {"snmp_credentials:", "snmp_credential"},
+    {"krb5_credentials:", "krb5_credential"},
+    {NULL, NULL},
+  };
+  gchar *asset_hosts_element;
+  gchar *comment_element = NULL;
+  entity_t entity;
+  GString *xml;
+
+  name = params_value (params, "name");
+  hosts = params_value (params, "hosts");
+  exclude_hosts = params_value (params, "exclude_hosts");
+  reverse_lookup_only = params_value (params, "reverse_lookup_only");
+  reverse_lookup_unify = params_value (params, "reverse_lookup_unify");
+  target_source = params_value (params, "target_source");
+  target_exclude_source = params_value (params, "target_exclude_source");
+  comment = params_value (params, "comment");
+  port_list_id = params_value (params, "port_list_id");
+  hosts_filter = params_value (params, "hosts_filter");
+  file = params_value (params, "file");
+  exclude_file = params_value (params, "exclude_file");
+  allow_simultaneous_ips = params_value (params, "allow_simultaneous_ips");
+  alive_tests_table = params_values (params, "alive_tests:");
+
+  CHECK_VARIABLE_INVALID (name, "Create Target");
+  CHECK_VARIABLE_INVALID (target_source, "Create Target")
+  if (strcmp (target_source, "manual") == 0)
+    CHECK_VARIABLE_INVALID (hosts, "Create Target");
+  if (strcmp (target_source, "file") == 0)
+    CHECK_VARIABLE_INVALID (file, "Create Target")
+  /* require hosts_filter if target_source is "asset_hosts" */
+  if (strcmp (target_source, "asset_hosts") == 0)
+    CHECK_VARIABLE_INVALID (hosts_filter, "Create Target");
+
+  if (params_given (params, "alive_tests"))
+    {
+      alive_tests = params_value (params, "alive_tests");
+      CHECK_VARIABLE_INVALID (alive_tests, "Create Target");
+    }
+
+  if (params_given (params, "target_exclude_source"))
+    {
+      CHECK_VARIABLE_INVALID (target_exclude_source, "Create Target")
+      if (strcmp (target_exclude_source, "manual") == 0
+          /* In case browser doesn't send empty field. */
+          && params_given (params, "exclude_hosts"))
+        CHECK_VARIABLE_INVALID (exclude_hosts, "Create Target");
+      if (strcmp (target_exclude_source, "file") == 0)
+        CHECK_VARIABLE_INVALID (exclude_file, "Create Target");
+    }
+
+  CHECK_VARIABLE_INVALID (comment, "Create Target");
+  CHECK_VARIABLE_INVALID (port_list_id, "Create Target");
+  CHECK_VARIABLE_INVALID (allow_simultaneous_ips, "Create Target");
+
+  if (comment != NULL)
+    comment_element =
+      g_markup_printf_escaped ("<comment>%s</comment>", comment);
+  else
+    comment_element = g_strdup ("");
+
+  /* Credential lists are parsed by gsad_params_mhd.c and must be
+   * registered and validated there, just like scheduler_cron_times:.
+   * Repeated form keys are used: ssh_credentials:=UUID|22.
+   */
+  credentials_xml = g_string_new ("");
+
+  credential_params = params_values (params, "ssh_credentials:");
+  if (credential_params)
+    {
+      params_iterator_init (&credential_iter, credential_params);
+      while (params_iterator_next (&credential_iter, &credential_name,
+                                   &credential_param))
+        {
+          gchar **parts;
+          const char *port_char;
+          guint64 ssh_port;
+          gchar *endptr = NULL;
+
+          if (!credential_param->value || !*credential_param->value)
+            {
+              invalid_credentials = TRUE;
+              break;
+            }
+
+          parts = g_strsplit (credential_param->value, "|", 3);
+          if (!parts[0] || !*parts[0] || !parts[1] || !*parts[1] || parts[2]
+              || strcmp (parts[0], "0") == 0)
+            {
+              invalid_credentials = TRUE;
+              g_strfreev (parts);
+              break;
+            }
+
+          for (port_char = parts[1]; *port_char; port_char++)
+            if (!g_ascii_isdigit (*port_char))
+              break;
+
+          ssh_port = g_ascii_strtoull (parts[1], &endptr, 10);
+          if (*port_char || !endptr || *endptr || ssh_port == 0
+              || ssh_port > 65535)
+            invalid_credentials = TRUE;
+          else
+            xml_string_append (credentials_xml,
+                               "<ssh_credential id=\"%s\">"
+                               "<port>%s</port>"
+                               "</ssh_credential>",
+                               parts[0], parts[1]);
+
+          g_strfreev (parts);
+          if (invalid_credentials)
+            break;
+        }
+    }
+
+  /* The other credential lists contain credential IDs only. */
+  for (i = 0; !invalid_credentials && credential_types[i].param_name != NULL;
+       i++)
+    {
+      credential_params =
+        params_values (params, credential_types[i].param_name);
+
+      if (!credential_params)
+        continue;
+
+      params_iterator_init (&credential_iter, credential_params);
+
+      while (params_iterator_next (&credential_iter, &credential_name,
+                                   &credential_param))
+        {
+          if (!credential_param->value || !*credential_param->value
+              || strcmp (credential_param->value, "0") == 0)
+            {
+              invalid_credentials = TRUE;
+              break;
+            }
+
+          xml_string_append (credentials_xml, "<%s id=\"%s\"/>",
+                             credential_types[i].element_name,
+                             credential_param->value);
+        }
+    }
+
+  if (invalid_credentials)
+    {
+      g_string_free (credentials_xml, TRUE);
+      g_free (comment_element);
+      gsad_command_response_data_set_status_code (response_data,
+                                                  MHD_HTTP_BAD_REQUEST);
+      return gsad_http_create_gsad_message (
+        credentials, "Invalid credential list or SSH credential port.",
+        response_data);
+    }
+
+  if (strcmp (target_source, "asset_hosts") == 0)
+    asset_hosts_element = g_markup_printf_escaped ("<asset_hosts"
+                                                   " filter=\"%s\"/>",
+                                                   hosts_filter);
+  else
+    asset_hosts_element = g_strdup ("");
+
+  /* Create the target. */
+
+  xml = g_string_new ("");
+
+  xml_string_append (
+    xml,
+    "<name>%s</name>"
+    "<hosts>%s</hosts>"
+    "<exclude_hosts>%s</exclude_hosts>"
+    "<reverse_lookup_only>%s</reverse_lookup_only>"
+    "<reverse_lookup_unify>%s</reverse_lookup_unify>"
+    "<port_list id=\"%s\"/>"
+    "<allow_simultaneous_ips>%s</allow_simultaneous_ips>",
+    name, strcmp (target_source, "file") == 0 ? file : hosts,
+    target_exclude_source ? (strcmp (target_exclude_source, "file") == 0
+                               ? exclude_file
+                               : (exclude_hosts ? exclude_hosts : ""))
+                          : "",
+    reverse_lookup_only ? reverse_lookup_only : "0",
+    reverse_lookup_unify ? reverse_lookup_unify : "0", port_list_id,
+    allow_simultaneous_ips ? allow_simultaneous_ips : "1");
+
+  if (alive_tests_table)
+    {
+      params_iterator_t iter;
+      char *name;
+      param_t *param;
+
+      params_iterator_init (&iter, alive_tests_table);
+      g_string_append (xml, "<alive_tests>");
+      while (params_iterator_next (&iter, &name, &param))
+        if (param->value)
+          xml_string_append (xml, "<alive_test>%s</alive_test>", param->value);
+      g_string_append (xml, "</alive_tests>");
+    }
+  else if (alive_tests)
+    {
+      xml_string_append (xml, "<alive_tests>%s</alive_tests>", alive_tests);
+    }
+
+  command = g_strdup_printf ("<create_target>"
+                             "%s%s%s%s"
+                             "</create_target>",
+                             xml->str, comment_element, credentials_xml->str,
+                             asset_hosts_element);
+
+  g_string_free (xml, TRUE);
+  g_string_free (credentials_xml, TRUE);
+  g_free (comment_element);
+  g_free (asset_hosts_element);
+
+  ret = gmp (connection, credentials, NULL, &entity, response_data, command);
+  g_free (command);
+  switch (ret)
+    {
+    case 0:
+      break;
+    case 1:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while creating a new target. "
+        "No new target was created. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    case 2:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while creating a new target. "
+        "It is unclear whether the target has been created or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    default:
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while creating a new target. "
+        "It is unclear whether the target has been created or not. "
+        "Diagnostics: Internal Error.",
+        response_data);
+    }
+
+  if (entity_attribute (entity, "id"))
+    params_add (params, "target_id", entity_attribute (entity, "id"));
+  html = response_from_entity (connection, credentials, params, entity,
+                               "Create Target", response_data);
+  free_entity (entity);
+  return html;
+}
+
+/**
  * @brief Clone a resource, envelope the result.
  *
  * @param[in]  connection     Connection to manager.
@@ -8480,6 +8776,344 @@ save_target_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
     {
       gsad_command_response_data_set_status_code (
         response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while modifying a target. "
+        "It is unclear whether the target has been modified or not. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    }
+
+  html = response_from_entity (connection, credentials, params, entity,
+                               "Save Target", response_data);
+
+  free_entity (entity);
+  return html;
+}
+
+/**
+ * @brief Modify a target with multiple credentials, get all targets,
+ *        envelope the result.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped XML object.
+ */
+char *
+save_target_multiple_credentials_gmp (
+  gvm_connection_t *connection, gsad_credentials_t *credentials,
+  params_t *params, gsad_command_response_data_t *response_data)
+{
+  gchar *html;
+  const char *name, *comment, *target_id;
+  const char *hosts = NULL, *exclude_hosts = NULL;
+  const char *hosts_file = NULL, *exclude_hosts_file = NULL;
+  const char *target_source = NULL, *target_exclude_source = NULL;
+  const char *reverse_lookup_unify = NULL, *reverse_lookup_only = NULL;
+  const char *allow_simultaneous_ips = NULL;
+  const char *port_list_id = NULL;
+  const char *alive_tests = NULL;
+  GHashTable *alive_tests_table = NULL;
+  GString *command;
+  GString *credentials_xml;
+  params_t *credential_params;
+  params_iterator_t credential_iter;
+  char *credential_name;
+  param_t *credential_param;
+  size_t i;
+  gboolean invalid_credentials = FALSE;
+  int ret;
+  entity_t entity;
+
+  const struct
+  {
+    const char *param_name;
+    const char *element_name;
+  } credential_types[] = {
+    {"ssh_elevate_credentials:", "ssh_elevate_credential"},
+    {"smb_credentials:", "smb_credential"},
+    {"esxi_credentials:", "esxi_credential"},
+    {"snmp_credentials:", "snmp_credential"},
+    {"krb5_credentials:", "krb5_credential"},
+    {NULL, NULL}};
+
+  name = params_value (params, "name");
+  comment = params_value (params, "comment");
+  target_id = params_value (params, "target_id");
+  alive_tests_table = params_values (params, "alive_tests:");
+
+  CHECK_VARIABLE_INVALID (name, "Save Target");
+  CHECK_VARIABLE_INVALID (target_id, "Save Target");
+
+  if (params_given (params, "comment"))
+    {
+      comment = params_value (params, "comment");
+      CHECK_VARIABLE_INVALID (comment, "Save Target");
+    }
+
+  if (params_given (params, "alive_tests"))
+    {
+      alive_tests = params_value (params, "alive_tests");
+      CHECK_VARIABLE_INVALID (alive_tests, "Save Target");
+    }
+
+  if (params_given (params, "target_source"))
+    {
+      target_source = params_value (params, "target_source");
+      CHECK_VARIABLE_INVALID (target_source, "Save Target");
+    }
+
+  if (params_given (params, "target_exclude_source"))
+    {
+      target_exclude_source = params_value (params, "target_exclude_source");
+      CHECK_VARIABLE_INVALID (target_exclude_source, "Save Target");
+    }
+
+  if (params_given (params, "port_list_id"))
+    {
+      port_list_id = params_value (params, "port_list_id");
+      CHECK_VARIABLE_INVALID (port_list_id, "Save Target");
+    }
+
+  if (params_given (params, "reverse_lookup_only"))
+    {
+      reverse_lookup_only = params_value (params, "reverse_lookup_only");
+      CHECK_VARIABLE_INVALID (reverse_lookup_only, "Save Target");
+    }
+
+  if (params_given (params, "reverse_lookup_unify"))
+    {
+      reverse_lookup_unify = params_value (params, "reverse_lookup_unify");
+      CHECK_VARIABLE_INVALID (reverse_lookup_unify, "Save Target");
+    }
+
+  if (params_given (params, "allow_simultaneous_ips"))
+    {
+      allow_simultaneous_ips = params_value (params, "allow_simultaneous_ips");
+      CHECK_VARIABLE_INVALID (allow_simultaneous_ips, "Save Target");
+    }
+
+  if (target_source && str_equal (target_source, "manual"))
+    {
+      hosts = params_value (params, "hosts");
+      CHECK_VARIABLE_INVALID (hosts, "Save Target")
+    }
+  else if (target_source && str_equal (target_source, "file"))
+    {
+      hosts_file = params_value (params, "file");
+      CHECK_VARIABLE_INVALID (hosts_file, "Save Target")
+    }
+
+  if (target_exclude_source && str_equal (target_exclude_source, "manual"))
+    {
+      exclude_hosts = params_value (params, "exclude_hosts");
+      CHECK_VARIABLE_INVALID (exclude_hosts, "Save Target")
+    }
+  else if (target_exclude_source && str_equal (target_exclude_source, "file"))
+    {
+      exclude_hosts_file = params_value (params, "exclude_file");
+      CHECK_VARIABLE_INVALID (exclude_hosts_file, "Save Target")
+    }
+
+  /*
+   * Build multiple credential elements.
+   * SSH values contain credential_id|port.
+   */
+  credentials_xml = g_string_new ("");
+
+  credential_params = params_values (params, "ssh_credentials:");
+
+  if (credential_params)
+    {
+      params_iterator_init (&credential_iter, credential_params);
+
+      while (params_iterator_next (&credential_iter, &credential_name,
+                                   &credential_param))
+        {
+          gchar **parts;
+          const char *port_char;
+          guint64 ssh_port;
+          gchar *endptr = NULL;
+
+          if (!credential_param->value || !*credential_param->value)
+            {
+              invalid_credentials = TRUE;
+              break;
+            }
+
+          parts = g_strsplit (credential_param->value, "|", 3);
+
+          if (!parts[0] || !*parts[0] || !parts[1] || !*parts[1] || parts[2]
+              || strcmp (parts[0], "0") == 0)
+            {
+              invalid_credentials = TRUE;
+              g_strfreev (parts);
+              break;
+            }
+
+          for (port_char = parts[1]; *port_char; port_char++)
+            if (!g_ascii_isdigit (*port_char))
+              break;
+
+          if (*port_char)
+            {
+              invalid_credentials = TRUE;
+              g_strfreev (parts);
+              break;
+            }
+
+          ssh_port = g_ascii_strtoull (parts[1], &endptr, 10);
+
+          if (!endptr || *endptr || ssh_port == 0 || ssh_port > 65535)
+            {
+              invalid_credentials = TRUE;
+              g_strfreev (parts);
+              break;
+            }
+
+          xml_string_append (credentials_xml,
+                             "<ssh_credential id=\"%s\">"
+                             "<port>%s</port>"
+                             "</ssh_credential>",
+                             parts[0], parts[1]);
+
+          g_strfreev (parts);
+        }
+    }
+
+  /* Other credential lists contain credential IDs only. */
+  for (i = 0; !invalid_credentials && credential_types[i].param_name != NULL;
+       i++)
+    {
+      credential_params =
+        params_values (params, credential_types[i].param_name);
+
+      if (!credential_params)
+        continue;
+
+      params_iterator_init (&credential_iter, credential_params);
+
+      while (params_iterator_next (&credential_iter, &credential_name,
+                                   &credential_param))
+        {
+          if (!credential_param->value || !*credential_param->value
+              || strcmp (credential_param->value, "0") == 0)
+            {
+              invalid_credentials = TRUE;
+              break;
+            }
+
+          xml_string_append (credentials_xml, "<%s id=\"%s\"/>",
+                             credential_types[i].element_name,
+                             credential_param->value);
+        }
+    }
+
+  if (invalid_credentials)
+    {
+      g_string_free (credentials_xml, TRUE);
+
+      gsad_command_response_data_set_status_code (response_data,
+                                                  MHD_HTTP_BAD_REQUEST);
+
+      return gsad_http_create_gsad_message (
+        credentials, "Invalid credential list or SSH credential port.",
+        response_data);
+    }
+
+  command = g_string_new ("");
+
+  xml_string_append (command,
+                     "<modify_target target_id=\"%s\">"
+                     "<name>%s</name>",
+                     target_id, name);
+
+  if (comment)
+    xml_string_append (command, "<comment>%s</comment>", comment);
+
+  if (hosts)
+    xml_string_append (command, "<hosts>%s</hosts>", hosts);
+  else if (hosts_file)
+    xml_string_append (command, "<hosts>%s</hosts>", hosts_file);
+
+  if (exclude_hosts)
+    xml_string_append (command, "<exclude_hosts>%s</exclude_hosts>",
+                       exclude_hosts);
+  else if (exclude_hosts_file)
+    xml_string_append (command, "<exclude_hosts>%s</exclude_hosts>",
+                       exclude_hosts_file);
+
+  if (reverse_lookup_only)
+    xml_string_append (command, "<reverse_lookup_only>%s</reverse_lookup_only>",
+                       reverse_lookup_only);
+
+  if (reverse_lookup_unify)
+    xml_string_append (command,
+                       "<reverse_lookup_unify>%s</reverse_lookup_unify>",
+                       reverse_lookup_unify);
+
+  if (port_list_id)
+    xml_string_append (command, "<port_list id=\"%s\"/>", port_list_id);
+
+  if (allow_simultaneous_ips)
+    xml_string_append (command,
+                       "<allow_simultaneous_ips>%s</allow_simultaneous_ips>",
+                       allow_simultaneous_ips);
+
+  /* Append credentials if provided. */
+  g_string_append (command, credentials_xml->str);
+  g_string_free (credentials_xml, TRUE);
+
+  if (alive_tests_table)
+    {
+      params_iterator_t iter;
+      char *name;
+      param_t *param;
+
+      params_iterator_init (&iter, alive_tests_table);
+      xml_string_append (command, "<alive_tests>");
+
+      while (params_iterator_next (&iter, &name, &param))
+        if (param->value)
+          xml_string_append (command, "<alive_test>%s</alive_test>",
+                             param->value);
+
+      xml_string_append (command, "</alive_tests>");
+    }
+  else if (alive_tests)
+    {
+      xml_string_append (command, "<alive_test>%s</alive_test>", alive_tests);
+    }
+
+  xml_string_append (command, "</modify_target>");
+
+  /* Modify the target. */
+  ret = gvm_connection_sendf (connection, "%s", command->str);
+  g_string_free (command, TRUE);
+
+  if (ret == -1)
+    {
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while modifying target. "
+        "No target was modified. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    }
+
+  entity = NULL;
+
+  if (read_entity_c (connection, &entity))
+    {
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+
       return gsad_http_create_gsad_message (
         credentials,
         "An internal error occurred while modifying a target. "
@@ -23428,6 +24062,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (create_task)
   ELSE (create_tag)
   ELSE (create_target)
+  ELSE (create_target_multiple_credentials)
   ELSE (create_ticket)
   ELSE (create_tls_certificate)
   ELSE (create_user)
@@ -23507,6 +24142,7 @@ exec_gmp_post (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (save_schedule)
   ELSE (save_tag)
   ELSE (save_target)
+  ELSE (save_target_multiple_credentials)
   ELSE (save_task)
   ELSE (save_ticket)
   ELSE (save_import_task)
