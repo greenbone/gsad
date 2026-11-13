@@ -34,7 +34,7 @@ struct gsad_connection_watcher
 /**
  * @brief  Create a new connection watcher thread data structure.
  *
- * @param[in]  gsad_settings    Settings to get the watch interval from.
+ * @param[in]  gsad_settings    Borrowed settings, must outlive the watcher.
  * @param[in]  connection       GVM connection to close if client conn. closes.
  * @param[in]  client_socket_fd File descriptor of client connection to watch.
  *
@@ -66,7 +66,6 @@ void
 gsad_connection_watcher_data_free (gsad_connection_watcher_data_t *watcher_data)
 {
   pthread_mutex_destroy (&(watcher_data->mutex));
-  gsad_settings_free (watcher_data->gsad_settings);
   g_free (watcher_data);
 }
 
@@ -139,7 +138,7 @@ gsad_watch_client_connection (void *data)
  * @brief   Create a new connection watcher
  *
  * @param[in]  gsad_settings    Settings to get the watch interval from.
- * @param[in]  connection       GVM connection to close if client conn. closes.
+ * @param[in]  gvm_connection   GVM connection to close if client conn. closes.
  * @param[in]  client_socket_fd File descriptor of client connection to watch.
  *
  * @return  Newly allocated connection watcher.
