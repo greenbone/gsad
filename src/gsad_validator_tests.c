@@ -523,6 +523,152 @@ Ensure (gsad_validator, validate_ad_ca_certificate_not_null)
                is_equal_to (5));
 }
 
+Ensure (gsad_validator, validate_active_directory_objects_command)
+{
+  validator_t validator = gsad_get_validator ();
+  assert_that (gvm_validate (validator, "cmd", "get_active_directory_objects"),
+               is_equal_to (0));
+  assert_that (
+    gvm_validate (validator, "cmd", "get_active_directory_objects_extra"),
+    is_equal_to (2));
+}
+
+Ensure (gsad_validator, validate_credential_id)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "credential_id",
+                             "123e4567-e89b-12d3-a456-426614174000"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "credential_id", ""), is_equal_to (0));
+  assert_that (gvm_validate (validator, "credential_id", "invalid id"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "credential_id", "invalid<id>"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "credential_id", NULL),
+               is_equal_to (5));
+}
+
+Ensure (gsad_validator, validate_max_results)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "max_results", "1"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "max_results", "1000"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "max_results", "abc"), is_equal_to (2));
+  assert_that (gvm_validate (validator, "max_results", "-1"), is_equal_to (2));
+  assert_that (gvm_validate (validator, "max_results", ""), is_equal_to (2));
+  assert_that (gvm_validate (validator, "max_results", "1 "), is_equal_to (2));
+
+  /* The command-specific result limit is enforced by gvmd. */
+  assert_that (gvm_validate (validator, "max_results", "0"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "max_results", "5000"),
+               is_equal_to (0));
+}
+
+Ensure (gsad_validator, validate_details)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "details", "0"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "details", "1"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "details", "2"), is_equal_to (2));
+  assert_that (gvm_validate (validator, "details", "true"), is_equal_to (2));
+  assert_that (gvm_validate (validator, "details", ""), is_equal_to (2));
+}
+
+Ensure (gsad_validator, validate_active_directory_search_scope)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "scope", "base"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "scope", "onelevel"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "scope", "subtree"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "scope", ""), is_equal_to (2));
+  assert_that (gvm_validate (validator, "scope", "SUBTREE"), is_equal_to (2));
+  assert_that (gvm_validate (validator, "scope", "children"), is_equal_to (2));
+  assert_that (gvm_validate (validator, "scope", "subtree extra"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "scope", NULL), is_equal_to (5));
+}
+
+Ensure (gsad_validator, validate_active_directory_search_dns)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "base_dn", "OU=R&D,DC=example,DC=com"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "base_dn", ""), is_equal_to (2));
+  assert_that (gvm_validate (validator, "base_dn", "DC=example\nDC=com"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "base_dn", NULL), is_equal_to (5));
+  assert_that (gvm_validate (validator, "group_dn", "OU=R&D,DC=example,DC=com"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "group_dn", ""), is_equal_to (2));
+  assert_that (gvm_validate (validator, "group_dn", "DC=example\nDC=com"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "group_dn", NULL), is_equal_to (5));
+}
+
+Ensure (gsad_validator, validate_active_directory_search_booleans)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "include_disabled_computers", "0"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "include_disabled_computers", "1"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "include_disabled_computers", "2"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "include_disabled_computers", "true"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "include_disabled_computers", ""),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "include_disabled_computers", NULL),
+               is_equal_to (5));
+  assert_that (gvm_validate (validator, "targets", "0"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "targets", "1"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "targets", "2"), is_equal_to (2));
+  assert_that (gvm_validate (validator, "targets", "true"), is_equal_to (2));
+  assert_that (gvm_validate (validator, "targets", ""), is_equal_to (2));
+  assert_that (gvm_validate (validator, "targets", NULL), is_equal_to (5));
+  assert_that (gvm_validate (validator, "tasks", "0"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "tasks", "1"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "tasks", "2"), is_equal_to (2));
+  assert_that (gvm_validate (validator, "tasks", "true"), is_equal_to (2));
+  assert_that (gvm_validate (validator, "tasks", ""), is_equal_to (2));
+  assert_that (gvm_validate (validator, "tasks", NULL), is_equal_to (5));
+}
+
+Ensure (gsad_validator, validate_active_directory_object_types)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "object_types:value", "ou"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "object_types:value", "container"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "object_types:value", "computer"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "object_types:value", "group"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "object_types:value", ""),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "object_types:value", "user"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "object_types:value", "OU"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "object_types:value", "computer,group"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "object_types:value", NULL),
+               is_equal_to (5));
+  assert_that (gvm_validate (validator, "object_types:name", "1"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "object_types:name", "invalid"),
+               is_equal_to (2));
+}
+
 int
 main (int argc, char **argv)
 {
@@ -563,6 +709,19 @@ main (int argc, char **argv)
   add_test_with_context (suite, gsad_validator, validate_ad_tls_mode);
   add_test_with_context (suite, gsad_validator,
                          validate_ad_ca_certificate_not_null);
+  add_test_with_context (suite, gsad_validator,
+                         validate_active_directory_objects_command);
+  add_test_with_context (suite, gsad_validator, validate_credential_id);
+  add_test_with_context (suite, gsad_validator, validate_max_results);
+  add_test_with_context (suite, gsad_validator, validate_details);
+  add_test_with_context (suite, gsad_validator,
+                         validate_active_directory_search_scope);
+  add_test_with_context (suite, gsad_validator,
+                         validate_active_directory_search_dns);
+  add_test_with_context (suite, gsad_validator,
+                         validate_active_directory_search_booleans);
+  add_test_with_context (suite, gsad_validator,
+                         validate_active_directory_object_types);
   if (argc > 1)
     ret = run_single_test (suite, argv[1], create_text_reporter ());
   else

@@ -329,6 +329,44 @@ Ensure (gsad_params_mhd,
   params_free (params);
 }
 
+Ensure (gsad_params_mhd, should_handle_object_types_in_params_mhd_add)
+{
+  params_t *params = params_new ();
+  param_t *param;
+
+  assert_that (
+    params_mhd_add (params, MHD_GET_ARGUMENT_KIND, "object_types:", "ou"),
+    is_equal_to (MHD_YES));
+  assert_that (
+    params_mhd_add (params, MHD_GET_ARGUMENT_KIND, "object_types:", "computer"),
+    is_equal_to (MHD_YES));
+  param = params_get (params, "object_types:");
+  assert_that (param, is_not_null);
+  assert_that (param->values, is_not_null);
+  check_param (param->values, "1", "ou");
+  check_param (param->values, "2", "computer");
+  params_free (params);
+}
+
+Ensure (gsad_params_mhd, should_handle_object_types_in_params_mhd_append)
+{
+  params_t *params = params_new ();
+  param_t *param;
+
+  assert_that (params_mhd_append (params, "object_types:", NULL, "comp", 4, 0),
+               is_equal_to (MHD_YES));
+  assert_that (params_mhd_append (params, "object_types:", NULL, "uter", 4, 4),
+               is_equal_to (MHD_YES));
+  assert_that (params_mhd_append (params, "object_types:", NULL, "group", 5, 0),
+               is_equal_to (MHD_YES));
+  param = params_get (params, "object_types:");
+  assert_that (param, is_not_null);
+  assert_that (param->values, is_not_null);
+  check_param (param->values, "1", "computer");
+  check_param (param->values, "2", "group");
+  params_free (params);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -371,6 +409,11 @@ main (int argc, char **argv)
   add_test_with_context (
     suite, gsad_params_mhd,
     should_handle_valueless_array_params_in_params_mhd_append);
+
+  add_test_with_context (suite, gsad_params_mhd,
+                         should_handle_object_types_in_params_mhd_add);
+  add_test_with_context (suite, gsad_params_mhd,
+                         should_handle_object_types_in_params_mhd_append);
 
   if (argc > 1)
     ret = run_single_test (suite, argv[1], create_text_reporter ());

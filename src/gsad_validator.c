@@ -152,6 +152,7 @@ gsad_init_validator ()
                      "|(get_agents)"
                      "|(get_agent_group)"
                      "|(get_agent_groups)"
+                     "|(get_active_directory_objects)"
                      "|(get_aggregate)"
                      "|(get_alert)"
                      "|(get_alerts)"
@@ -583,6 +584,15 @@ gsad_init_validator ()
   gvm_validator_add (validator, "ad_tls_mode", "^(ldaps|starttls)$");
   gvm_validator_alias (validator, "ad_host", "host");
   gvm_validator_alias (validator, "ad_ca_certificate", "certificate");
+  gvm_validator_add (validator, "scope", "^(base|onelevel|subtree)$");
+  gvm_validator_alias (validator, "base_dn", "ad_base_dn");
+  gvm_validator_alias (validator, "group_dn", "ad_base_dn");
+  gvm_validator_alias (validator, "include_disabled_computers", "boolean");
+  gvm_validator_alias (validator, "targets", "boolean");
+  gvm_validator_alias (validator, "tasks", "boolean");
+  gvm_validator_alias (validator, "object_types:name", "number");
+  gvm_validator_add (validator, "object_types:value",
+                     "^(ou|container|computer|group)$");
 
   /* Binary data params that should not use no UTF-8 validation */
   gvm_validator_add_binary (validator, "certificate_bin");

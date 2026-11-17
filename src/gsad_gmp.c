@@ -5705,6 +5705,165 @@ save_credential_gmp (gvm_connection_t *connection,
 }
 
 /**
+ * @brief Search Active Directory using a saved credential.
+ *
+ * @param[in]  connection     Connection to manager.
+ * @param[in]  credentials    Username and password for authentication.
+ * @param[in]  params         Request parameters.
+ * @param[out] response_data  Extra data return for the HTTP response.
+ *
+ * @return Enveloped search response or an error message.
+ */
+char *
+get_active_directory_objects_gmp (gvm_connection_t *connection,
+                                  gsad_credentials_t *credentials,
+                                  params_t *params,
+                                  gsad_command_response_data_t *response_data)
+{
+  const char *action = "Get Active Directory Objects";
+  const char *credential_id = params_value (params, "credential_id");
+  const char *scope = params_value (params, "scope");
+  const char *max_results = params_value (params, "max_results");
+  const char *include_disabled_computers =
+    params_value (params, "include_disabled_computers");
+  const char *targets = params_value (params, "targets");
+  const char *tasks = params_value (params, "tasks");
+  const char *details = params_value (params, "details");
+  const char *base_dn = params_value (params, "base_dn");
+  const char *group_dn = params_value (params, "group_dn");
+  params_t *object_types = params_values (params, "object_types:");
+  params_iterator_t iter;
+  param_t *param;
+  char *name;
+  GString *command, *xml;
+  entity_t entity = NULL;
+  int ret;
+
+  CHECK_VARIABLE_INVALID (credential_id, action);
+
+  if (str_equal (credential_id, ""))
+    return message_invalid (connection, credentials, params, response_data,
+                            "A credential ID is required.", action);
+
+  if (params_given (params, "scope"))
+    CHECK_VARIABLE_INVALID (scope, action);
+
+  if (params_given (params, "include_disabled_computers"))
+    CHECK_VARIABLE_INVALID (include_disabled_computers, action);
+
+  if (params_given (params, "targets"))
+    CHECK_VARIABLE_INVALID (targets, action);
+
+  if (params_given (params, "tasks"))
+    CHECK_VARIABLE_INVALID (tasks, action);
+
+  if (params_given (params, "details"))
+    CHECK_VARIABLE_INVALID (details, action);
+
+  if (params_given (params, "base_dn"))
+    CHECK_VARIABLE_INVALID (base_dn, action);
+
+  if (params_given (params, "group_dn"))
+    CHECK_VARIABLE_INVALID (group_dn, action);
+
+  if (params_given (params, "max_results"))
+    CHECK_VARIABLE_INVALID (max_results, action);
+
+  if (object_types)
+    {
+      params_iterator_init (&iter, object_types);
+      while (params_iterator_next (&iter, &name, &param))
+        if (param->value == NULL)
+          return message_invalid (connection, credentials, params,
+                                  response_data,
+                                  "Given object_types was invalid", action);
+    }
+
+  command = g_string_new ("<get_active_directory_objects");
+  xml_string_append (command, " credential_id=\"%s\"", credential_id);
+
+  if (scope)
+    xml_string_append (command, " scope=\"%s\"", scope);
+
+  if (max_results)
+    xml_string_append (command, " max_results=\"%s\"", max_results);
+
+  if (include_disabled_computers)
+    xml_string_append (command, " include_disabled_computers=\"%s\"",
+                       include_disabled_computers);
+
+  if (targets)
+    xml_string_append (command, " targets=\"%s\"", targets);
+
+  if (tasks)
+    xml_string_append (command, " tasks=\"%s\"", tasks);
+
+  if (details)
+    xml_string_append (command, " details=\"%s\"", details);
+
+  g_string_append (command, ">");
+
+  if (base_dn)
+    xml_string_append (command, "<base_dn>%s</base_dn>", base_dn);
+
+  if (group_dn)
+    xml_string_append (command, "<group_dn>%s</group_dn>", group_dn);
+
+  if (object_types)
+    {
+      g_string_append (command, "<object_types>");
+      params_iterator_init (&iter, object_types);
+      while (params_iterator_next (&iter, &name, &param))
+        xml_string_append (command, "<object_type>%s</object_type>",
+                           param->value);
+      g_string_append (command, "</object_types>");
+    }
+  g_string_append (command, "</get_active_directory_objects>");
+
+  ret = gvm_connection_sendf (connection, "%s", command->str);
+  g_string_free (command, TRUE);
+  if (ret == -1)
+    {
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting Active Directory objects. "
+        "Diagnostics: Failure to send command to manager daemon.",
+        response_data);
+    }
+
+  xml = g_string_new ("<get_active_directory_objects>");
+  if (read_entity_and_string_c (connection, &entity, &xml))
+    {
+      g_string_free (xml, TRUE);
+      gsad_command_response_data_set_status_code (
+        response_data, MHD_HTTP_INTERNAL_SERVER_ERROR);
+      return gsad_http_create_gsad_message (
+        credentials,
+        "An internal error occurred while getting Active Directory objects. "
+        "Diagnostics: Failure to receive response from manager daemon.",
+        response_data);
+    }
+
+  if (gmp_success (entity) != 1)
+    {
+      gchar *message;
+      set_http_status_from_entity (entity, response_data);
+      message = gsad_http_create_gsad_message (
+        credentials, entity_attribute (entity, "status_text"), response_data);
+      g_string_free (xml, TRUE);
+      free_entity (entity);
+      return message;
+    }
+
+  free_entity (entity);
+  g_string_append (xml, "</get_active_directory_objects>");
+  return envelope_gmp (connection, credentials, params,
+                       g_string_free (xml, FALSE), response_data);
+}
+
+/**
  * @brief Verify an Active Directory credential.
  *
  * @param[in]  connection     Connection to manager.
@@ -23083,6 +23242,7 @@ exec_gmp_get (gsad_http_connection_t *con, gsad_connection_info_t *con_info,
   ELSE (export_users)
   ELSE (export_web_application_target)
   ELSE (export_web_application_targets)
+  ELSE (get_active_directory_objects)
   ELSE (get_agent_installer_instruction)
   ELSE (get_agent_inventory_token)
   ELSE (get_agent_support_bundle)
