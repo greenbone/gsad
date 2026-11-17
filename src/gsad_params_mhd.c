@@ -116,6 +116,7 @@ params_mhd_append (params_t *params, const gchar *name, const gchar *filename,
       || (strcmp (name, "id_list:") == 0)
       || (strcmp (name, "resource_ids:") == 0) || (strcmp (name, "kdcs:") == 0)
       || (strcmp (name, "agent_ids:") == 0)
+      || (strcmp (name, "object_types:") == 0)
       || (strcmp (name, "scheduler_cron_times:") == 0)
       || (strcmp (name, "alive_tests:") == 0))
     {
@@ -242,6 +243,7 @@ params_mhd_add (void *params, enum MHD_ValueKind kind, const gchar *name,
       || (strcmp (name, "group_ids:") == 0)
       || (strcmp (name, "report_format_ids:") == 0)
       || (strcmp (name, "id_list:") == 0) || (strcmp (name, "agent_ids:") == 0)
+      || (strcmp (name, "object_types:") == 0)
       || (strcmp (name, "scheduler_cron_times:") == 0)
       || (strcmp (name, "alive_tests:") == 0))
     {

@@ -1037,6 +1037,10 @@ save_web_application_task_gmp (gvm_connection_t *, gsad_credentials_t *,
                                params_t *, gsad_command_response_data_t *);
 
 char *
+get_active_directory_objects_gmp (gvm_connection_t *, gsad_credentials_t *,
+                                  params_t *, gsad_command_response_data_t *);
+
+char *
 verify_active_directory_credential_gmp (gvm_connection_t *,
                                         gsad_credentials_t *, params_t *,
                                         gsad_command_response_data_t *);
