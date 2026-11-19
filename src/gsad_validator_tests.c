@@ -669,6 +669,24 @@ Ensure (gsad_validator, validate_active_directory_object_types)
                is_equal_to (2));
 }
 
+Ensure (gsad_validator, validate_source)
+{
+  validator_t validator = gsad_get_validator ();
+
+  assert_that (gvm_validate (validator, "source", "manual"), is_equal_to (0));
+  assert_that (gvm_validate (validator, "source", "active_directory"),
+               is_equal_to (0));
+  assert_that (gvm_validate (validator, "source", ""), is_equal_to (2));
+  assert_that (gvm_validate (validator, "source", " "), is_equal_to (2));
+  assert_that (gvm_validate (validator, "source", "file"), is_equal_to (2));
+  assert_that (gvm_validate (validator, "source", "asset_hosts"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "source", "import"), is_equal_to (2));
+  assert_that (gvm_validate (validator, "source", "ACTIVE_DIRECTORY"),
+               is_equal_to (2));
+  assert_that (gvm_validate (validator, "source", NULL), is_equal_to (5));
+}
+
 int
 main (int argc, char **argv)
 {
@@ -722,6 +740,7 @@ main (int argc, char **argv)
                          validate_active_directory_search_booleans);
   add_test_with_context (suite, gsad_validator,
                          validate_active_directory_object_types);
+  add_test_with_context (suite, gsad_validator, validate_source);
   if (argc > 1)
     ret = run_single_test (suite, argv[1], create_text_reporter ());
   else
