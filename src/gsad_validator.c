@@ -552,6 +552,7 @@ gsad_init_validator ()
                      "^(ascending|descending)$");
   gvm_validator_add (validator, "sort_stats:name", "^[0123456789]+$");
   gvm_validator_add (validator, "sort_stats:value", "^[_[:alnum:] ]+$");
+  gvm_validator_add (validator, "source", "^(manual|active_directory)$");
   gvm_validator_add (validator, "target_source",
                      "^(asset_hosts|file|import|manual)$");
   gvm_validator_add (validator, "target_exclude_source", "^(file|manual)$");

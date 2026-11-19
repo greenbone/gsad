@@ -7462,6 +7462,7 @@ create_target_gmp (gvm_connection_t *connection,
   const char *target_krb5_credential;
   const char *target_esxi_credential, *target_snmp_credential, *target_source;
   const char *target_exclude_source;
+  const char *source = NULL;
   const char *port_list_id, *reverse_lookup_only, *reverse_lookup_unify;
   const char *alive_tests = NULL;
   GHashTable *alive_tests_table;
@@ -7508,6 +7509,12 @@ create_target_gmp (gvm_connection_t *connection,
   /* require hosts_filter if target_source is "asset_hosts" */
   if (strcmp (target_source, "asset_hosts") == 0)
     CHECK_VARIABLE_INVALID (hosts_filter, "Create Target");
+
+  if (params_given (params, "source"))
+    {
+      source = params_value (params, "source");
+      CHECK_VARIABLE_INVALID (source, "Create Target");
+    }
 
   if (params_given (params, "alive_tests"))
     {
@@ -7622,6 +7629,9 @@ create_target_gmp (gvm_connection_t *connection,
     reverse_lookup_only ? reverse_lookup_only : "0",
     reverse_lookup_unify ? reverse_lookup_unify : "0", port_list_id,
     allow_simultaneous_ips ? allow_simultaneous_ips : "1");
+
+  if (source)
+    xml_string_append (xml, "<source>%s</source>", source);
 
   if (alive_tests_table)
     {
@@ -8415,6 +8425,7 @@ save_target_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
   const char *target_esxi_credential = NULL, *target_snmp_credential = NULL;
   const char *target_krb5_credential = NULL, *target_smb_credential = NULL;
   const char *target_source = NULL, *target_exclude_source = NULL;
+  const char *source = NULL;
   const char *reverse_lookup_unify = NULL, *reverse_lookup_only = NULL;
   const char *allow_simultaneous_ips = NULL;
   const char *port_list_id = NULL;
@@ -8434,6 +8445,11 @@ save_target_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
     {
       comment = params_value (params, "comment");
       CHECK_VARIABLE_INVALID (comment, "Save Target");
+    }
+  if (params_given (params, "source"))
+    {
+      source = params_value (params, "source");
+      CHECK_VARIABLE_INVALID (source, "Save Target");
     }
   if (params_given (params, "alive_tests"))
     {
@@ -8536,6 +8552,9 @@ save_target_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
                      target_id, name);
   if (comment)
     xml_string_append (command, "<comment>%s</comment>", comment);
+
+  if (source)
+    xml_string_append (command, "<source>%s</source>", source);
 
   if (hosts)
     xml_string_append (command, "<hosts>%s</hosts>", hosts);
