@@ -33,6 +33,8 @@ params_mhd_append (params_t *params, const gchar *name, const gchar *filename,
           == 0)
       || (strncmp (name, "settings_filter:", strlen ("settings_filter:")) == 0)
       || (strncmp (name, "exclude_file:", strlen ("exclude_file:")) == 0)
+      || (g_str_has_prefix (name, "excluded_paths:")
+          && strcmp (name, "excluded_paths:") != 0)
       || (strncmp (name, "file:", strlen ("file:")) == 0)
       || (strncmp (name, "include_id_list:", strlen ("include_id_list:")) == 0)
       || (strncmp (name, "parameter:", strlen ("parameter:")) == 0)
@@ -118,6 +120,7 @@ params_mhd_append (params_t *params, const gchar *name, const gchar *filename,
       || (strcmp (name, "agent_ids:") == 0)
       || (strcmp (name, "object_types:") == 0)
       || (strcmp (name, "scheduler_cron_times:") == 0)
+      || (strcmp (name, "excluded_paths:") == 0)
       || (strcmp (name, "alive_tests:") == 0))
     {
       param_t *param;
@@ -179,6 +182,8 @@ params_mhd_add (void *params, enum MHD_ValueKind kind, const gchar *name,
           == 0)
       || (strncmp (name, "settings_filter:", strlen ("settings_filter:")) == 0)
       || (strncmp (name, "exclude_file:", strlen ("exclude_file:")) == 0)
+      || (g_str_has_prefix (name, "excluded_paths:")
+          && strcmp (name, "excluded_paths:") != 0)
       || (strncmp (name, "file:", strlen ("file:")) == 0)
       || (strncmp (name, "include_id_list:", strlen ("include_id_list:")) == 0)
       || (strncmp (name, "parameter:", strlen ("parameter:")) == 0)
@@ -245,6 +250,7 @@ params_mhd_add (void *params, enum MHD_ValueKind kind, const gchar *name,
       || (strcmp (name, "id_list:") == 0) || (strcmp (name, "agent_ids:") == 0)
       || (strcmp (name, "object_types:") == 0)
       || (strcmp (name, "scheduler_cron_times:") == 0)
+      || (strcmp (name, "excluded_paths:") == 0)
       || (strcmp (name, "alive_tests:") == 0))
     {
       param_t *param;

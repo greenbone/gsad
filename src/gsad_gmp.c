@@ -20981,12 +20981,19 @@ modify_agent_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
   gchar *authorized_tag, *update_to_latest_tag, *config_tag, *comment_tag;
   const char *authorized, *update_to_latest;
   const char *interval_in_seconds, *comment;
+  gboolean set_excluded_paths;
   int ret;
   GString *agents_element;
-  params_t *agent_ids;
+  params_t *agent_ids, *excluded_paths;
+  params_iterator_t iter;
+  char *name;
+  param_t *param;
   entity_t entity;
 
   agent_ids = params_values (params, "agent_ids:");
+  excluded_paths = params_values (params, "excluded_paths:");
+  set_excluded_paths = params_given (params, "excluded_paths:")
+                       || params_value_bool (params, "set_excluded_paths");
   authorized = params_value (params, "authorized");
   update_to_latest = params_value (params, "update_to_latest");
   interval_in_seconds = params_value (params, "interval_in_seconds");
@@ -21023,13 +21030,37 @@ modify_agent_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
   if (params_given (params, "interval_in_seconds"))
     {
       CHECK_VARIABLE_INVALID (interval_in_seconds, "Save Agent List");
-      config_tag =
-        g_markup_printf_escaped ("<config>"
-                                 "<heartbeat>"
-                                 "<interval_in_seconds>%s</interval_in_seconds>"
-                                 "</heartbeat>"
-                                 "</config>",
-                                 interval_in_seconds);
+    }
+
+  if (params_given (params, "interval_in_seconds") || set_excluded_paths)
+    {
+      GString *config = g_string_new ("<config>");
+
+      if (params_given (params, "interval_in_seconds"))
+        xml_string_append (config,
+                           "<heartbeat>"
+                           "<interval_in_seconds>%s</interval_in_seconds>"
+                           "</heartbeat>",
+                           interval_in_seconds);
+
+      if (set_excluded_paths)
+        {
+          g_string_append (config,
+                           "<file_search><excluded_paths is_list=\"1\">");
+          if (excluded_paths)
+            {
+              params_iterator_init (&iter, excluded_paths);
+              while (params_iterator_next (&iter, &name, &param))
+                {
+                  if (param->value && *param->value)
+                    xml_string_append (config, "<item>%s</item>", param->value);
+                }
+            }
+          g_string_append (config, "</excluded_paths></file_search>");
+        }
+
+      g_string_append (config, "</config>");
+      config_tag = g_string_free (config, FALSE);
     }
   else
     config_tag = g_strdup ("");
@@ -21044,9 +21075,6 @@ modify_agent_gmp (gvm_connection_t *connection, gsad_credentials_t *credentials,
 
   agents_element = g_string_new ("<agents>");
 
-  char *name;
-  params_iterator_t iter;
-  param_t *param;
   params_iterator_init (&iter, agent_ids);
   while (params_iterator_next (&iter, &name, &param))
     {
@@ -21135,7 +21163,7 @@ modify_agent_control_scan_config_gmp (
   const char *max_jitter_in_seconds, *bulk_size, *bulk_throttle_time_in_ms;
   const char *indexer_dir_depth, *interval_in_seconds, *miss_until_inactive;
   const char *update_to_latest;
-  params_t *scheduler_cron_times;
+  params_t *scheduler_cron_times, *excluded_paths;
   params_iterator_t iter;
   char *name;
   param_t *param;
@@ -21149,6 +21177,7 @@ modify_agent_control_scan_config_gmp (
   bulk_throttle_time_in_ms = params_value (params, "bulk_throttle_time_in_ms");
   indexer_dir_depth = params_value (params, "indexer_dir_depth");
   scheduler_cron_times = params_values (params, "scheduler_cron_times:");
+  excluded_paths = params_values (params, "excluded_paths:");
   interval_in_seconds = params_value (params, "interval_in_seconds");
   miss_until_inactive = params_value (params, "miss_until_inactive");
   update_to_latest = params_value (params, "update_to_latest");
@@ -21255,14 +21284,28 @@ modify_agent_control_scan_config_gmp (
                      "<heartbeat>"
                      "<interval_in_seconds>%s</interval_in_seconds>"
                      "<miss_until_inactive>%s</miss_until_inactive>"
-                     "</heartbeat>"
+                     "</heartbeat>",
+                     interval_in_seconds, miss_until_inactive);
+
+  g_string_append (command, "<file_search><excluded_paths is_list=\"1\">");
+  if (excluded_paths)
+    {
+      params_iterator_init (&iter, excluded_paths);
+      while (params_iterator_next (&iter, &name, &param))
+        {
+          if (param->value && *param->value)
+            xml_string_append (command, "<item>%s</item>", param->value);
+        }
+    }
+  g_string_append (command, "</excluded_paths></file_search>");
+
+  xml_string_append (command,
                      "</agent_defaults>"
                      "<agent_control_defaults>"
                      "<update_to_latest>%s</update_to_latest>"
                      "</agent_control_defaults>"
                      "</config_defaults>"
                      "</modify_agent_control_scan_config>",
-                     interval_in_seconds, miss_until_inactive,
                      update_to_latest);
 
   entity = NULL;
