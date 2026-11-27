@@ -609,6 +609,7 @@ gsad_init_validator ()
   gvm_validator_alias (validator, "add_tag", "boolean");
   gvm_validator_alias (validator, "authorized", "boolean");
   gvm_validator_alias (validator, "update_to_latest", "boolean");
+  gvm_validator_alias (validator, "set_excluded_paths", "boolean");
   gvm_validator_alias (validator, "accept_invalid_certs", "boolean");
   gvm_validator_alias (validator, "registry_allow_insecure", "boolean");
   gvm_validator_alias (validator, "agent_ids:name", "number");
@@ -616,6 +617,8 @@ gsad_init_validator ()
   gvm_validator_alias (validator, "scheduler_cron_time", "name");
   gvm_validator_alias (validator, "scheduler_cron_times:name", "number");
   gvm_validator_alias (validator, "scheduler_cron_times:value", "name");
+  gvm_validator_alias (validator, "excluded_paths:name", "number");
+  gvm_validator_alias (validator, "excluded_paths:value", "name");
   gvm_validator_alias (validator, "encryption", "details");
   gvm_validator_alias (validator, "anonymized", "details");
 
